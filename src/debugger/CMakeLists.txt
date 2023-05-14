@@ -1,24 +1,24 @@
-# Installs climath library
+# Installs debugger library
 #
-#   library: libclimath_debug.o
-#   library: libclimath_release.o
+#   library: libdebugger_debug.o
+#   library: libdebugger_release.o
 #
 # Define the following variables
 #
-#   CLIMATH_INCLUDE_DIR
-#   CLIMATH_LIBRARY_DEBUG
-#   CLIMATH_LIBRARY_RELEASE
+#   DEBUGGER_INCLUDE_DIR
+#   DEBUGGER_LIBRARY_DEBUG
+#   DEBUGGER_LIBRARY_RELEASE
 #
 # Normal usage would be:
 #
-#   include_directories( ${CLIMATH_INCLUDE_DIR})
-#   target_link_libraries( ${CLIMATH_LIBRARY_DEBUG})
+#   include_directories( ${DEBUGGER_INCLUDE_DIR})
+#   target_link_libraries( ${DEBUGGER_LIBRARY_DEBUG})
 
-set(namel climath)
+set(namel debugger)
 string(TOUPPER ${namel} nameu)
 
 file(GLOB src_files
-  *.c
+  *.cpp
   )
 
 string(TOLOWER ${CMAKE_BUILD_TYPE} buildl)
@@ -31,8 +31,13 @@ add_library(${namel}_${buildl}
 
 set_target_properties(${namel}_${buildl}
     PROPERTIES
-    COMPILE_FLAGS ${CMAKE_C_FLAGS_${buildu}}
+    COMPILE_FLAGS ${CMAKE_CXX_FLAGS_${buildu}}
     )
+
+target_include_directories(${namel}_${buildl}
+	PRIVATE 
+	${CMAKE_BINARY_DIR}
+	)
 
 set(${nameu}_LIBRARY_${buildu} ${nameu}_${buildl}
     CACHE STRING 
