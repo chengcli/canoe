@@ -4,7 +4,8 @@
 # debugger: debugger library in cpp
 # astro: astronomy library in cpp
 # utils: utility library in c/cpp
-# harp: radiation library in c/cpp (backend by cdisort)
+# harp: radiation library in c/cpp (backed by cdisort)
+# outputs: write netcdf/pnetcdf outputs
 
 add_subdirectory(climath)
 set(CLIMATH_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}
@@ -25,3 +26,8 @@ add_subdirectory(utils)
 set(UTILS_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}
 	CACHE PATH 
 	"utils include directory")
+
+add_subdirectory(outputs)
+set(OUTPUS_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}
+	CACHE PATH 
+	"outputs include directory")
