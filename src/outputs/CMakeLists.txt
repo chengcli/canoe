@@ -36,6 +36,7 @@ set_target_properties(${namel}_${buildl}
 
 target_include_directories(${namel}_${buildl}
 	PRIVATE 
+    ${ATHENAPP_INCLUDE_DIR}
 	${CMAKE_BINARY_DIR}
 	)
 

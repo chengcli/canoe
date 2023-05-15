@@ -1,13 +1,9 @@
 // C/C++ headers
 #include <iostream>
 
-// Athena++ headers
-#include <globals.hpp>
+#include <athena/globals.hpp>
+#include <debugger/debugger.hpp>
 
-// debugger
-#include <debugger.hpp>
-
-// cliutils headers
 #include <configure.hpp>
 #include "command_line.hpp"
 

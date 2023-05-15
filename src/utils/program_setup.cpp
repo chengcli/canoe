@@ -4,13 +4,10 @@
 #include <ctime>
 
 // Athena++ headers
-#include <globals.hpp>
-#include <utils/utils.hpp>
-#include <mesh/mesh.hpp>
-#include <utils/utils.hpp>
-
-// debugger headers
-#include <debugger.hpp>
+#include <athena/globals.hpp>
+#include <athena/utils/utils.hpp>
+#include <athena/mesh/mesh.hpp>
+#include <debugger/debugger.hpp>
 
 // cliutils header
 #include <configure.hpp>

@@ -3,9 +3,7 @@
 
 // C/C++ headers
 #include <string>
-
-// harp headers
-#include <athena.hpp>
+//#include <athena.hpp>
 
 class ParameterInput;
 struct float_triplet;

@@ -39,11 +39,8 @@ set_target_properties(${namel}_${buildl}
 target_include_directories(${namel}_${buildl}
     PRIVATE
     ${DEBUGGER_INCLUDE_DIR}
+    ${ATHENAPP_INCLUDE_DIR}
     ${CMAKE_BINARY_DIR}
-    )
-
-target_link_libraries(${namel}_${buildl}
-    ${DEBUGGER_LIBRARY_${buildu}}
     )
 
 set(${nameu}_LIBRARY_${buildu} ${namel}_${buildl}

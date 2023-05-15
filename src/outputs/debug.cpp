@@ -12,14 +12,11 @@
 #include <stdio.h>
 #include <cfloat>
 
-// Athena++ headers
-#include <athena.hpp>
-//#include <athena_arrays.hpp>
-#include <globals.hpp>
-#include <coordinates/coordinates.hpp>
-#include <hydro/hydro.hpp>
-//#include "../field/field.hpp"
-#include <mesh/mesh.hpp>
+#include <athena/athena.hpp>
+#include <athena/globals.hpp>
+#include <athena/coordinates/coordinates.hpp>
+#include <athena/hydro/hydro.hpp>
+#include <athena/mesh/mesh.hpp>
 
 // canoe headers
 #include <configure.hpp>
