@@ -18,8 +18,8 @@ set(namel debugger)
 string(TOUPPER ${namel} nameu)
 
 file(GLOB src_files
-  *.cpp
-  )
+    *.cpp
+    )
 
 string(TOLOWER ${CMAKE_BUILD_TYPE} buildl)
 string(TOUPPER ${CMAKE_BUILD_TYPE} buildu)
