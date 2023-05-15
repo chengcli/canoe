@@ -30,6 +30,9 @@ include(${CMAKE_SOURCE_DIR}/cmake/setup_compiler_flags.cmake)
 ## 2. set up project specific configuration ##
 
 ## 3. set up project system libraries ##
+message(STATUS "3. Set up system libraries")
+message(STATUS "Include ${CMAKE_SOURCE_DIR}/cmake/setup_athena.cmake")
+include(${CMAKE_SOURCE_DIR}/cmake/setup_athena.cmake)
 
 ## 4. set up project configure file and library ##
 message(STATUS "4. Set up project libraries")
@@ -38,6 +41,7 @@ add_subdirectory(src)
 
 ## 5. set up python binding ##
 message(STATUS "5. Set up python binding")
+message(STATUS "Include ${CMAKE_SOURCE_DIR}/cmake/pybind11.cmake")
 include(${CMAKE_SOURCE_DIR}/cmake/pybind11.cmake)
 #add_subdirectory(python)
 
