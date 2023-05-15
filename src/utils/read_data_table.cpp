@@ -3,10 +3,8 @@
 #include <cstdio>
 #include <sstream>
 
-// Athena++ headers
-#include <athena_arrays.hpp>
+#include <athena/athena_arrays.hpp>
 
-// harp header
 #include "ndarrays.hpp"
 #include "fileio.hpp"
 

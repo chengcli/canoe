@@ -32,7 +32,7 @@ include(${CMAKE_SOURCE_DIR}/cmake/setup_compiler_flags.cmake)
 ## 3. set up project system libraries ##
 message(STATUS "3. Set up system libraries")
 message(STATUS "Include ${CMAKE_SOURCE_DIR}/cmake/setup_athena.cmake")
-#include(${CMAKE_SOURCE_DIR}/cmake/setup_athena.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/setup_athena.cmake)
 
 ## 4. set up project configure file and library ##
 message(STATUS "4. Set up project libraries")

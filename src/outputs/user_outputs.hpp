@@ -5,8 +5,7 @@
 #include <vector>
 #include <string>
 
-// Athena++ headers
-#include <outputs/outputs.hpp>
+#include <athena/outputs/outputs.hpp>
 
 // canoe headers
 #include "output_utils.hpp"

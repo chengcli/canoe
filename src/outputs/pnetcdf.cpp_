@@ -12,27 +12,19 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-// Athena++ headers
-#include <athena.hpp>
-#include <globals.hpp>
-#include <mesh/mesh.hpp>
-#include <coordinates/coordinates.hpp>
+#include <athena/athena.hpp>
+#include <athena/globals.hpp>
+#include <athena/mesh/mesh.hpp>
+#include <athena/coordinates/coordinates.hpp>
 
-// climath headers
-extern "C" {
-  #include <core.h>
-}
+#include <climath/core.h>
 
-// canoe headers
-//#include "../utils/utils.hpp"
+#include <snap/mesh/meshblock_impl.hpp>
+#include <harp/radiation.hpp>
+#include <harp/radiation_band.hpp>
+
 #include <configure.hpp>
-#include "../mesh/meshblock_impl.hpp"
 #include "user_outputs.hpp"
-
-#if ENABLE_HARP
-  #include "../radiation/radiation.hpp"
-  #include "../radiation/radiation_band.hpp"
-#endif
 
 // Only proceed if PNETCDF output enabled
 #if PNETCDFOUTPUT

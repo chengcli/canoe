@@ -5,7 +5,7 @@
 #include <string>
 
 // Athena++ headers
-#include <athena.hpp>
+#include <athena/athena.hpp>
 
 int get_num_variables(std::string grid, AthenaArray<Real> const& data);
 

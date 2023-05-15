@@ -13,20 +13,16 @@
 #include <stdio.h>
 
 // Athena++ headers
-#include <athena.hpp>
-#include <mesh/mesh.hpp>
-//#include <hydro/hydro.hpp>
-#include <coordinates/coordinates.hpp>
+#include <athena/athena.hpp>
+#include <athena/mesh/mesh.hpp>
+#include <athena/coordinates/coordinates.hpp>
 
-// canoe headers
+#include <snap/mesh/meshblock_impl.hpp>
+#include <harp/radiation.hpp>
+#include <harp/radiation_band.hpp>
+
 #include <configure.hpp>
 #include "user_outputs.hpp"
-#include "../mesh/meshblock_impl.hpp"
-
-#if ENABLE_HARP
-  #include "../radiation/radiation.hpp"
-  #include "../radiation/radiation_band.hpp"
-#endif
 
 // Only proceed if NETCDF output enabled
 #if NETCDFOUTPUT

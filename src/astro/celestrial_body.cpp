@@ -2,10 +2,8 @@
 #include <stdexcept>
 #include <sstream>
 
-// athenapp headers
-#include <parameter_input.hpp>
-#include <athena.hpp>
-
+#include <athena/parameter_input.hpp>
+#include <athena/athena.hpp>
 #include <climath/core.h>
 #include <climath/interpolation.h>
 #include <debugger/debugger.hpp>

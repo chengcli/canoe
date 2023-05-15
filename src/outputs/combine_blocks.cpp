@@ -6,10 +6,7 @@
 #include <stdio.h>
 #include <iostream>
 
-// Athena++ headers
-#include <globals.hpp>
-
-// canoe
+#include <athena/globals.hpp>
 #include <configure.hpp>
 #include "user_outputs.hpp"
 

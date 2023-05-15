@@ -5,10 +5,7 @@
 #include <string>
 #include <iostream>
 
-// Athena
-#include <athena.hpp>
-
-// cliutils
+#include <athena/athena.hpp>
 #include <configure.hpp>
 
 //! test file existance

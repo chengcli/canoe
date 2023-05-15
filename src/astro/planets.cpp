@@ -7,6 +7,7 @@
  */
 
 // climath headers
+#include <cmath>
 #include <climath/core.h>
 
 // harp2 headers
