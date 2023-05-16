@@ -16,34 +16,34 @@
 void CelestrialBody::ReadCelestrialData_(ParameterInput *pin, std::string myname)
 {
   char entry[80];
-  sprintf(entry, "%s.re", name.c_str());
+  snprintf(entry, 80, "%s.re", name.c_str());
   re = km2m(pin->GetOrAddReal("astronomy", entry, 0.));
 
-  sprintf(entry, "%s.rp", name.c_str());
+  snprintf(entry, 80, "%s.rp", name.c_str());
   rp = km2m(pin->GetOrAddReal("astronomy", entry, re));
 
-  sprintf(entry, "%s.obliq", name.c_str());
+  snprintf(entry, 80, "%s.obliq", name.c_str());
   obliq = deg2rad(pin->GetOrAddReal("astronomy", entry, 0.));
 
-  sprintf(entry, "%s.spinp", name.c_str());
+  snprintf(entry, 80, "%s.spinp", name.c_str());
   spinp = day2sec(pin->GetOrAddReal("astronomy", entry, 0.));
 
-  sprintf(entry, "%s.orbit_a", name.c_str());
+  snprintf(entry, 80, "%s.orbit_a", name.c_str());
   orbit_a = au2m(pin->GetOrAddReal("astronomy", entry, 0.));
 
-  sprintf(entry, "%s.orbit_e", name.c_str());
+  snprintf(entry, 80, "%s.orbit_e", name.c_str());
   orbit_e = pin->GetOrAddReal("astronomy", entry, 0.);
 
-  sprintf(entry, "%s.orbit_i", name.c_str());
+  snprintf(entry, 80, "%s.orbit_i", name.c_str());
   orbit_i = deg2rad(pin->GetOrAddReal("astronomy", entry, 0.));
 
-  sprintf(entry, "%s.orbit_p", name.c_str());
+  snprintf(entry, 80, "%s.orbit_p", name.c_str());
   orbit_p = day2sec(pin->GetOrAddReal("astronomy", entry, 0.));
 
-  sprintf(entry, "%s.equinox", name.c_str());
+  snprintf(entry, 80, "%s.equinox", name.c_str());
   equinox = pin->GetOrAddReal("astronomy", entry, 0.);
 
-  sprintf(entry, "%s.grav_eq", name.c_str());
+  snprintf(entry, 80, "%s.grav_eq", name.c_str());
   grav_eq = pin->GetOrAddReal("astronomy", entry, 0.);
 }
 

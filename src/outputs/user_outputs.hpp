@@ -28,7 +28,7 @@ class NetcdfOutput : public OutputType {
 public:
   NetcdfOutput(OutputParameters oparams);
   ~NetcdfOutput() {};
-  void WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag);
+  void WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) override;
   void CombineBlocks() override;
 };
 
@@ -39,7 +39,7 @@ class PnetcdfOutput : public OutputType {
 public:
   PnetcdfOutput(OutputParameters oparams);
   ~PnetcdfOutput() {};
-  void WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag);
+  void WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) override;
 };
 
 //! \class FITSOutput
@@ -49,7 +49,7 @@ class FITSOutput : public OutputType {
 public:
   FITSOutput(OutputParameters oparams);
   ~FITSOutput() {}
-  void WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag);
+  void WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) override;
 };
 
 #endif

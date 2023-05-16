@@ -1,6 +1,10 @@
 #ifndef CORE_H_
 #define CORE_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif 
+
 #include "math.h"
 
 struct float_triplet {
@@ -53,3 +57,8 @@ inline double au2m(double x) { return x*1.495978707E11; }
 inline double m2au(double x) { return x/1.495978707E11; }
 
 #endif
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif 
+

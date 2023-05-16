@@ -1,6 +1,10 @@
 #ifndef INTERPOLATION_H_
 #define INTERPOLATION_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif 
+
 struct float_triplet;
 
 int locate(double const *xx, double x, int n);
@@ -16,3 +20,7 @@ void interpnf(double *val, double const *coor, double const *data, double const 
   int const *len, int ndim);
 
 #endif
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif 
