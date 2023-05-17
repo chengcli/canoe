@@ -186,8 +186,8 @@ void RadiationBand::writeBinRadiance(OutputParameters const* pout) const
   if (!test(RadiationFlags::WriteBinRadiance)) return;
 
   char fname[80], number[6];
-  sprintf(number,"%05d", pout->file_number);
-  sprintf(fname, "%s.radiance.%s.txt", name_.c_str(), number);
+  snprintf(number,6, "%05d", pout->file_number);
+  snprintf(fname, 80, "%s.radiance.%s.txt", name_.c_str(), number);
   FILE *pfile = fopen(fname, "w");
 
   fprintf(pfile, "# Bin Radiances of Band %s: %.3g - %.3g\n",

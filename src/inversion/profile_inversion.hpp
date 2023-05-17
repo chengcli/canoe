@@ -45,8 +45,8 @@ protected:
 
 	// hyper-parameters
 	Real                chi_;
-	Real                Xstd_[1+NumVapors];
-	Real                Xlen_[1+NumVapors];
+	Real                Xstd_[1+NVAPOR];
+	Real                Xlen_[1+NVAPOR];
 };
 
 class VLAProfileInversion : public ProfileInversion {

@@ -5,18 +5,13 @@
 #include <cassert>
 #include <iostream>
 
-// climath headers
-extern "C" {
-  #include <core.h>
-}
-
-// Athena++ headers
-#include <hydro/hydro.hpp>
+#include <climath/core.h>
+#include <athena/hydro/hydro.hpp>
 
 // harp2 headers
 #include <configure.hpp>
-#include "../mesh/block_index.hpp"
-#include "../debugger/debugger.hpp"
+#include <snap/mesh/block_index.hpp>
+#include <debugger/debugger.hpp>
 #include "inversion.hpp"
 #include "mcmc.hpp"
 
@@ -63,7 +58,7 @@ void Inversion::MCMCInit(Radiation *prad, Hydro *phydro)
     recs_.newstate[0][k] = 1;
 
     // save hydro to w1
-    for (int n = 0; n < NumHydros; ++n)
+    for (int n = 0; n < NHYDRO; ++n)
       for (int j = jl_; j <= ju_; ++j)
         for (int i = is; i <= ie; ++i) {
           phydro->w1(n,ks+k,j,i) = phydro->w(n,ks+k,j,i);

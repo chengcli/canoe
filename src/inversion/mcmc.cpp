@@ -6,14 +6,11 @@
 #include <cstring>
 #include <iostream>
 
-// climath headers
-extern "C" {
-  #include <core.h>
-}
+#include <climath/core.h>
 
 // harp headers
 #include <configure.hpp>
-#include "../utils/ndarrays.hpp"
+#include <utils/ndarrays.hpp>
 #include "mcmc.hpp"
 
 #if FITSOUTPUT

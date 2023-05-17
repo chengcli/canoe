@@ -13,26 +13,23 @@
 #include <memory>
 
 // Athena++ headers
-#include <athena.hpp>
-#include <mesh/mesh.hpp>
-#include <coordinates/coordinates.hpp>
-#include <hydro/hydro.hpp>
-#include <globals.hpp>
+#include <athena/athena.hpp>
+#include <athena/mesh/mesh.hpp>
+#include <athena/coordinates/coordinates.hpp>
+#include <athena/hydro/hydro.hpp>
+#include <athena/globals.hpp>
+#include <athena/stride_iterator.hpp>
 
-// climath headers
-extern "C" {
-  #include <root.h>
-}
+#include <climath/root.h>
 
 // harp2 headers
 #include <configure.hpp>
-#include "../thermodynamics/thermodynamics.hpp"
-#include "../utils/ndarrays.hpp"
-#include "../utils/vectorize.hpp"
-#include "../thermodynamics/thermodynamic_funcs.hpp"
-#include "../debugger/debugger.hpp"
-#include "../stride_iterator.hpp"
-#include "../mesh/block_index.hpp"
+#include <snap/thermodynamics/thermodynamics.hpp>
+#include <snap/mesh/block_index.hpp>
+#include <snap/thermodynamics/thermodynamic_funcs.hpp>
+#include <utils/ndarrays.hpp>
+#include <utils/vectorize.hpp>
+#include <debugger/debugger.hpp>
 #include "gaussian_process.hpp"
 #include "profile_inversion.hpp"
 
@@ -52,18 +49,18 @@ ProfileInversion::ProfileInversion(MeshBlock *pmb, ParameterInput *pin, std::str
 
   // read in prior
   for (auto m : idx_) {
-    if (m == idn) { // change temperature
-      Xstd_[idn] = pin->GetReal("inversion", name + ".tem.std");
-      Xlen_[idn] = pin->GetReal("inversion", name + ".tem.corr.km")*1.E3; // km -> m
-      pdebug->Message(name + "::temperature std", Xstd_[idn]);
+    if (m == IDN) { // change temperature
+      Xstd_[IDN] = pin->GetReal("inversion", name + ".tem.std");
+      Xlen_[IDN] = pin->GetReal("inversion", name + ".tem.corr.km")*1.E3; // km -> m
+      pdebug->Message(name + "::temperature std", Xstd_[IDN]);
       pdebug->Message(name + "::temperature correlation length", Xlen_[0]);
     } else {
       Xstd_[m] = pin->GetReal("inversion", name + ".qvapor" + std::to_string(m) + ".std.gkg")/1.E3;
       // km -> m
       Xlen_[m] = pin->GetReal("inversion", name + ".qvapor" + std::to_string(m) + ".corr.km")*1.E3;
-      sprintf(buf, "%s::vapor %d standard deviation", name.c_str(), m);
+      snprintf(buf, 80, "%s::vapor %d standard deviation", name.c_str(), m);
       pdebug->Message(buf, Xstd_[m]);
-      sprintf(buf, "%s::vapor %d correlation length", name.c_str(), m);
+      snprintf(buf, 80, "%s::vapor %d correlation length", name.c_str(), m);
       pdebug->Message(buf, Xlen_[m]);
     }
   }
@@ -146,17 +143,17 @@ void ProfileInversion::UpdateHydro(Hydro *phydro, ParameterInput *pin) const
 
   // prepare inversion model
   Real **XpSample;
-  NewCArray(XpSample, 1+NumVapors, nsample+2);
-  std::fill(*XpSample, *XpSample + (1+NumVapors)*(nsample+2), 0.);
+  NewCArray(XpSample, 1+NVAPOR, nsample+2);
+  std::fill(*XpSample, *XpSample + (1+NVAPOR)*(nsample+2), 0.);
 
   int is = pblock_->is, js = pblock_->js, ks = pblock_->ks;
   int ie = pblock_->ie, ke = pblock_->ke;
 
   for (auto m : idx_) {
-    if (m == idn) { // temperature
-      sprintf(buf, "%s.tema.K", name_.c_str());
+    if (m == IDN) { // temperature
+      snprintf(buf, 80, "%s.tema.K", name_.c_str());
     } else { // vapors
-      sprintf(buf, "%s.qvapor%da.gkg", name_.c_str(), m);
+      snprintf(buf, 80, "%s.qvapor%da.gkg", name_.c_str(), m);
     }
     std::string str = pin->GetString("problem", buf);
     std::vector<Real> qa = Vectorize<Real>(str.c_str(), " ,");
@@ -176,7 +173,7 @@ void ProfileInversion::UpdateHydro(Hydro *phydro, ParameterInput *pin) const
       UpdateProfiles(phydro, XpSample, k, jl_, ju_);
 
       // set the revised profile to js-1
-      for (int n = 0; n < NumHydros; ++n)
+      for (int n = 0; n < NHYDRO; ++n)
         for (int i = is; i <= ie; ++i) {
           phydro->w(n,k,js-1,i) = phydro->w(n,k,ju_,i);
         }
@@ -197,9 +194,9 @@ Real solve_thetav(Real rdlnTdlnP, void *aux) {
   SolverData *pdata = static_cast<SolverData*>(aux);
   Real **w2 = pdata->w2;
   Thermodynamics const *pthermo = pdata->pthermo;
-  pthermo->ConstructAtmosphere(w2, pthermo->GetTemp(w2[0]), w2[0][ipr], 0., pdata->dlnp, 2, Adiabat::dry, rdlnTdlnP);
-  Real thetav0 = PotentialTemp(w2[0], w2[0][ipr], pthermo)*pthermo->RovRd(w2[0]);
-  Real thetav1 = PotentialTemp(w2[1], w2[0][ipr], pthermo)*pthermo->RovRd(w2[1]);
+  pthermo->ConstructAtmosphere(w2, pthermo->GetTemp(w2[0]), w2[0][IPR], 0., pdata->dlnp, 2, Adiabat::dry, rdlnTdlnP);
+  Real thetav0 = PotentialTemp(w2[0], w2[0][IPR], pthermo)*pthermo->RovRd(w2[0]);
+  Real thetav1 = PotentialTemp(w2[1], w2[0][IPR], pthermo)*pthermo->RovRd(w2[1]);
   return thetav1 - thetav0;
 }
 
@@ -231,10 +228,10 @@ void ProfileInversion::UpdateProfiles(Hydro *phydro,
   std::vector<Real> stdAll(nlayer);
   std::vector<Real> stdSample(nsample);
   Real **Xp;
-  NewCArray(Xp, 1+NumVapors, nlayer);
+  NewCArray(Xp, 1+NVAPOR, nlayer);
 
   // copy previous jl-1 -> jl .. ju
-  for (int n = 0; n < NumHydros; ++n)
+  for (int n = 0; n < NHYDRO; ++n)
     for (int j = jl; j <= ju; ++j)
       for (int i = is; i <= ie; ++i)
         phydro->w(n,k,j,i) = phydro->w(n,k,jl-1,i);
@@ -264,13 +261,13 @@ void ProfileInversion::UpdateProfiles(Hydro *phydro,
         continue;
 
       // save perturbed T profile
-      if (m == idn) {
+      if (m == IDN) {
         if (temp + Xp[m][i-is] < 0.) {
           temp = 1.; // min 1K temperature
         } else {
           temp += Xp[m][i-is];
         }
-        phydro->w(idn,k,jn,i) = phydro->w(ipr,k,jn,i)/
+        phydro->w(IDN,k,jn,i) = phydro->w(IPR,k,jn,i)/
           (Rd*temp*pthermo_->RovRd(phydro->w.at(k,jn,i)));
       } else { // save perturbed compositional profiles
         phydro->w(m,k,jn,i) += Xp[m][i-is];
@@ -291,7 +288,7 @@ void ProfileInversion::UpdateProfiles(Hydro *phydro,
     for (size_t n = 0; n < idx_.size(); ++n) {
       int jn = jl + n;
       int m = idx_[n];
-      if (m == idn) {
+      if (m == IDN) {
         // override with new temperature
         temp1d[i-is] = pthermo_->GetTemp(phydro->w.at(k,jn,i));
       } else {
@@ -300,11 +297,11 @@ void ProfileInversion::UpdateProfiles(Hydro *phydro,
     }
 
     // reset temperature given new concentration
-    phydro->w(idn,k,ju,i) = phydro->w(ipr,k,ju,i)/
+    phydro->w(IDN,k,ju,i) = phydro->w(IPR,k,ju,i)/
       (Rd*temp1d[i-is]*pthermo_->RovRd(phydro->w.at(k,ju,i)));
   }
 
-  delete temp1d;
+  delete[] temp1d;
   FreeCArray(Xp);
 
   ConvectiveAdjustment(phydro, k, ju);
@@ -317,9 +314,9 @@ void ProfileInversion::ConvectiveAdjustment(Hydro *phydro, int k, int ju) const
   pdebug->Call("doing convective adjustment");
 
   Real **w2;
-  NewCArray(w2, 2, NumHydros+2*NumVapors);
+  NewCArray(w2, 2, NHYDRO+2*NVAPOR);
 
-  Real dw[1+NumVapors];
+  Real dw[1+NVAPOR];
   int is = pblock_->is, ie = pblock_->ie;
 
   for (int i = is+1; i <= ie; ++i) {
@@ -328,34 +325,34 @@ void ProfileInversion::ConvectiveAdjustment(Hydro *phydro, int k, int ju) const
     Real temp = pthermo_->GetTemp(phydro->w.at(k,ju,i));
 
     // constant virtual potential temperature move
-    for (int n = 0; n < NumHydros; ++n)
+    for (int n = 0; n < NHYDRO; ++n)
       w2[0][n] = phydro->w(n,k,ju,i-1);
 
     SolverData solver_data;
     solver_data.w2 = w2;
     solver_data.pthermo = pthermo_;
-    solver_data.dlnp = log(phydro->w(ipr,k,ju,i)/phydro->w(ipr,k,ju,i-1));
+    solver_data.dlnp = log(phydro->w(IPR,k,ju,i)/phydro->w(IPR,k,ju,i-1));
 
     Real rdlnTdlnP = 1.;
     //std::cout << solve_thetav(1., &solver_data) << std::endl;
     int err = root(0.5, 8., 1.E-4, &rdlnTdlnP, solve_thetav, &solver_data);
     if (err) {
       char buf[80];
-      sprintf(buf, "root solver does not converge: %12.3g - %12.3g",
+      snprintf(buf, 80, "root solver does not converge: %12.3g - %12.3g",
         solve_thetav(0.5, &solver_data), solve_thetav(8., &solver_data));
       Debugger::Fatal("UpdateProfiles", "root solver does not converge");
     }
     //msg << "- rdlnTdlnP = " << rdlnTdlnP << std::endl;
 
-    pthermo_->ConstructAtmosphere(w2, pthermo_->GetTemp(w2[0]), w2[0][ipr], 0.,
+    pthermo_->ConstructAtmosphere(w2, pthermo_->GetTemp(w2[0]), w2[0][IPR], 0.,
       solver_data.dlnp, 2, Adiabat::dry, rdlnTdlnP);
 
     // stability
-    phydro->w(idn,k,ju,i) = std::min(w2[1][idn], phydro->w(idn,k,ju,i));
+    phydro->w(IDN,k,ju,i) = std::min(w2[1][IDN], phydro->w(IDN,k,ju,i));
 
     // saturation
     pthermo_->SaturationSurplus(dw, phydro->w.at(k,ju,i), VariableType::prim);
-    for (int n = 1; n <= NumVapors; ++n)
+    for (int n = 1; n <= NVAPOR; ++n)
       if (dw[n] > 0.) phydro->w(n,k,ju,i) -= dw[n];
   }
 
