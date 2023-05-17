@@ -1,0 +1,10 @@
+#ifndef CONFIGURE_HPP
+#define CONFIGURE_HPP
+
+enum {
+  NCLOUDS = @NCLOUDS@
+};
+
+enum class VariableType {prim, cons, chem};
+
+#endif

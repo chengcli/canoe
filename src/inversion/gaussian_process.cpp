@@ -2,16 +2,9 @@
 #include <iostream>
 #include <cmath>
 
-// climath headers
-extern "C" {
-  #include <linalg.h>
-}
-
-// Eigen headers
+#include <climath/linalg.h>
 #include <Eigen/Dense>
-
-// harp headers
-#include "../utils/ndarrays.hpp"
+#include <utils/ndarrays.hpp>
 #include "gaussian_process.hpp"
 
 void gp_covariance(KernelFunction_t kernel, double **cov,

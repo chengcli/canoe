@@ -4,16 +4,14 @@
 #include <string>
 #include <stdexcept>
 
-// Athena++ headers
-#include <parameter_input.hpp>
-#include <mesh/mesh.hpp>
-#include <coordinates/coordinates.hpp>
+#include <athena/parameter_input.hpp>
+#include <athena/mesh/mesh.hpp>
+#include <athena/coordinates/coordinates.hpp>
 
-// harp headers
-#include "../utils/ndarrays.hpp"
-#include "../debugger/debugger.hpp"
-#include "../mesh/block_index.hpp"
-#include "../mesh/meshblock_impl.hpp"
+#include <utils/ndarrays.hpp>
+#include <debugger/debugger.hpp>
+//#include "../mesh/block_index.hpp"
+//#include "../mesh/meshblock_impl.hpp"
 #include "../utils/sentinelq.hpp"
 #include "inversion.hpp"
 
