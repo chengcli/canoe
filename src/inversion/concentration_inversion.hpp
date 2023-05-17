@@ -4,8 +4,8 @@
 // C/C++ header
 #include <vector>
 
-// harp2 headers
 #include <configure.hpp>
+#include <athena/defs.hpp>
 #include "inversion.hpp"
 
 class ConcentrationInversion : public Inversion {
@@ -22,7 +22,7 @@ protected:
 	std::vector<int>  idx_;
 
   // prior standard deviation
-	Real              Xstd_[1+NumVapors];
+	Real              Xstd_[1+NVAPOR];
 };
 
 #endif

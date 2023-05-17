@@ -4,7 +4,7 @@ set(FETCHCONTENT_QUIET FALSE)
 
 FetchContent_Declare(
     athenapp
-    URL https://github.com/chengcli/athenapp/archive/refs/tags/v0.1.2-alpha.tar.gz
+    URL https://github.com/chengcli/athenapp/archive/refs/tags/v0.1.3-alpha.tar.gz
     DOWNLOAD_EXTRACT_TIMESTAMP TRUE
     )
 

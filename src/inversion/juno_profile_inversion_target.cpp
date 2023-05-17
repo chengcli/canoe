@@ -10,21 +10,16 @@
 #include <iostream>
 #include <iomanip>
 
-// Athena++ headers
-#include <athena.hpp>
-#include <mesh/mesh.hpp>
+#include <athena/athena.hpp>
+#include <athena/mesh/mesh.hpp>
 
-// climath headers
-extern "C" {
-  #include <linalg.h>
-  #include <interpolation.h>
-}
+#include <climath/linalg.h>
+#include <climath/interpolation.h>
 
-// harp2 headers
-#include "../radiation/radiation.hpp"
-#include "../radiation/radiation_band.hpp"
-#include "../debugger/debugger.hpp"
-#include "../mesh/block_index.hpp"
+#include <harp/radiation/radiation.hpp>
+#include <harp/radiation/radiation_band.hpp>
+#include <debugger/debugger.hpp>
+//#include <snap/mesh/block_index.hpp>
 #include "profile_inversion.hpp"
 
 extern std::unique_ptr<Debugger> pdebug;

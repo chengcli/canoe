@@ -28,6 +28,11 @@ set(UTILS_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}
 	CACHE PATH 
 	"utils include directory")
 
+add_subdirectory(harp)
+set(HARP_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}
+	CACHE PATH 
+	"harp include directory")
+
 add_subdirectory(inversion)
 set(INVERSION_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}
     CACHE PATH 

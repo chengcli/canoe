@@ -27,12 +27,12 @@ ConcentrationInversion::ConcentrationInversion(MeshBlock *pmb, ParameterInput *p
 
   // read in prior
   for (auto m : idx_) {
-    if (m == idn) { // change temperature
-      Xstd_[idn] = pin->GetReal("inversion", name + ".tem.std");
-      pdebug->Message(name + "::temperature std", Xstd_[idn]);
+    if (m == IDN) { // change temperature
+      Xstd_[IDN] = pin->GetReal("inversion", name + ".tem.std");
+      pdebug->Message(name + "::temperature std", Xstd_[IDN]);
     } else {
       Xstd_[m] = pin->GetReal("inversion", name + ".qvapor" + std::to_string(m) + ".std.gkg")/1.E3;
-      sprintf(buf, "%s::vapor %d standard deviation", name.c_str(), m);
+      snprintf(buf, 80, "%s::vapor %d standard deviation", name.c_str(), m);
       pdebug->Message(buf, Xstd_[m]);
     }
   }
@@ -82,7 +82,7 @@ void ConcentrationInversion::UpdateConcentration(Hydro *phydro,
 {
   pdebug->Call("UpdateConcentration");
 
-  int is = pblock_->is, ie = pblock_->ie;
+  //int is = pblock_->is, ie = pblock_->ie;
 
   pdebug->Leave();
 }

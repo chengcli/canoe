@@ -28,6 +28,13 @@ message(STATUS "Include ${CMAKE_SOURCE_DIR}/cmake/setup_compiler_flags.cmake")
 include(${CMAKE_SOURCE_DIR}/cmake/setup_compiler_flags.cmake)
 
 ## 2. set up project specific configuration ##
+macro(SET_IF_EMPTY _variable)
+    if("${${_variable}}" STREQUAL "")
+        set(${_variable} ${ARGN})
+    endiF()
+endmacro()
+
+SET_IF_EMPTY(NCLOUDS 0)
 
 ## 3. set up project system libraries ##
 message(STATUS "3. Set up system libraries")
