@@ -16,8 +16,9 @@
 #include <climath/linalg.h>
 #include <climath/interpolation.h>
 
-#include <harp/radiation/radiation.hpp>
-#include <harp/radiation/radiation_band.hpp>
+#include <snap/mesh/block_index.hpp>
+#include <harp/radiation.hpp>
+#include <harp/radiation_band.hpp>
 #include <debugger/debugger.hpp>
 //#include <snap/mesh/block_index.hpp>
 #include "profile_inversion.hpp"

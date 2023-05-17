@@ -2,16 +2,15 @@
 #include <cstring>
 
 // Athena++ headers
-#include <parameter_input.hpp>
-#include <mesh/mesh.hpp>
+#include <athena/parameter_input.hpp>
+#include <athena/mesh/mesh.hpp>
+#include <debugger/debugger.hpp>
+#include <utils/sentinelq.hpp>
+#include <utils/vectorize.hpp>
 
-// harp2 headers
-#include "../debugger/debugger.hpp"
-#include "../utils/sentinelq.hpp"
-#include "../utils/vectorize.hpp"
-#include "../mesh/meshblock_impl.hpp"
-#include "../mesh/block_index.hpp"
-#include "../thermodynamics/thermodynamics.hpp"
+#include <snap/mesh/meshblock_impl.hpp>
+#include <snap/mesh/block_index.hpp>
+#include <snap/thermodynamics/thermodynamics.hpp>
 #include "profile_inversion.hpp"
 
 void new_inversion_queue(SentinelQ<Inversion*> &fitq,
