@@ -2,11 +2,8 @@
 #include <sstream>
 #include <cstring>
 
-// Athena++ headers
-#include <athena.hpp>
-
-// harp2 headers
-#include "../utils/fileio.hpp"
+#include <athena/athena.hpp>
+#include <utils/fileio.hpp>
 #include "inversion.hpp"
 
 #define MAX_LINE 512

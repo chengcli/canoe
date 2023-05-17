@@ -9,13 +9,11 @@
 // C/C++ header
 #include <iostream>
 
-// Athena++ header
-#include <mesh/mesh.hpp>
-#include <hydro/hydro.hpp>
+#include <athena/mesh/mesh.hpp>
+#include <athena/hydro/hydro.hpp>
 
-// harp2 headers
 #include <configure.hpp>
-#include "../debugger/debugger.hpp"
+#include <debugger/debugger.hpp>
 #include "gaussian_process.hpp"
 #include "profile_inversion.hpp"
 
@@ -27,8 +25,8 @@ Real ProfileInversion::LogPriorProbability(Real **XpSample) const
   std::vector<Real> zlev(nsample);
   std::vector<Real> zstd(nsample);
 
-  Real P0 = Constants::ReferencePressure;
-  Real H0 = Constants::PressureScaleHeight;
+  Real P0 = reference_pressure_;
+  Real H0 = pressure_scale_height_;
 
   for (int i = 0; i < nsample; ++i)
     zlev[i] = -H0*log(plevel_[i]/P0);

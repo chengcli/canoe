@@ -36,8 +36,20 @@ public:
     return idx_.size() + 1;
   }
 
+  Real getReferencePressure() const
+  {
+    return reference_pressure_;
+  }
+
+  Real getPressureScaleHeight() const
+  {
+    return pressure_scale_height_;
+  }
+
 protected:
   // pressure levels
+    Real                reference_pressure_;
+    Real                pressure_scale_height_;
 	std::vector<Real>   plevel_;
 
   // inversion variable id
