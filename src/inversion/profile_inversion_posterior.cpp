@@ -16,10 +16,10 @@
 //#include <hydro/hydro.hpp>
 
 // harp2 header
-#include "../radiation/radiation.hpp"
-#include "../debugger/debugger.hpp"
-#include "../utils/ndarrays.hpp"
-#include "../mesh/block_index.hpp"
+#include <harp/radiation.hpp>
+#include <debugger/debugger.hpp>
+#include <utils/ndarrays.hpp>
+#include <snap/mesh/block_index.hpp>
 #include "profile_inversion.hpp"
 
 extern std::unique_ptr<Debugger> pdebug;
@@ -38,8 +38,8 @@ Real ProfileInversion::LogPosteriorProbability(Radiation *prad, Hydro *phydro,
   pdebug->Message("I am walker", k - ks);
 
 	Real **XpSample;
-	NewCArray(XpSample, 1+NumVapors, plevel_.size());
-  std::fill(*XpSample, *XpSample + (1+NumVapors)*plevel_.size(), 0.);
+	NewCArray(XpSample, 1+NVAPOR, plevel_.size());
+  std::fill(*XpSample, *XpSample + (1+NVAPOR)*plevel_.size(), 0.);
 
   // sample temperature, sample composition #1, sample composition #2, ...
   pdebug->Message("parameters", par, ndim);

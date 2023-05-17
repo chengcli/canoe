@@ -68,6 +68,12 @@ ProfileInversion::ProfileInversion(MeshBlock *pmb, ParameterInput *pin, std::str
   // power law coefficient
   chi_ = pin->GetOrAddReal("inversion", name + ".chi", 0.0);
 
+  // reference pressure
+  reference_pressure_ = pin->GetReal("inversion", name + "PrRef");
+
+    // pressure scale height
+  pressure_scale_height_ = pin->GetReal("inversion", name + "PrScaleHeight");
+
   // Pressure sample
   plevel_ = Vectorize<Real>(pin->GetString("inversion", name + ".PrSample").c_str());
   int ndim = idx_.size()*plevel_.size();
@@ -122,14 +128,13 @@ void ProfileInversion::InitializePositions()
 
   srand(time(NULL) + Globals::my_rank);
   NewCArray(init_pos_, nwalker, ndim);
-  Real reference_pressure = Constants::ReferencePressure;
 
   for (int n = 0; n < nwalker; ++n) {
     int ip = 0;
     for (auto m : idx_) {
       for (int i = 0; i < nsample; ++i)
         init_pos_[n][ip*nsample + i] = (1.*rand()/RAND_MAX - 0.5)*Xstd_[m]
-          *pow(reference_pressure/plevel_[i+1], chi_);
+          *pow(reference_pressure_/plevel_[i+1], chi_);
       ip++;
     }
   }
@@ -216,8 +221,8 @@ void ProfileInversion::UpdateProfiles(Hydro *phydro,
   int nsample = plevel_.size();
   
   std::vector<Real> zlev(nsample);
-  Real P0 = Constants::ReferencePressure;
-  Real H0 = Constants::PressureScaleHeight;
+  Real P0 = reference_pressure_;
+  Real H0 = pressure_scale_height_;
 
   for (int i = 0; i < nsample; ++i) {
     zlev[i] = -H0*log(plevel_[i]/P0);
