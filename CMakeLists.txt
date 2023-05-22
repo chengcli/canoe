@@ -28,19 +28,15 @@ message(STATUS "Include ${CMAKE_SOURCE_DIR}/cmake/setup_compiler_flags.cmake")
 include(${CMAKE_SOURCE_DIR}/cmake/setup_compiler_flags.cmake)
 
 ## 2. set up project specific configuration ##
-macro(SET_IF_EMPTY _variable)
-    if("${${_variable}}" STREQUAL "")
-        set(${_variable} ${ARGN})
-    endiF()
-endmacro()
-
-SET_IF_EMPTY(NCLOUDS 0)
+message(STATUS "2. Set up project parameters ...")
+message(STATUS "Include ${CMAKE_CURRENT_SOURCE_DIR}/cmake/setup_parameters.cmake")
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/setup_parameters.cmake)
 
 ## 3. set up project system libraries ##
 message(STATUS "3. Set up system libraries")
-message(STATUS "Include ${CMAKE_SOURCE_DIR}/cmake/setup_athena.cmake")
+message(STATUS "Include ${CMAKE_SOURCE_DIR}/cmake/athena.cmake")
 include(${CMAKE_SOURCE_DIR}/cmake/eigen.cmake)
-include(${CMAKE_SOURCE_DIR}/cmake/setup_athena.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/athena.cmake)
 
 ## 4. set up project configure file and library ##
 message(STATUS "4. Set up project libraries")
