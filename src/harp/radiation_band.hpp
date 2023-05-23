@@ -57,7 +57,7 @@ class RadiationBand {
 
   int test(uint64_t flag) const { return bflags_ & flag; }
 
-  void set(uint64_t flag) { bflags_ | flag; }
+  void set(uint64_t flag) { bflags_ |= flag; }
 
   RadiationBand *use(Thermodynamics const *p) {
     pthermo_ = p;

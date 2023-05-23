@@ -13,7 +13,7 @@
 
 #include "profile_inversion.hpp"
 
-void new_inversion_queue(vector<Inversion *> &fitq, MeshBlock *pmb,
+void new_inversion_queue(std::vector<Inversion *> &fitq, MeshBlock *pmb,
                          ParameterInput *pin) {
   std::string str = pin->GetOrAddString("inversion", "tasks", "");
   std::vector<std::string> task_names =

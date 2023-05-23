@@ -1,9 +1,8 @@
 #ifndef CELESTRIAL_BODY_HPP
 #define CELESTRIAL_BODY_HPP
 
-// C/C++ headers
+#include <athena/athena.hpp>
 #include <string>
-// #include <athena.hpp>
 
 class ParameterInput;
 struct float_triplet;

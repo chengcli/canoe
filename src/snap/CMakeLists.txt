@@ -1,0 +1,48 @@
+# Installs snap library
+#
+#   library: libsnap_debug.o
+#   library: libsnap_release.o
+#
+# Define the following variables
+#
+#   SNAP_INCLUDE_DIR
+#   SNAP_LIBRARY_DEBUG
+#   SNAP_LIBRARY_RELEASE
+#
+# Normal usage would be:
+#
+#   include_directories( ${SNAP_INCLUDE_DIR})
+#   target_link_libraries( ${SNAP_LIBRARY_DEBUG})
+
+set(namel snap)
+string(TOUPPER ${namel} nameu)
+
+file(GLOB src_files
+    eos/*.cpp
+    )
+
+string(TOLOWER ${CMAKE_BUILD_TYPE} buildl)
+string(TOUPPER ${CMAKE_BUILD_TYPE} buildu)
+
+add_library(${namel}_${buildl}
+	STATIC
+    ${src_files}
+    )
+
+set_target_properties(${namel}_${buildl}
+    PROPERTIES
+    COMPILE_FLAGS ${CMAKE_CXX_FLAGS_${buildu}}
+    )
+
+target_include_directories(${namel}_${buildl}
+	PRIVATE
+    ${ATHENAPP_INCLUDE_DIR}
+    ${MODULES_INCLUDE_DIR}
+    ${EIGEN_INCLUDE_DIR}
+	${CMAKE_BINARY_DIR}
+	)
+
+set(${nameu}_LIBRARY_${buildu} ${nameu}_${buildl}
+    CACHE STRING
+    "${namel} library ${buildl}")
+mark_as_advanced(${nameu}_LIBRARY_${buildu})

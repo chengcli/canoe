@@ -2,11 +2,10 @@
 #define ABSORBER_HPP_
 
 // C++ headers
+#include <athena/athena.hpp>
+#include <configure.hpp>
 #include <string>
 #include <vector>
-
-// harp2 headers
-#include <configure.hpp>
 
 /**@file
  * @brief This file contains declaration of Absorber
