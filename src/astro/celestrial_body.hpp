@@ -3,28 +3,28 @@
 
 // C/C++ headers
 #include <string>
-//#include <athena.hpp>
+// #include <athena.hpp>
 
 class ParameterInput;
 struct float_triplet;
 
 class CelestrialBody {
-public:
-// data
+ public:
+  // data
   CelestrialBody *parent;
   std::string name;
-  Real re;        // equatorial radius [km -> m]
-  Real rp;        // polar radius [km -> m]
-  Real obliq;     // obliquity [deg -> rad]
-  Real spinp;     // spin period [day -> s]
-  Real orbit_a;   // orbital semi-major axis [au -> m]
-  Real orbit_e;   // orbital eccentricity [1]
-  Real orbit_i;   // orbital inclination to ecliptic [deg -> rad]
-  Real orbit_p;   // orbital period [day -> s]
-  Real equinox;   // vernal equinox
-  Real grav_eq;   // equatorial gravity at surface [m/s^2]
+  Real re;       // equatorial radius [km -> m]
+  Real rp;       // polar radius [km -> m]
+  Real obliq;    // obliquity [deg -> rad]
+  Real spinp;    // spin period [day -> s]
+  Real orbit_a;  // orbital semi-major axis [au -> m]
+  Real orbit_e;  // orbital eccentricity [1]
+  Real orbit_i;  // orbital inclination to ecliptic [deg -> rad]
+  Real orbit_p;  // orbital period [day -> s]
+  Real equinox;  // vernal equinox
+  Real grav_eq;  // equatorial gravity at surface [m/s^2]
 
-// functions
+  // functions
   CelestrialBody(ParameterInput *pin);
   CelestrialBody(ParameterInput *pin, std::string myname);
   ~CelestrialBody();
@@ -35,10 +35,10 @@ public:
   Real ParentInsolationFlux(Real wlo, Real whi, Real dist_au);
   Real ParentDistanceInAu(Real time);
 
-protected:
+ protected:
   void ReadCelestrialData_(ParameterInput *pin, std::string myname);
 
-// emission spectra data
+  // emission spectra data
   float_triplet *spec_;
   int nspec_;
   int il_;  // search pointer

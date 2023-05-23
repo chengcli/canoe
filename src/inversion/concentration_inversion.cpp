@@ -1,37 +1,37 @@
 // C/C++ headers
-#include <memory>
-
+#include <athena/hydro/hydro.hpp>
 #include <athena/mesh/mesh.hpp>
 #include <athena/parameter_input.hpp>
-#include <athena/hydro/hydro.hpp>
-
 #include <debugger/debugger.hpp>
-#include <utils/vectorize.hpp>
+#include <memory>
 #include <utils/ndarrays.hpp>
-//#include "../mesh/block_index.hpp"
+#include <utils/vectorize.hpp>
+// #include "../mesh/block_index.hpp"
 #include "concentration_inversion.hpp"
 
 extern std::unique_ptr<Debugger> pdebug;
-ConcentrationInversion::~ConcentrationInversion()
-{}
+ConcentrationInversion::~ConcentrationInversion() {}
 
-ConcentrationInversion::ConcentrationInversion(MeshBlock *pmb, ParameterInput *pin,
-  std::string name):
-  Inversion(pmb, pin, name)
-{
+ConcentrationInversion::ConcentrationInversion(MeshBlock *pmb,
+                                               ParameterInput *pin,
+                                               std::string name)
+    : Inversion(pmb, pin, name) {
   pdebug->Enter("ConcentrationInversion");
   char buf[80];
 
   // species id
-  idx_ = Vectorize<int>(pin->GetString("inversion", name + ".variables").c_str());
+  idx_ =
+      Vectorize<int>(pin->GetString("inversion", name + ".variables").c_str());
 
   // read in prior
   for (auto m : idx_) {
-    if (m == IDN) { // change temperature
+    if (m == IDN) {  // change temperature
       Xstd_[IDN] = pin->GetReal("inversion", name + ".tem.std");
       pdebug->Message(name + "::temperature std", Xstd_[IDN]);
     } else {
-      Xstd_[m] = pin->GetReal("inversion", name + ".qvapor" + std::to_string(m) + ".std.gkg")/1.E3;
+      Xstd_[m] = pin->GetReal("inversion", name + ".qvapor" +
+                                               std::to_string(m) + ".std.gkg") /
+                 1.E3;
       snprintf(buf, 80, "%s::vapor %d standard deviation", name.c_str(), m);
       pdebug->Message(buf, Xstd_[m]);
     }
@@ -58,8 +58,7 @@ ConcentrationInversion::ConcentrationInversion(MeshBlock *pmb, ParameterInput *p
   pdebug->Leave();
 }
 
-void ConcentrationInversion::InitializePositions()
-{
+void ConcentrationInversion::InitializePositions() {
   int nwalker = getWalkers();
   int ndim = getDims();
 
@@ -72,17 +71,16 @@ void ConcentrationInversion::InitializePositions()
   for (int p = 0; p < nwalker; ++p) {
     for (size_t n = 0; n < idx_.size(); ++n) {
       int m = idx_[n];
-      init_pos_[p][n] = (1.*rand()/RAND_MAX - 0.5)*Xstd_[m];
+      init_pos_[p][n] = (1. * rand() / RAND_MAX - 0.5) * Xstd_[m];
     }
   }
 }
 
-void ConcentrationInversion::UpdateConcentration(Hydro *phydro,
-  Real *Xp, int k, int jl, int ju) const
-{
+void ConcentrationInversion::UpdateConcentration(Hydro *phydro, Real *Xp, int k,
+                                                 int jl, int ju) const {
   pdebug->Call("UpdateConcentration");
 
-  //int is = pblock_->is, ie = pblock_->ie;
+  // int is = pblock_->is, ie = pblock_->ie;
 
   pdebug->Leave();
 }

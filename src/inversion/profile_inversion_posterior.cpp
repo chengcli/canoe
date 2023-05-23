@@ -8,26 +8,27 @@
 
 // C/C++ header
 #include <iostream>
-#include <sstream>
 #include <memory>
+#include <sstream>
 
 // Athena++ header
-//#include <mesh/mesh.hpp>
-//#include <hydro/hydro.hpp>
+// #include <mesh/mesh.hpp>
+// #include <hydro/hydro.hpp>
 
 // harp2 header
-#include <harp/radiation.hpp>
 #include <debugger/debugger.hpp>
-#include <utils/ndarrays.hpp>
+#include <harp/radiation.hpp>
 #include <snap/mesh/block_index.hpp>
+#include <utils/ndarrays.hpp>
+
 #include "profile_inversion.hpp"
 
 extern std::unique_ptr<Debugger> pdebug;
 
 Real ProfileInversion::LogPosteriorProbability(Radiation *prad, Hydro *phydro,
-  Real const *par, Real *val, int k) const
-{
-  int is = pblock_->is, ie = pblock_->ie; 
+                                               Real const *par, Real *val,
+                                               int k) const {
+  int is = pblock_->is, ie = pblock_->ie;
   int ks = pblock_->ks;
 
   int ndim = getDims();
@@ -37,19 +38,19 @@ Real ProfileInversion::LogPosteriorProbability(Radiation *prad, Hydro *phydro,
   pdebug->Call("LogPosteriorProbability");
   pdebug->Message("I am walker", k - ks);
 
-	Real **XpSample;
-	NewCArray(XpSample, 1+NVAPOR, plevel_.size());
-  std::fill(*XpSample, *XpSample + (1+NVAPOR)*plevel_.size(), 0.);
+  Real **XpSample;
+  NewCArray(XpSample, 1 + NVAPOR, plevel_.size());
+  std::fill(*XpSample, *XpSample + (1 + NVAPOR) * plevel_.size(), 0.);
 
   // sample temperature, sample composition #1, sample composition #2, ...
   pdebug->Message("parameters", par, ndim);
 
   int ip = 0;
   for (auto m : idx_) {
-		XpSample[m][0] = 0.;
-		for (int i = 1; i <= plevel_.size() - 2; ++i)
-			XpSample[m][i] = par[ip*(plevel_.size()-2)+i-1];
-		XpSample[m][plevel_.size() - 1] = 0.;
+    XpSample[m][0] = 0.;
+    for (int i = 1; i <= plevel_.size() - 2; ++i)
+      XpSample[m][i] = par[ip * (plevel_.size() - 2) + i - 1];
+    XpSample[m][plevel_.size() - 1] = 0.;
     ip++;
   }
 
@@ -59,7 +60,7 @@ Real ProfileInversion::LogPosteriorProbability(Radiation *prad, Hydro *phydro,
   // calculate radiation for updated profiles located at j = jl_ ... ju_
   for (int j = jl_; j <= ju_; ++j) {
     pdebug->Message("run RT for model", j);
-    prad->calculateRadiance(prad->radiance, 0., k, j, is, ie+1);
+    prad->calculateRadiance(prad->radiance, 0., k, j, is, ie + 1);
   }
 
   // prior probability
@@ -73,18 +74,16 @@ Real ProfileInversion::LogPosteriorProbability(Radiation *prad, Hydro *phydro,
 
   Real lnpost = 0.;
   if (target_.size() > 0) {
-    for (int m = 0; m < nvalue; ++m)
-      misfit(m) = val[m] - target_(m);
-    lnpost = -0.5*misfit.transpose()*icov_*misfit;
+    for (int m = 0; m < nvalue; ++m) misfit(m) = val[m] - target_(m);
+    lnpost = -0.5 * misfit.transpose() * icov_ * misfit;
   }
 
   // posterior probability
-  //Real lnprior = 0., lnpost = 0.;
+  // Real lnprior = 0., lnpost = 0.;
   pdebug->Message("log posterir probability", lnpost);
   pdebug->Leave();
 
-	FreeCArray(XpSample);
+  FreeCArray(XpSample);
 
   return lnprior + lnpost;
 }
-

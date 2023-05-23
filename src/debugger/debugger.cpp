@@ -1,18 +1,19 @@
 // C/C++ headers
-#include <iomanip>
-#include <cstring>
-#include <sstream>
 #include <algorithm>
+#include <cstring>
+#include <iomanip>
 #include <memory>
+#include <sstream>
 
 // debugger headers
 #include <configure.hpp>
+
 #include "debugger.hpp"
-//#include "../particles/material_point.hpp"
+// #include "../particles/material_point.hpp"
 
 // MPI
 #ifdef MPI_PARALLEL
-  #include <mpi.h>
+#include <mpi.h>
 #endif
 
 std::string const Debugger::cgreen = "\033[0;32m";
@@ -21,16 +22,17 @@ std::string const Debugger::cend = "\033[0m";
 // global debugger
 std::unique_ptr<Debugger> pdebug;
 
-Debugger::Debugger(int depth):
-  prev(nullptr), next(nullptr), fname_("HEAD"),
-  depth_(depth), current_depth_(0)
-{
-  //data_.NewAthenaArray(2*NHYDRO, pmb->ncells3, pmb->ncells2, pmb->ncells1);
+Debugger::Debugger(int depth)
+    : prev(nullptr),
+      next(nullptr),
+      fname_("HEAD"),
+      depth_(depth),
+      current_depth_(0) {
+  // data_.NewAthenaArray(2*NHYDRO, pmb->ncells3, pmb->ncells2, pmb->ncells1);
   idstack_next_.push_back("1.");
 }
 
-Debugger::~Debugger()
-{
+Debugger::~Debugger() {
   if (prev != nullptr) prev->next = next;
   if (next != nullptr) next->prev = prev;
 }
@@ -39,7 +41,7 @@ Debugger::~Debugger()
 {
   Debugger *my = this;
   while (my->next != nullptr) my = my->next;
-  my->next = new Debugger(pmy_block); 
+  my->next = new Debugger(pmy_block);
   my->next->fname_ = name;
   my->next->prev = my;
   my->next->next = nullptr;
@@ -47,7 +49,8 @@ Debugger::~Debugger()
   return my->next;
 }
 
-void Debugger::Track3D(std::string name, TestFunc_t test, AthenaArray<Real>& var, int n)
+void Debugger::Track3D(std::string name, TestFunc_t test, AthenaArray<Real>&
+var, int n)
 {
   std::stringstream ss;
   bool pass = true;
@@ -69,7 +72,7 @@ void Debugger::Track3D(std::string name, TestFunc_t test, AthenaArray<Real>& var
 
   if (vnames_.size() >= 2*NHYDRO) {
     ss << "### FATAL ERROR in function [Debugger::Track3D]"
-       << std::endl << "Maximum number (" 
+       << std::endl << "Maximum number ("
        << 2*NHYDRO << ") of trakcers reached." << std::endl;
     ATHENA_ERROR(ss);
   }
@@ -78,7 +81,8 @@ void Debugger::Track3D(std::string name, TestFunc_t test, AthenaArray<Real>& var
     for (int j = js; j <= je; ++j)
       for (int i = is; i <= ie; ++i) {
         data_(vnames_.size() - 1,k,j,i) = var(n,k,j,i);
-        bool inside = (i >= pmb->is) && (i <= pmb->ie) && (j >= pmb->js) && (j <= pmb->je)
+        bool inside = (i >= pmb->is) && (i <= pmb->ie) && (j >= pmb->js) && (j
+<= pmb->je)
                    && (k >= pmb->ks) && (k <= pmb->ke);
         if (!test(var(n,k,j,i)) && pass && inside) {
           pass = false;
@@ -93,14 +97,15 @@ void Debugger::Track3D(std::string name, TestFunc_t test, AthenaArray<Real>& var
     ss << "### FATAL ERROR in function [Debugger::Track3D]"
         << std::endl << "Invalid \033[0;32m" << name << "\033[0m at "
         << "(k=" << c3 << ", " << "j=" << c2 << ", " << "i=" << c1 << ") "
-        << "on rank \033[0;32m" << Globals::my_rank << "\033[0m called from function \033[0;32m"
+        << "on rank \033[0;32m" << Globals::my_rank << "\033[0m called from
+function \033[0;32m"
         << fname_ << "\033[0m" << std::endl;
     ATHENA_ERROR(ss);
   }
 }
 
-void Debugger::Track1D(std::string name, TestFunc_t test, AthenaArray<Real>& var, 
-  int n, int k, int j)
+void Debugger::Track1D(std::string name, TestFunc_t test, AthenaArray<Real>&
+var, int n, int k, int j)
 {
   std::stringstream ss;
   bool pass = true;
@@ -109,14 +114,13 @@ void Debugger::Track1D(std::string name, TestFunc_t test, AthenaArray<Real>& var
   int is = pmb->is - NGHOST, ie = pmb->ie + NGHOST;
   int c1, c2, c3;
 
-  std::vector<std::string>::iterator it = std::find(vnames_.begin(), vnames_.end(), name);
-  if (it == vnames_.end())
-    vnames_.push_back(name);
-  int m = std::find(vnames_.begin(), vnames_.end(), name) - vnames_.begin();
+  std::vector<std::string>::iterator it = std::find(vnames_.begin(),
+vnames_.end(), name); if (it == vnames_.end()) vnames_.push_back(name); int m =
+std::find(vnames_.begin(), vnames_.end(), name) - vnames_.begin();
 
   if (m >= 2*NHYDRO) {
     ss << "### FATAL ERROR in function [Debugger::Track1D]"
-        << std::endl << "Maximum number (" 
+        << std::endl << "Maximum number ("
         << 2*NHYDRO << ") of trakcers reached." << std::endl;
     ATHENA_ERROR(ss);
   }
@@ -137,13 +141,15 @@ void Debugger::Track1D(std::string name, TestFunc_t test, AthenaArray<Real>& var
     ss << "### FATAL ERROR in function [Debugger::Track1D]"
         << std::endl << "Invalid \033[0;32m" << name << "\033[0m at "
         << "(k=" << c3 << ", " << "j=" << c2 << ", " << "i=" << c1 << ") "
-        << "on rank \033[0;32m" << Globals::my_rank << "\033[0m called from function \033[0;32m"
+        << "on rank \033[0;32m" << Globals::my_rank << "\033[0m called from
+function \033[0;32m"
         << fname_ << "\033[0m" << std::endl;
     ATHENA_ERROR(ss);
   }
 }
 
-void Debugger::DumpTracking(std::string name, int c1, int c2, int c3, char const* mode)
+void Debugger::DumpTracking(std::string name, int c1, int c2, int c3, char
+const* mode)
 {
   MeshBlock *pmb = pmy_block;
   Coordinates *pcoord = pmb->pcoord;
@@ -171,7 +177,7 @@ void Debugger::DumpTracking(std::string name, int c1, int c2, int c3, char const
     out.append(".");
     out.append(blockid);
     out.append(".txt");
-    
+
     FILE *pfile;
     std::stringstream ss;
     if ((pfile = std::fopen(out.c_str(), mode)) == nullptr) {
@@ -184,12 +190,12 @@ void Debugger::DumpTracking(std::string name, int c1, int c2, int c3, char const
     // file header
     std::fprintf(pfile, "# Debugger dump at time = %e\n", pmb->pmy_mesh->time);
     std::fprintf(pfile, "# Variable = %s\n", vnames_[n].c_str());
-    std::fprintf(pfile, "# Subdomain extent = [%.3g, %.3g] x [%.3g, %.3g] x [%.3g, %.3g]\n",
-      pcoord->x1f(pmb->is), pcoord->x1f(pmb->ie+1),
+    std::fprintf(pfile, "# Subdomain extent = [%.3g, %.3g] x [%.3g, %.3g] x
+[%.3g, %.3g]\n", pcoord->x1f(pmb->is), pcoord->x1f(pmb->ie+1),
       pcoord->x2f(pmb->js), pcoord->x2f(pmb->je+1),
       pcoord->x3f(pmb->ks), pcoord->x3f(pmb->ke+1));
-    std::fprintf(pfile, "# Break at (k=%d, j=%d, i=%d) of variable %s\n", c3, c2, c1,
-      name.c_str());
+    std::fprintf(pfile, "# Break at (k=%d, j=%d, i=%d) of variable %s\n", c3,
+c2, c1, name.c_str());
 
     // data table
     std::fprintf(pfile, "# Currently at [%s]\n", fname_.c_str());
@@ -212,7 +218,7 @@ void Debugger::DumpTracking(std::string name, int c1, int c2, int c3, char const
     fclose(pfile);
   }
 
-  if (prev != nullptr) 
+  if (prev != nullptr)
     prev->DumpTracking(name, c1, c2, c3, "a");
 }*/
 
@@ -221,7 +227,8 @@ void Debugger::Enter(std::string name, std::string heil) {
   std::string id = idstack_next_.back();
 
   if (Globals::my_rank == 0 && current_depth_ < depth_) {
-    std::cout << msg.str() << id << " " << heil << " " << name << " ..." << std::endl;
+    std::cout << msg.str() << id << " " << heil << " " << name << " ..."
+              << std::endl;
   }
 
   idstack_next_.push_back(id + "1.");
@@ -246,9 +253,8 @@ void Debugger::Leave() {
   msg.str("");
 }
 
-/*void Debugger::CheckConservation(std::string name, AthenaArray<Real> const& var,
-    int is, int ie, int js, int je, int ks, int ke) {
-  int nvar = var.GetDim4();
+/*void Debugger::CheckConservation(std::string name, AthenaArray<Real> const&
+var, int is, int ie, int js, int je, int ks, int ke) { int nvar = var.GetDim4();
   Real *sum = new Real [nvar];
   std::fill(sum, sum + nvar, 0.);
 
@@ -260,9 +266,9 @@ void Debugger::Leave() {
 
 #ifdef MPI_PARALLEL
   if (Globals::my_rank == 0) {
-    MPI_Reduce(MPI_IN_PLACE, sum, nvar, MPI_ATHENA_REAL, MPI_SUM, 0, MPI_COMM_WORLD);
-  } else {
-    MPI_Reduce(sum, sum, nvar, MPI_ATHENA_REAL, MPI_SUM, 0, MPI_COMM_WORLD);
+    MPI_Reduce(MPI_IN_PLACE, sum, nvar, MPI_ATHENA_REAL, MPI_SUM, 0,
+MPI_COMM_WORLD); } else { MPI_Reduce(sum, sum, nvar, MPI_ATHENA_REAL, MPI_SUM,
+0, MPI_COMM_WORLD);
   }
 #endif
 
@@ -277,8 +283,8 @@ void Debugger::Leave() {
   delete[] sum;
 }*/
 
-/*void Debugger::CheckParticleConservation(std::vector<std::string> const& cnames,
-    std::vector<MaterialPoint> const& mp)
+/*void Debugger::CheckParticleConservation(std::vector<std::string> const&
+cnames, std::vector<MaterialPoint> const& mp)
 {
   Real *sum = new Real [cnames.size()];
   int *num = new int [cnames.size()];
@@ -286,26 +292,26 @@ void Debugger::Leave() {
   std::fill(sum, sum + cnames.size(), 0.);
   std::fill(num, num + cnames.size(), 0);
 
-  for (std::vector<MaterialPoint>::const_iterator q = mp.begin(); q != mp.end(); ++q) {
-    sum[q->type] += q->rho;
-    num[q->type] += 1;
+  for (std::vector<MaterialPoint>::const_iterator q = mp.begin(); q != mp.end();
+++q) { sum[q->type] += q->rho; num[q->type] += 1;
   }
 
 #ifdef MPI_PARALLEL
   if (Globals::my_rank == 0) {
-    MPI_Reduce(MPI_IN_PLACE, sum, cnames.size(), MPI_ATHENA_REAL, MPI_SUM, 0, MPI_COMM_WORLD);
-    MPI_Reduce(MPI_IN_PLACE, num, cnames.size(), MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
-  } else {
-    MPI_Reduce(sum, sum, cnames.size(), MPI_ATHENA_REAL, MPI_SUM, 0, MPI_COMM_WORLD);
-    MPI_Reduce(num, num, cnames.size(), MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+    MPI_Reduce(MPI_IN_PLACE, sum, cnames.size(), MPI_ATHENA_REAL, MPI_SUM, 0,
+MPI_COMM_WORLD); MPI_Reduce(MPI_IN_PLACE, num, cnames.size(), MPI_INT, MPI_SUM,
+0, MPI_COMM_WORLD); } else { MPI_Reduce(sum, sum, cnames.size(),
+MPI_ATHENA_REAL, MPI_SUM, 0, MPI_COMM_WORLD); MPI_Reduce(num, num,
+cnames.size(), MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
   }
 #endif
 
   if (Globals::my_rank == 0) {
     //for (int i = 0; i < cnames.size(); ++i)
-    //  msg << cgreen << ">> Total " << cnames[i] << " = " << sum[i] << ", num = " << num[i] << cend << std::endl;
-    for (int i = 0; i < cnames.size(); ++i)
-      msg << "\t>> Total " << cnames[i] << " = " << sum[i] << ", num = " << num[i] << std::endl;
+    //  msg << cgreen << ">> Total " << cnames[i] << " = " << sum[i] << ", num =
+" << num[i] << cend << std::endl; for (int i = 0; i < cnames.size(); ++i) msg <<
+"\t>> Total " << cnames[i] << " = " << sum[i] << ", num = " << num[i] <<
+std::endl;
   }
 
   delete[] sum;
@@ -317,33 +323,33 @@ Debugger *Debugger::Message(std::string str) {
   return this;
 }
 
-void Debugger::Fatal(std::string where, std::string what){
+void Debugger::Fatal(std::string where, std::string what) {
   std::cout << "### FATAL ERROR in " << where << std::endl;
 #ifdef MPI_PARALLEL
-    MPI_Finalize();
+  MPI_Finalize();
 #endif
   throw std::runtime_error(what.c_str());
 }
 
-void Debugger::Fatal(std::string where, std::string str, std::string what){
+void Debugger::Fatal(std::string where, std::string str, std::string what) {
   std::cout << "### FATAL ERROR in " << where << " " << str << std::endl;
 #ifdef MPI_PARALLEL
-    MPI_Finalize();
+  MPI_Finalize();
 #endif
   throw std::runtime_error(what.c_str());
 }
 
 void Debugger::Print(std::string str) {
-  if (Globals::my_rank == 0)  {
+  if (Globals::my_rank == 0) {
     std::cout << str << std::endl;
   }
 }
 
 void increment_id(std::string &str) {
   int len = str.size();
-  int x, i = len-1;
-  while ((i > 0) && (str[i-1] != '.')) i--;
-  x = std::stoi(str.substr(i, len-i-1));
+  int x, i = len - 1;
+  while ((i > 0) && (str[i - 1] != '.')) i--;
+  x = std::stoi(str.substr(i, len - i - 1));
   x += 1;
   str = str.substr(0, i) + std::to_string(x) + '.';
 }

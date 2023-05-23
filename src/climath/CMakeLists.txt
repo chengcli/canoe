@@ -35,6 +35,6 @@ set_target_properties(${namel}_${buildl}
     )
 
 set(${nameu}_LIBRARY_${buildu} ${nameu}_${buildl}
-    CACHE STRING 
+    CACHE STRING
     "${namel} library ${buildl}")
 mark_as_advanced(${nameu}_LIBRARY_${buildu})

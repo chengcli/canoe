@@ -7,27 +7,24 @@
  */
 
 // C/C++ headers
-#include <iostream>
-#include <iomanip>
+#include <climath/interpolation.h>
+#include <climath/linalg.h>
 
 #include <athena/athena.hpp>
 #include <athena/mesh/mesh.hpp>
-
-#include <climath/linalg.h>
-#include <climath/interpolation.h>
-
-#include <snap/mesh/block_index.hpp>
+#include <debugger/debugger.hpp>
 #include <harp/radiation.hpp>
 #include <harp/radiation_band.hpp>
-#include <debugger/debugger.hpp>
-//#include <snap/mesh/block_index.hpp>
+#include <iomanip>
+#include <iostream>
+#include <snap/mesh/block_index.hpp>
+// #include <snap/mesh/block_index.hpp>
 #include "profile_inversion.hpp"
 
 extern std::unique_ptr<Debugger> pdebug;
 
-void JunoProfileInversion::CalculateFitTarget(Radiation const *prad,
-  Real *val, int nvalue, int k, int j) const
-{
+void JunoProfileInversion::CalculateFitTarget(Radiation const *prad, Real *val,
+                                              int nvalue, int k, int j) const {
   std::stringstream msg;
   pdebug->Call("JunoProfileInversion::CalculateFitTarget");
   pdebug->Message("model", j);
@@ -42,29 +39,27 @@ void JunoProfileInversion::CalculateFitTarget(Radiation const *prad,
     mus.resize(ndir);
     tbs.resize(ndir);
 
-    for (int n = 0; n < ndir; ++n)
-      mus[n] = p->getCosinePolarAngle(n);
+    for (int n = 0; n < ndir; ++n) mus[n] = p->getCosinePolarAngle(n);
 
     // brightness temperatures
-    val[b*2] = prad->radiance(bid,k,j);
+    val[b * 2] = prad->radiance(bid, k, j);
 
     // limb darkening
-    for (int n = 0; n < ndir; ++n)
-      tbs[n] = prad->radiance(bid + b,k,j);
-    
-    Real tb45 = interp1(cos(45./180.*M_PI), tbs.data(), mus.data(), ndir);
-    val[b*2+1] = (tbs[0] - tb45)/tbs[0]*100.;
+    for (int n = 0; n < ndir; ++n) tbs[n] = prad->radiance(bid + b, k, j);
+
+    Real tb45 = interp1(cos(45. / 180. * M_PI), tbs.data(), mus.data(), ndir);
+    val[b * 2 + 1] = (tbs[0] - tb45) / tbs[0] * 100.;
 
     if (fit_differential_) {
       // brightness temperatures
-      val[b*2] -= prad->radiance(bid,k,pblock_->js-1);
+      val[b * 2] -= prad->radiance(bid, k, pblock_->js - 1);
 
       // limb darkening
       for (int n = 0; n < ndir; ++n)
-        tbs[n] = prad->radiance(bid,k,pblock_->js-1);
+        tbs[n] = prad->radiance(bid, k, pblock_->js - 1);
 
-      tb45 = interp1(cos(45./180.*M_PI), tbs.data(), mus.data(), ndir);
-      val[b*2+1] -= (tbs[0] - tb45)/tbs[0]*100.;
+      tb45 = interp1(cos(45. / 180. * M_PI), tbs.data(), mus.data(), ndir);
+      val[b * 2 + 1] -= (tbs[0] - tb45) / tbs[0] * 100.;
     }
 
     bid += ndir;

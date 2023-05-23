@@ -3,7 +3,7 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif 
+#endif
 
 double gammp(double a, double x);
 double gammq(double a, double x);
@@ -12,4 +12,4 @@ double gammq(double a, double x);
 
 #ifdef __cplusplus
 } /* extern "C" */
-#endif 
+#endif

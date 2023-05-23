@@ -21,6 +21,4 @@ double jup_graphic2centric(double glat_deg);
 //! planetocentric latitude to planetographic latitude for Jupiter
 double jup_centric2graphic(double glat_deg);
 
-
 #endif /* end of include guard PLANETS_HPP */
-

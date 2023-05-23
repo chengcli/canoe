@@ -1,40 +1,34 @@
 // C/C++ header
-#include <cctype> // isspace
-#include <sstream>
+#include <cctype>  // isspace
 #include <cstring>
 #include <fstream>
+#include <sstream>
 #include <stdexcept>
 #include <vector>
 
 // harp header
-#include "vectorize.hpp"
 #include "fileio.hpp"
+#include "vectorize.hpp"
 
-bool FileExists(std::string fname)
-{
+bool FileExists(std::string fname) {
   std::ifstream ifile(fname.c_str());
   return ifile.is_open();
 }
 
-bool IsBlankLine(char const* line)
-{
-  for (char const* cp = line; *cp; ++cp ) {
-    if ( !std::isspace(*cp) ) return false;
+bool IsBlankLine(char const* line) {
+  for (char const* cp = line; *cp; ++cp) {
+    if (!std::isspace(*cp)) return false;
   }
-   return true;
+  return true;
 }
 
-bool IsBlankLine(std::string const& line)
-{
-  return IsBlankLine(line.c_str());
-}
+bool IsBlankLine(std::string const& line) { return IsBlankLine(line.c_str()); }
 
-
-std::string DecommentFile(std::string fname)
-{
+std::string DecommentFile(std::string fname) {
   std::stringstream msg;
   if (!FileExists(fname)) {
-    msg << "### FATAL ERROR in DecommentFile. File " << fname << " doesn't exist." << std::endl;
+    msg << "### FATAL ERROR in DecommentFile. File " << fname
+        << " doesn't exist." << std::endl;
     throw std::runtime_error(msg.str().c_str());
   }
 
@@ -52,8 +46,7 @@ std::string DecommentFile(std::string fname)
   return ss;
 }
 
-int GetNumCols(std::string fname, char c)
-{
+int GetNumCols(std::string fname, char c) {
   std::ifstream inp(fname.c_str(), std::ios::in);
   std::string line;
   std::getline(inp, line);
@@ -61,12 +54,11 @@ int GetNumCols(std::string fname, char c)
   int cols = line[0] == c ? 0 : 1;
 
   for (int i = 1; i < line.length(); ++i)
-    if (line[i-1] == c && line[i] != c) cols++;
+    if (line[i - 1] == c && line[i] != c) cols++;
   return cols;
 }
 
-int GetNumRows(std::string fname)
-{
+int GetNumRows(std::string fname) {
   std::ifstream inp(fname.c_str(), std::ios::in);
   std::string line;
   int rows = 0;
@@ -75,9 +67,8 @@ int GetNumRows(std::string fname)
   return rows;
 }
 
-template<>
-std::vector<std::string> Vectorize(const char* cstr, const char *delimiter)
-{
+template <>
+std::vector<std::string> Vectorize(const char* cstr, const char* delimiter) {
   std::vector<std::string> arr;
   char str[1028], *p;
   strcpy(str, cstr);
@@ -89,33 +80,31 @@ std::vector<std::string> Vectorize(const char* cstr, const char *delimiter)
   return arr;
 }
 
-void replaceChar(char* buf, char c_old, char c_new)
-{
+void replaceChar(char* buf, char c_old, char c_new) {
   int len = strlen(buf);
   for (int i = 0; i < len; ++i)
-    if (buf[i] == c_old)
-      buf[i] = c_new;
+    if (buf[i] == c_old) buf[i] = c_new;
 }
 
 char* StripLine(char* line) {
-  char *p = line;
+  char* p = line;
   int len = strlen(line);
   // strip newline or carriage rtn
-  while (len > 0 && (line[len-1] == '\n' || line[len-1] == '\r'))
-    line[--len] = 0; 
+  while (len > 0 && (line[len - 1] == '\n' || line[len - 1] == '\r'))
+    line[--len] = 0;
   // advance to first non-whitespace
   while (isspace(*p)) p++;
   // advance to first non-whitespace
   // skip characters aftet '#'
-  char *pp = p;
+  char* pp = p;
   while (*pp != '#' && *pp) pp++;
   *pp = 0;
   return p;
 }
 
-char* NextLine(char *line, int num, FILE *stream) {
-  char *p;
-  while(fgets(line, num, stream) != NULL) {
+char* NextLine(char* line, int num, FILE* stream) {
+  char* p;
+  while (fgets(line, num, stream) != NULL) {
     p = StripLine(line);
     if (strlen(p) > 0) break;
   }

@@ -2,21 +2,21 @@
 #define DEBUGGER_HPP
 
 // C/C++ headers
-#include <vector>
-#include <string>
-#include <sstream>
 #include <cmath>
 #include <memory>
+#include <sstream>
+#include <string>
+#include <vector>
 
 // Athena++ header
-//#include <athena.hpp>
-//#include <globals.hpp>
+// #include <athena.hpp>
+// #include <globals.hpp>
 
-//typedef int (*TestFunc_t)(Real);
+// typedef int (*TestFunc_t)(Real);
 
 // forward declaration
 namespace Globals {
-  extern int my_rank, nranks;
+extern int my_rank, nranks;
 }
 
 class MaterialPoint;
@@ -26,31 +26,31 @@ class MaterialPoint;
 //             = 2 : output conservation check
 //             = 3 : output detailed particle transfer and bounds check
 class Debugger {
-public:
-// data
+ public:
+  // data
   static std::string const cgreen;
   static std::string const cend;
 
   Debugger *prev, *next;
   std::stringstream msg;
 
-// functions
+  // functions
   Debugger(int depth = 0);
   ~Debugger();
 
   /*Debugger* StartTracking(std::string name);
 
-  void Track3D(std::string name, TestFunc_t test, AthenaArray<Real>& var, int n);
+  void Track3D(std::string name, TestFunc_t test, AthenaArray<Real>& var, int
+  n);
 
-  void Track1D(std::string name, TestFunc_t test, AthenaArray<Real>& var, int n, int k, int j);
-  void DumpTracking(std::string name, int c1, int c2, int c3, char const* mode);*/
-  //void Enter(char const *name);
+  void Track1D(std::string name, TestFunc_t test, AthenaArray<Real>& var, int n,
+  int k, int j); void DumpTracking(std::string name, int c1, int c2, int c3,
+  char const* mode);*/
+  // void Enter(char const *name);
   //
   void Enter(std::string name, std::string heil = "Initializing");
 
-  void Call(std::string name) {
-    Enter(name, "Calling");
-  }
+  void Call(std::string name) { Enter(name, "Calling"); }
 
   void Leave();
 
@@ -62,28 +62,28 @@ public:
 
   Debugger* Message(std::string str);
 
-  template<typename T>
+  template <typename T>
   Debugger* Message(std::string str, T const& a);
 
-  template<typename T>
+  template <typename T>
   Debugger* Message(std::string str, T* a, int n);
 
-  template<typename T>
-  Debugger* Message(std::string str, std::vector<T> &a);
+  template <typename T>
+  Debugger* Message(std::string str, std::vector<T>& a);
 
   static void Fatal(std::string where, std::string what);
   static void Fatal(std::string where, std::string str, std::string what);
 
   static void Print(std::string str);
 
-  template<typename T>
+  template <typename T>
   static void Print(std::string name, T const& value);
 
-protected:
-  int                     depth_, current_depth_;
-  std::string             fname_;
+ protected:
+  int depth_, current_depth_;
+  std::string fname_;
 
-  //AthenaArray<Real> data_;
+  // AthenaArray<Real> data_;
   std::vector<std::string> vnames_;
   std::vector<std::string> sections_;
   std::vector<std::string> idstack_next_;
@@ -94,7 +94,7 @@ extern std::unique_ptr<Debugger> pdebug;
 
 #include "debugger_impl.hpp"
 
-void increment_id(std::string &str);
+void increment_id(std::string& str);
 
 // small test functions
 template <typename T>

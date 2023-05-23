@@ -129,7 +129,7 @@ void NetcdfOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag)
     nc_def_dim(ifile, "x3", ncells3, &idx3);
     if (ncells3 > 1)
       nc_def_dim(ifile, "x3f", nfaces3, &idx3f);
-    
+
 #if ENABLE_HARP
     if (nrays > 0)
       nc_def_dim(ifile, "ray", nrays, &iray);

@@ -12,4 +12,3 @@
 [ 77%] No test step for 'athenapp-populate'
 [ 88%] Completed 'athenapp-populate'
 [100%] Built target athenapp-populate
-

@@ -2,7 +2,7 @@
 #include <math.h>
 
 /*
- * Derived from fcmp(), version 1.2.2, 
+ * Derived from fcmp(), version 1.2.2,
  * Copyright (c) 1998-2000 Theodore C. Belding
  * University of Michigan Center for the Study of Complex Systems
  * <mailto:Ted.Belding@umich.edu>
@@ -28,20 +28,16 @@
  * Returns:
  *   -1 if x1 < x2
  *    0 if x1 == x2
- *    1 if x1 > x2		
+ *    1 if x1 > x2
  */
 
 int fcmp(double x1, double x2) {
-  int 
-    exponent;
-  double
-    delta,
-    difference;
-  const double
-    epsilon = DBL_EPSILON;
-  
-  /* 
-   * Get exponent(max(fabs(x1),fabs(x2))) and store it in exponent. 
+  int exponent;
+  double delta, difference;
+  const double epsilon = DBL_EPSILON;
+
+  /*
+   * Get exponent(max(fabs(x1),fabs(x2))) and store it in exponent.
    *
    * If neither x1 nor x2 is 0,
    * this is equivalent to max(exponent(x1),exponent(x2)).
@@ -51,12 +47,12 @@ int fcmp(double x1, double x2) {
    * magnitude. But the exponent of 0 should be less than any number
    * whose magnitude is greater than 0.
    *
-   * So we only want to set exponent to 0 if both x1 and x2 are 0. 
-   * Hence, the following works for all x1 and x2. 
+   * So we only want to set exponent to 0 if both x1 and x2 are 0.
+   * Hence, the following works for all x1 and x2.
    */
-  frexp(fabs(x1) > fabs(x2) ? x1 : x2,&exponent);
+  frexp(fabs(x1) > fabs(x2) ? x1 : x2, &exponent);
 
-  /* 
+  /*
    * Do the comparison.
    *
    * delta = epsilon*pow(2,exponent)
@@ -66,19 +62,17 @@ int fcmp(double x1, double x2) {
    * Otherwise x1 > x2 or x1 < x2, depending on which side of
    * the neighborhood x1 is on.
    */
-  delta      = ldexp(epsilon,exponent); 
-  difference = x1-x2;
+  delta = ldexp(epsilon, exponent);
+  difference = x1 - x2;
 
   if (difference > delta) {
     /* x1 > x2 */
     return 1;
-  }
-  else if (difference < -delta) {
+  } else if (difference < -delta) {
     /* x1 < x2 */
     return -1;
-  }
-  else  {
+  } else {
     /* -delta <= difference <= delta */
-    return 0;  /* x1 == x2 */
+    return 0; /* x1 == x2 */
   }
 }

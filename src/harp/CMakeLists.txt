@@ -35,7 +35,7 @@ set_target_properties(${namel}_${buildl}
     )
 
 target_include_directories(${namel}_${buildl}
-	PRIVATE 
+	PRIVATE
     ${ATHENAPP_INCLUDE_DIR}
     ${MODULES_INCLUDE_DIR}
     ${EIGEN_INCLUDE_DIR}
@@ -43,6 +43,6 @@ target_include_directories(${namel}_${buildl}
 	)
 
 set(${nameu}_LIBRARY_${buildu} ${nameu}_${buildl}
-    CACHE STRING 
+    CACHE STRING
     "${namel} library ${buildl}")
 mark_as_advanced(${nameu}_LIBRARY_${buildu})

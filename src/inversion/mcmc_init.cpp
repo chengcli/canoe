@@ -1,22 +1,22 @@
 // C/C++ headers
-#include <cstdlib>
+#include <climath/core.h>
+
+#include <athena/hydro/hydro.hpp>
+#include <cassert>
 #include <cmath>
 #include <cstdio>
-#include <cassert>
+#include <cstdlib>
 #include <iostream>
-
-#include <climath/core.h>
-#include <athena/hydro/hydro.hpp>
 
 // harp2 headers
 #include <configure.hpp>
-#include <snap/mesh/block_index.hpp>
 #include <debugger/debugger.hpp>
+#include <snap/mesh/block_index.hpp>
+
 #include "inversion.hpp"
 #include "mcmc.hpp"
 
-void Inversion::MCMCInit(Radiation *prad, Hydro *phydro)
-{
+void Inversion::MCMCInit(Radiation *prad, Hydro *phydro) {
   int nwalker = recs_.nwalker;
   int ndim = recs_.ndim;
   int nval = recs_.nvalue;
@@ -30,14 +30,15 @@ void Inversion::MCMCInit(Radiation *prad, Hydro *phydro)
 
   // make sure that the start points are valid
   for (int k = 0; k < nwalker; ++k) {
-    recs_.lnp[0][k] = LogPosteriorProbability(prad, phydro, par[k], 
-      recs_.val[0][k], ks+k);
+    recs_.lnp[0][k] =
+        LogPosteriorProbability(prad, phydro, par[k], recs_.val[0][k], ks + k);
 
     int niter = 0;
-    while (std::isnan(recs_.lnp[0][k]) && (niter++ < 10)) {  // if point (k) is invalid
+    while (std::isnan(recs_.lnp[0][k]) &&
+           (niter++ < 10)) {  // if point (k) is invalid
       mcmc_stretch_move(par[k], par, k, nwalker, ndim, &opts_);
       recs_.lnp[0][k] = LogPosteriorProbability(prad, phydro, par[k],
-        recs_.val[0][k], ks+k);
+                                                recs_.val[0][k], ks + k);
     }
 
     if (niter >= 10) {
@@ -45,15 +46,12 @@ void Inversion::MCMCInit(Radiation *prad, Hydro *phydro)
     }
 
     // transfer input parameters to records
-    for (int d = 0; d < ndim; ++d)
-      recs_.par[0][k][d] = par[k][d];
+    for (int d = 0; d < ndim; ++d) recs_.par[0][k][d] = par[k][d];
 
     if (recs_.lnp[0][k] > recs_.opt_lnp) {
       recs_.opt_lnp = recs_.lnp[0][k];
-      for (int d = 0; d < ndim; ++d)
-        recs_.opt_par[d] = recs_.par[0][k][d];
-      for (int d = 0; d < nval; ++d)
-        recs_.opt_val[d] = recs_.val[0][k][d];
+      for (int d = 0; d < ndim; ++d) recs_.opt_par[d] = recs_.par[0][k][d];
+      for (int d = 0; d < nval; ++d) recs_.opt_val[d] = recs_.val[0][k][d];
     }
     recs_.newstate[0][k] = 1;
 
@@ -61,7 +59,7 @@ void Inversion::MCMCInit(Radiation *prad, Hydro *phydro)
     for (int n = 0; n < NHYDRO; ++n)
       for (int j = jl_; j <= ju_; ++j)
         for (int i = is; i <= ie; ++i) {
-          phydro->w1(n,ks+k,j,i) = phydro->w(n,ks+k,j,i);
+          phydro->w1(n, ks + k, j, i) = phydro->w(n, ks + k, j, i);
         }
   }
 
