@@ -5,7 +5,7 @@
 #include "../thermodynamics/thermodynamics.hpp"
 
 void VaporConcentrationLimiter(MeshBlock *pmb, AthenaArray<Real> &u) {
-  Thermodynamics *pthermo = pmb->piml->pthermo;
+  Thermodynamics *pthermo = pmb->pimpl->pthermo;
   if (NVAPOR == 0) return;
 
   int is = pmb->is;
