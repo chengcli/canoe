@@ -5,6 +5,11 @@ enum {
   NCLOUDS = @NCLOUDS@
 };
 
+enum {
+  AMMONIA_VAPOR_ID = @AMMONIA_VAPOR_ID@,
+  WATER_VAPOR_ID = @WATER_VAPOR_ID@
+};
+
 enum class VariableType {prim, cons, chem};
 
 #endif

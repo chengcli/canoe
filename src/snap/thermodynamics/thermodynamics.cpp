@@ -7,10 +7,10 @@
 #include <vector>  // fill
 
 // athena header
-#include "../hydro/hydro.hpp"
-#include "../mesh/mesh.hpp"
-#include "../parameter_input.hpp"
-#include "../utils/utils.hpp"
+#include <athena/hydro/hydro.hpp>
+#include <athena/mesh/mesh.hpp>
+#include <athena/parameter_input.hpp>
+
 #include "thermodynamics.hpp"
 
 Real const Thermodynamics::Rgas = 8.314462;
@@ -54,7 +54,7 @@ void ReadThermoProperty(Real var[], char const name[], int len, Real v0,
 
   var[0] = v0;
   for (int n = 1; n <= NVAPOR; ++n) {
-    sprintf(buf, "%s%d", name, n);
+    snprintf(buf, 80, "%s%d", name, n);
     std::string str = pin->GetString("thermodynamics", buf);
     std::strcpy(cstr, str.c_str());
     p = std::strtok(cstr, " ,");

@@ -1,13 +1,16 @@
 // C/C++ headers
+#include "moist_adiabat_funcs.hpp"
+
+#include <configure.hpp>
 #include <fstream>
 #include <iostream>
 #include <regex>
+#include <sstream>
 #include <stdexcept>
+#include <utils/fileio.hpp>
+#include <utils/vectorize.hpp>
 #include <vector>
 
-// Athena++ headers
-#include "../utils/utils.hpp"
-#include "moist_adiabat_funcs.hpp"
 #include "vapors/ammonia_vapors.hpp"
 #include "vapors/water_vapors.hpp"
 
