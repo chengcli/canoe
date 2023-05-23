@@ -1,6 +1,8 @@
 #ifndef GAUSSIAN_PROCESS_HPP
 #define GAUSSIAN_PROCESS_HPP
 
+#include <cmath>
+
 typedef double (*KernelFunction_t)(double, double, double, double);
 
 inline double SquaredExponential(double x1, double x2, double l,

@@ -195,7 +195,7 @@ void RadiationBand::writeBinRadiance(OutputParameters const *pout) const {
 
   fprintf(pfile, "# Bin Radiances of Band %s: %.3g - %.3g\n", name_.c_str(),
           wmin_, wmax_);
-  fprintf(pfile, "# Ray output size: %d\n", rayOutput_.size());
+  fprintf(pfile, "# Ray output size: %lu\n", rayOutput_.size());
 
   fprintf(pfile, "# Polar angles: ");
   for (size_t j = 0; j < rayOutput_.size(); ++j) {
@@ -211,7 +211,7 @@ void RadiationBand::writeBinRadiance(OutputParameters const *pout) const {
 
   fprintf(pfile, "#%12s%12s", "wave1", "wave2");
   for (size_t j = 0; j < rayOutput_.size(); ++j) {
-    fprintf(pfile, "%12s%d", "Radiance", j + 1);
+    fprintf(pfile, "%12s%lu", "Radiance", j + 1);
   }
   fprintf(pfile, "%12s\n", "weight");
 
