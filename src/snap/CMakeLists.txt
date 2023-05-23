@@ -19,6 +19,7 @@ string(TOUPPER ${namel} nameu)
 
 file(GLOB src_files
     eos/*.cpp
+    thermodynamics/*.cpp
     )
 
 string(TOLOWER ${CMAKE_BUILD_TYPE} buildl)

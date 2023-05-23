@@ -7,12 +7,11 @@
  */
 
 // C/C++ headers
+#include <athena/athena_arrays.hpp>
+#include <athena/hydro/hydro.hpp>
 #include <cstdlib>
 #include <iostream>
 
-// Athena++ headers
-#include "../athena_arrays.hpp"
-#include "../hydro/hydro.hpp"
 #include "moist_adiabat_funcs.hpp"
 #include "thermodynamics.hpp"
 
