@@ -2,22 +2,22 @@
 #include <cstring>
 
 // Athena++ headers
-#include <athena/parameter_input.hpp>
 #include <athena/mesh/mesh.hpp>
+#include <athena/parameter_input.hpp>
 #include <debugger/debugger.hpp>
-//#include <utils/sentinelq.hpp>
+// #include <utils/sentinelq.hpp>
+#include <snap/mesh/block_index.hpp>
+#include <snap/mesh/meshblock_impl.hpp>
+#include <snap/thermodynamics/thermodynamics.hpp>
 #include <utils/vectorize.hpp>
 
-#include <snap/mesh/meshblock_impl.hpp>
-#include <snap/mesh/block_index.hpp>
-#include <snap/thermodynamics/thermodynamics.hpp>
 #include "profile_inversion.hpp"
 
-void new_inversion_queue(vector<Inversion*> &fitq,
-  MeshBlock *pmb, ParameterInput *pin)
-{
+void new_inversion_queue(vector<Inversion *> &fitq, MeshBlock *pmb,
+                         ParameterInput *pin) {
   std::string str = pin->GetOrAddString("inversion", "tasks", "");
-  std::vector<std::string> task_names = Vectorize<std::string>(str.c_str(), " ,");
+  std::vector<std::string> task_names =
+      Vectorize<std::string>(str.c_str(), " ,");
 
   Inversion *pfit;
   for (auto p : task_names) {

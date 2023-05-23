@@ -3,22 +3,18 @@
 
 #include <stdexcept>
 
-template<typename T>
+template <typename T>
 class SentinelQ {
-public:
-  SentinelQ():
-    next(nullptr)
-  {}
+ public:
+  SentinelQ() : next(nullptr) {}
 
   virtual ~SentinelQ() {
-    while (next != nullptr)
-      pop();
+    while (next != nullptr) pop();
   }
-  
+
   void push(T const& other) {
     SentinelQ* q = this;
-    while (q->next != nullptr)
-      q = q->next;
+    while (q->next != nullptr) q = q->next;
     q->next = new SentinelQ;
     q->next->data = other;
     q->next->next = nullptr;
@@ -40,21 +36,15 @@ public:
     }
   }
 
-  bool empty() {
-    return next == nullptr;
-  }
+  bool empty() { return next == nullptr; }
 
-  SentinelQ* getNext() {
-    return next;
-  }
+  SentinelQ* getNext() { return next; }
 
-  T& getData() {
-    return data;
-  }
+  T& getData() { return data; }
 
-protected:
+ protected:
   T data;
-  SentinelQ *next;
+  SentinelQ* next;
 };
 
 #endif

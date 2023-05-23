@@ -1,30 +1,32 @@
 // C/C++ headers
-#include <vector>
-#include <stdexcept>
-#include <type_traits>
+#include "radiation_band.hpp"
 
-#include <athena/parameter_input.hpp>
-#include <athena/mesh/mesh.hpp>
-#include <athena/outputs/outputs.hpp>
 #include <climath/core.h>
 
+#include <athena/mesh/mesh.hpp>
+#include <athena/outputs/outputs.hpp>
+#include <athena/parameter_input.hpp>
 #include <debugger/debugger.hpp>
-#include <utils/vectorize.hpp>
-#include <utils/ndarrays.hpp>
+#include <stdexcept>
+#include <type_traits>
 #include <utils/fileio.hpp>
+#include <utils/ndarrays.hpp>
+#include <utils/vectorize.hpp>
+#include <vector>
+
 #include "absorber.hpp"
 #include "radiation.hpp"
-#include "radiation_band.hpp"
-#include "radiation_utils.hpp" // readRadiationDirections
+#include "radiation_utils.hpp"  // readRadiationDirections
 
 extern std::unique_ptr<Debugger> pdebug;
 
-RadiationBand::RadiationBand(MeshBlock *pmb, ParameterInput *pin, std::string name):
-  name_(name), bflags_(0LL),
-  pcoord_(pmb->pcoord),
-  phydro_(pmb->phydro),
-  pscalars_(pmb->pscalars)
-{
+RadiationBand::RadiationBand(MeshBlock *pmb, ParameterInput *pin,
+                             std::string name)
+    : name_(name),
+      bflags_(0LL),
+      pcoord_(pmb->pcoord),
+      phydro_(pmb->phydro),
+      pscalars_(pmb->pscalars) {
   pdebug->Enter("RadiationBand " + name_);
   std::stringstream msg;
 
@@ -34,7 +36,8 @@ RadiationBand::RadiationBand(MeshBlock *pmb, ParameterInput *pin, std::string na
 
   // band flags
   if (pin->DoesParameterExist("radiation", name_ + ".flags")) {
-    set_radiation_flags(&bflags_, pin->GetString("radiation", name_ + ".flags"));
+    set_radiation_flags(&bflags_,
+                        pin->GetString("radiation", name_ + ".flags"));
   }
   bflags_ |= rflags;
 
@@ -50,7 +53,8 @@ RadiationBand::RadiationBand(MeshBlock *pmb, ParameterInput *pin, std::string na
   std::vector<Real> val = Vectorize<Real>(str.c_str());
   if (val.size() != 3) {
     msg << "### FATAL ERROR in function RadiationBand::RadiationBand"
-        << std::endl << "Length of '" << name_ << "' "
+        << std::endl
+        << "Length of '" << name_ << "' "
         << "must be 3.";
     ATHENA_ERROR(msg);
   }
@@ -61,7 +65,8 @@ RadiationBand::RadiationBand(MeshBlock *pmb, ParameterInput *pin, std::string na
   int num_bins = (int)val[2];
   if (num_bins < 1) {
     msg << "### FATAL ERROR in function RadiationBand::RadiationBand"
-        << std::endl << "Length of some spectral band is not a positive number";
+        << std::endl
+        << "Length of some spectral band is not a positive number";
     ATHENA_ERROR(msg);
   }
 
@@ -70,17 +75,18 @@ RadiationBand::RadiationBand(MeshBlock *pmb, ParameterInput *pin, std::string na
     if (num_bins == 1) {
       if (wmin_ != wmax_) {
         msg << "### FATAL ERROR in function RadiationBand::RadiationBand"
-            << std::endl << "The first spectrum must equal the last spectrum "
+            << std::endl
+            << "The first spectrum must equal the last spectrum "
             << "if the length of the spectral band is 1.";
         ATHENA_ERROR(msg);
       }
       spec_[0].wav1 = spec_[0].wav2 = wmin_;
       spec_[0].wght = 1.;
     } else {
-      Real dwave = (val[1] - val[0])/(num_bins - 1);
+      Real dwave = (val[1] - val[0]) / (num_bins - 1);
       for (int i = 0; i < num_bins; ++i) {
-        spec_[i].wav1 = spec_[i].wav2 = val[0] + dwave*i;
-        spec_[i].wght = (i == 0) || (i == num_bins - 1) ? 0.5*dwave : dwave;
+        spec_[i].wav1 = spec_[i].wav2 = val[0] + dwave * i;
+        spec_[i].wght = (i == 0) || (i == num_bins - 1) ? 0.5 * dwave : dwave;
       }
     }
   } else if (test(RadiationFlags::CorrelatedK)) {
@@ -88,28 +94,28 @@ RadiationBand::RadiationBand(MeshBlock *pmb, ParameterInput *pin, std::string na
     val = Vectorize<Real>(str.c_str(), ",");
     if (val.size() != num_bins) {
       msg << "### FATAL ERROR in function RadiationBand::RadiationBand"
-          << std::endl << "Number of gpoints does not equal " << num_bins;
+          << std::endl
+          << "Number of gpoints does not equal " << num_bins;
       ATHENA_ERROR(msg);
     }
 
-    for (int i = 0; i < num_bins; ++i)
-      spec_[i].wav1 = spec_[i].wav2 = val[i];
+    for (int i = 0; i < num_bins; ++i) spec_[i].wav1 = spec_[i].wav2 = val[i];
 
     str = pin->GetString("radiation", name_ + ".weights");
     val = Vectorize<Real>(str.c_str(), ",");
     if (val.size() != num_bins) {
       msg << "### FATAL ERROR in function RadiationBand::RadiationBand"
-          << std::endl << "Number of weights does not equal " << num_bins;
+          << std::endl
+          << "Number of weights does not equal " << num_bins;
       ATHENA_ERROR(msg);
     }
 
-    for (int i = 0; i < num_bins; ++i)
-      spec_[i].wght = val[i];
+    for (int i = 0; i < num_bins; ++i) spec_[i].wght = val[i];
   } else {  // spectral bins
-    Real dwave = (val[1] - val[0])/num_bins;
+    Real dwave = (val[1] - val[0]) / num_bins;
     for (int i = 0; i < num_bins; ++i) {
-      spec_[i].wav1 = val[0] + dwave*i;
-      spec_[i].wav2 = val[0] + dwave*(i+1);
+      spec_[i].wav1 = val[0] + dwave * i;
+      spec_[i].wav2 = val[0] + dwave * (i + 1);
       spec_[i].wght = 1.;
     }
   }
@@ -130,7 +136,7 @@ RadiationBand::RadiationBand(MeshBlock *pmb, ParameterInput *pin, std::string na
 
   // spectral properties
   tem_.NewAthenaArray(ncells1);
-  temf_.NewAthenaArray(ncells1+1);
+  temf_.NewAthenaArray(ncells1 + 1);
 
   tau_.NewAthenaArray(num_bins, ncells1);
   tau_.ZeroClear();
@@ -141,13 +147,13 @@ RadiationBand::RadiationBand(MeshBlock *pmb, ParameterInput *pin, std::string na
   toa_.NewAthenaArray(num_bins, rayOutput_.size());
   toa_.ZeroClear();
 
-  pmom_.NewAthenaArray(num_bins, ncells1, npmom+1);
+  pmom_.NewAthenaArray(num_bins, ncells1, npmom + 1);
   pmom_.ZeroClear();
 
   // band properties
   btau.NewAthenaArray(ncells3, ncells2, ncells1);
   bssa.NewAthenaArray(ncells3, ncells2, ncells1);
-  bpmom.NewAthenaArray(npmom+1, ncells3, ncells2, ncells1);
+  bpmom.NewAthenaArray(npmom + 1, ncells3, ncells2, ncells1);
 
   // absorbers
   str = pin->GetOrAddString("radiation", name + ".absorbers", "");
@@ -171,27 +177,24 @@ RadiationBand::RadiationBand(MeshBlock *pmb, ParameterInput *pin, std::string na
   pdebug->Leave();
 }
 
-RadiationBand::~RadiationBand()
-{
-  for (size_t i = 0; i < absorbers.size(); ++i)
-    delete absorbers[i];
+RadiationBand::~RadiationBand() {
+  for (size_t i = 0; i < absorbers.size(); ++i) delete absorbers[i];
 
 #ifdef RT_DISORT
   free_disort();
 #endif
 }
 
-void RadiationBand::writeBinRadiance(OutputParameters const* pout) const
-{
+void RadiationBand::writeBinRadiance(OutputParameters const *pout) const {
   if (!test(RadiationFlags::WriteBinRadiance)) return;
 
   char fname[80], number[6];
-  snprintf(number,6, "%05d", pout->file_number);
+  snprintf(number, 6, "%05d", pout->file_number);
   snprintf(fname, 80, "%s.radiance.%s.txt", name_.c_str(), number);
   FILE *pfile = fopen(fname, "w");
 
-  fprintf(pfile, "# Bin Radiances of Band %s: %.3g - %.3g\n",
-    name_.c_str(), wmin_, wmax_);
+  fprintf(pfile, "# Bin Radiances of Band %s: %.3g - %.3g\n", name_.c_str(),
+          wmin_, wmax_);
   fprintf(pfile, "# Ray output size: %d\n", rayOutput_.size());
 
   fprintf(pfile, "# Polar angles: ");
@@ -208,18 +211,17 @@ void RadiationBand::writeBinRadiance(OutputParameters const* pout) const
 
   fprintf(pfile, "#%12s%12s", "wave1", "wave2");
   for (size_t j = 0; j < rayOutput_.size(); ++j) {
-    fprintf(pfile, "%12s%d", "Radiance", j+1);
+    fprintf(pfile, "%12s%d", "Radiance", j + 1);
   }
   fprintf(pfile, "%12s\n", "weight");
 
   for (size_t i = 0; i < spec_.size(); ++i) {
     fprintf(pfile, "%13.3g%12.3g", spec_[i].wav1, spec_[i].wav2);
     for (size_t j = 0; j < rayOutput_.size(); ++j) {
-      fprintf(pfile, "%12.3f", toa_(i,j));
+      fprintf(pfile, "%12.3f", toa_(i, j));
     }
-    if (test(RadiationFlags::Normalize) &&
-        (wmax_ != wmin_)) {
-      fprintf(pfile, "%12.3g\n", spec_[i].wght/(wmax_ - wmin_));
+    if (test(RadiationFlags::Normalize) && (wmax_ != wmin_)) {
+      fprintf(pfile, "%12.3g\n", spec_[i].wght / (wmax_ - wmin_));
     } else {
       fprintf(pfile, "%12.3g\n", spec_[i].wght);
     }
@@ -229,16 +231,17 @@ void RadiationBand::writeBinRadiance(OutputParameters const* pout) const
 }
 
 // overide in the pgen file
-void __attribute__((weak)) RadiationBand::addAbsorber(
-  MeshBlock *pmb, ParameterInput *pin, std::string bname,
-  std::string name, std::string file)
-{}
+void __attribute__((weak))
+RadiationBand::addAbsorber(MeshBlock *pmb, ParameterInput *pin,
+                           std::string bname, std::string name,
+                           std::string file) {}
 
 // overide in rtsolver folder
-void __attribute__((weak)) RadiationBand::calculateBandFlux(
-  AthenaArray<Real> &flxup, AthenaArray<Real> &flxdn,
-  Direction const& rayInput, Real dist, int k, int j, int il, int iu)
-{}
+void __attribute__((weak))
+RadiationBand::calculateBandFlux(AthenaArray<Real> &flxup,
+                                 AthenaArray<Real> &flxdn,
+                                 Direction const &rayInput, Real dist, int k,
+                                 int j, int il, int iu) {}
 
 /* overide in rtsolver folder
 void __attribute__((weak)) RadiationBand::calculateBandRadiance(

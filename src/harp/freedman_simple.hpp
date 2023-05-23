@@ -4,13 +4,13 @@
 // Athena++ header
 #include "absorber.hpp"
 
-class FreedmanSimple: public Absorber {
-public:
+class FreedmanSimple : public Absorber {
+ public:
   FreedmanSimple(MeshBlock *pmb, ParameterInput *pin, std::string bname);
   virtual ~FreedmanSimple() {}
-  Real getAttenuation(Real wave1, Real wave2, CellVariables const& var) const;
+  Real getAttenuation(Real wave1, Real wave2, CellVariables const &var) const;
 
-private:
+ private:
   Real scale_;
 };
 

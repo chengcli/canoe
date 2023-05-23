@@ -9,7 +9,7 @@
 # outputs: write netcdf/pnetcdf outputs
 
 set(MODULES_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}
-	CACHE PATH 
+	CACHE PATH
 	"canoe module include directory")
 
 add_subdirectory(astro)

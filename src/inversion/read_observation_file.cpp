@@ -1,19 +1,19 @@
 // C/C++ headers
-#include <sstream>
-#include <cstring>
-
 #include <athena/athena.hpp>
+#include <cstring>
+#include <sstream>
 #include <utils/fileio.hpp>
+
 #include "inversion.hpp"
 
 #define MAX_LINE 512
 void read_observation_file(Eigen::VectorXd &target, Eigen::MatrixXd &icov,
-  std::string fname)
-{
+                           std::string fname) {
   std::stringstream msg;
   FILE *fp = fopen(fname.c_str(), "r");
   if (fp == NULL) {
-    msg << "### FATAL ERROR in ProfileInversion::ReadObseravtionFile" << std::endl 
+    msg << "### FATAL ERROR in ProfileInversion::ReadObseravtionFile"
+        << std::endl
         << fname << " cannot be opened.";
     ATHENA_ERROR(msg);
   }
@@ -38,7 +38,7 @@ void read_observation_file(Eigen::VectorXd &target, Eigen::MatrixXd &icov,
     pl = NextLine(line, MAX_LINE, fp);
     char *p = strtok(pl, " ");
     for (int j = 0; j < rows; ++j) {
-      sscanf(p, "%lf", &icov(i,j));
+      sscanf(p, "%lf", &icov(i, j));
       p = strtok(NULL, " ");
     }
   }

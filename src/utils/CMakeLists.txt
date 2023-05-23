@@ -17,7 +17,7 @@
 set(namel utils)
 string(TOUPPER ${namel} nameu)
 
-file(GLOB src_files 
+file(GLOB src_files
     *.cpp
     )
 
@@ -44,6 +44,6 @@ target_include_directories(${namel}_${buildl}
     )
 
 set(${nameu}_LIBRARY_${buildu} ${namel}_${buildl}
-    CACHE STRING 
+    CACHE STRING
     "${namel} library ${buildl}")
 mark_as_advanced(${nameu}_LIBRARY_${buildu})

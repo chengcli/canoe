@@ -2,10 +2,9 @@
 #define USER_OUTPUTS_HPP
 
 // C/C++ headers
-#include <vector>
-#include <string>
-
 #include <athena/outputs/outputs.hpp>
+#include <string>
+#include <vector>
 
 // canoe headers
 #include "output_utils.hpp"
@@ -15,9 +14,9 @@ using DiagnosticTable = std::vector<std::vector<std::string>>;
 //! \class DebugOutput
 //  \brief derived OutputType class for debug dumps
 
-class DebugOutput: public OutputType {
-public:
-  explicit DebugOutput(OutputParameters oparams) : OutputType(oparams) {} 
+class DebugOutput : public OutputType {
+ public:
+  explicit DebugOutput(OutputParameters oparams) : OutputType(oparams) {}
   void WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) override;
 };
 
@@ -25,9 +24,9 @@ public:
 //  \brief derived OutputType class for Netcdf dumps
 
 class NetcdfOutput : public OutputType {
-public:
+ public:
   NetcdfOutput(OutputParameters oparams);
-  ~NetcdfOutput() {};
+  ~NetcdfOutput(){};
   void WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) override;
   void CombineBlocks() override;
 };
@@ -36,9 +35,9 @@ public:
 //  \brief derived OutputType class for parallel Netcdf dumps
 
 class PnetcdfOutput : public OutputType {
-public:
+ public:
   PnetcdfOutput(OutputParameters oparams);
-  ~PnetcdfOutput() {};
+  ~PnetcdfOutput(){};
   void WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) override;
 };
 
@@ -46,7 +45,7 @@ public:
 //  \brief derived OutputType class for FITS dumps
 
 class FITSOutput : public OutputType {
-public:
+ public:
   FITSOutput(OutputParameters oparams);
   ~FITSOutput() {}
   void WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) override;

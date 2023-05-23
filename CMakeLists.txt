@@ -24,13 +24,13 @@ LIST(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules/)
 
 ## 1. set up compiler flags ##
 message(STATUS "1. Set up project compiler flags ...")
-message(STATUS "Include ${CMAKE_SOURCE_DIR}/cmake/setup_compiler_flags.cmake")
-include(${CMAKE_SOURCE_DIR}/cmake/setup_compiler_flags.cmake)
+message(STATUS "Include ${CMAKE_SOURCE_DIR}/cmake/compilers.cmake")
+include(${CMAKE_SOURCE_DIR}/cmake/compilers.cmake)
 
 ## 2. set up project specific configuration ##
 message(STATUS "2. Set up project parameters ...")
-message(STATUS "Include ${CMAKE_CURRENT_SOURCE_DIR}/cmake/setup_parameters.cmake")
-include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/setup_parameters.cmake)
+message(STATUS "Include ${CMAKE_CURRENT_SOURCE_DIR}/cmake/parameters.cmake")
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/parameters.cmake)
 
 ## 3. set up project system libraries ##
 message(STATUS "3. Set up system libraries")

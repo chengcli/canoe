@@ -1,15 +1,16 @@
 // C++ header
 #include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <sstream>
-#include <iomanip>
 
 // climath
-#include <climath/core.h> // deg2rad
+#include <climath/core.h>  // deg2rad
 
 // harp
 #include <configure.hpp>
 #include <utils/vectorize.hpp>
+
 #include "radiation_utils.hpp"
 
 /*void Radiation::TotalFlux(AthenaArray<Real>& flux) const
@@ -38,13 +39,13 @@
     for (int i = 0; i < p->nwave; ++i)
       for (int j = 0; j < p->ntau; ++j)
         // flup - rfldn - rfldir
-        flux(j,b) += p->weight_[i]*(p->rad(i,j,2) - p->rad(i,j,1) - p->rad(i,j,0));
-    p = p->next;
-    b++;
+        flux(j,b) += p->weight_[i]*(p->rad(i,j,2) - p->rad(i,j,1) -
+p->rad(i,j,0)); p = p->next; b++;
   }
 }
 
-void Radiation::SumTotalFlux(AthenaArray<Real>& tflux, AthenaArray<Real>& disort_flux, int gk, int gj) const
+void Radiation::SumTotalFlux(AthenaArray<Real>& tflux, AthenaArray<Real>&
+disort_flux, int gk, int gj) const
 {
   // count how many bands
   int b = 0;
@@ -73,15 +74,16 @@ void Radiation::SumTotalFlux(AthenaArray<Real>& tflux, AthenaArray<Real>& disort
         disort_flux(0,gk,gj,j+NGHOST) += p->weight_[i]*p->rad(i,j,2);
         disort_flux(1,gk,gj,j+NGHOST) += p->weight_[i]*p->rad(i,j,1);
         disort_flux(2,gk,gj,j+NGHOST) += p->weight_[i]*p->rad(i,j,0);
-        flux(j,b) += p->weight_[i]*(p->rad(i,j,2) - p->rad(i,j,1) - p->rad(i,j,0));
+        flux(j,b) += p->weight_[i]*(p->rad(i,j,2) - p->rad(i,j,1) -
+p->rad(i,j,0));
       }
     p = p->next;
     b++;
   }
-  
+
   // sum; thl
   for (int j =0; j < max_ntau; ++j){
-      tflux(j) = 0.;  
+      tflux(j) = 0.;
   }
   for (int j =0; j <max_ntau; ++j)
     for (int bb =0; bb <b; ++bb){
@@ -93,7 +95,8 @@ void Radiation::WriteTopFlux(std::string fname) const
 {
   std::cout << "Top flux written into file: " << fname << std::endl;
   std::ofstream out(fname.c_str(), std::ios::out);
-  out << std::left << std::setw(20) << std::setprecision(8) << "# Wavenumber(cm-1)"
+  out << std::left << std::setw(20) << std::setprecision(8) << "#
+Wavenumber(cm-1)"
       << std::left << std::setw(20) << "Top rfldir[]"
       << std::left << std::setw(20) << "Top rfldn[]"
       << std::left << std::setw(20) << "Top flup[]"
@@ -111,7 +114,7 @@ void Radiation::WriteTopFlux(std::string fname) const
   }
 }
 
-void Radiation::WriteOpticalDepth(std::string fname) const 
+void Radiation::WriteOpticalDepth(std::string fname) const
 {
   std::cout << "Optical depth written into file: " << fname << std::endl;
   std::ofstream out(fname.c_str(), std::ios::out);
@@ -119,12 +122,10 @@ void Radiation::WriteOpticalDepth(std::string fname) const
   Radiation const *p = this;
   while (p != NULL) {
     out << std::left << "# Band: " << p->myname << std::endl;
-    out << std::setw(40) << "# Number of wavenumbers : " << p->nwave << std::endl;
-    out << std::setw(40) << "# Number of levels: " << p->nlevel << std::endl;
-    out << std::right;
-    for (int i = 0; i < p->nlevel; ++i)
-      out << std::setw(16) << std::setprecision(8) << p->level[i]/1.E3;
-    out << std::endl;
+    out << std::setw(40) << "# Number of wavenumbers : " << p->nwave <<
+std::endl; out << std::setw(40) << "# Number of levels: " << p->nlevel <<
+std::endl; out << std::right; for (int i = 0; i < p->nlevel; ++i) out <<
+std::setw(16) << std::setprecision(8) << p->level[i]/1.E3; out << std::endl;
 
     for (int i = 0; i < p->nwave; ++i) {
       out << std::setw(16) << std::setprecision(8) << p->wave[i];
@@ -184,7 +185,7 @@ void WriteHeatingRate(std::string fname, AthenaArray<Real> const& flux,
   }
 
   for (int i = 0; i < nlevel; ++i) {
-    out  << std::left << std::setw(6) << i + 1 
+    out  << std::left << std::setw(6) << i + 1
          << std::left << std::setw(12) << level[i]/1.E3;
 
     Real total_flux = 0., total_hrate = 0.;
@@ -197,7 +198,7 @@ void WriteHeatingRate(std::string fname, AthenaArray<Real> const& flux,
 
     if (nband > 1) {
       out << std::left << std::setw(16) << std::setprecision(8) << total_flux
-          << std::left << std::setw(20) << std::setprecision(8) << total_hrate 
+          << std::left << std::setw(20) << std::setprecision(8) << total_hrate
           << std::endl;
     } else {
       out << std::endl;
@@ -205,8 +206,7 @@ void WriteHeatingRate(std::string fname, AthenaArray<Real> const& flux,
   }
 }*/
 
-void set_radiation_flags(uint64_t *flags, std::string str)
-{
+void set_radiation_flags(uint64_t *flags, std::string str) {
   std::stringstream msg;
   std::vector<std::string> dstr = Vectorize<std::string>(str.c_str(), " ,");
   for (int i = 0; i < dstr.size(); ++i) {
@@ -233,71 +233,61 @@ void set_radiation_flags(uint64_t *flags, std::string str)
     } else if (dstr[i] == "write_bin_radiance") {
       *flags |= RadiationFlags::WriteBinRadiance;
     } else {
-      msg << "### FATAL ERROR in function setRadiatino"
-          << std::endl << "flag:" << dstr[i] << "unrecognized"
-          << std::endl;
+      msg << "### FATAL ERROR in function setRadiatino" << std::endl
+          << "flag:" << dstr[i] << "unrecognized" << std::endl;
       ATHENA_ERROR(msg);
     }
 
     // check flags consistency
-    if ((*flags & RadiationFlags::LineByLine) && (*flags & RadiationFlags::CorrelatedK)) {
-      msg << "### FATAL ERROR in function setRadiation"
-          << std::endl << "ck cannot be used with lbl."
-          << std::endl;
+    if ((*flags & RadiationFlags::LineByLine) &&
+        (*flags & RadiationFlags::CorrelatedK)) {
+      msg << "### FATAL ERROR in function setRadiation" << std::endl
+          << "ck cannot be used with lbl." << std::endl;
     }
   }
 }
 
-void getPhaseHenyeyGreenstein(Real *pmom, int iphas, Real gg, int npmom)
-{
-  pmom[0] = 1.; 
-  for (int k =1; k <npmom; k++)
-    pmom[k] = 0.;
+void getPhaseHenyeyGreenstein(Real *pmom, int iphas, Real gg, int npmom) {
+  pmom[0] = 1.;
+  for (int k = 1; k < npmom; k++) pmom[k] = 0.;
 
-  switch(iphas){
-    case 0:   // HENYEY_GREENSTEIN
+  switch (iphas) {
+    case 0:  // HENYEY_GREENSTEIN
       if (gg <= -1. || gg >= 1.)
-        std::cout<<"getmom--bad input variable gg"<<std::endl;
-      for (int k = 1; k <= npmom; k++)
-        pmom[k] = pow(gg,(Real)k);
+        std::cout << "getmom--bad input variable gg" << std::endl;
+      for (int k = 1; k <= npmom; k++) pmom[k] = pow(gg, (Real)k);
       break;
 
-    case 1:   // RAYLEIGH
+    case 1:  // RAYLEIGH
       pmom[2] = 0.1;
       break;
   }
 }
 
-void packSpectralProperties(Real *buf, Real const *tau, Real const *ssa, Real const* pmom, int nlayer, int npmom)
-{
+void packSpectralProperties(Real *buf, Real const *tau, Real const *ssa,
+                            Real const *pmom, int nlayer, int npmom) {
+  for (int i = 0; i < nlayer; ++i) *(buf++) = tau[i];
+  for (int i = 0; i < nlayer; ++i) *(buf++) = ssa[i];
   for (int i = 0; i < nlayer; ++i)
-    *(buf++) = tau[i];
-  for (int i = 0; i < nlayer; ++i)
-    *(buf++) = ssa[i];
-  for (int i = 0; i < nlayer; ++i)
-    for (int j = 0; j < npmom; ++j)
-      *(buf++) = pmom[i*npmom+j];
+    for (int j = 0; j < npmom; ++j) *(buf++) = pmom[i * npmom + j];
 }
 
-void unpackSpectralProperties(Real *tau, Real *ssa, Real *pmom, Real const *buf, int slyr, int npmom, int nblocks, int npmom_max)
-{
+void unpackSpectralProperties(Real *tau, Real *ssa, Real *pmom, Real const *buf,
+                              int slyr, int npmom, int nblocks, int npmom_max) {
   npmom_max = std::max(npmom_max, npmom);
   for (int n = 0; n < nblocks; ++n) {
-    for (int i = 0; i < slyr; ++i)
-      tau[n*slyr + i] = *(buf++);
-    for (int i = 0; i < slyr; ++i)
-      ssa[n*slyr + i] = *(buf++);
+    for (int i = 0; i < slyr; ++i) tau[n * slyr + i] = *(buf++);
+    for (int i = 0; i < slyr; ++i) ssa[n * slyr + i] = *(buf++);
     for (int i = 0; i < slyr; ++i) {
       for (int j = 0; j < npmom; ++j)
-        pmom[n*slyr*npmom_max + i*npmom_max + j] = *(buf++);
+        pmom[n * slyr * npmom_max + i * npmom_max + j] = *(buf++);
       for (int j = npmom; j < npmom_max; ++j)
-        pmom[n*slyr*npmom_max + i*npmom_max + j] = 0.;
+        pmom[n * slyr * npmom_max + i * npmom_max + j] = 0.;
     }
   }
 }
 
-void read_radiation_directions(std::vector<Direction> &ray, std::string str)
-{
+void read_radiation_directions(std::vector<Direction> &ray, std::string str) {
   std::vector<std::string> dstr = Vectorize<std::string>(str.c_str());
   int nray = dstr.size();
   ray.resize(nray);

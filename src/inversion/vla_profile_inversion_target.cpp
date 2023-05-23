@@ -7,27 +7,26 @@
  */
 
 // C/C++ headers
-#include <iostream>
 #include <iomanip>
+#include <iostream>
 
 // Athena++ headers
+#include <climath/interpolation.h>
+#include <climath/linalg.h>
+
 #include <athena/athena.hpp>
 #include <athena/mesh/mesh.hpp>
-
-#include <climath/linalg.h>
-#include <climath/interpolation.h>
-
+#include <debugger/debugger.hpp>
 #include <harp/radiation.hpp>
 #include <harp/radiation_band.hpp>
-#include <debugger/debugger.hpp>
 #include <snap/mesh/block_index.hpp>
+
 #include "profile_inversion.hpp"
 
 extern std::unique_ptr<Debugger> pdebug;
 
-void VLAProfileInversion::CalculateFitTarget(Radiation const *prad,
-  Real *val, int nvalue, int k, int j) const
-{
+void VLAProfileInversion::CalculateFitTarget(Radiation const *prad, Real *val,
+                                             int nvalue, int k, int j) const {
   std::stringstream msg;
   pdebug->Call("VLAProfileInversion::CalculateFitTarget");
   pdebug->Message("model", j);
@@ -42,15 +41,14 @@ void VLAProfileInversion::CalculateFitTarget(Radiation const *prad,
     mus.resize(ndir);
     tbs.resize(ndir);
 
-    for (int n = 0; n < ndir; ++n)
-      mus[n] = p->getCosinePolarAngle(n);
+    for (int n = 0; n < ndir; ++n) mus[n] = p->getCosinePolarAngle(n);
 
     // brightness temperature
-    val[b] = prad->radiance(bid,k,j);
+    val[b] = prad->radiance(bid, k, j);
 
     if (fit_differential_) {
       // brightness temperature differential
-      val[b] -= prad->radiance(bid,k,pblock_->js-1);
+      val[b] -= prad->radiance(bid, k, pblock_->js - 1);
     }
 
     bid += ndir;

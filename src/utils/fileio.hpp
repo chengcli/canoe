@@ -2,11 +2,10 @@
 #define FILEIO_HPP
 
 // C/C++
-#include <string>
-#include <iostream>
-
 #include <athena/athena.hpp>
 #include <configure.hpp>
+#include <iostream>
+#include <string>
 
 //! test file existance
 bool FileExists(std::string fname);
@@ -21,17 +20,18 @@ std::string DecommentFile(std::string fname);
 //! get number of columns in a data table
 int GetNumCols(std::string fname, char c = ' ');
 
-//! get number of rows in a data table 
+//! get number of rows in a data table
 int GetNumRows(std::string fname);
 
 //! replace a character in a string
 void replaceChar(char* buf, char c_old, char c_new);
 
-template <typename T> class AthenaArray;
+template <typename T>
+class AthenaArray;
 
-char* StripLine(char *line);
-char* NextLine(char *line, int num, FILE* stream);
-void read_data_table(char const *fname, double** data, int *rows, int *cols);
-void ReadDataTable(AthenaArray<Real> &data, std::string fname, char c = ' ');
+char* StripLine(char* line);
+char* NextLine(char* line, int num, FILE* stream);
+void read_data_table(char const* fname, double** data, int* rows, int* cols);
+void ReadDataTable(AthenaArray<Real>& data, std::string fname, char c = ' ');
 
-#endif // FILEIO_HPP
+#endif  // FILEIO_HPP

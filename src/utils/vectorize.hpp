@@ -2,14 +2,13 @@
 #define VECTORIZE_HPP
 
 // C/C++
-#include <string>
 #include <cstring>
+#include <string>
 #include <vector>
 
 //! split a string to a vector
-template<typename A>
-std::vector<A> Vectorize(const char* cstr, const char *delimiter = " ")
-{
+template <typename A>
+std::vector<A> Vectorize(const char* cstr, const char* delimiter = " ") {
   std::vector<A> arr;
   char str[1028], *p;
   strcpy(str, cstr);
@@ -21,7 +20,7 @@ std::vector<A> Vectorize(const char* cstr, const char *delimiter = " ")
   return arr;
 }
 
-template<>
-std::vector<std::string> Vectorize(const char* cstr, const char *delimiter);
+template <>
+std::vector<std::string> Vectorize(const char* cstr, const char* delimiter);
 
 #endif
