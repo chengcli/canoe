@@ -72,12 +72,13 @@ void Thermodynamics::ConstructAtmosphere(Real **w, Real Ts, Real Ps, Real grav,
 #if HYDROSTATIC
     rdlnTdlnP = userp;
     rk4_integrate_lnp_adaptive(q1, isat, rcp, beta_, delta_, t3_, p3_, gamma,
-                               dzORdlnp, ftol_, (int)method, rdlnTdlnP);
+                               dzORdlnp, ftol_, static_cast<int>(method),
+                               rdlnTdlnP);
 #else
     adTdz = userp;
     rk4_integrate_z_adaptive(q1, isat, rcp, mu_ratios_, beta_, delta_, t3_, p3_,
-                             gamma, grav / Rd_, dzORdlnp, ftol_, (int)method,
-                             adTdz);
+                             gamma, grav / Rd_, dzORdlnp, ftol_,
+                             static_cast<int>(method), adTdz);
 #endif
     // reset mols
     qv = 1.;

@@ -1,13 +1,5 @@
-/** @file thermodynamics.hpp
- * @brief
- *
- * @author Cheng Li (chengcli@umich.edu)
- * @date Tuesday May 25, 2021 18:04:45 UTC
- * @bug No known bugs.
- */
-
-#ifndef THERMODYNAMICS_HPP
-#define THERMODYNAMICS_HPP
+#ifndef SRC_SNAP_THERMODYNAMICS_THERMODYNAMICS_HPP_
+#define SRC_SNAP_THERMODYNAMICS_THERMODYNAMICS_HPP_
 
 // C/C++ headers
 #include <cfloat>
@@ -388,4 +380,4 @@ class Thermodynamics {
   Real cv_ratios_[1 + 3 * NVAPOR];
 };
 
-#endif
+#endif  // SRC_SNAP_THERMODYNAMICS_THERMODYNAMICS_HPP_

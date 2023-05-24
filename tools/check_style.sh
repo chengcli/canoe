@@ -28,4 +28,4 @@ cpplint --filter=${filters} --recursive src/inversion
 cpplint --filter=${filters} src/snap/*.hpp
 cpplint --filter=${filters} src/snap/*.cpp
 cpplint --filter=${filters} --recursive src/snap/eos
-#cpplint --filter=${filters} --recursive src/snap/thermodynamics
+cpplint --filter=${filters} --recursive src/snap/thermodynamics
