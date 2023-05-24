@@ -16,38 +16,38 @@
 void CelestrialBody::readCelestrialData(ParameterInput *pin,
                                         std::string myname) {
   char entry[80];
-  snprintf(entry, size(entry), "%s.re", name.c_str());
+  snprintf(entry, sizeof(entry), "%s.re", name.c_str());
   re = km2m(pin->GetOrAddReal("astronomy", entry, 0.));
 
-  snprintf(entry, size(entry), "%s.rp", name.c_str());
+  snprintf(entry, sizeof(entry), "%s.rp", name.c_str());
   rp = km2m(pin->GetOrAddReal("astronomy", entry, re));
 
-  snprintf(entry, size(entry), "%s.obliq", name.c_str());
+  snprintf(entry, sizeof(entry), "%s.obliq", name.c_str());
   obliq = deg2rad(pin->GetOrAddReal("astronomy", entry, 0.));
 
-  snprintf(entry, size(entry), "%s.spinp", name.c_str());
+  snprintf(entry, sizeof(entry), "%s.spinp", name.c_str());
   spinp = day2sec(pin->GetOrAddReal("astronomy", entry, 0.));
 
-  snprintf(entry, size(entry), "%s.orbit_a", name.c_str());
+  snprintf(entry, sizeof(entry), "%s.orbit_a", name.c_str());
   orbit_a = au2m(pin->GetOrAddReal("astronomy", entry, 0.));
 
-  snprintf(entry, size(entry), "%s.orbit_e", name.c_str());
+  snprintf(entry, sizeof(entry), "%s.orbit_e", name.c_str());
   orbit_e = pin->GetOrAddReal("astronomy", entry, 0.);
 
-  snprintf(entry, size(entry), "%s.orbit_i", name.c_str());
+  snprintf(entry, sizeof(entry), "%s.orbit_i", name.c_str());
   orbit_i = deg2rad(pin->GetOrAddReal("astronomy", entry, 0.));
 
-  snprintf(entry, size(entry), "%s.orbit_p", name.c_str());
+  snprintf(entry, sizeof(entry), "%s.orbit_p", name.c_str());
   orbit_p = day2sec(pin->GetOrAddReal("astronomy", entry, 0.));
 
-  snprintf(entry, size(entry), "%s.equinox", name.c_str());
+  snprintf(entry, sizeof(entry), "%s.equinox", name.c_str());
   equinox = pin->GetOrAddReal("astronomy", entry, 0.);
 
-  snprintf(entry, size(entry), "%s.grav_eq", name.c_str());
+  snprintf(entry, sizeof(entry), "%s.grav_eq", name.c_str());
   grav_eq = pin->GetOrAddReal("astronomy", entry, 0.);
 }
 
-static CelestrialBody::CelestrialBody(ParameterInput *pin)
+CelestrialBody::CelestrialBody(ParameterInput *pin)
     : parent(nullptr), spec_(nullptr), il_(-1) {
   std::stringstream msg;
   name = pin->GetOrAddString("astronomy", "planet", "unknown");

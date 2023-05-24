@@ -16,8 +16,8 @@
 #include <mpi.h>
 #endif
 
-std::string const Debugger::cgreen = "\033[0;32m";
-std::string const Debugger::cend = "\033[0m";
+char const Debugger::cgreen[] = "\033[0;32m";
+char const Debugger::cend[] = "\033[0m";
 
 // global debugger
 std::unique_ptr<Debugger> pdebug;
@@ -246,7 +246,7 @@ void Debugger::Leave() {
   std::string name = sections_.back();
   sections_.pop_back();
   idstack_next_.pop_back();
-  increment_id(idstack_next_.back());
+  increment_id(&idstack_next_.back());
   if (Globals::my_rank == 0 && current_depth_ < depth_) {
     std::cout << msg.str() << name << " done." << std::endl;
   }
@@ -318,7 +318,7 @@ std::endl;
   delete[] num;
 }*/
 
-Debugger *Debugger::Message(std::string str) {
+Debugger* Debugger::Message(std::string str) {
   msg << "- " << str << std::endl;
   return this;
 }
@@ -345,11 +345,11 @@ void Debugger::Print(std::string str) {
   }
 }
 
-void increment_id(std::string &str) {
-  int len = str.size();
+void increment_id(std::string* str) {
+  int len = str->size();
   int x, i = len - 1;
-  while ((i > 0) && (str[i - 1] != '.')) i--;
-  x = std::stoi(str.substr(i, len - i - 1));
+  while ((i > 0) && ((*str)[i - 1] != '.')) i--;
+  x = std::stoi(str->substr(i, len - i - 1));
   x += 1;
-  str = str.substr(0, i) + std::to_string(x) + '.';
+  *str = str->substr(0, i) + std::to_string(x) + '.';
 }

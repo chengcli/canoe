@@ -8,7 +8,7 @@
 // Eigen headers
 #include <Eigen/Core>
 
-// harp2 headers
+#include <athena/athena.hpp>
 #include <configure.hpp>
 
 #include "mcmc.hpp"

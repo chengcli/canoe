@@ -28,8 +28,8 @@ class MaterialPoint;
 class Debugger {
  public:
   // data
-  static std::string const cgreen;
-  static std::string const cend;
+  static char const cgreen[];
+  static char const cend[];
 
   Debugger *prev, *next;
   std::stringstream msg;
@@ -94,7 +94,7 @@ extern std::unique_ptr<Debugger> pdebug;
 
 #include "debugger_impl.hpp"
 
-void increment_id(std::string& str);
+void increment_id(std::string* str);
 
 // small test functions
 template <typename T>

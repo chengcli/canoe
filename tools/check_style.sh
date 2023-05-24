@@ -2,3 +2,4 @@
 
 filters=-legal/copyright,-build/include_subdir,-build/include_order
 cpplint --filter=${filters} --recursive src/astro
+cpplint --filter=${filters} --recursive src/debugger
