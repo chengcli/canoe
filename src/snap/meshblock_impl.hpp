@@ -1,5 +1,5 @@
-#ifndef MESHBLOCK_IMPL_HPP
-#define MESHBLOCK_IMPL_HPP
+#ifndef SRC_SNAP_MESHBLOCK_IMPL_HPP_
+#define SRC_SNAP_MESHBLOCK_IMPL_HPP_
 
 // C/C++ header
 #include <memory>
@@ -40,4 +40,4 @@ class MeshBlock::Impl {
   MeshBlock *pmy_block_;
 };
 
-#endif
+#endif  // SRC_SNAP_MESHBLOCK_IMPL_HPP_

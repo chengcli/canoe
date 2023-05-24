@@ -1,5 +1,5 @@
-#ifndef CONSTANTS_HPP
-#define CONSTANTS_HPP
+#ifndef SRC_SNAP_CONSTANTS_HPP_
+#define SRC_SNAP_CONSTANTS_HPP_
 
 namespace Constants {
 double const Rgas = 8.314462;
@@ -14,4 +14,4 @@ double const cLight_cgs = 2.99792458E10;
 double const stefanBoltzmann = 5.670374419E-8;
 }  // namespace Constants
 
-#endif
+#endif  // SRC_SNAP_CONSTANTS_HPP_

@@ -4,7 +4,7 @@
 #include "../meshblock_impl.hpp"
 #include "../thermodynamics/thermodynamics.hpp"
 
-void apply_vapor_limiter(MeshBlock *pmb, AthenaArray<Real> &u) {
+void apply_vapor_limiter(AthenArray<Real> *pu, MeshBlock *pmb) {
   Thermodynamics *pthermo = pmb->pimpl->pthermo;
   if (NVAPOR == 0) return;
 
@@ -14,6 +14,8 @@ void apply_vapor_limiter(MeshBlock *pmb, AthenaArray<Real> &u) {
   int ie = pmb->ie;
   int je = pmb->je;
   int ke = pmb->ke;
+
+  AthenaArray<Real> &u = *pu;
 
   for (int k = ks; k <= ke; ++k)
     for (int j = js; j <= je; ++j) {

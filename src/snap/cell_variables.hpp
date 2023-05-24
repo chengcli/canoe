@@ -1,5 +1,5 @@
-#ifndef CELL_VARIABLES_HPP
-#define CELL_VARIABLES_HPP
+#ifndef SRC_SNAP_CELL_VARIABLES_HPP_
+#define SRC_SNAP_CELL_VARIABLES_HPP_
 
 // C/C++ header
 #include <array>
@@ -43,4 +43,4 @@ class CellVariables {
   std::array<Real, Size> data_;
 };
 
-#endif
+#endif  // SRC_SNAP_CELL_VARIABLES_HPP_
