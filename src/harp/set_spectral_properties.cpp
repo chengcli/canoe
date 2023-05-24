@@ -21,7 +21,7 @@
 #include "radiation.hpp"
 #include "radiation_band.hpp"
 // #include "../particles/particles.hpp"
-#include <snap/mesh/cell_variables.hpp>
+#include <snap/cell_variables.hpp>
 #include <snap/reconstruct/interpolation.hpp>
 
 // setting optical properties

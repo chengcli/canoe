@@ -1,7 +1,7 @@
 #include <athena/athena.hpp>
 #include <athena/mesh/mesh.hpp>
 #include <debugger/debugger.hpp>
-#include <snap/mesh/cell_variables.hpp>
+#include <snap/cell_variables.hpp>
 // #include <snap/mesh/meshblock_impl.hpp>
 // #include "../radiation/radiation.hpp"
 #include "absorber.hpp"

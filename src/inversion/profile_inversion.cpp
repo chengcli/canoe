@@ -21,11 +21,9 @@
 #include <athena/hydro/hydro.hpp>
 #include <athena/mesh/mesh.hpp>
 #include <athena/stride_iterator.hpp>
-
-// harp2 headers
 #include <configure.hpp>
 #include <debugger/debugger.hpp>
-#include <snap/mesh/block_index.hpp>
+#include <snap/meshblock_impl.hpp>
 #include <snap/thermodynamics/thermodynamic_funcs.hpp>
 #include <snap/thermodynamics/thermodynamics.hpp>
 #include <utils/ndarrays.hpp>
@@ -33,8 +31,6 @@
 
 #include "gaussian_process.hpp"
 #include "profile_inversion.hpp"
-
-extern std::unique_ptr<Debugger> pdebug;
 
 ProfileInversion::~ProfileInversion() {}
 
@@ -126,8 +122,8 @@ ProfileInversion::ProfileInversion(MeshBlock *pmb, ParameterInput *pin,
 }
 
 void ProfileInversion::InitializePositions() {
-  int nwalker = getWalkers();
-  int ndim = getDims();
+  int nwalker = GetWalkers();
+  int ndim = GetDims();
   int nsample = samples();  // excluding boundaries
 
   // initialize random positions
@@ -158,8 +154,8 @@ void ProfileInversion::UpdateHydro(Hydro *phydro, ParameterInput *pin) const {
   NewCArray(XpSample, 1 + NVAPOR, nsample + 2);
   std::fill(*XpSample, *XpSample + (1 + NVAPOR) * (nsample + 2), 0.);
 
-  int is = pblock_->is, js = pblock_->js, ks = pblock_->ks;
-  int ie = pblock_->ie, ke = pblock_->ke;
+  int is = pmy_block_->is, js = pmy_block_->js, ks = pmy_block_->ks;
+  int ie = pmy_block_->ie, ke = pmy_block_->ke;
 
   for (auto m : idx_) {
     if (m == IDN) {  // temperature
@@ -224,7 +220,7 @@ void ProfileInversion::UpdateProfiles(Hydro *phydro, Real **XpSample, int k,
                     std::to_string(idx_.size() + 1));
   }
 
-  int is = pblock_->is, ie = pblock_->ie;
+  int is = pmy_block_->is, ie = pmy_block_->ie;
 
   int nlayer = ie - is + 1;
   int nsample = plevel_.size();
@@ -250,29 +246,31 @@ void ProfileInversion::UpdateProfiles(Hydro *phydro, Real **XpSample, int k,
       for (int i = is; i <= ie; ++i)
         phydro->w(n, k, j, i) = phydro->w(n, k, jl - 1, i);
 
-  Real Rd = pthermo_->GetRd();
+  auto pthermo = pmy_block_->pimpl->pthermo;
+  Real Rd = pthermo->GetRd();
 
   // calculate perturbed profiles
   pdebug->Message("update profiles");
+  auto pcoord = pmy_block_->pcoord;
   for (size_t n = 0; n < idx_.size(); ++n) {
     int jn = jl + n;
     int m = idx_[n];
 
     for (int i = is; i <= ie; ++i)
-      stdAll[i - is] = Xstd_[m] * pow(exp(pcoord_->x1v(i) / H0), chi_);
+      stdAll[i - is] = Xstd_[m] * pow(exp(pcoord->x1v(i) / H0), chi_);
 
     for (int i = 0; i < nsample; ++i)
       stdSample[i] = Xstd_[m] * pow(exp(zlev[i] / H0), chi_);
 
-    gp_predict(SquaredExponential, Xp[m], &pcoord_->x1v(is), stdAll.data(),
+    gp_predict(SquaredExponential, Xp[m], &pcoord->x1v(is), stdAll.data(),
                nlayer, XpSample[m], zlev.data(), stdSample.data(), nsample,
                Xlen_[m]);
 
     for (int i = is; i <= ie; ++i) {
-      Real temp = pthermo_->GetTemp(phydro->w.at(k, jn, i));
+      Real temp = pthermo->GetTemp(phydro->w.at(k, jn, i));
 
       // do not alter levels lower than zlev[0] or higher than zlev[nsample-1]
-      if (pcoord_->x1v(i) < zlev[0] || pcoord_->x1v(i) > zlev[nsample - 1])
+      if (pcoord->x1v(i) < zlev[0] || pcoord->x1v(i) > zlev[nsample - 1])
         continue;
 
       // save perturbed T profile
@@ -284,7 +282,7 @@ void ProfileInversion::UpdateProfiles(Hydro *phydro, Real **XpSample, int k,
         }
         phydro->w(IDN, k, jn, i) =
             phydro->w(IPR, k, jn, i) /
-            (Rd * temp * pthermo_->RovRd(phydro->w.at(k, jn, i)));
+            (Rd * temp * pthermo->RovRd(phydro->w.at(k, jn, i)));
       } else {  // save perturbed compositional profiles
         phydro->w(m, k, jn, i) += Xp[m][i - is];
         phydro->w(m, k, jn, i) = std::max(phydro->w(m, k, jn, i), 0.);
@@ -299,14 +297,14 @@ void ProfileInversion::UpdateProfiles(Hydro *phydro, Real **XpSample, int k,
 
   for (int i = is; i <= ie; ++i) {
     // get initial temperature from jl-1
-    temp1d[i - is] = pthermo_->GetTemp(phydro->w.at(k, jl - 1, i));
+    temp1d[i - is] = pthermo->GetTemp(phydro->w.at(k, jl - 1, i));
 
     for (size_t n = 0; n < idx_.size(); ++n) {
       int jn = jl + n;
       int m = idx_[n];
       if (m == IDN) {
         // override with new temperature
-        temp1d[i - is] = pthermo_->GetTemp(phydro->w.at(k, jn, i));
+        temp1d[i - is] = pthermo->GetTemp(phydro->w.at(k, jn, i));
       } else {
         phydro->w(m, k, ju, i) = phydro->w(m, k, jn, i);
       }
@@ -315,7 +313,7 @@ void ProfileInversion::UpdateProfiles(Hydro *phydro, Real **XpSample, int k,
     // reset temperature given new concentration
     phydro->w(IDN, k, ju, i) =
         phydro->w(IPR, k, ju, i) /
-        (Rd * temp1d[i - is] * pthermo_->RovRd(phydro->w.at(k, ju, i)));
+        (Rd * temp1d[i - is] * pthermo->RovRd(phydro->w.at(k, ju, i)));
   }
 
   delete[] temp1d;
@@ -334,19 +332,20 @@ void ProfileInversion::ConvectiveAdjustment(Hydro *phydro, int k,
   NewCArray(w2, 2, NHYDRO + 2 * NVAPOR);
 
   Real dw[1 + NVAPOR];
-  int is = pblock_->is, ie = pblock_->ie;
+  int is = pmy_block_->is, ie = pmy_block_->ie;
 
+  auto const pthermo = pmy_block_->pimpl->pthermo;
   for (int i = is + 1; i <= ie; ++i) {
     // if (pcoord_->x1v(i) < zlev[0]) continue;
     //  copy unadjusted temperature and composition profile to ju
-    Real temp = pthermo_->GetTemp(phydro->w.at(k, ju, i));
+    Real temp = pthermo->GetTemp(phydro->w.at(k, ju, i));
 
     // constant virtual potential temperature move
     for (int n = 0; n < NHYDRO; ++n) w2[0][n] = phydro->w(n, k, ju, i - 1);
 
     SolverData solver_data;
     solver_data.w2 = w2;
-    solver_data.pthermo = pthermo_;
+    solver_data.pthermo = pthermo;
     solver_data.dlnp =
         log(phydro->w(IPR, k, ju, i) / phydro->w(IPR, k, ju, i - 1));
 
@@ -361,14 +360,14 @@ void ProfileInversion::ConvectiveAdjustment(Hydro *phydro, int k,
     }
     // msg << "- rdlnTdlnP = " << rdlnTdlnP << std::endl;
 
-    pthermo_->ConstructAtmosphere(w2, pthermo_->GetTemp(w2[0]), w2[0][IPR], 0.,
-                                  solver_data.dlnp, 2, Adiabat::dry, rdlnTdlnP);
+    pthermo->ConstructAtmosphere(w2, pthermo->GetTemp(w2[0]), w2[0][IPR], 0.,
+                                 solver_data.dlnp, 2, Adiabat::dry, rdlnTdlnP);
 
     // stability
     phydro->w(IDN, k, ju, i) = std::min(w2[1][IDN], phydro->w(IDN, k, ju, i));
 
     // saturation
-    pthermo_->SaturationSurplus(dw, phydro->w.at(k, ju, i), VariableType::prim);
+    pthermo->SaturationSurplus(dw, phydro->w.at(k, ju, i), VariableType::prim);
     for (int n = 1; n <= NVAPOR; ++n)
       if (dw[n] > 0.) phydro->w(n, k, ju, i) -= dw[n];
   }

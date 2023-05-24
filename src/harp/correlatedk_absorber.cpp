@@ -4,8 +4,8 @@
 #include <algorithm>
 #include <cstring>
 #include <iostream>
+#include <snap/cell_variables.hpp>
 #include <snap/constants.hpp>
-#include <snap/mesh/cell_variables.hpp>
 #include <sstream>
 #include <stdexcept>
 // #include <snap/thermodynamics/thermodynamics.hpp>
@@ -75,7 +75,7 @@ Real CorrelatedKAbsorber::getAttenuation(Real g1, Real g2,
   */
   Real dens = var.q[IPR] / (Constants::kBoltz * var.q[IDN]);
   //	std::cout << " test: " << dens <<" "<<exp(val) <<" "<< coord[0] <<" "<<
-  //coord[1] <<" "<< coord[2] <<" "<< coord[3] <<std::endl;
+  // coord[1] <<" "<< coord[2] <<" "<< coord[3] <<std::endl;
   /*
     Real x0 = 1.;
     if (imol_ == 0)

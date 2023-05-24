@@ -7,18 +7,12 @@
  */
 
 // C/C++ header
+#include <athena/mesh/mesh.hpp>
+#include <debugger/debugger.hpp>
+#include <harp/radiation.hpp>
 #include <iostream>
 #include <memory>
 #include <sstream>
-
-// Athena++ header
-// #include <mesh/mesh.hpp>
-// #include <hydro/hydro.hpp>
-
-// harp2 header
-#include <debugger/debugger.hpp>
-#include <harp/radiation.hpp>
-#include <snap/mesh/block_index.hpp>
 #include <utils/ndarrays.hpp>
 
 #include "profile_inversion.hpp"
@@ -28,11 +22,11 @@ extern std::unique_ptr<Debugger> pdebug;
 Real ProfileInversion::LogPosteriorProbability(Radiation *prad, Hydro *phydro,
                                                Real const *par, Real *val,
                                                int k) const {
-  int is = pblock_->is, ie = pblock_->ie;
-  int ks = pblock_->ks;
+  int is = pmy_block_->is, ie = pmy_block_->ie;
+  int ks = pmy_block_->ks;
 
-  int ndim = getDims();
-  int nvalue = getValues();
+  int ndim = GetDims();
+  int nvalue = GetValues();
 
   // logging
   pdebug->Call("LogPosteriorProbability");

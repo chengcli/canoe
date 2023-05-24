@@ -1,16 +1,12 @@
-// Athena++ header
-#include <athena.hpp>
-#include <mesh/mesh.hpp>
+#include <athena/athena.hpp>
+#include <athena/mesh/mesh.hpp>
 
-// canoe headers
-#include <configure.hpp>
-
-#include "../mesh/meshblock_impl.hpp"
+#include "../meshblock_impl.hpp"
 #include "../thermodynamics/thermodynamics.hpp"
 
 void apply_vapor_limiter(MeshBlock *pmb, AthenaArray<Real> &u) {
   Thermodynamics *pthermo = pmb->pimpl->pthermo;
-  if (NumVapors == 0) return;
+  if (NVAPOR == 0) return;
 
   int is = pmb->is;
   int js = pmb->js;
@@ -25,18 +21,18 @@ void apply_vapor_limiter(MeshBlock *pmb, AthenaArray<Real> &u) {
       for (int i = ie; i > is; --i) {
         Real density = 0., v1, v2, v3;
 
-        for (int n = 0; n <= NumVapors; ++n) density += u(n, k, j, i);
+        for (int n = 0; n <= NVAPOR; ++n) density += u(n, k, j, i);
         v1 = u(IM1, k, j, i) / density, v2 = u(IM2, k, j, i) / density,
         v3 = u(IM3, k, j, i) / density;
 
         // internal energy
         Real KE = 0.5 * density * (v1 * v1 + v2 * v2 + v3 * v3);
         Real LE = 0., rhocv = 0.;
-        for (int n = 0; n <= NumVapors; ++n)
-          rhocv += u(n, k, j, i) * pthermo->getCv(n);
+        for (int n = 0; n <= NVAPOR; ++n)
+          rhocv += u(n, k, j, i) * pthermo->GetCv(n);
         Real temp = (u(IEN, k, j, i) - KE) / rhocv;
 
-        for (int n = 1; n <= NumVapors; ++n) {
+        for (int n = 1; n <= NVAPOR; ++n) {
           Real rho = u(n, k, j, i);
           if (rho < 0.) {
             u(n, k, j, i - 1) += rho;
@@ -44,7 +40,7 @@ void apply_vapor_limiter(MeshBlock *pmb, AthenaArray<Real> &u) {
             u(IM2, k, j, i - 1) += v2 * rho;
             u(IM3, k, j, i - 1) += v3 * rho;
             Real en =
-                pthermo->getCv(n) * temp + 0.5 * (v1 * v1 + v2 * v2 + v3 * v3);
+                pthermo->GetCv(n) * temp + 0.5 * (v1 * v1 + v2 * v2 + v3 * v3);
             u(IEN, k, j, i - 1) += en * rho;
 
             u(n, k, j, i) = 0.;

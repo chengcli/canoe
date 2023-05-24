@@ -59,8 +59,8 @@ ConcentrationInversion::ConcentrationInversion(MeshBlock *pmb,
 }
 
 void ConcentrationInversion::InitializePositions() {
-  int nwalker = getWalkers();
-  int ndim = getDims();
+  int nwalker = GetWalkers();
+  int ndim = GetDims();
 
   // initialize random positions
   pdebug->Message("initialize random positions for walkers");

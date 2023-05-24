@@ -7,26 +7,23 @@
 #include <harp/radiation.hpp>
 #include <harp/radiation_band.hpp>
 #include <inversion/inversion.hpp>
+#include <inversion/inversion_helper.hpp>
 
-#include "../hydro/decomposition/decomposition.hpp"
-#include "../hydro/implicit/implicit_solver.hpp"
-#include "../reconstruct/face_reconstruct.hpp"
-#include "../thermodynamics/thermodynamics.hpp"
-#include "block_index.hpp"
+#include "decomposition/decomposition.hpp"
+#include "implicit/implicit_solver.hpp"
+#include "reconstruct/face_reconstruct.hpp"
+#include "thermodynamics/thermodynamics.hpp"
 
 MeshBlock::Impl::Impl(MeshBlock *pmb, ParameterInput *pin) : pmy_block_(pmb) {
-  du.NewAthenaArray(NumHydros, pmb->ncells3, pmb->ncells2, pmb->ncells1);
-
-  // block index
-  pblock = new BlockIndex(pmb);
+  du.NewAthenaArray(NHYDRO, pmb->ncells3, pmb->ncells2, pmb->ncells1);
 
   // thermodynamics
   pthermo = new Thermodynamics(pmb, pin);
 
-  // hydro decomposition
-  pdec = new Decomposition(pmb->phydro);
+  // decomposition
+  pdec = new Decomposition(pmb);
 
-  // implicit methods
+  // implicit methodsphydro
   phevi = new ImplicitSolver(pmb, pin);
 
   // reconstruction
@@ -36,7 +33,7 @@ MeshBlock::Impl::Impl(MeshBlock *pmb, ParameterInput *pin) : pmy_block_(pmb) {
   prad = new Radiation(pmb, pin);
 
   // inversion queue
-  new_inversion_queue(fitq, pmb, pin);
+  fitq = create_inversion_queue(pmb, pin);
 }
 
 // Athena++ demands destruct pbval AFTER all boundary values
@@ -44,13 +41,13 @@ MeshBlock::Impl::Impl(MeshBlock *pmb, ParameterInput *pin) : pmy_block_(pmb) {
 // TODO, check if this is OK
 MeshBlock::Impl::~Impl() {
   // std::cout << "Impl desctructor" << std::endl;
-  delete pblock;
   delete pthermo;
   delete pdec;
   delete phevi;
   delete precon;
 
   delete prad;
+  delete_inversion_queue(fitq);
   for (auto q : fitq) {
     delete q;
   }

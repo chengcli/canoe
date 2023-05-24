@@ -9,7 +9,7 @@
 #include <configure.hpp>
 #include <cstring>
 #include <iostream>
-#include <snap/mesh/cell_variables.hpp>
+#include <snap/cell_variables.hpp>
 #include <stdexcept>
 
 // External library headers

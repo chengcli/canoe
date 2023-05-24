@@ -3,6 +3,7 @@
 
 // C/C++ headers
 #include <string>
+#include <vector>
 
 // Eigen headers
 #include <Eigen/Core>
@@ -19,12 +20,8 @@ class BlockIndex;
 class Hydro;
 class Thermodynamics;
 class Radiation;
-template <typename T>
-class SentinelQ;
 
 class Inversion {
-  friend void gather_probability(SentinelQ<Inversion *> &fitq);
-
  public:
   // functions
   Inversion(MeshBlock *pmb, ParameterInput *pin, std::string name);
@@ -60,29 +57,23 @@ class Inversion {
   void ResetChain();
 
   // access functions
-  int getDims() const { return recs_.ndim; }
+  int GetDims() const { return recs_.ndim; }
 
-  int getValues() const { return recs_.nvalue; }
+  int GetValues() const { return recs_.nvalue; }
 
-  int getWalkers() const { return recs_.nwalker; }
+  int GetWalkers() const { return recs_.nwalker; }
 
-  int getSteps() const { return recs_.nstep; }
+  int GetSteps() const { return recs_.nstep; }
 
-  std::string getName() const { return name_; }
+  void SetLogProbability(int k, Real lnp) { recs_.lnp[recs_.cur][k] = lnp; }
+
+  Real GetLogProbability(int k) const { return recs_.lnp[recs_.cur][k]; }
+
+  std::string GetName() const { return name_; }
 
   void setX2Indices(int j) {
     jl_ = j;
     ju_ = jl_ + getX2Span() - 1;
-  }
-
-  Inversion *use(BlockIndex const *p) {
-    pblock_ = p;
-    return this;
-  }
-
-  Inversion *use(Thermodynamics const *p) {
-    pthermo_ = p;
-    return this;
   }
 
  protected:
@@ -93,10 +84,7 @@ class Inversion {
   Eigen::VectorXd target_;
   Eigen::MatrixXd icov_;
 
-  // connection
-  Coordinates const *pcoord_;
-  BlockIndex const *pblock_;
-  Thermodynamics const *pthermo_;
+  MeshBlock *pmy_block_;
 
   // mcmc initial positions
   Real **init_pos_;
@@ -116,14 +104,5 @@ class Inversion {
   // scratch arrays
   Real *zz_, *par_;
 };
-
-void read_observation_file(Eigen::VectorXd &target, Eigen::MatrixXd &icov,
-                           std::string fname);
-
-void new_inversion_queue(SentinelQ<Inversion *> &fitq, MeshBlock *pmb,
-                         ParameterInput *pin, BlockIndex *pblock,
-                         Thermodynamics *pthermo);
-
-void gather_probability(SentinelQ<Inversion *> &fitq);
 
 #endif

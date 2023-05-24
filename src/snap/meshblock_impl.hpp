@@ -37,7 +37,7 @@ class MeshBlock::Impl {
   std::vector<Inversion *> fitq;
 
  private:
-  MeshBlock const *pmy_block_;
+  MeshBlock *pmy_block_;
 };
 
 #endif
