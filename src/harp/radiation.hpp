@@ -1,5 +1,5 @@
-#ifndef RADIATION_HPP
-#define RADIATION_HPP
+#ifndef SRC_HARP_RADIATION_HPP_
+#define SRC_HARP_RADIATION_HPP_
 
 // C/C++ headers
 #include <astro/celestrial_body.hpp>
@@ -51,15 +51,15 @@ class Radiation {
 
   ~Radiation();
 
-  void calculateRadiativeFlux(AthenaArray<Real> &rup, AthenaArray<Real> &rdown,
+  void calculateRadiativeFlux(AthenaArray<Real> *rup, AthenaArray<Real> *rdown,
                               Real time, int k, int j, int il, int iu);
 
-  void calculateRadiance(AthenaArray<Real> &rr, Real time, int k, int j, int il,
+  void calculateRadiance(AthenaArray<Real> *rr, Real time, int k, int j, int il,
                          int iu);
 
   void addRadiativeFlux(Hydro *phydro, int k, int j, int il, int iu) const;
 
-  void readRadiationBands(MeshBlock *pmb, ParameterInput *pin, int &b);
+  void readRadiationBands(MeshBlock *pmb, ParameterInput *pin, int *b);
 
   size_t getNumOutgoingRays() const;
 
@@ -89,4 +89,4 @@ class Radiation {
   CelestrialBody *planet_;
 };
 
-#endif
+#endif  //  SRC_HARP_RADIATION_HPP_

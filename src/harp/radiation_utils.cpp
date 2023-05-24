@@ -1,16 +1,21 @@
-// C++ header
+// C++
+#include <algorithm>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <sstream>
+#include <vector>
 
 // climath
-#include <climath/core.h>  // deg2rad
+#include <climath/core.h>
 
-// harp
-#include <configure.hpp>
+// utils
 #include <utils/vectorize.hpp>
 
+// canoe
+#include <configure.hpp>
+
+// harp
 #include "radiation_utils.hpp"
 
 /*void Radiation::TotalFlux(AthenaArray<Real>& flux) const
@@ -287,15 +292,16 @@ void unpackSpectralProperties(Real *tau, Real *ssa, Real *pmom, Real const *buf,
   }
 }
 
-void read_radiation_directions(std::vector<Direction> &ray, std::string str) {
+void read_radiation_directions(std::vector<Direction> *ray, std::string str) {
   std::vector<std::string> dstr = Vectorize<std::string>(str.c_str());
   int nray = dstr.size();
-  ray.resize(nray);
+  ray->resize(nray);
 
-  for (int i = 0; i < nray; ++i) {
-    ray[i].phi = 0.;
-    sscanf(dstr[i].c_str(), "(%lf,%lf)", &ray[i].mu, &ray[i].phi);
-    ray[i].mu = cos(deg2rad(ray[i].mu));
-    ray[i].phi = deg2rad(ray[i].phi);
+  auto jt = dstr.begin();
+  for (auto it = ray->begin(); it != ray->end(); ++it, ++jt) {
+    it->phi = 0.;
+    sscanf(jt->c_str(), "(%lf,%lf)", &it->mu, &it->phi);
+    it->mu = cos(deg2rad(it->mu));
+    it->phi = deg2rad(it->phi);
   }
 }

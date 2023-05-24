@@ -5,11 +5,11 @@
  * @author Cheng Li
  */
 
-// C/C++ header
-#include <cmath>
-
 // climath
 #include <climath/interpolation.h>
+
+// C/C++ header
+#include <cmath>
 
 // harp2
 #include "jup_fletcher16_cirs.hpp"

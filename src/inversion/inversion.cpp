@@ -1,15 +1,21 @@
 // C/C++ headers
-#include <athena/coordinates/coordinates.hpp>
-#include <athena/mesh/mesh.hpp>
-#include <athena/parameter_input.hpp>
-#include <debugger/debugger.hpp>
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
 #include <string>
+
+// athena
+#include <athena/coordinates/coordinates.hpp>
+#include <athena/mesh/mesh.hpp>
+#include <athena/parameter_input.hpp>
+
+// debugger
+#include <debugger/debugger.hpp>
+
+// utils
 #include <utils/ndarrays.hpp>
-// #include "../mesh/block_index.hpp"
-// #include "../mesh/meshblock_impl.hpp"
+
+// inversion
 #include "inversion.hpp"
 #include "inversion_helper.hpp"
 
@@ -35,7 +41,7 @@ Inversion::Inversion(MeshBlock *pmb, ParameterInput *pin, std::string name)
 
   std::string obsfile = pin->GetOrAddString("inversion", "obsfile", "none");
   if (obsfile != "none") {
-    read_observation_file(target_, icov_, obsfile.c_str());
+    read_observation_file(&target_, &icov_, obsfile.c_str());
     pdebug->Message("target", target_.transpose());
     pdebug->Message("inverse covariance matrx", icov_);
   } else {

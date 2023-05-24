@@ -1,5 +1,5 @@
-#ifndef OUTPUT_UTILS_HPP
-#define OUTPUT_UTILS_HPP
+#ifndef SRC_OUTPUTS_OUTPUT_UTILS_HPP_
+#define SRC_OUTPUTS_OUTPUT_UTILS_HPP_
 
 // C/C++ headers
 #include <string>
@@ -15,4 +15,4 @@ std::string get_units(std::string name);
 
 std::string get_long_name(std::string name);
 
-#endif
+#endif  // SRC_OUTPUTS_OUTPUT_UTILS_HPP_

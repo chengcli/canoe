@@ -1,5 +1,5 @@
-#ifndef WATER_VAPORS_HPP_
-#define WATER_VAPORS_HPP_
+#ifndef SRC_SNAP_THERMODYNAMICS_VAPORS_WATER_VAPORS_HPP_
+#define SRC_SNAP_THERMODYNAMICS_VAPORS_WATER_VAPORS_HPP_
 
 #include <cmath>
 
@@ -97,4 +97,4 @@ inline double sat_vapor_p_H2O_Ideal(double T) {
                 : svph2o(T / tr, pr, betas, gammas);
 }
 
-#endif
+#endif  // SRC_SNAP_THERMODYNAMICS_VAPORS_WATER_VAPORS_HPP_

@@ -1,5 +1,5 @@
-#ifndef JUP_FLETCHER16_CIRS_HPP
-#define JUP_FLETCHER16_CIRS_HPP
+#ifndef SRC_ASTRO_JUPITER_JUP_FLETCHER16_CIRS_HPP_
+#define SRC_ASTRO_JUPITER_JUP_FLETCHER16_CIRS_HPP_
 
 /** @file jup_fletcher16_cirs.hpp"
  *
@@ -7,6 +7,7 @@
  *
  * @author Cheng Li
  */
+
 namespace Jupiter {
 extern int const fletcher16_cirs_npres;
 extern int const fletcher16_cirs_nglat;
@@ -16,4 +17,4 @@ extern double const fletcher16_cirs_temp[][120];
 double get_temp_fletcher16_cirs(double glat, double pbar);
 }  // namespace Jupiter
 
-#endif
+#endif  // SRC_ASTRO_JUPITER_JUP_FLETCHER16_CIRS_HPP_

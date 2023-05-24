@@ -1,5 +1,5 @@
-#ifndef RADIATION_BAND_HPP
-#define RADIATION_BAND_HPP
+#ifndef SRC_HARP_RADIATION_BAND_HPP_
+#define SRC_HARP_RADIATION_BAND_HPP_
 
 // C/C++ headers
 #include <memory>
@@ -47,11 +47,11 @@ class RadiationBand {
 
   void setSpectralProperties(int k, int j, int il, int iu);
 
-  void calculateBandFlux(AthenaArray<Real> &flxup, AthenaArray<Real> &flxdn,
+  void calculateBandFlux(AthenaArray<Real> *flxup, AthenaArray<Real> *flxdn,
                          Direction const &rayInput, Real dist_au, int k, int j,
                          int il, int iu);
 
-  void calculateBandRadiance(AthenaArray<Real> &radiance,
+  void calculateBandRadiance(AthenaArray<Real> *radiance,
                              Direction const &rayInput, Real dist_au, int k,
                              int j, int il, int iu);
 
@@ -99,4 +99,4 @@ class RadiationBand {
   Thermodynamics const *pthermo_;
 };
 
-#endif
+#endif  // SRC_HARP_RADIATION_BAND_HPP_

@@ -1,9 +1,6 @@
-#ifndef MCMC_HPP_
-#define MCMC_HPP_
+#ifndef SRC_INVERSION_MCMC_HPP_
+#define SRC_INVERSION_MCMC_HPP_
 #include <cstddef>
-
-// Athena++ headers
-// #include "../defs.hpp"
 
 #ifdef MPI_PARALLEL
 #include <mpi.h>
@@ -118,4 +115,4 @@ double mcmc_stretch_move(double *newp, double **oldp, int iwalker, int nwalker,
 void mcmc_walk_move(double *newp, double **oldp, int k, int nwalker, int np,
                     mcmc_opts *opts);
 
-#endif
+#endif  // SRC_INVERSION_MCMC_HPP_

@@ -1,20 +1,24 @@
-// C/C++ headers
-#include "moist_adiabat_funcs.hpp"
-
-#include <configure.hpp>
+// C/C++
+#include <algorithm>
 #include <fstream>
 #include <iostream>
-#include <regex>
 #include <sstream>
 #include <stdexcept>
-#include <utils/fileio.hpp>
-#include <utils/vectorize.hpp>
 #include <vector>
 
+// utils
+#include <utils/fileio.hpp>
+#include <utils/vectorize.hpp>
+
+// canoe
+#include <configure.hpp>
+
+// thermodynamics
+#include "thermodynamics_helper.hpp"
 #include "vapors/ammonia_vapors.hpp"
 #include "vapors/water_vapors.hpp"
 
-void __attribute__((weak)) update_gamma(Real &gamma, Real const q[]) {}
+void __attribute__((weak)) update_gamma(Real *gamma, Real const q[]) {}
 
 /*Real qhat_eps(Real const q[], Real const eps[])
 {
@@ -93,64 +97,4 @@ Real dlnTdlnP(Real const q[], int const isat[], Real const rcp[],
   }
 
   return (1. + c1) / (cphat_ov_r + (c2 + c1 * c1) / (1. + c3));
-}
-
-bool read_idealized_parameters(std::string fname, Real &pmin, Real &pmax,
-                               AthenaArray<Real> &dTdz, Real *&pmin_q,
-                               Real *&pmax_q, AthenaArray<Real> *&dqdz,
-                               std::vector<int> &mindex) {
-  std::stringstream msg;
-  if (!FileExists(fname)) {
-    msg << "### FATAL ERROR in read_idealized_parameters. File " << fname
-        << " doesn't exist.";
-    ATHENA_ERROR(msg);
-  }
-
-  std::ifstream inp(fname.c_str(), std::ios::in);
-  bool allocated = false;
-  char c = '#';
-  std::string line, ss = "";
-  std::vector<std::string> arr;
-
-  while (!inp.eof() && c == '#') {
-    std::getline(inp, line);
-    // removing leading space
-    line = std::regex_replace(line, std::regex("^ +"), ss);
-    c = line[0];
-  }
-
-  while (!inp.eof() && line.empty()) std::getline(inp, line);
-
-  if (!inp.eof()) {
-    arr = Vectorize<std::string>(line.c_str());
-    int nq = arr.size() - 1;
-    if (nq > 0) {
-      mindex.resize(nq);
-      for (int i = 0; i < nq; ++i)
-        mindex[i] = std::stoi(arr[i + 1]);  // copy molecule index
-      pmin_q = new Real[nq];
-      pmax_q = new Real[nq];
-      dqdz = new AthenaArray<Real>[nq];
-      allocated = true;
-    }
-
-    // Read temperature parameters
-    int nrows, ncols;
-    inp >> pmin >> pmax >> nrows >> ncols;
-    // std::cout << pmin << " " << pmax << " " << nrows << " " << ncols <<
-    // std::endl;
-    dTdz.NewAthenaArray(nrows, ncols);
-    for (int i = 0; i < nrows; ++i)
-      for (int j = 0; j < ncols; ++j) inp >> dTdz(i, j);
-
-    // Read mixing ratios
-    for (int n = 0; n < nq; ++n) {
-      inp >> pmin_q[n] >> pmax_q[n] >> nrows >> ncols;
-      dqdz[n].NewAthenaArray(nrows, ncols);
-      for (int i = 0; i < nrows; ++i)
-        for (int j = 0; j < ncols; ++j) inp >> dqdz[n](i, j);
-    }
-  }
-
-  return allocated;
 }

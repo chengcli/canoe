@@ -1,7 +1,8 @@
-#ifndef FREEDMAN_SIMPLE_HPP
-#define FREEDMAN_SIMPLE_HPP
+#ifndef SRC_HARP_FREEDMAN_SIMPLE_HPP_
+#define SRC_HARP_FREEDMAN_SIMPLE_HPP_
 
-// Athena++ header
+#include <string>
+
 #include "absorber.hpp"
 
 class FreedmanSimple : public Absorber {
@@ -14,4 +15,4 @@ class FreedmanSimple : public Absorber {
   Real scale_;
 };
 
-#endif
+#endif  // SRC_HARP_FREEDMAN_SIMPLE_HPP_

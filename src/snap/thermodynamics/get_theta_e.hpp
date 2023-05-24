@@ -1,10 +1,5 @@
-/** @file get_theta_e.hpp
- * @brief
- *
- * @author Cheng Li (chengcli@umich.edu)
- * @date Monday May 24, 2021 03:21:15 UTC
- * @bug No known bugs.
- */
+#ifndef SRC_SNAP_THERMODYNAMICS_GET_THETA_E_HPP_
+#define SRC_SNAP_THERMODYNAMICS_GET_THETA_E_HPP_
 
 //! Equivalent potential temperature
 template <typename T>
@@ -67,3 +62,5 @@ Real Thermodynamics::GetThetaE(T prim, Real p0) const {
   return Theta(prim, p0);
 #endif
 }
+
+#endif  // SRC_SNAP_THERMODYNAMICS_GET_THETA_E_HPP_

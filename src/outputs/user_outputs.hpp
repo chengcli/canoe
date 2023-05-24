@@ -1,5 +1,5 @@
-#ifndef USER_OUTPUTS_HPP
-#define USER_OUTPUTS_HPP
+#ifndef SRC_OUTPUTS_USER_OUTPUTS_HPP_
+#define SRC_OUTPUTS_USER_OUTPUTS_HPP_
 
 // C/C++ headers
 #include <athena/outputs/outputs.hpp>
@@ -25,8 +25,8 @@ class DebugOutput : public OutputType {
 
 class NetcdfOutput : public OutputType {
  public:
-  NetcdfOutput(OutputParameters oparams);
-  ~NetcdfOutput(){};
+  explicit NetcdfOutput(OutputParameters oparams);
+  ~NetcdfOutput() {}
   void WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) override;
   void CombineBlocks() override;
 };
@@ -36,8 +36,8 @@ class NetcdfOutput : public OutputType {
 
 class PnetcdfOutput : public OutputType {
  public:
-  PnetcdfOutput(OutputParameters oparams);
-  ~PnetcdfOutput(){};
+  explicit PnetcdfOutput(OutputParameters oparams);
+  ~PnetcdfOutput() {}
   void WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) override;
 };
 
@@ -46,9 +46,9 @@ class PnetcdfOutput : public OutputType {
 
 class FITSOutput : public OutputType {
  public:
-  FITSOutput(OutputParameters oparams);
+  explicit FITSOutput(OutputParameters oparams);
   ~FITSOutput() {}
   void WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) override;
 };
 
-#endif
+#endif  // SRC_OUTPUTS_USER_OUTPUTS_HPP_

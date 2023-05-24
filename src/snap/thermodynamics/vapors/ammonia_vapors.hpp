@@ -1,5 +1,5 @@
-#ifndef AMMONIA_VAPORS_HPP
-#define AMMONIA_VAPORS_HPP
+#ifndef SRC_SNAP_THERMODYNAMICS_VAPORS_AMMONIA_VAPORS_HPP_
+#define SRC_SNAP_THERMODYNAMICS_VAPORS_AMMONIA_VAPORS_HPP_
 
 #include <cmath>
 
@@ -74,4 +74,4 @@ inline double sat_vapor_p_NH3_Ideal(double T) {
                 : svpnh3(T / tr, pr, betas, gammas);
 }
 
-#endif
+#endif  // SRC_SNAP_THERMODYNAMICS_VAPORS_AMMONIA_VAPORS_HPP_

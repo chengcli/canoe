@@ -1,15 +1,22 @@
-// C/C++ headers
+// C/C++
+#include <memory>
+#include <string>
+
+// athena
 #include <athena/hydro/hydro.hpp>
 #include <athena/mesh/mesh.hpp>
 #include <athena/parameter_input.hpp>
+
+// debugger
 #include <debugger/debugger.hpp>
-#include <memory>
+
+// utils
 #include <utils/ndarrays.hpp>
 #include <utils/vectorize.hpp>
-// #include "../mesh/block_index.hpp"
+
+// harp
 #include "concentration_inversion.hpp"
 
-extern std::unique_ptr<Debugger> pdebug;
 ConcentrationInversion::~ConcentrationInversion() {}
 
 ConcentrationInversion::ConcentrationInversion(MeshBlock *pmb,
@@ -65,13 +72,13 @@ void ConcentrationInversion::InitializePositions() {
   // initialize random positions
   pdebug->Message("initialize random positions for walkers");
 
-  srand(time(NULL) + Globals::my_rank);
+  unsigned int seed = time(NULL) + Globals::my_rank;
   NewCArray(init_pos_, nwalker, ndim);
 
   for (int p = 0; p < nwalker; ++p) {
     for (size_t n = 0; n < idx_.size(); ++n) {
       int m = idx_[n];
-      init_pos_[p][n] = (1. * rand() / RAND_MAX - 0.5) * Xstd_[m];
+      init_pos_[p][n] = (1. * rand_r(&seed) / RAND_MAX - 0.5) * Xstd_[m];
     }
   }
 }

@@ -1,0 +1,14 @@
+# This file manages the reviewers of Pull Requests (PR) of this repository
+#
+# Cheng Li (chengcli@umich.edu) is the root owner of all files in this
+# repo. But he should not be the reviewer of all PRs.
+#
+# Individual projects are responsible for adding their own reviewers. That is,
+# for example, by adding lines like the following:
+#   prod/{project_name} @project_owner
+#
+# More on the syntax of this file:
+#   https://help.github.com/articles/about-codeowners/
+
+
+* chengcli@umich.edu

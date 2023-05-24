@@ -1,12 +1,15 @@
+// athena
 #include <athena/athena.hpp>
 #include <athena/mesh/mesh.hpp>
-#include <debugger/debugger.hpp>
-#include <snap/cell_variables.hpp>
-// #include <snap/mesh/meshblock_impl.hpp>
-// #include "../radiation/radiation.hpp"
-#include "absorber.hpp"
 
-extern std::unique_ptr<Debugger> pdebug;
+// debugger
+#include <debugger/debugger.hpp>
+
+// snap
+#include <snap/cell_variables.hpp>
+
+// harp
+#include "absorber.hpp"
 
 Absorber::Absorber(MeshBlock* pmb, ParameterInput* pin, std::string bname,
                    std::string name)

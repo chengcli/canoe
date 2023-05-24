@@ -1,6 +1,4 @@
-// C/C++ headers
-#include <climath/core.h>
-
+// C/C++
 #include <cassert>
 #include <cmath>
 #include <cstdio>
@@ -8,17 +6,23 @@
 #include <cstring>
 #include <iostream>
 
-// harp headers
-#include <configure.hpp>
-#include <utils/ndarrays.hpp>
-
-#include "mcmc.hpp"
-
 #if FITSOUTPUT
 extern "C" {
 #include <fitsio.h>
 }
 #endif
+
+// climath
+#include <climath/core.h>
+
+// utils
+#include <utils/ndarrays.hpp>
+
+// canoe
+#include <configure.hpp>
+
+// inversion
+#include "mcmc.hpp"
 
 void _choldc(double **a, int n, double *p) {
   int i, j, k;
@@ -32,22 +36,26 @@ void _choldc(double **a, int n, double *p) {
       if (i == j) {
         assert(sum > 0.);
         p[i] = sqrt(sum);
-      } else
+      } else {
         a[j][i] = sum / p[i];
+      }
     }
 }
 
-#define TAUMAX                                      \
-  2 /*   Compute tau directly only if tau < TAUMAX. \
-         Otherwise compute tau using the pairwise sum series */
-#define WINMULT \
-  5 /*   Compute autocovariances up to lag s = WINMULT*TAU            */
-#define MAXLAG                                                        \
-  TAUMAX *WINMULT /*   The autocovariance array is double C[MAXLAG+1] \
-                       so that C[s] makes sense for s = MAXLAG. */
-#define MINFAC                                                   \
-  5 /*   Stop and print an error message if the array is shorter \
-         than MINFAC * MAXLAG. */
+// Compute tau directly only if tau < TAUMAX.
+// Otherwise compute tau using the pairwise sum series
+#define TAUMAX 2
+
+// Compute autocovariances up to lag s = WINMULT*TAU
+#define WINMULT 5
+
+// The autocovariance array is double C[MAXLAG+1]
+// so that C[s] makes sense for s = MAXLAG.
+#define MAXLAG TAUMAX *WINMULT
+
+// Stop and print an error message if the array is shorter
+// than MINFAC * MAXLAG.
+#define MINFAC 5
 
 int _acor(double *mean, double *sigma, double *tau, double *X, int L) {
   *mean = 0.;  // Compute the mean of X ...
@@ -83,13 +91,13 @@ int _acor(double *mean, double *sigma, double *tau, double *X, int L) {
   *tau = D / C[0];  // A provisional estimate, since D is only part of the
                     // complete sum.
 
-  if (*tau * WINMULT < MAXLAG)
+  if (*tau * WINMULT < MAXLAG) {
     return 0;  // Stop if the D sum includes the given multiple of tau.
                // This is the self consistent window approach.
 
-  else {  // If the provisional tau is so large that we don't think tau
-          // is accurate, apply the acor procedure to the pairwase sums
-          // of X.
+  } else {  // If the provisional tau is so large that we don't think tau
+            // is accurate, apply the acor procedure to the pairwase sums
+            // of X.
     int Lh = L / 2;  // The pairwise sequence is half the length (if L is even)
     double newMean;  // The mean of the new sequence, to throw away.
     int j1 = 0;
@@ -265,10 +273,10 @@ void mcmc_save_fits(char const *fname, mcmc_opts *opts, mcmc_recs *recs,
   if (rank == 0) {
     fitsfile *fp;
     int status = 0;
-    long naxis = 3;
-    long naxes[3] = {ndim, size * nwalker, cur};
-    long fpixel = 1;
-    long nelements = naxes[0] * naxes[1] * naxes[2];
+    int64_t naxis = 3;
+    int64_t naxes[3] = {ndim, size * nwalker, cur};
+    int64_t fpixel = 1;
+    int64_t nelements = naxes[0] * naxes[1] * naxes[2];
 
     fits_create_file(&fp, fname, &status);
     if (status) fits_report_error(stderr, status);
@@ -371,9 +379,9 @@ void mcmc_save_fits(char const *fname, mcmc_opts *opts, mcmc_recs *recs,
 void mcmc_load_fits(char const *fname, mcmc_opts *opts, mcmc_recs *recs,
                     int alloc) {
   int status = 0, hdutype;
-  long dims[3] = {1, 1, 1};
-  long fpixel[3] = {1, 1, 1};
   int nstep, nwalker, ndim, nvalue;
+  int64_t dims[3] = {1, 1, 1};
+  int64_t fpixel[3] = {1, 1, 1};
 
 #if FITSOUTPUT
   fitsfile *fp;
@@ -610,7 +618,7 @@ void mcmc_report(mcmc_opts *opts, mcmc_recs *recs, char const *mode) {
     for (int d = 0; d < ndim; ++d) fprintf(fout, "%9s%-2d", "D", d + 1);
     fprintf(fout, "\n");
     for (int k = 0; k < nwalker * size; k++) {
-      fprintf(fout, "%3d", (int)k + 1);
+      fprintf(fout, "%3d", static_cast<int>(k) + 1);
       for (int d = 0; d < ndim; ++d) fprintf(fout, "%11.4g", par[k][d]);
       fprintf(fout, "  |%9.4f\n", lnp[k]);
       fflush(stdout);
@@ -736,6 +744,7 @@ void mcmc_advance(ObjectiveFunction_t lnprob, mcmc_opts *opts, mcmc_recs *recs,
 
   double *par = new double[ndim];
 
+  unsigned int seed = time(NULL);
   for (int k = 0; k < nwalker; ++k) {
     double zz =
         mcmc_stretch_move(par, recs->par[cur - 1], k, nwalker, ndim, opts);
@@ -746,7 +755,7 @@ void mcmc_advance(ObjectiveFunction_t lnprob, mcmc_opts *opts, mcmc_recs *recs,
     double lnp0 = recs->lnp[cur - 1][k], lnp1 = recs->lnp[cur][k],
            pdiff = (ndim - 1.) * log(zz) + lnp1 - lnp0;
 
-    if (pdiff > log(1. * rand() / RAND_MAX)) {  // accept this position
+    if (pdiff > log(1. * rand_r(&seed) / RAND_MAX)) {  // accept this position
       for (int d = 0; d < ndim; ++d) recs->par[cur][k][d] = par[d];
 
       if (lnp1 > recs->opt_lnp) {  // new best position
@@ -793,17 +802,18 @@ double mcmc_stretch_move(double *newp, double **oldp, int iwalker, int nwalker,
 #endif
 
   // strech step
-  double r = 1. * rand() / RAND_MAX;
-  //*zz = sqr((opts->a - 1.) * r + 1.) / opts->a;
+  unsigned int seed = time(NULL);
+  double r = 1. * rand_r(&seed) / RAND_MAX;
+  // *zz = sqr((opts->a - 1.) * r + 1.) / opts->a;
   double zz = ((opts->a - 1.) * r + 1.) * ((opts->a - 1.) * r + 1) / opts->a;
 
-  int jwalker;                // pick a waker
-  int jrank = rand() % size;  // pick a rank
-  if (jrank == irank) {       // same rank
-    jwalker = rand() % (nwalker - 1);
+  int jwalker;                       // pick a waker
+  int jrank = rand_r(&seed) % size;  // pick a rank
+  if (jrank == irank) {              // same rank
+    jwalker = rand_r(&seed) % (nwalker - 1);
     if (jwalker >= iwalker) jwalker++;  // avoid myself
   } else {                              // another rank
-    jwalker = rand() % nwalker;
+    jwalker = rand_r(&seed) % nwalker;
   }
 
   for (int d = 0; d < ndim; ++d)
@@ -824,12 +834,15 @@ void mcmc_walk_move(double *newp, double **oldp, int k, int nwalker, int np,
 
   // draw unique sub-sample of size opts->p
   bool redraw;
-  assert(opts->p < (int)nwalker);
-  assert(opts->p > (int)np);
+  assert(opts->p < static_cast<int>(nwalker));
+  assert(opts->p > static_cast<int>(np));
+
+  unsigned int seed = time(NULL);
+
   for (int i = 0; i < opts->p; ++i) {
     do {
-      int s = rand() % (nwalker - 1);
-      if (s >= (int)k) s++;
+      int s = rand_r(&seed) % (nwalker - 1);
+      if (s >= static_cast<int>(k)) s++;
       redraw = false;
       for (int j = 0; j < i; ++j)
         if (sub[j] == s) redraw = true;
@@ -862,8 +875,10 @@ void mcmc_walk_move(double *newp, double **oldp, int k, int nwalker, int np,
   // Box-Muller method to generate standard multi-variate normal
   // https://en.wikipedia.org/wiki/Normal_distribution#Generating_values_from_normal_distribution
   // mean is reused to store the standard normal variable
+
   for (size_t i = 0; i < np; ++i) {
-    double u = 1. * rand() / RAND_MAX, v = 1. * rand() / RAND_MAX;
+    double u = 1. * rand_r(&seed) / RAND_MAX;
+    double v = 1. * rand_r(&seed) / RAND_MAX;
 
     mean[i] = sqrt(-2. * log(u)) * cos(2. * M_PI * v);
   }
