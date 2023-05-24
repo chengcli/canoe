@@ -6,7 +6,7 @@
 ## Git workflow
 ### 1. Submit an issue ticket on GitHub website
 
-### 1. Create a new branch locally
+### 2. Create a new branch locally
 ```
 git checkout -b <branch_name>
 ```
@@ -14,21 +14,24 @@ git checkout -b <branch_name>
 nature of this branch `job`. For example, `cli/add_cpptest_case` is a good branch name
 indicating that this branch is created by user `cli` and works on adding cpp test cases.
 
-### 1. Work on this branch
+### 3. Work on this branch
+You can work on this branch by creating a document file under `doc/` folder.
+This document should begin with a paragraph stating what is the problem and how you are
+going to solve it. As you make progress, keep updating the document.
 
-### 1. Update the `.gitignore` file
+### 4. Update the `.gitignore` file
 Each folder can have its own `.gitignore` file. This file keeps tracking the files that
 you don't wish to be added to the git system. For example, model output files should not
 be added to the git.
 
-### 1. Add changed files to git system
+### 5. Add changed files to git system
 ```
 git add .
 ```
 This command adds all untracked files to git excluding the files listed in the
 `.gitignore` file.
 
-### 1. Commit your message
+### 6. Commit your message
 ```
 git commit -m <message>
 ```
@@ -37,14 +40,14 @@ be squashed into one message, which you can change later. You can either use a m
 message like "work on XXX", "working XXX", or an unmeanding message like "wip", which
 stands for "work in progress".
 
-### 1. Upload your branch to GitHub
+### 7. Upload your branch to GitHub
 ```
 git push origin <branch_name>
 ```
 At this point, GitHub shall have a remote branch that tracks your local branch. You
 should be able to see branch by going to the git repo and look for "insights/network"
 
-### 1. Submit a pull request (PR)
+### 8. Submit a pull request (PR)
 This step is done on GitHub site. At this stage, only fill in the title of the PR to
 indicate what this branch is for. No content is needed.
 
