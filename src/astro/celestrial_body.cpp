@@ -1,17 +1,23 @@
+// C/C++
 #include <sstream>
 #include <stdexcept>
 
+// climath
 #include <climath/core.h>
 #include <climath/interpolation.h>
 
+// athena
 #include <athena/athena.hpp>
 #include <athena/parameter_input.hpp>
+
+// debugger
 #include <debugger/debugger.hpp>
+
+// utils
 #include <utils/fileio.hpp>
 
-// cliastro headers
+// astro
 #include "celestrial_body.hpp"
-// #include "../radiation/radiation.hpp"
 
 void CelestrialBody::readCelestrialData(ParameterInput *pin,
                                         std::string myname) {

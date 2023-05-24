@@ -1,8 +1,10 @@
 #ifndef SRC_HARP_FREEDMAN_MEAN_HPP_
 #define SRC_HARP_FREEDMAN_MEAN_HPP_
 
-// Athena++ header
+// C/C++
 #include <string>
+
+// harp
 #include "absorber.hpp"
 
 // Richard S. Freedman 2011. APJS

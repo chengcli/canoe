@@ -1,24 +1,27 @@
-// C/C++ headers
+// C/C++
 #include <ctime>
 #include <iostream>
-#include <stdexcept>
 #include <memory>
-
-// Athena++ headers
-#include <athena/globals.hpp>
-#include <athena/mesh/mesh.hpp>
-#include <athena/utils/utils.hpp>
-#include <debugger/debugger.hpp>
-
-// cliutils header
-#include <configure.hpp>
-
-#include "command_line.hpp"
-#include "program_setup.hpp"
+#include <stdexcept>
 
 #ifdef MPI_PARALLEL
 #include <mpi.h>
 #endif
+
+// athena
+#include <athena/globals.hpp>
+#include <athena/mesh/mesh.hpp>
+#include <athena/utils/utils.hpp>
+
+// debugger
+#include <debugger/debugger.hpp>
+
+// canoe
+#include <configure.hpp>
+
+// utils
+#include "command_line.hpp"
+#include "program_setup.hpp"
 
 namespace Globals {
 int mpi_tag_ub;

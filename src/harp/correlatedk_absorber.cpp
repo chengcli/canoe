@@ -1,6 +1,4 @@
-// C/C++ headers
-#include <climath/interpolation.h>
-
+// C/C++
 #include <algorithm>
 #include <cstring>
 #include <iostream>
@@ -8,15 +6,20 @@
 #include <stdexcept>
 #include <string>
 
-#include <snap/cell_variables.hpp>
-#include <snap/constants.hpp>
-
-#include "correlatedk_absorber.hpp"
-
-// External library headers
+// netcdf
 #if NETCDFOUTPUT
 #include <netcdf.h>
 #endif
+
+// climath
+#include <climath/interpolation.h>
+
+// snap
+#include <snap/cell_variables.hpp>
+#include <snap/constants.hpp>
+
+// harp
+#include "correlatedk_absorber.hpp"
 
 void CorrelatedKAbsorber::loadCoefficient(std::string fname, int bid) {
 #if NETCDFOUTPUT

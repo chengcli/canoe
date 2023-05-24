@@ -1,16 +1,20 @@
 #ifndef SRC_INVERSION_INVERSION_HPP_
 #define SRC_INVERSION_INVERSION_HPP_
 
-// C/C++ headers
+// C/C++
 #include <string>
 #include <vector>
 
-// Eigen headers
+// Eigen
 #include <Eigen/Core>
 
+// athena
 #include <athena/athena.hpp>
+
+// canone
 #include <configure.hpp>
 
+// inversion
 #include "mcmc.hpp"
 
 class MeshBlock;

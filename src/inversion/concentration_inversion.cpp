@@ -1,16 +1,20 @@
-// C/C++ headers
+// C/C++
 #include <memory>
 #include <string>
 
+// athena
 #include <athena/hydro/hydro.hpp>
 #include <athena/mesh/mesh.hpp>
 #include <athena/parameter_input.hpp>
 
+// debugger
 #include <debugger/debugger.hpp>
 
+// utils
 #include <utils/ndarrays.hpp>
 #include <utils/vectorize.hpp>
 
+// harp
 #include "concentration_inversion.hpp"
 
 ConcentrationInversion::~ConcentrationInversion() {}

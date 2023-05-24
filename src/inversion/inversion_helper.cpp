@@ -1,8 +1,7 @@
-
 // C/C++
-#include <vector>
 #include <cstring>
 #include <sstream>
+#include <vector>
 
 // athena
 #include <athena/athena.hpp>
@@ -13,8 +12,8 @@
 #include <utils/vectorize.hpp>
 
 // inversion
-#include "inversion_helper.hpp"
 #include "inversion.hpp"
+#include "inversion_helper.hpp"
 #include "profile_inversion.hpp"
 
 #define MAX_LINE 512
@@ -58,7 +57,7 @@ void read_observation_file(Eigen::VectorXd *target, Eigen::MatrixXd *icov,
 }
 #undef MAX_LINE
 
-void gather_probability(std::vector<Inversion *> const& fitq) {
+void gather_probability(std::vector<Inversion *> const &fitq) {
   auto qlast = fitq[fitq.size() - 1];
 
   // replace the log probability by the last one
@@ -72,7 +71,7 @@ void gather_probability(std::vector<Inversion *> const& fitq) {
 }
 
 std::vector<Inversion *> create_inversion_queue(MeshBlock *pmb,
-                         ParameterInput *pin) {
+                                                ParameterInput *pin) {
   std::string str = pin->GetOrAddString("inversion", "tasks", "");
   std::vector<std::string> task_names =
       Vectorize<std::string>(str.c_str(), " ,");

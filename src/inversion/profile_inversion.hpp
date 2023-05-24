@@ -2,8 +2,8 @@
 #define SRC_INVERSION_PROFILE_INVERSION_HPP_
 
 // C/C++ headers
-#include <vector>
 #include <string>
+#include <vector>
 
 // canon
 #include <configure.hpp>

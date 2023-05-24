@@ -1,13 +1,12 @@
 #ifndef SRC_DEBUGGER_DEBUGGER_IMPL_HPP_
 #define SRC_DEBUGGER_DEBUGGER_IMPL_HPP_
 
-#include <vector>
-#include <string>
-
-// C/C++ headers
+// C/C++
 #include <iostream>
+#include <string>
+#include <vector>
 
-// debugger headers
+// debugger
 #include "debugger.hpp"
 
 template <typename T>

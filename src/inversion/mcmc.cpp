@@ -1,6 +1,4 @@
-// C/C++ headers
-#include <climath/core.h>
-
+// C/C++
 #include <cassert>
 #include <cmath>
 #include <cstdio>
@@ -8,17 +6,23 @@
 #include <cstring>
 #include <iostream>
 
-// harp headers
-#include <configure.hpp>
-#include <utils/ndarrays.hpp>
-
-#include "mcmc.hpp"
-
 #if FITSOUTPUT
 extern "C" {
 #include <fitsio.h>
 }
 #endif
+
+// climath
+#include <climath/core.h>
+
+// utils
+#include <utils/ndarrays.hpp>
+
+// canoe
+#include <configure.hpp>
+
+// inversion
+#include "mcmc.hpp"
 
 void _choldc(double **a, int n, double *p) {
   int i, j, k;
@@ -40,19 +44,18 @@ void _choldc(double **a, int n, double *p) {
 
 // Compute tau directly only if tau < TAUMAX.
 // Otherwise compute tau using the pairwise sum series
-#define TAUMAX 2 
+#define TAUMAX 2
 
 // Compute autocovariances up to lag s = WINMULT*TAU
-#define WINMULT 5 
+#define WINMULT 5
 
 // The autocovariance array is double C[MAXLAG+1]
 // so that C[s] makes sense for s = MAXLAG.
-#define MAXLAG TAUMAX *WINMULT 
+#define MAXLAG TAUMAX *WINMULT
 
 // Stop and print an error message if the array is shorter
 // than MINFAC * MAXLAG.
-#define MINFAC 5 
-   
+#define MINFAC 5
 
 int _acor(double *mean, double *sigma, double *tau, double *X, int L) {
   *mean = 0.;  // Compute the mean of X ...
@@ -93,8 +96,8 @@ int _acor(double *mean, double *sigma, double *tau, double *X, int L) {
                // This is the self consistent window approach.
 
   } else {  // If the provisional tau is so large that we don't think tau
-          // is accurate, apply the acor procedure to the pairwase sums
-          // of X.
+            // is accurate, apply the acor procedure to the pairwase sums
+            // of X.
     int Lh = L / 2;  // The pairwise sequence is half the length (if L is even)
     double newMean;  // The mean of the new sequence, to throw away.
     int j1 = 0;
@@ -802,9 +805,9 @@ double mcmc_stretch_move(double *newp, double **oldp, int iwalker, int nwalker,
   // *zz = sqr((opts->a - 1.) * r + 1.) / opts->a;
   double zz = ((opts->a - 1.) * r + 1.) * ((opts->a - 1.) * r + 1) / opts->a;
 
-  int jwalker;                // pick a waker
+  int jwalker;                  // pick a waker
   int jrank = rand_r() % size;  // pick a rank
-  if (jrank == irank) {       // same rank
+  if (jrank == irank) {         // same rank
     jwalker = rand_r() % (nwalker - 1);
     if (jwalker >= iwalker) jwalker++;  // avoid myself
   } else {                              // another rank

@@ -1,10 +1,11 @@
-#ifndef SRC_INVERSION_INVERSION_HELPER_HPP_ 
+#ifndef SRC_INVERSION_INVERSION_HELPER_HPP_
 #define SRC_INVERSION_INVERSION_HELPER_HPP_
 
+// C/C++
 #include <string>
 #include <vector>
 
-// Eigen headers
+// Eigen
 #include <Eigen/Core>
 
 class ParameterInput;
@@ -17,6 +18,6 @@ void read_observation_file(Eigen::VectorXd *target, Eigen::MatrixXd *icov,
 std::vector<Inversion *> create_inversion_queue(MeshBlock *pmb,
                                                 ParameterInput *pin);
 
-void gather_probability(std::vector<Inversion *> const& fitq);
+void gather_probability(std::vector<Inversion *> const &fitq);
 
 #endif  // SRC_INVERSION_INVERSION_HELPER_HPP_

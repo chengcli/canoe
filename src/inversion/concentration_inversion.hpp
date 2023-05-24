@@ -2,10 +2,14 @@
 #define SRC_INVERSION_CONCENTRATION_INVERSION_HPP_
 
 // C/C++ header
-#include <athena/defs.hpp>
-#include <configure.hpp>
-#include <vector>
 #include <string>
+#include <vector>
+
+// athena
+#include <athena/defs.hpp>
+
+// canoe
+#include <configure.hpp>
 
 // inversion
 #include "inversion.hpp"

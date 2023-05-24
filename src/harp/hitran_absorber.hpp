@@ -1,11 +1,11 @@
 #ifndef SRC_HARP_HITRAN_ABSORBER_HPP_
 #define SRC_HARP_HITRAN_ABSORBER_HPP_
 
-// C/C++ header
-#include <vector>
+// C/C++
 #include <string>
+#include <vector>
 
-// harp2 header
+// harp
 #include "absorber.hpp"
 
 class HitranAbsorber : public Absorber {

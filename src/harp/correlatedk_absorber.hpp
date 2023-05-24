@@ -1,11 +1,11 @@
 #ifndef SRC_HARP_CORRELATEDK_ABSORBER_HPP_
 #define SRC_HARP_CORRELATEDK_ABSORBER_HPP_
 
-// C/C++ header
-#include <vector>
+// C/C++
 #include <string>
+#include <vector>
 
-// Athena++ header
+// harp
 #include "absorber.hpp"
 
 class CorrelatedKAbsorber : public Absorber {

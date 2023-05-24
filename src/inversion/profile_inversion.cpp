@@ -25,11 +25,11 @@
 #include <snap/thermodynamics/thermodynamics.hpp>
 
 // utils
+#include <configure.hpp>
 #include <utils/ndarrays.hpp>
 #include <utils/vectorize.hpp>
 
-#include <configure.hpp>
-
+// inversion
 #include "gaussian_process.hpp"
 #include "profile_inversion.hpp"
 

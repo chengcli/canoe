@@ -1,19 +1,22 @@
 // C/C++ headers
-#include "freedman_simple.hpp"
-
 #include <algorithm>
 #include <cassert>  // assert
 #include <cmath>
 #include <cstring>
 #include <iostream>
-#include <string>
 #include <stdexcept>
+#include <string>
 
+// athena
 #include <athena/athena_arrays.hpp>
 #include <athena/mesh/mesh.hpp>
 
+// snap
 #include <snap/cell_variables.hpp>
 #include <snap/thermodynamics/thermodynamics.hpp>
+
+// harp
+#include "freedman_simple.hpp"
 
 FreedmanSimple::FreedmanSimple(MeshBlock *pmb, ParameterInput *pin,
                                std::string bname)

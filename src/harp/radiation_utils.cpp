@@ -1,18 +1,21 @@
-// C++ header
+// C++
+#include <algorithm>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <sstream>
-#include <algorithm>
 #include <vector>
 
 // climath
-#include <climath/core.h>  // deg2rad
+#include <climath/core.h>
 
-// harp
-#include <configure.hpp>
+// utils
 #include <utils/vectorize.hpp>
 
+// canoe
+#include <configure.hpp>
+
+// harp
 #include "radiation_utils.hpp"
 
 /*void Radiation::TotalFlux(AthenaArray<Real>& flux) const

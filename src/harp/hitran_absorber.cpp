@@ -1,17 +1,23 @@
-// C/C++ headers
-
-#include <algorithm>
-#include <athena/athena.hpp>
+// C/C++
 #include <cmath>
-#include <configure.hpp>
 #include <cstring>
 #include <iostream>
-#include <snap/cell_variables.hpp>
 #include <stdexcept>
 #include <string>
 
+// climath
 #include <climath/interpolation.h>
 
+// athena
+#include <athena/athena.hpp>
+
+// snap
+#include <snap/cell_variables.hpp>
+
+// canoe
+#include <configure.hpp>
+
+// harp
 #include "hitran_absorber.hpp"
 
 // External library headers
