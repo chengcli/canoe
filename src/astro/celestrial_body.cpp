@@ -105,7 +105,7 @@ CelestrialBody::~CelestrialBody() {
 
 void CelestrialBody::ReadSpectraFile(std::string sfile) {
   AthenaArray<Real> spectrum;
-  ReadDataTable(spectrum, sfile);
+  ReadDataTable(&spectrum, sfile);
 
   nspec_ = spectrum.GetDim2();
 

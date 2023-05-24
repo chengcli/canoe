@@ -1,5 +1,5 @@
-#ifndef NDARRAYS_HPP
-#define NDARRAYS_HPP
+#ifndef SRC_UTILS_NDARRAYS_HPP_
+#define SRC_UTILS_NDARRAYS_HPP_
 
 template <typename T>
 void NewCArray(T**& a, int n1, int n2) {
@@ -80,4 +80,4 @@ void FreeCArray4(T**** a) {
   delete[] a;
 }
 
-#endif
+#endif  // SRC_UTILS_NDARRAYS_HPP_

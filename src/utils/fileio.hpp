@@ -1,5 +1,5 @@
-#ifndef FILEIO_HPP
-#define FILEIO_HPP
+#ifndef SRC_UTILS_FILEIO_HPP_
+#define SRC_UTILS_FILEIO_HPP_
 
 // C/C++
 #include <athena/athena.hpp>
@@ -32,6 +32,6 @@ class AthenaArray;
 char* StripLine(char* line);
 char* NextLine(char* line, int num, FILE* stream);
 void read_data_table(char const* fname, double** data, int* rows, int* cols);
-void ReadDataTable(AthenaArray<Real>& data, std::string fname, char c = ' ');
+void ReadDataTable(AthenaArray<Real>* data, std::string fname, char c = ' ');
 
-#endif  // FILEIO_HPP
+#endif  // SRC_UTILS_FILEIO_HPP_

@@ -2,6 +2,7 @@
 #include <ctime>
 #include <iostream>
 #include <stdexcept>
+#include <memory>
 
 // Athena++ headers
 #include <athena/globals.hpp>

@@ -1,5 +1,5 @@
-#ifndef PROGRAM_SETUP_HPP
-#define PROGRAM_SETUP_HPP
+#ifndef SRC_UTILS_PROGRAM_SETUP_HPP_
+#define SRC_UTILS_PROGRAM_SETUP_HPP_
 
 // C/C++ headers
 #include <cstdint>
@@ -22,4 +22,4 @@ void program_end();
 
 void program_end(Mesh *);
 
-#endif
+#endif  // SRC_UTILS_PROGRAM_SETUP_HPP_
