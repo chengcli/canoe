@@ -37,11 +37,11 @@ Radiation::Radiation(MeshBlock *pmb, ParameterInput *pin)
 
   // radiation bands
   int bid = 1;
-  readRadiationBands(pmb, pin, bid);
+  readRadiationBands(pmb, pin, &bid);
 
   // incoming radiation direction (mu,phi) in degree
   std::string str = pin->GetOrAddString("radiation", "indir", "(0.,0.)");
-  read_radiation_directions(rayInput_, str);
+  read_radiation_directions(&rayInput_, str);
 
   // output radiance
   int nout = getNumOutgoingRays();
@@ -64,8 +64,8 @@ Radiation::~Radiation() {
   delete planet_;
 }
 
-void Radiation::calculateRadiativeFlux(AthenaArray<Real> &flxup,
-                                       AthenaArray<Real> &flxdn, Real time,
+void Radiation::calculateRadiativeFlux(AthenaArray<Real> *flxup,
+                                       AthenaArray<Real> *flxdn, Real time,
                                        int k, int j, int il, int iu) {
   pdebug->Call("Radiation::calculateRadiativeFlux");
   Real dist = stellarDistance_au_;
@@ -83,18 +83,18 @@ void Radiation::calculateRadiativeFlux(AthenaArray<Real> &flxup,
 
     // iu ~= ie + 1
     AthenaArray<Real> bflxup, bflxdn;
-    bflxup.InitWithShallowSlice(flxup, 3, idx, p->getNumOutgoingRays());
-    bflxdn.InitWithShallowSlice(flxdn, 3, idx, p->getNumOutgoingRays());
+    bflxup.InitWithShallowSlice(*flxup, 3, idx, p->getNumOutgoingRays());
+    bflxdn.InitWithShallowSlice(*flxdn, 3, idx, p->getNumOutgoingRays());
 
     p->setSpectralProperties(k, j, il - NGHOST, iu + NGHOST - 1);
-    p->calculateBandFlux(bflxup, bflxdn, ray, dist, k, j, il, iu);
+    p->calculateBandFlux(&bflxup, &bflxdn, ray, dist, k, j, il, iu);
     idx++;
   }
 
   pdebug->Leave();
 }
 
-void Radiation::calculateRadiance(AthenaArray<Real> &radiance, Real time, int k,
+void Radiation::calculateRadiance(AthenaArray<Real> *radiance, Real time, int k,
                                   int j, int il, int iu) {
   pdebug->Call("Radiation::calculateRadiance");
   Real dist = stellarDistance_au_;
@@ -112,10 +112,10 @@ void Radiation::calculateRadiance(AthenaArray<Real> &radiance, Real time, int k,
 
     // iu ~= ie + 1
     AthenaArray<Real> brad;
-    brad.InitWithShallowSlice(radiance, 3, idx, p->getNumOutgoingRays());
+    brad.InitWithShallowSlice(*radiance, 3, idx, p->getNumOutgoingRays());
 
     p->setSpectralProperties(k, j, il - NGHOST, iu + NGHOST - 1);
-    p->calculateBandRadiance(brad, ray, dist, k, j, il, iu);
+    p->calculateBandRadiance(&brad, ray, dist, k, j, il, iu);
     idx += p->getNumOutgoingRays();
   }
 
@@ -138,14 +138,14 @@ void Radiation::addRadiativeFlux(Hydro *phydro, int k, int j, int il,
 }
 
 void Radiation::readRadiationBands(MeshBlock *pmb, ParameterInput *pin,
-                                   int &bid) {
+                                   int *bid) {
   char name[80];
   while (true) {
-    snprintf(name, 80, "b%d", bid);
+    snprintf(name, sizeof(name), "b%d", *bid);
     if (!pin->DoesParameterExist("radiation", name)) break;
     RadiationBand *p = new RadiationBand(pmb, pin, name);
     bands.push_back(p);
-    bid++;
+    (*bid)++;
   }
 
   if (pin->DoesParameterExist("radiation", "bandsfile")) {

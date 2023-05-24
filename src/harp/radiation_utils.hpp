@@ -14,7 +14,7 @@ void WriteOpticalDepth(std::string fname) const;
 void WriteHeatingRate(std::string fname, AthenaArray<Real> const& flux,
       AthenaArray<Real> const& hr, Real const* level); */
 
-void read_radiation_directions(std::vector<Direction> &ray, std::string str);
+void read_radiation_directions(std::vector<Direction> *ray, std::string str);
 void set_radiation_flags(uint64_t *flags, std::string str);
 
 void getPhaseHenyeyGreenstein(Real *pmom, int iphas, Real gg, int npmom);

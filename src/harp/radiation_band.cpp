@@ -121,10 +121,10 @@ RadiationBand::RadiationBand(MeshBlock *pmb, ParameterInput *pin,
   // outgoing radiation direction (mu,phi) in degree
   if (pin->DoesParameterExist("radiation", name_ + ".outdir")) {
     str = pin->GetString("radiation", name_ + ".outdir");
-    read_radiation_directions(rayOutput_, str);
+    read_radiation_directions(&rayOutput_, str);
   } else if (pin->DoesParameterExist("radiation", "outdir")) {
     str = pin->GetString("radiation", "outdir");
-    read_radiation_directions(rayOutput_, str);
+    read_radiation_directions(&rayOutput_, str);
   }
 
   // allocate memory
@@ -236,13 +236,13 @@ RadiationBand::addAbsorber(MeshBlock *pmb, ParameterInput *pin,
 
 // overide in rtsolver folder
 void __attribute__((weak))
-RadiationBand::calculateBandFlux(AthenaArray<Real> &flxup,
-                                 AthenaArray<Real> &flxdn,
+RadiationBand::calculateBandFlux(AthenaArray<Real> *flxup,
+                                 AthenaArray<Real> *flxdn,
                                  Direction const &rayInput, Real dist, int k,
                                  int j, int il, int iu) {}
 
 /* overide in rtsolver folder
 void __attribute__((weak)) RadiationBand::calculateBandRadiance(
-  AthenaArray<Real> &radiance,
+  AthenaArray<Real> *radiance,
   Direction const& rayInput, Real dist, int k, int j, int il, int iu)
 {}*/

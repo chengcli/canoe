@@ -51,15 +51,15 @@ class Radiation {
 
   ~Radiation();
 
-  void calculateRadiativeFlux(AthenaArray<Real> &rup, AthenaArray<Real> &rdown,
+  void calculateRadiativeFlux(AthenaArray<Real> *rup, AthenaArray<Real> *rdown,
                               Real time, int k, int j, int il, int iu);
 
-  void calculateRadiance(AthenaArray<Real> &rr, Real time, int k, int j, int il,
+  void calculateRadiance(AthenaArray<Real> *rr, Real time, int k, int j, int il,
                          int iu);
 
   void addRadiativeFlux(Hydro *phydro, int k, int j, int il, int iu) const;
 
-  void readRadiationBands(MeshBlock *pmb, ParameterInput *pin, int &b);
+  void readRadiationBands(MeshBlock *pmb, ParameterInput *pin, int *b);
 
   size_t getNumOutgoingRays() const;
 
