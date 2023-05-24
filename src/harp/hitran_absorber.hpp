@@ -1,10 +1,11 @@
-#ifndef HITRAN_ABSORBER_HPP
-#define HITRAN_ABSORBER_HPP
+#ifndef SRC_HARP_HITRAN_ABSORBER_HPP_
+#define SRC_HARP_HITRAN_ABSORBER_HPP_
 
-// C/C++ header
+// C/C++
+#include <string>
 #include <vector>
 
-// harp2 header
+// harp
 #include "absorber.hpp"
 
 class HitranAbsorber : public Absorber {
@@ -26,4 +27,4 @@ class HitranAbsorber : public Absorber {
   Real RefTemp_(Real pres) const;
 };
 
-#endif
+#endif  // SRC_HARP_HITRAN_ABSORBER_HPP_

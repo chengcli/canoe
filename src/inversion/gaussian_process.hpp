@@ -1,5 +1,5 @@
-#ifndef GAUSSIAN_PROCESS_HPP
-#define GAUSSIAN_PROCESS_HPP
+#ifndef SRC_INVERSION_GAUSSIAN_PROCESS_HPP_
+#define SRC_INVERSION_GAUSSIAN_PROCESS_HPP_
 
 #include <cmath>
 
@@ -29,4 +29,4 @@ double gp_predict(KernelFunction_t kernel, double *arr2, double const *x2,
 double gp_lnprior(KernelFunction_t kernel, double const *arr1, double const *x1,
                   double const *s1, int n1, double len);
 
-#endif
+#endif  // SRC_INVERSION_GAUSSIAN_PROCESS_HPP_

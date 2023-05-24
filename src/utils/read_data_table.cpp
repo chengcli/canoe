@@ -32,7 +32,7 @@ void read_data_table(char const *fname, double **data, int *rows, int *cols) {
   fclose(fp);
 }
 
-void ReadDataTable(AthenaArray<Real> &data, std::string fname, char c) {
+void ReadDataTable(AthenaArray<Real> *data, std::string fname, char c) {
   // remove comment
   std::string str_file = DecommentFile(fname);
 
@@ -55,10 +55,10 @@ void ReadDataTable(AthenaArray<Real> &data, std::string fname, char c) {
   // str_file = DecommentFile(fname);
 
   // read second time
-  data.NewAthenaArray(rows, cols);
+  data->NewAthenaArray(rows, cols);
   std::stringstream inp2(str_file);
   // inp.open(fname.c_str(), std::ios::in);
 
   for (int i = 0; i < rows; ++i)
-    for (int j = 0; j < cols; ++j) inp2 >> data(i, j);
+    for (int j = 0; j < cols; ++j) inp2 >> (*data)(i, j);
 }

@@ -1,5 +1,5 @@
-#ifndef COMMAND_LINE
-#define COMMAND_LINE
+#ifndef SRC_UTILS_COMMAND_LINE_HPP_
+#define SRC_UTILS_COMMAND_LINE_HPP_
 
 struct CommandLine {
   static char *input_filename;
@@ -17,4 +17,4 @@ struct CommandLine {
   ~CommandLine() {}
 };
 
-#endif
+#endif  // SRC_UTILS_COMMAND_LINE_HPP_

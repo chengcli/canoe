@@ -1,34 +1,35 @@
-/** @file pi_update_profiles.cpp
- * @brief
- *
- * @author Cheng Li (chengcli@umich.edu)
- * @date Thursday Nov 18, 2021 20:28:43 EST
- * @bug No known bugs.
- */
-
-// C/C++ headers
+// C/C++
 #include <algorithm>
 #include <iostream>
 #include <memory>
 #include <sstream>
+#include <string>
 
-// Athena++ headers
+// climath
 #include <climath/root.h>
 
+// athena++
 #include <athena/athena.hpp>
 #include <athena/coordinates/coordinates.hpp>
 #include <athena/globals.hpp>
 #include <athena/hydro/hydro.hpp>
 #include <athena/mesh/mesh.hpp>
 #include <athena/stride_iterator.hpp>
-#include <configure.hpp>
+
+// debugger
 #include <debugger/debugger.hpp>
+
+// snap
 #include <snap/meshblock_impl.hpp>
-#include <snap/thermodynamics/thermodynamic_funcs.hpp>
 #include <snap/thermodynamics/thermodynamics.hpp>
+#include <snap/thermodynamics/thermodynamics_helper.hpp>
+
+// utils
+#include <configure.hpp>
 #include <utils/ndarrays.hpp>
 #include <utils/vectorize.hpp>
 
+// inversion
 #include "gaussian_process.hpp"
 #include "profile_inversion.hpp"
 
@@ -129,7 +130,7 @@ void ProfileInversion::InitializePositions() {
   // initialize random positions
   pdebug->Message("initialize random positions for walkers");
 
-  srand(time(NULL) + Globals::my_rank);
+  unsigned int seed = time(NULL) + Globals::my_rank;
   NewCArray(init_pos_, nwalker, ndim);
 
   for (int n = 0; n < nwalker; ++n) {
@@ -137,7 +138,7 @@ void ProfileInversion::InitializePositions() {
     for (auto m : idx_) {
       for (int i = 0; i < nsample; ++i)
         init_pos_[n][ip * nsample + i] =
-            (1. * rand() / RAND_MAX - 0.5) * Xstd_[m] *
+            (1. * rand_r(&seed) / RAND_MAX - 0.5) * Xstd_[m] *
             pow(reference_pressure_ / plevel_[i + 1], chi_);
       ip++;
     }

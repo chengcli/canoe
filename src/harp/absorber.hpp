@@ -1,5 +1,5 @@
-#ifndef ABSORBER_HPP_
-#define ABSORBER_HPP_
+#ifndef SRC_HARP_ABSORBER_HPP_
+#define SRC_HARP_ABSORBER_HPP_
 
 // C++ headers
 #include <athena/athena.hpp>
@@ -62,4 +62,4 @@ class Absorber {
   Thermodynamics const* pthermo_;
 };
 
-#endif
+#endif  // SRC_HARP_ABSORBER_HPP_

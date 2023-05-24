@@ -1,10 +1,11 @@
-#ifndef CORRELATEDK_ABSORBER_HPP
-#define CORRELATEDK_ABSORBER_HPP
+#ifndef SRC_HARP_CORRELATEDK_ABSORBER_HPP_
+#define SRC_HARP_CORRELATEDK_ABSORBER_HPP_
 
-// C/C++ header
+// C/C++
+#include <string>
 #include <vector>
 
-// Athena++ header
+// harp
 #include "absorber.hpp"
 
 class CorrelatedKAbsorber : public Absorber {
@@ -23,4 +24,4 @@ class CorrelatedKAbsorber : public Absorber {
   std::vector<Real> kcoeff_; /**< absorption coefficient */
 };
 
-#endif
+#endif  // SRC_HARP_CORRELATEDK_ABSORBER_HPP_

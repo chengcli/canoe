@@ -18,8 +18,6 @@
 #include "radiation.hpp"
 #include "radiation_utils.hpp"  // readRadiationDirections
 
-extern std::unique_ptr<Debugger> pdebug;
-
 RadiationBand::RadiationBand(MeshBlock *pmb, ParameterInput *pin,
                              std::string name)
     : name_(name),
@@ -62,7 +60,7 @@ RadiationBand::RadiationBand(MeshBlock *pmb, ParameterInput *pin,
   // set wavenumber and weights
   wmin_ = val[0];
   wmax_ = val[1];
-  int num_bins = (int)val[2];
+  int num_bins = static_cast<int>(val[2]);
   if (num_bins < 1) {
     msg << "### FATAL ERROR in function RadiationBand::RadiationBand"
         << std::endl
@@ -123,10 +121,10 @@ RadiationBand::RadiationBand(MeshBlock *pmb, ParameterInput *pin,
   // outgoing radiation direction (mu,phi) in degree
   if (pin->DoesParameterExist("radiation", name_ + ".outdir")) {
     str = pin->GetString("radiation", name_ + ".outdir");
-    read_radiation_directions(rayOutput_, str);
+    read_radiation_directions(&rayOutput_, str);
   } else if (pin->DoesParameterExist("radiation", "outdir")) {
     str = pin->GetString("radiation", "outdir");
-    read_radiation_directions(rayOutput_, str);
+    read_radiation_directions(&rayOutput_, str);
   }
 
   // allocate memory
@@ -238,13 +236,13 @@ RadiationBand::addAbsorber(MeshBlock *pmb, ParameterInput *pin,
 
 // overide in rtsolver folder
 void __attribute__((weak))
-RadiationBand::calculateBandFlux(AthenaArray<Real> &flxup,
-                                 AthenaArray<Real> &flxdn,
+RadiationBand::calculateBandFlux(AthenaArray<Real> *flxup,
+                                 AthenaArray<Real> *flxdn,
                                  Direction const &rayInput, Real dist, int k,
                                  int j, int il, int iu) {}
 
 /* overide in rtsolver folder
 void __attribute__((weak)) RadiationBand::calculateBandRadiance(
-  AthenaArray<Real> &radiance,
+  AthenaArray<Real> *radiance,
   Direction const& rayInput, Real dist, int k, int j, int il, int iu)
 {}*/

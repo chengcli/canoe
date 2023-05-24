@@ -23,7 +23,7 @@ void NetcdfOutput::CombineBlocks() {
 #endif
   if (Globals::my_rank == 0) {
     char number[64];
-    sprintf(number, "%05d", output_params.file_number - 1);
+    snprintf(number, sizeof(number), "%05d", output_params.file_number - 1);
 
     std::string infile;
     infile.assign(output_params.file_basename);

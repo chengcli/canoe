@@ -38,7 +38,7 @@ MeshBlock::Impl::Impl(MeshBlock *pmb, ParameterInput *pin) : pmy_block_(pmb) {
 
 // Athena++ demands destruct pbval AFTER all boundary values
 // But in this mod, boundary values are destructed BEFORE pbval
-// TODO, check if this is OK
+// TODO(cli) check if this is OK
 MeshBlock::Impl::~Impl() {
   // std::cout << "Impl desctructor" << std::endl;
   delete pthermo;
@@ -47,7 +47,6 @@ MeshBlock::Impl::~Impl() {
   delete precon;
 
   delete prad;
-  delete_inversion_queue(fitq);
   for (auto q : fitq) {
     delete q;
   }

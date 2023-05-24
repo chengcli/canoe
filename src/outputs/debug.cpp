@@ -85,7 +85,7 @@ void DebugOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) {
 
 #ifdef MPI_PARALLEL
   // gather all nodes and synchronize
-  // TODO: xmin, xmax semm not correct
+  // TODO(cli): xmin, xmax semm not correct
   MPI_Allreduce(MPI_IN_PLACE, vmin, NHYDRO, MPI_REAL_INT, MPI_MINLOC,
                 MPI_COMM_WORLD);
   MPI_Allreduce(MPI_IN_PLACE, vmax, NHYDRO, MPI_REAL_INT, MPI_MAXLOC,

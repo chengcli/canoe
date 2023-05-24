@@ -45,7 +45,7 @@ void EquationOfState::ConservedToPrimitive(
   std::stringstream msg;
   Thermodynamics* pthermo = pmy_block_->pimpl->pthermo;
 
-  apply_vapor_limiter(pmy_block_, cons);
+  apply_vapor_limiter(&cons, pmy_block_);
 
   for (int k = kl; k <= ku; ++k) {
     for (int j = jl; j <= ju; ++j) {

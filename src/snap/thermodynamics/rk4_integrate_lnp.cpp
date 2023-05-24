@@ -1,7 +1,10 @@
+// C/C++
 #include <algorithm>
 #include <iostream>
 
+// thermodynamics
 #include "thermodynamics.hpp"
+#include "thermodynamics_helper.hpp"
 
 void rk4_integrate_lnp(Real q[], int isat[], Real const rcp[],
                        Real const beta[], Real const delta[], Real const t3[],
@@ -36,7 +39,7 @@ void rk4_integrate_lnp(Real q[], int isat[], Real const rcp[],
     }
 
     // calculate gamma
-    update_gamma(gamma, q);
+    update_gamma(&gamma, q);
 
     // calculate tendency
     if (method == 0 || method == 1)

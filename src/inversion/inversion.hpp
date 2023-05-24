@@ -1,16 +1,20 @@
-#ifndef INVERSION_HPP
-#define INVERSION_HPP
+#ifndef SRC_INVERSION_INVERSION_HPP_
+#define SRC_INVERSION_INVERSION_HPP_
 
-// C/C++ headers
+// C/C++
 #include <string>
 #include <vector>
 
-// Eigen headers
+// Eigen
 #include <Eigen/Core>
 
-// harp2 headers
+// athena
+#include <athena/athena.hpp>
+
+// canone
 #include <configure.hpp>
 
+// inversion
 #include "mcmc.hpp"
 
 class MeshBlock;
@@ -105,4 +109,4 @@ class Inversion {
   Real *zz_, *par_;
 };
 
-#endif
+#endif  //  SRC_INVERSION_INVERSION_HPP_

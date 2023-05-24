@@ -1,11 +1,17 @@
-#ifndef CONCENTRATION_INVERSION_HPP
-#define CONCENTRATION_INVERSION_HPP
+#ifndef SRC_INVERSION_CONCENTRATION_INVERSION_HPP_
+#define SRC_INVERSION_CONCENTRATION_INVERSION_HPP_
 
 // C/C++ header
-#include <athena/defs.hpp>
-#include <configure.hpp>
+#include <string>
 #include <vector>
 
+// athena
+#include <athena/defs.hpp>
+
+// canoe
+#include <configure.hpp>
+
+// inversion
 #include "inversion.hpp"
 
 class ConcentrationInversion : public Inversion {
@@ -26,4 +32,4 @@ class ConcentrationInversion : public Inversion {
   Real Xstd_[1 + NVAPOR];
 };
 
-#endif
+#endif  // SRC_INVERSION_CONCENTRATION_INVERSION_HPP_

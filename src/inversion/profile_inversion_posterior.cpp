@@ -54,7 +54,7 @@ Real ProfileInversion::LogPosteriorProbability(Radiation *prad, Hydro *phydro,
   // calculate radiation for updated profiles located at j = jl_ ... ju_
   for (int j = jl_; j <= ju_; ++j) {
     pdebug->Message("run RT for model", j);
-    prad->calculateRadiance(prad->radiance, 0., k, j, is, ie + 1);
+    prad->calculateRadiance(&prad->radiance, 0., k, j, is, ie + 1);
   }
 
   // prior probability

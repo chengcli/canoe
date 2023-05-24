@@ -1,5 +1,5 @@
-#ifndef VECTORIZE_HPP
-#define VECTORIZE_HPP
+#ifndef SRC_UTILS_VECTORIZE_HPP_
+#define SRC_UTILS_VECTORIZE_HPP_
 
 // C/C++
 #include <cstring>
@@ -23,4 +23,4 @@ std::vector<A> Vectorize(const char* cstr, const char* delimiter = " ") {
 template <>
 std::vector<std::string> Vectorize(const char* cstr, const char* delimiter);
 
-#endif
+#endif  // SRC_UTILS_VECTORIZE_HPP_

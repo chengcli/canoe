@@ -1,5 +1,5 @@
-#ifndef SAT_LINDAL92_HPP
-#define SAT_LINDAL92_HPP
+#ifndef SRC_ASTRO_SATURN_SAT_LINDAL92_HPP_
+#define SRC_ASTRO_SATURN_SAT_LINDAL92_HPP_
 
 /** @file sat_lindal92.hpp"
  *
@@ -13,4 +13,4 @@ extern double const lindal92_T[];
 extern double const lindal92_P[];
 }  // namespace Saturn
 
-#endif
+#endif  // SRC_ASTRO_SATURN_SAT_LINDAL92_HPP_
