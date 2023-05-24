@@ -3,6 +3,8 @@
 #include <iomanip>
 #include <iostream>
 #include <sstream>
+#include <algorithm>
+#include <vector>
 
 // climath
 #include <climath/core.h>  // deg2rad

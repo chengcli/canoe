@@ -18,8 +18,6 @@
 #include "radiation.hpp"
 #include "radiation_utils.hpp"  // readRadiationDirections
 
-extern std::unique_ptr<Debugger> pdebug;
-
 RadiationBand::RadiationBand(MeshBlock *pmb, ParameterInput *pin,
                              std::string name)
     : name_(name),
@@ -62,7 +60,7 @@ RadiationBand::RadiationBand(MeshBlock *pmb, ParameterInput *pin,
   // set wavenumber and weights
   wmin_ = val[0];
   wmax_ = val[1];
-  int num_bins = (int)val[2];
+  int num_bins = static_cast<int>(val[2]);
   if (num_bins < 1) {
     msg << "### FATAL ERROR in function RadiationBand::RadiationBand"
         << std::endl

@@ -1,5 +1,5 @@
-#ifndef RADIATION_HPP
-#define RADIATION_HPP
+#ifndef SRC_HARP_RADIATION_HPP_
+#define SRC_HARP_RADIATION_HPP_
 
 // C/C++ headers
 #include <astro/celestrial_body.hpp>
@@ -89,4 +89,4 @@ class Radiation {
   CelestrialBody *planet_;
 };
 
-#endif
+#endif  //  SRC_HARP_RADIATION_HPP_

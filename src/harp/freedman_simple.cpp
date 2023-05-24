@@ -2,15 +2,18 @@
 #include "freedman_simple.hpp"
 
 #include <algorithm>
-#include <athena/athena_arrays.hpp>
-#include <athena/mesh/mesh.hpp>
 #include <cassert>  // assert
 #include <cmath>
 #include <cstring>
 #include <iostream>
+#include <string>
+#include <stdexcept>
+
+#include <athena/athena_arrays.hpp>
+#include <athena/mesh/mesh.hpp>
+
 #include <snap/cell_variables.hpp>
 #include <snap/thermodynamics/thermodynamics.hpp>
-#include <stdexcept>
 
 FreedmanSimple::FreedmanSimple(MeshBlock *pmb, ParameterInput *pin,
                                std::string bname)

@@ -19,4 +19,4 @@ for file in $(find src/utils -name '*.cpp' -or -name '*.hpp' | grep -v "ndarrays
 done
 
 # harp
-#cpplint --filter=${filters} --recursive src/harp
+cpplint --filter=${filters} --recursive src/harp

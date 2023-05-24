@@ -1,9 +1,10 @@
-#ifndef RADIATION_UTILS_HPP
-#define RADIATION_UTILS_HPP
+#ifndef SRC_HARP_RADIATION_UTILS_HPP_
+#define SRC_HARP_RADIATION_UTILS_HPP_
 
 // C/C++ header
 #include <athena/athena.hpp>
 #include <string>
+#include <vector>
 
 #include "radiation.hpp"
 
@@ -23,4 +24,4 @@ void unpackSpectralProperties(Real *tau, Real *ssa, Real *pmom, Real const *buf,
                               int slyr, int npmom, int nblocks,
                               int npmom_max = -1);
 
-#endif
+#endif  // SRC_HARP_RADIATION_UTILS_HPP_

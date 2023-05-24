@@ -18,8 +18,6 @@
 #include "radiation_band.hpp"
 #include "radiation_utils.hpp"  // setRadiationFlags
 
-extern std::unique_ptr<Debugger> pdebug;
-
 Real const Radiation::hPlanck = 6.63E-34;
 Real const Radiation::hPlanck_cgs = 6.63E-27;
 Real const Radiation::cLight = 3.E8;

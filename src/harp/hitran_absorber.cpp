@@ -1,7 +1,4 @@
 // C/C++ headers
-#include "hitran_absorber.hpp"
-
-#include <climath/interpolation.h>
 
 #include <algorithm>
 #include <athena/athena.hpp>
@@ -11,10 +8,17 @@
 #include <iostream>
 #include <snap/cell_variables.hpp>
 #include <stdexcept>
+#include <string>
+
+#include <climath/interpolation.h>
+
+#include "hitran_absorber.hpp"
 
 // External library headers
 #if NETCDFOUTPUT
+extern "C" {
 #include <netcdf.h>
+}
 #endif
 std::ostream &operator<<(std::ostream &os, HitranAbsorber const &ab) {
   for (int i = 0; i < 3; ++i) {
@@ -84,13 +88,13 @@ void HitranAbsorber::loadCoefficient(std::string fname, int bid) {
   nc_open(fname.c_str(), NC_NETCDF4, &fileid);
 
   nc_inq_dimid(fileid, "Wavenumber", &dimid);
-  nc_inq_dimlen(fileid, dimid, (size_t *)len_);
+  nc_inq_dimlen(fileid, dimid, static_cast<size_t *>(len_));
   nc_inq_dimid(fileid, "Pressure", &dimid);
-  nc_inq_dimlen(fileid, dimid, (size_t *)(len_ + 1));
+  nc_inq_dimlen(fileid, dimid, static_cast<size_t *>(len_ + 1));
   strcpy(tname, "T_");
   strcat(tname, name_.c_str());
   nc_inq_dimid(fileid, tname, &dimid);
-  nc_inq_dimlen(fileid, dimid, (size_t *)(len_ + 2));
+  nc_inq_dimlen(fileid, dimid, static_cast<size_t *>(len_ + 2));
 
   axis_.resize(len_[0] + len_[1] + len_[2]);
 
@@ -130,9 +134,10 @@ Real HitranAbsorber::getAttenuation(Real wave1, Real wave2,
   static const Real Rgas = 8.314462;
   Real dens = var.q[IPR] / (Rgas * var.q[IDN]);
   Real x0 = 1.;
-  if (imols_[0] == 0)
+  if (imols_[0] == 0) {
     for (int n = 1; n <= NVAPOR; ++n) x0 -= var.q[n];
-  else
+  } else {
     x0 = var.q[imols_[0]];
+  }
   return 1.E-3 * exp(val) * dens * x0 * mixrs_[0];  // ln(m*2/kmol) -> 1/m
 }
