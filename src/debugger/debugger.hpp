@@ -1,5 +1,5 @@
-#ifndef DEBUGGER_HPP
-#define DEBUGGER_HPP
+#ifndef SRC_DEBUGGER_DEBUGGER_HPP_
+#define SRC_DEBUGGER_DEBUGGER_HPP_
 
 // C/C++ headers
 #include <cmath>
@@ -35,7 +35,7 @@ class Debugger {
   std::stringstream msg;
 
   // functions
-  Debugger(int depth = 0);
+  explicit Debugger(int depth = 0);
   ~Debugger();
 
   /*Debugger* StartTracking(std::string name);
@@ -69,7 +69,7 @@ class Debugger {
   Debugger* Message(std::string str, T* a, int n);
 
   template <typename T>
-  Debugger* Message(std::string str, std::vector<T>& a);
+  Debugger* Message(std::string str, std::vector<T> const& a);
 
   static void Fatal(std::string where, std::string what);
   static void Fatal(std::string where, std::string str, std::string what);
@@ -107,4 +107,4 @@ int IsNumber(T v) {
   return !std::isnan(v);
 }
 
-#endif
+#endif  // SRC_DEBUGGER_DEBUGGER_HPP_
