@@ -14,4 +14,9 @@ for file in $(find src/outputs -name '*.cpp' -or -name '*.hpp' | grep -v "mppncc
 done
 
 # utils
-cpplint --filter=${filters} --recursive src/utils
+for file in $(find src/utils -name '*.cpp' -or -name '*.hpp' | grep -v "ndarrays.hpp"); do
+    cpplint --filter=${filters} $file
+done
+
+# harp
+#cpplint --filter=${filters} --recursive src/harp
