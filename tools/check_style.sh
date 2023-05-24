@@ -20,3 +20,6 @@ done
 
 # harp
 cpplint --filter=${filters} --recursive src/harp
+
+# harp
+cpplint --filter=${filters} --recursive src/inversion

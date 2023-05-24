@@ -1,5 +1,5 @@
-#ifndef INVERSION_HPP
-#define INVERSION_HPP
+#ifndef SRC_INVERSION_INVERSION_HPP_
+#define SRC_INVERSION_INVERSION_HPP_
 
 // C/C++ headers
 #include <string>
@@ -105,4 +105,4 @@ class Inversion {
   Real *zz_, *par_;
 };
 
-#endif
+#endif  //  SRC_INVERSION_INVERSION_HPP_

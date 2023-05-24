@@ -1,5 +1,5 @@
-#ifndef CONCENTRATION_INVERSION_HPP
-#define CONCENTRATION_INVERSION_HPP
+#ifndef SRC_INVERSION_CONCENTRATION_INVERSION_HPP_
+#define SRC_INVERSION_CONCENTRATION_INVERSION_HPP_
 
 // C/C++ header
 #include <athena/defs.hpp>
@@ -26,4 +26,4 @@ class ConcentrationInversion : public Inversion {
   Real Xstd_[1 + NVAPOR];
 };
 
-#endif
+#endif  // SRC_INVERSION_CONCENTRATION_INVERSION_HPP_

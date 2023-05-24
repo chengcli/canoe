@@ -36,10 +36,10 @@ void read_observation_file(Eigen::VectorXd &target, Eigen::MatrixXd &icov,
   // inverse covariance matrix
   for (int i = 0; i < rows; ++i) {
     pl = NextLine(line, MAX_LINE, fp);
-    char *p = strtok(pl, " ");
+    char *p = strtok_r(pl, " ");
     for (int j = 0; j < rows; ++j) {
       sscanf(p, "%lf", &icov(i, j));
-      p = strtok(NULL, " ");
+      p = strtok_r(NULL, " ");
     }
   }
 
