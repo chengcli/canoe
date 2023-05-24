@@ -21,7 +21,7 @@ jobs:
       - name: Install cpplint
         run: sudo pip install cpplint
       - name: Run cpplint
-        run: tools/check_style.sh
+        run: ./tools/check_style.sh
 
   build:
     # The CMake configure and build commands are platform agnostic and should work equally well on Windows or Mac.
