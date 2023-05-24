@@ -54,7 +54,7 @@ void Inversion::MCMCSave(Hydro *phydro) {
     double lnp0 = recs_.lnp[cur - 1][k], lnp1 = recs_.lnp[cur][k],
            pdiff = (ndim - 1.) * log(zz_[k]) + lnp1 - lnp0;
 
-    if (pdiff > log(1. * rand() / RAND_MAX)) {  // accept this position
+    if (pdiff > log(1. * rand_r() / RAND_MAX)) {  // accept this position
       for (int d = 0; d < ndim; ++d) recs_.par[cur][k][d] = par_[d];
 
       if (lnp1 > recs_.opt_lnp) {  // new best position

@@ -14,7 +14,7 @@ repos:
         entry: clang-format
         language: system
         files: ^(src|python)/.*\.(c|cc|cpp|h|hpp)$
-        args: ["-i", "-style=Google", "--sort-includes=false"]
+        args: ["-i", "-style=Google"]
 
       - id: cmake-format
         name: Fix *.cmake

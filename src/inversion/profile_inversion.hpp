@@ -1,12 +1,14 @@
-#ifndef PROFILE_INVERSION_HPP
-#define PROFILE_INVERSION_HPP
+#ifndef SRC_INVERSION_PROFILE_INVERSION_HPP_
+#define SRC_INVERSION_PROFILE_INVERSION_HPP_
 
 // C/C++ headers
 #include <vector>
+#include <string>
 
-// harp2 headers
+// canon
 #include <configure.hpp>
 
+// inversion
 #include "inversion.hpp"
 
 class ProfileInversion : public Inversion {
@@ -75,4 +77,4 @@ class JunoProfileInversion : public ProfileInversion {
                           int j) const override;
 };
 
-#endif
+#endif  // SRC_INVERSION_PROFILE_INVERSION_HPP_

@@ -5,7 +5,9 @@
 #include <athena/defs.hpp>
 #include <configure.hpp>
 #include <vector>
+#include <string>
 
+// inversion
 #include "inversion.hpp"
 
 class ConcentrationInversion : public Inversion {

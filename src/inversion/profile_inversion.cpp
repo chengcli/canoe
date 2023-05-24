@@ -138,7 +138,7 @@ void ProfileInversion::InitializePositions() {
     for (auto m : idx_) {
       for (int i = 0; i < nsample; ++i)
         init_pos_[n][ip * nsample + i] =
-            (1. * rand() / RAND_MAX - 0.5) * Xstd_[m] *
+            (1. * rand_r() / RAND_MAX - 0.5) * Xstd_[m] *
             pow(reference_pressure_ / plevel_[i + 1], chi_);
       ip++;
     }
