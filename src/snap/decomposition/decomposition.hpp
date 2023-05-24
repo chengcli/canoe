@@ -1,23 +1,25 @@
 #ifndef DECOMPOSITION_HPP
 #define DECOMPOSITION_HPP
 
-// Athena++ headers
-#include <hydro/hydro.hpp>
+#include <athena/athena.hpp>
 
 // MPI headers
 #ifdef MPI_PARALLEL
 #include <mpi.h>
 #endif
 
+class MeshBlock;
+template <typename T>
+class AthenaArray;
+
 class Decomposition {
  public:
   // data
-  Hydro *pmy_hydro;
   bool has_top_neighbor, has_bot_neighbor;
   NeighborBlock tblock, bblock;
 
   // functions
-  Decomposition(Hydro *phydro);
+  Decomposition(MeshBlock *pmb);
   ~Decomposition();
   void FindNeighbors();
   int CreateMPITag(int lid, int bufid, int phy);
@@ -49,6 +51,8 @@ class Decomposition {
                                int iu);
 
  private:
+  Hydro *pmy_block_;
+
   // pressure decomposition
   AthenaArray<Real>
       psf_;  // hydrostatic pressure and polytropic index at cell face

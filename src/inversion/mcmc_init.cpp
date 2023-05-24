@@ -1,17 +1,16 @@
 // C/C++ headers
+
 #include <climath/core.h>
 
 #include <athena/hydro/hydro.hpp>
+#include <athena/mesh/mesh.hpp>
 #include <cassert>
 #include <cmath>
+#include <configure.hpp>
 #include <cstdio>
 #include <cstdlib>
-#include <iostream>
-
-// harp2 headers
-#include <configure.hpp>
 #include <debugger/debugger.hpp>
-#include <snap/mesh/block_index.hpp>
+#include <iostream>
 
 #include "inversion.hpp"
 #include "mcmc.hpp"
@@ -25,8 +24,8 @@ void Inversion::MCMCInit(Radiation *prad, Hydro *phydro) {
 
   recs_.lnp[0][0] = 1.;
 
-  int is = pblock_->is, ie = pblock_->ie;
-  int ks = pblock_->ks;
+  int is = pmy_block_->is, ie = pmy_block_->ie;
+  int ks = pmy_block_->ks;
 
   // make sure that the start points are valid
   for (int k = 0; k < nwalker; ++k) {

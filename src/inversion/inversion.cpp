@@ -10,16 +10,14 @@
 #include <utils/ndarrays.hpp>
 // #include "../mesh/block_index.hpp"
 // #include "../mesh/meshblock_impl.hpp"
-#include "../utils/sentinelq.hpp"
 #include "inversion.hpp"
-
-extern std::unique_ptr<Debugger> pdebug;
+#include "inversion_helper.hpp"
 
 Inversion::Inversion(MeshBlock *pmb, ParameterInput *pin, std::string name)
     : name_(name),
       mcmc_initialized_(false),
       init_pos_(nullptr),
-      pcoord_(pmb->pcoord) {
+      pmy_block_(pmb) {
   pdebug->Enter("Inversion");
   std::stringstream msg;
 
@@ -109,27 +107,4 @@ void Inversion::ResetChain() {
   memset(recs_.val[1][0], 0, nstep * nwalker * nvalue * sizeof(double));
   memset(recs_.lnp[1], 0, nstep * nwalker * sizeof(double));
   memset(recs_.newstate[1], 0, nstep * nwalker * sizeof(int));
-}
-
-void gather_probability(SentinelQ<Inversion *> &fitq) {
-  auto q = fitq.getNext();
-  // find the last node
-  while (q->getNext() != nullptr) {
-    q = q->getNext();
-  }
-  auto qlast = q;
-
-  // replace the log probability
-  q = fitq.getNext();
-  while (q != qlast) {
-    Inversion *pfit = q->getData();
-
-    int cur = pfit->recs_.cur;
-    int nwalker = pfit->recs_.nwalker;
-
-    for (int k = 0; k < nwalker; ++k) {
-      pfit->recs_.lnp[cur][k] = qlast->getData()->recs_.lnp[cur][k];
-    }
-    q = q->getNext();
-  }
 }

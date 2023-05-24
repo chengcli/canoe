@@ -5,9 +5,7 @@
 #include <athena/mesh/mesh.hpp>
 #include <athena/parameter_input.hpp>
 #include <debugger/debugger.hpp>
-// #include <utils/sentinelq.hpp>
-#include <snap/mesh/block_index.hpp>
-#include <snap/mesh/meshblock_impl.hpp>
+#include <snap/meshblock_impl.hpp>
 #include <snap/thermodynamics/thermodynamics.hpp>
 #include <utils/vectorize.hpp>
 

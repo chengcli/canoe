@@ -18,6 +18,7 @@ set(namel snap)
 string(TOUPPER ${namel} nameu)
 
 file(GLOB src_files
+    *.cpp
     eos/*.cpp
     thermodynamics/*.cpp
     )

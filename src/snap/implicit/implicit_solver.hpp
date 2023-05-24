@@ -6,10 +6,9 @@
 
 // Eigen headers
 #include <Eigen/Core>
-// #include "../../math/eigen335/Eigen/Dense"
 
 // Athena++ headers
-#include <athena.hpp>
+#include <athena/athena.hpp>
 // #include <bvals/bvals_interfaces.hpp>
 
 class MeshBlock;
@@ -20,6 +19,9 @@ class Mesh;
 class BoundaryValues;
 class EquationOfState;
 class Thermodynamics;
+
+template <typename T>
+class AthenaArray;
 
 class ImplicitSolver {
   friend class Hydro;

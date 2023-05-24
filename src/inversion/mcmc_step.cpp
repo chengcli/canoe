@@ -9,9 +9,9 @@
 #include <climath/core.h>
 
 #include <athena/hydro/hydro.hpp>
+#include <athena/mesh/mesh.hpp>
 #include <configure.hpp>
 #include <debugger/debugger.hpp>
-#include <snap/mesh/block_index.hpp>
 
 #include "inversion.hpp"
 #include "mcmc.hpp"
@@ -37,7 +37,7 @@ void Inversion::MCMCMove(Radiation *prad, Hydro *phydro) {
     // mcmc_walk_move(par_all + k*np, par, np, k, nwalker, zz + k, opts_);
 
     recs_.lnp[cur][k] = LogPosteriorProbability(
-        prad, phydro, par_, recs_.val[cur][k], pblock_->ks + k);
+        prad, phydro, par_, recs_.val[cur][k], pmy_block_->ks + k);
   }
 }
 
@@ -47,8 +47,8 @@ void Inversion::MCMCSave(Hydro *phydro) {
   int nwalker = recs_.nwalker;
   int nval = recs_.nvalue;
 
-  int is = pblock_->is, ie = pblock_->ie;
-  int ks = pblock_->ks;
+  int is = pmy_block_->is, ie = pmy_block_->ie;
+  int ks = pmy_block_->ks;
 
   for (int k = 0; k < nwalker; ++k) {
     double lnp0 = recs_.lnp[cur - 1][k], lnp1 = recs_.lnp[cur][k],

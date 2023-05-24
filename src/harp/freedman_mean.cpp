@@ -8,7 +8,7 @@
 #include <cmath>
 #include <cstring>
 #include <iostream>
-#include <snap/mesh/cell_variables.hpp>
+#include <snap/cell_variables.hpp>
 #include <snap/thermodynamics/thermodynamics.hpp>
 #include <stdexcept>
 

@@ -1,9 +1,12 @@
 // Athena++ headers
-#include <athena.hpp>
+#include <athena/athena.hpp>
 
 // Forward declarations
 class MeshBlock;
 class ParameterInput;
+
+template <typename T>
+class AthenaArray;
 
 class FaceReconstruct {
  public:

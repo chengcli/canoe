@@ -95,14 +95,18 @@ Thermodynamics::Thermodynamics(MeshBlock* pmb, ParameterInput* pin) {
 
   // calculate latent heat = $\beta\frac{R_d}{\epsilon}T^r$
   for (int n = 0; n <= NVAPOR; ++n) latent_[n] = 0.;
+#if NVAPOR > 0
   for (int n = 1 + NVAPOR; n < 1 + 3 * NVAPOR; ++n)
     latent_[n] = beta_[n] * Rd_ / mu_ratios_[n] * t3_[1 + (n - 1) % NVAPOR];
+#endif
 
   // calculate delta = $(\sigma_j - \sigma_i)*\epsilon_i*\gamma/(\gamma - 1)$
   for (int n = 0; n <= NVAPOR; ++n) delta_[n] = 0.;
+#if NVAPOR > 0
   for (int n = 1 + NVAPOR; n < 1 + 3 * NVAPOR; ++n)
     delta_[n] = (cp_ratios_[n] - cp_ratios_[1 + (n - 1) % NVAPOR]) *
                 mu_ratios_[n] / (1. - 1. / gamma);
+#endif
 
   // calculate cv_ratios = $\gamma\sigma_i + (1. - \gamma)/\epsilon_i$
   for (int n = 0; n <= NVAPOR; ++n)

@@ -19,7 +19,6 @@
 #include <debugger/debugger.hpp>
 #include <harp/radiation.hpp>
 #include <harp/radiation_band.hpp>
-#include <snap/mesh/block_index.hpp>
 
 #include "profile_inversion.hpp"
 
@@ -48,7 +47,7 @@ void VLAProfileInversion::CalculateFitTarget(Radiation const *prad, Real *val,
 
     if (fit_differential_) {
       // brightness temperature differential
-      val[b] -= prad->radiance(bid, k, pblock_->js - 1);
+      val[b] -= prad->radiance(bid, k, pmy_block_->js - 1);
     }
 
     bid += ndir;

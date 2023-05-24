@@ -1,6 +1,8 @@
+#include <athena/defs.hpp>
 
 class MeshBlock;
 template <typename T>
 class AthenaArray;
 
-void VaporConcentrationLimiter(MeshBlock *pmb, AthenaArray<Real> &u);
+void apply_vapor_limiter(MeshBlock *pmb, AthenaArray<Real> &u);
+void check_hydro_variables(MeshBlock *pmb, AthenaArray<Real> &u);

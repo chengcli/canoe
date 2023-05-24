@@ -1,27 +1,20 @@
-// Athena++ headers
-#include <athena.hpp>
-#include <coordinates/coordinates.hpp>
-#include <hydro/hydro.hpp>
-#include <hydro/srcterms/hydro_srcterms.hpp>
-#include <mesh/mesh.hpp>
-
-// debugger headers
-#include <debugger.hpp>
-
-// cliutils headers
-#include <cliutils/stride_iterator.hpp>
-
-// canoe headers
+#include <athena/athena.hpp>
+#include <athena/coordinates/coordinates.hpp>
+#include <athena/hydro/hydro.hpp>
+#include <athena/hydro/srcterms/hydro_srcterms.hpp>
+#include <athena/mesh/mesh.hpp>
+#include <athena/stride_iterator.hpp>
 #include <configure.hpp>
+#include <debugger/debugger.hpp>
 
-#include "../mesh/meshblock_impl.hpp"
+#include "../meshblock_impl.hpp"
 #include "../thermodynamics/thermodynamics.hpp"
 
 void check_hydro_variables(MeshBlock *pmb, AthenaArray<Real> const &w) {
   for (int k = pmb->ks; k <= pmb->ke; ++k)
     for (int j = pmb->js; j <= pmb->je; ++j)
       for (int i = pmb->is; i <= pmb->ie; ++i) {
-        for (int n = 0; n <= NumVapors; ++n) {
+        for (int n = 0; n <= NHYDRO; ++n) {
           if (w(n, k, j, i) < 0.) {
             Debugger::Fatal("check_hydro_variables", "density", "negative");
           }
@@ -34,10 +27,10 @@ void check_hydro_variables(MeshBlock *pmb, AthenaArray<Real> const &w) {
 #endif
 
         Thermodynamics *pthermo = pmb->pimpl->pthermo;
-        Real temp = pthermo->getTemp(w.at(k, j, i));
+        Real temp = pthermo->GetTemp(w.at(k, j, i));
         Real grav = -pmb->phydro->hsrc.GetG1();
         if (grav != 0) {
-          Real Tmin = grav * pmb->pcoord->dx1f(i) / pthermo->getRd();
+          Real Tmin = grav * pmb->pcoord->dx1f(i) / pthermo->GetRd();
           if (temp < Tmin) {
             Debugger::Fatal("check_hydro_variables", "temperature", "low");
           }

@@ -4,26 +4,24 @@
 #include <sstream>
 
 // Athena++ headers
-#include <globals.hpp>
-#include <mesh/mesh.hpp>
+#include <athena/globals.hpp>
+#include <athena/mesh/mesh.hpp>
 
 // debugger
-#include <debugger.hpp>
+#include <debugger/debugger.hpp>
 
-// cliutils
-#include <cliutils/program_setup.hpp>
-#include <cliutils/stride_iterator.hpp>
+// utils
+// #include <utils/program_setup.hpp>
+// #include <utils/stride_iterator.hpp>
 
-// canoe headers
-#include "../../constants.hpp"
-#include "../../mesh/meshblock_impl.hpp"
-#include "../../thermodynamics/thermodynamics.hpp"
+#include "../constants.hpp"
+#include "../mesh/meshblock_impl.hpp"
+#include "../thermodynamics/thermodynamics.hpp"
 #include "decomposition.hpp"
 
-Decomposition::Decomposition(Hydro *phydro)
-    : pmy_hydro(phydro), has_top_neighbor(false), has_bot_neighbor(false) {
+Decomposition::Decomposition(MeshBlock *pmb)
+    : pmy_block_(pmb), has_top_neighbor(false), has_bot_neighbor(false) {
   pdebug->Enter("Decomposition");
-  MeshBlock *pmb = phydro->pmy_block;
   int nc1 = pmb->ncells1, nc2 = pmb->ncells2, nc3 = pmb->ncells3;
   // allocate hydrostatic and nonhydrostatic pressure
   psf_.NewAthenaArray(nc3, nc2, nc1 + 1);
@@ -66,7 +64,7 @@ int Decomposition::CreateMPITag(int recvid, int sendid, int phys) {
 }
 
 void Decomposition::FindNeighbors() {
-  MeshBlock *pmb = pmy_hydro->pmy_block;
+  MeshBlock *pmb = pmy_block_;
   has_top_neighbor = false;
   has_bot_neighbor = false;
   for (int n = 0; n < pmb->pbval->nneighbor; ++n) {
@@ -132,7 +130,7 @@ void Decomposition::RecvFromTop(AthenaArray<Real> &psf, int kl, int ku, int jl,
 
 void Decomposition::SendToBottom(AthenaArray<Real> const &psf, int kl, int ku,
                                  int jl, int ju) {
-  MeshBlock *pmb = pmy_hydro->pmy_block;
+  MeshBlock *pmb = pmy_block_;
   int ssize = 0;
   for (int k = kl; k <= ku; ++k)
     for (int j = jl; j <= ju; ++j)
@@ -154,7 +152,7 @@ void Decomposition::SendToBottom(AthenaArray<Real> const &psf, int kl, int ku,
 
 void Decomposition::SyncNewVariables(AthenaArray<Real> const &w, int kl, int ku,
                                      int jl, int ju) {
-  MeshBlock *pmb = pmy_hydro->pmy_block;
+  MeshBlock *pmb = pmy_block_;
 
   if (has_bot_neighbor) {
     int sbot = 0;

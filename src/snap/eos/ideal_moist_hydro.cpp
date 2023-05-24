@@ -1,15 +1,3 @@
-//========================================================================================
-// Athena++ astrophysical MHD code
-// Copyright(C) 2014 James M. Stone <jmstone@princeton.edu> and other code
-// contributors Licensed under the 3-clause BSD License, see LICENSE file for
-// details
-//========================================================================================
-//! \file adiabatic_hydro.cpp
-//  \brief implements functions in class EquationOfState for adiabatic
-//  hydrodynamics`
-
-// C headers
-
 // C++ headers
 #include <cmath>  // sqrt()
 #include <sstream>
@@ -26,7 +14,7 @@
 #include <athena/parameter_input.hpp>
 #include <debugger/debugger.hpp>
 
-#include "../mesh/meshblock_impl.hpp"
+#include "../meshblock_impl.hpp"
 #include "../thermodynamics/thermodynamics.hpp"
 #include "eos_helper.hpp"
 
@@ -57,7 +45,7 @@ void EquationOfState::ConservedToPrimitive(
   std::stringstream msg;
   Thermodynamics* pthermo = pmy_block_->pimpl->pthermo;
 
-  VaporConcentrationLimiter(pmy_block_, cons);
+  apply_vapor_limiter(pmy_block_, cons);
 
   for (int k = kl; k <= ku; ++k) {
     for (int j = jl; j <= ju; ++j) {
