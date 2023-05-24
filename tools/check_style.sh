@@ -21,5 +21,5 @@ done
 # harp
 cpplint --filter=${filters} --recursive src/harp
 
-# harp
+# inversion
 cpplint --filter=${filters} --recursive src/inversion

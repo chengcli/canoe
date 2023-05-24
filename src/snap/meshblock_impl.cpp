@@ -47,7 +47,6 @@ MeshBlock::Impl::~Impl() {
   delete precon;
 
   delete prad;
-  delete_inversion_queue(fitq);
   for (auto q : fitq) {
     delete q;
   }

@@ -50,11 +50,12 @@ void Inversion::MCMCSave(Hydro *phydro) {
   int is = pmy_block_->is, ie = pmy_block_->ie;
   int ks = pmy_block_->ks;
 
+  unsigned int seed = time(NULL);
   for (int k = 0; k < nwalker; ++k) {
     double lnp0 = recs_.lnp[cur - 1][k], lnp1 = recs_.lnp[cur][k],
            pdiff = (ndim - 1.) * log(zz_[k]) + lnp1 - lnp0;
 
-    if (pdiff > log(1. * rand_r() / RAND_MAX)) {  // accept this position
+    if (pdiff > log(1. * rand_r(&seed) / RAND_MAX)) {  // accept this position
       for (int d = 0; d < ndim; ++d) recs_.par[cur][k][d] = par_[d];
 
       if (lnp1 > recs_.opt_lnp) {  // new best position

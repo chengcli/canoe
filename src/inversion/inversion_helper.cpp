@@ -5,7 +5,11 @@
 
 // athena
 #include <athena/athena.hpp>
+#include <athena/mesh/mesh.hpp>
 #include <athena/parameter_input.hpp>
+
+// debugger
+#include <debugger/debugger.hpp>
 
 // utils
 #include <utils/fileio.hpp>
@@ -44,12 +48,13 @@ void read_observation_file(Eigen::VectorXd *target, Eigen::MatrixXd *icov,
   }
 
   // inverse covariance matrix
+  char *saveptr;
   for (int i = 0; i < rows; ++i) {
     pl = NextLine(line, MAX_LINE, fp);
-    char *p = strtok_r(pl, " ");
+    char *p = strtok_r(pl, " ", &saveptr);
     for (int j = 0; j < rows; ++j) {
       sscanf(p, "%lf", &(*icov)(i, j));
-      p = strtok_r(NULL, " ");
+      p = strtok_r(NULL, " ", &saveptr);
     }
   }
 
@@ -99,5 +104,5 @@ std::vector<Inversion *> create_inversion_queue(MeshBlock *pmb,
     jl += q->getX2Span();
   }
 
-  return pfit;
+  return fitq;
 }

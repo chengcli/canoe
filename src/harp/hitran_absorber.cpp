@@ -1,4 +1,5 @@
 // C/C++
+#include <algorithm>
 #include <cmath>
 #include <cstring>
 #include <iostream>

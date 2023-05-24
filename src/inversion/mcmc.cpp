@@ -744,6 +744,7 @@ void mcmc_advance(ObjectiveFunction_t lnprob, mcmc_opts *opts, mcmc_recs *recs,
 
   double *par = new double[ndim];
 
+  unsigned int seed = time(NULL);
   for (int k = 0; k < nwalker; ++k) {
     double zz =
         mcmc_stretch_move(par, recs->par[cur - 1], k, nwalker, ndim, opts);
@@ -754,7 +755,7 @@ void mcmc_advance(ObjectiveFunction_t lnprob, mcmc_opts *opts, mcmc_recs *recs,
     double lnp0 = recs->lnp[cur - 1][k], lnp1 = recs->lnp[cur][k],
            pdiff = (ndim - 1.) * log(zz) + lnp1 - lnp0;
 
-    if (pdiff > log(1. * rand_r() / RAND_MAX)) {  // accept this position
+    if (pdiff > log(1. * rand_r(&seed) / RAND_MAX)) {  // accept this position
       for (int d = 0; d < ndim; ++d) recs->par[cur][k][d] = par[d];
 
       if (lnp1 > recs->opt_lnp) {  // new best position
@@ -801,17 +802,18 @@ double mcmc_stretch_move(double *newp, double **oldp, int iwalker, int nwalker,
 #endif
 
   // strech step
-  double r = 1. * rand_r() / RAND_MAX;
+  unsigned int seed = time(NULL);
+  double r = 1. * rand_r(&seed) / RAND_MAX;
   // *zz = sqr((opts->a - 1.) * r + 1.) / opts->a;
   double zz = ((opts->a - 1.) * r + 1.) * ((opts->a - 1.) * r + 1) / opts->a;
 
-  int jwalker;                  // pick a waker
-  int jrank = rand_r() % size;  // pick a rank
-  if (jrank == irank) {         // same rank
-    jwalker = rand_r() % (nwalker - 1);
+  int jwalker;                       // pick a waker
+  int jrank = rand_r(&seed) % size;  // pick a rank
+  if (jrank == irank) {              // same rank
+    jwalker = rand_r(&seed) % (nwalker - 1);
     if (jwalker >= iwalker) jwalker++;  // avoid myself
   } else {                              // another rank
-    jwalker = rand_r() % nwalker;
+    jwalker = rand_r(&seed) % nwalker;
   }
 
   for (int d = 0; d < ndim; ++d)
@@ -834,9 +836,12 @@ void mcmc_walk_move(double *newp, double **oldp, int k, int nwalker, int np,
   bool redraw;
   assert(opts->p < static_cast<int>(nwalker));
   assert(opts->p > static_cast<int>(np));
+
+  unsigned int seed = time(NULL);
+
   for (int i = 0; i < opts->p; ++i) {
     do {
-      int s = rand_r() % (nwalker - 1);
+      int s = rand_r(&seed) % (nwalker - 1);
       if (s >= static_cast<int>(k)) s++;
       redraw = false;
       for (int j = 0; j < i; ++j)
@@ -870,8 +875,10 @@ void mcmc_walk_move(double *newp, double **oldp, int k, int nwalker, int np,
   // Box-Muller method to generate standard multi-variate normal
   // https://en.wikipedia.org/wiki/Normal_distribution#Generating_values_from_normal_distribution
   // mean is reused to store the standard normal variable
+
   for (size_t i = 0; i < np; ++i) {
-    double u = 1. * rand_r() / RAND_MAX, v = 1. * rand_r() / RAND_MAX;
+    double u = 1. * rand_r(&seed) / RAND_MAX;
+    double v = 1. * rand_r(&seed) / RAND_MAX;
 
     mean[i] = sqrt(-2. * log(u)) * cos(2. * M_PI * v);
   }
