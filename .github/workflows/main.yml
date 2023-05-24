@@ -4,26 +4,31 @@ on:
     branches:
       - main
   pull_request:
-    breanches:
+    branches:
       - main
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Release
 
 jobs:
-  greeting:
+  style-checker:
     runs-on: ubuntu-latest
     steps:
       - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
       - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by ${{runner.name}}"
       - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
       - run: echo "🖥️ The workspace, ${{ github.workspace }}, is now ready to test your code on the runner."
+      - name: Install cpplint
+        run: sudo pip install cpplint
+      - name: Run cpplint
+        run: toos/check_style.sh
 
   build:
     # The CMake configure and build commands are platform agnostic and should work equally well on Windows or Mac.
     # You can convert this to a matrix build if you need cross-platform coverage.
     # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
     runs-on: ubuntu-latest
+    needs: style-checker
 
     steps:
       - uses: actions/checkout@v3

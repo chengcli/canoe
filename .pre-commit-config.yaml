@@ -10,14 +10,14 @@ repos:
   - repo: local
     hooks:
       - id: clang-format
-        name: clang-format
+        name: Fix *.c,*.cc,*.cpp,*.h,*.hpp
         entry: clang-format
         language: system
         files: ^(src|python)/.*\.(c|cc|cpp|h|hpp)$
-        args: ["-i", "-style=Google"]
+        args: ["-i", "-style=Google", "--sort-includes=false"]
 
       - id: cmake-format
-        name: Fix *.c,*.cc,*.cpp,*.h,*.hpp
+        name: Fix *.cmake
         entry: cmake-format
         language: system
         files: .*\.cmake$

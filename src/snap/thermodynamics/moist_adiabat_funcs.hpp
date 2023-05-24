@@ -2,6 +2,7 @@
 #define MOIST_ADIABAT_FUNCS_HPP
 
 // C/C++ header
+#include <string>
 #include <vector>
 
 // Athena++ header

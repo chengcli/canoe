@@ -1,5 +1,5 @@
-#ifndef CELESTRIAL_BODY_HPP
-#define CELESTRIAL_BODY_HPP
+#ifndef SRC_ASTRO_CELESTRIAL_BODY_HPP_
+#define SRC_ASTRO_CELESTRIAL_BODY_HPP_
 
 #include <athena/athena.hpp>
 #include <string>
@@ -24,7 +24,7 @@ class CelestrialBody {
   Real grav_eq;  // equatorial gravity at surface [m/s^2]
 
   // functions
-  CelestrialBody(ParameterInput *pin);
+  explicit CelestrialBody(ParameterInput *pin);
   CelestrialBody(ParameterInput *pin, std::string myname);
   ~CelestrialBody();
 
@@ -35,7 +35,7 @@ class CelestrialBody {
   Real ParentDistanceInAu(Real time);
 
  protected:
-  void ReadCelestrialData_(ParameterInput *pin, std::string myname);
+  void readCelestrialData(ParameterInput *pin, std::string myname);
 
   // emission spectra data
   float_triplet *spec_;
@@ -45,4 +45,4 @@ class CelestrialBody {
 
 Real GetGravity(char const *name, Real pclat);
 
-#endif
+#endif  // SRC_ASTRO_CELESTRIAL_BODY_HPP_
