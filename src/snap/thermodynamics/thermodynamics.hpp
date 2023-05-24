@@ -11,8 +11,6 @@
 #include <athena/mesh/mesh.hpp>
 #include <configure.hpp>
 
-//#include "thermodynamics_helper.hpp"
-
 class MeshBlock;
 class ParameterInput;
 
