@@ -21,8 +21,8 @@
 
 // snap
 #include <snap/meshblock_impl.hpp>
-#include <snap/thermodynamics/thermodynamic_funcs.hpp>
 #include <snap/thermodynamics/thermodynamics.hpp>
+#include <snap/thermodynamics/thermodynamics_helper.hpp>
 
 // utils
 #include <configure.hpp>

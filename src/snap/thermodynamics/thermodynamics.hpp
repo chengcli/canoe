@@ -1,17 +1,17 @@
 #ifndef SRC_SNAP_THERMODYNAMICS_THERMODYNAMICS_HPP_
 #define SRC_SNAP_THERMODYNAMICS_THERMODYNAMICS_HPP_
 
-// C/C++ headers
+// C/C++
 #include <cfloat>
 #include <iosfwd>
 
-// Athena headers
+// athena
 #include <athena/athena.hpp>
 #include <athena/eos/eos.hpp>
 #include <athena/mesh/mesh.hpp>
 #include <configure.hpp>
 
-#include "moist_adiabat_funcs.hpp"
+//#include "thermodynamics_helper.hpp"
 
 class MeshBlock;
 class ParameterInput;
@@ -24,6 +24,22 @@ class ParameterInput;
 // iphase = 2..(N-1) - all other condensible species
 
 enum class Adiabat { reversible = 0, pseudo = 1, dry = 2, isothermal = 3 };
+
+void update_gamma(Real *gamma, Real const q[]);
+
+/*! Calculate the equilibrium between vapor and cloud
+ *
+ * @param q molar mixing ratio
+ * #param iv index of vapor
+ * @param ic index of cloud
+ * @param t3 triple point temperature
+ * @param p3 triple point pressure
+ * @param alpha = L/cv evaluated at current temperature
+ * @return molar change of vapor to cloud
+ */
+Real VaporCloudEquilibrium(Real const q[], int iv, int ic, Real t3, Real p3,
+                           Real alpha, Real beta, Real delta,
+                           bool no_cloud = false);
 
 class Thermodynamics {
   friend std::ostream &operator<<(std::ostream &os, Thermodynamics const &my);
@@ -259,7 +275,7 @@ class Thermodynamics {
   Real GetChi(T w) const {
     Real gamma = pmy_block->peos->GetGamma();
     Real tem[1] = {GetTemp(w)};
-    update_gamma(gamma, tem);
+    update_gamma(&gamma, tem);
     Real qsig = 1., feps = 1.;
     for (int n = 1; n <= NVAPOR; ++n) {
       qsig += w[n] * (cp_ratios_[n] - 1.);
@@ -274,7 +290,7 @@ class Thermodynamics {
   Real getSpecificCp(T w) const {
     Real gamma = pmy_block->peos->GetGamma();
     Real tem[1] = {GetTemp(w)};
-    update_gamma(gamma, tem);
+    update_gamma(&gamma, tem);
     Real qsig = 1.;
     for (int n = 1; n <= NVAPOR; ++n) qsig += w[n] * (cp_ratios_[n] - 1.);
     return gamma / (gamma - 1.) * Rd_ * qsig;
@@ -286,7 +302,7 @@ class Thermodynamics {
   Real getSpecificCv(T w) const {
     Real gamma = pmy_block->peos->GetGamma();
     Real tem[1] = {GetTemp(w)};
-    update_gamma(gamma, tem);
+    update_gamma(&gamma, tem);
     Real qsig = 1.;
     for (int n = 1; n <= NVAPOR; ++n) qsig += w[n] * (cv_ratios_[n] - 1.);
     return 1. / (gamma - 1.) * Rd_ * qsig;
@@ -298,7 +314,7 @@ class Thermodynamics {
   Real getSpecificEnthalpy(T w) const {
     Real gamma = pmy_block->peos->GetGamma();
     Real tem[1] = {GetTemp(w)};
-    update_gamma(gamma, tem);
+    update_gamma(&gamma, tem);
     Real qsig = 1.;
     for (int n = 1; n <= NVAPOR; ++n) qsig += w[n] * (cp_ratios_[n] - 1.);
     return gamma / (gamma - 1.) * Rd_ * qsig * tem[0];

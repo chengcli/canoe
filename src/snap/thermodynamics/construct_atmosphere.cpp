@@ -1,19 +1,12 @@
-/** @file constuct_atmosphere.cpp
- * @brief
- *
- * @author Cheng Li (chengcli@umich.edu)
- * @date Wednesday May 26, 2021 18:45:55 UTC
- * @bug No known bugs.
- */
-
-// C/C++ headers
+// C/C++
 #include <athena/athena_arrays.hpp>
 #include <athena/hydro/hydro.hpp>
 #include <cstdlib>
 #include <iostream>
 
-#include "moist_adiabat_funcs.hpp"
+// thermodynamics
 #include "thermodynamics.hpp"
+#include "thermodynamics_helper.hpp"
 
 void Thermodynamics::ConstructAtmosphere(Real **w, Real Ts, Real Ps, Real grav,
                                          Real dzORdlnp, int len, Adiabat method,

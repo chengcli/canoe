@@ -79,22 +79,6 @@ Real dlnTdlnP(Real const q[], int const isat[], Real const rcp[],
               Real const beta[], Real const delta[], Real const t3[],
               Real gamma);
 
-void update_gamma(Real *gamma, Real const q[]);
-
-/*! Calculate the equilibrium between vapor and cloud
- *
- * @param q molar mixing ratio
- * #param iv index of vapor
- * @param ic index of cloud
- * @param t3 triple point temperature
- * @param p3 triple point pressure
- * @param alpha = L/cv evaluated at current temperature
- * @return molar change of vapor to cloud
- */
-Real VaporCloudEquilibrium(Real const q[], int iv, int ic, Real t3, Real p3,
-                           Real alpha, Real beta, Real delta,
-                           bool no_cloud = false);
-
 void rk4_integrate_z(Real q[], int isat[], Real rcp[], Real const eps[],
                      Real const beta[], Real const delta[], Real const t3[],
                      Real const p3[], Real gamma, Real g_ov_Rd, Real dz,

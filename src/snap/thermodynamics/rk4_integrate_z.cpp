@@ -1,7 +1,10 @@
+// C/C++
 #include <algorithm>
 #include <iostream>
 
-#include "moist_adiabat_funcs.hpp"
+// thermodynamics
+#include "thermodynamics.hpp"
+#include "thermodynamics_helper.hpp"
 
 void rk4_integrate_z(Real q[], int isat[], Real rcp[], Real const eps[],
                      Real const beta[], Real const delta[], Real const t3[],
@@ -41,7 +44,7 @@ void rk4_integrate_z(Real q[], int isat[], Real rcp[], Real const eps[],
     Real R_ov_Rd = q_gas / q_eps;
 
     // calculate gamma
-    update_gamma(gamma, q);
+    update_gamma(&gamma, q);
 
     if (method == 0 || method == 1)
       chi[rk] = dlnTdlnP(q, isat, rcp, beta, delta, t3, gamma);
