@@ -3,6 +3,79 @@
 [![build](https://github.com/chengcli/canoe/actions/workflows/main.yml/badge.svg)](https://github.com/chengcli/canoe/actions/workflows/main.yml)
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 
+## Install system libraries and toolchain
+Canoe can be installed on either a Linux distribution or on MacOS. Open a Linux or Mac terminal,
+you can clone this repo using the following command:
+```
+git clone https://github.com/chengcli/canoe
+```
+This will copy all source files into your local computer. You will need to install a few
+system libraries before installing canoe. All following instructions are executed under
+the `canoe/` directory, which is referred to as the `root`.
+
+### MacOS Installation Guide
+We assume that [homebrew](https://brew.sh/) is already installed on your Mac and we will
+use `brew` to install required system libraries. The system libraries are listed in
+`Brewfile` at the `root`. To install them all, execute
+```
+brew bundle
+```
+### Ubuntu Linux Installation Guide
+On a Ubuntu linux system, use `apt` to install
+```
+sudo apt install clang-format cmake
+```
+
+### Redhat Linux Installation Guide
+On a Redhat linux system, use `yum` to install
+```
+sudo yum install clang-tools-extra cmake
+```
+
+## Install python libraries
+All needed python libraries are collected in `requirements.txt`. We suggest using a
+python [virtual environment](https://docs.python.org/3/library/venv.html) to install
+these packages. If you are already using a virtual enviroment, install python packages
+by
+```
+pip install -r requirements.txt
+```
+Otherwise, to create a python virtual environment:
+```
+python -m venv pyenv
+```
+This command will create an environment named `pyenv` in your current directory. Then, you
+can use the previous command to install the python packages.
+
+## Install pre-commit
+Register your `pre-commit` hooks using
+```
+pre-commit install
+```
+The contributor's guide explains the meaning of `pre-commit`.
+
+## How to build and test
+After you completed the installation steps, you can build the canoe library.
+The easiest way is to build it in-place, meaning that the build (binary files) are
+located under `root`. To do so, make a new directory named `build`
+```
+mkdir build
+```
+All build files will be generated and placed under this directory. It is completely safe
+to delete the whole directory if you want another build. `cd` to build and `cmake`
+
+```
+cd build
+cmake ..
+```
+This command tells the cmake command to look for `CMakeFiles.txt` in the parent directory,
+and start configuring the compile environment. Then compile the code by
+```
+make -j4
+```
+This comman will use 4 cores to compile the code in parallel. Once complete, all executable
+files will be placed in `build/bin`.
+
 ## Contributors' Guide
 We recommend the following naming conventions and workflow for all developers of this repo.
 This ensures that the contribution can be successfully integrated into the existing code base
@@ -63,7 +136,7 @@ the issues very well. We want to make sure that each stage in the history solves
 that people can trace back and understand the context of this problem. Another way to
 say it, the development is *issue driven*. The git workflow goes as the following:
 
-### 1. Submit an issue ticket on Github website
+#### 1. Submit an issue ticket on Github website
 Before you perform any work, think about what issue you want to solve by yourself or you
 want other developers to solve it for you. When you have an idea of what this issue is
 about, you create an issue ticket on Github. If you are going to solve the issue by
@@ -71,7 +144,7 @@ yourself, you can simply write a brief tile and not worrying about the details. 
 want some other developer to solve it for you, you may want to elaborate this issue for
 others.
 
-### 2. Create a new branch locally
+#### 2. Create a new branch locally
 If you have created or have seen an issue and you want to solve it by writing some new
 code, you begin with creating a new branch locally.
 ```
@@ -81,19 +154,19 @@ git checkout -b <branch_name>
 nature of this issue `job`. For example, `cli/add_cpptest_case` is a good branch name
 indicating that this branch is created by user `cli` and works on adding cpp test cases.
 
-### 3. Work on this branch
+#### 3. Work on this branch
 You can work on this branch by creating a document file under `doc/` folder.
 This document should begin with a paragraph stating what is the problem and how you are
 going to solve it. As you make progress, keep updating the document.
 
-### 4. Update the `.gitignore` file
+#### 4. Update the `.gitignore` file
 The `.gitignore` file helps you keep your working directory clean.
 Each folder can have its own `.gitignore` file. This file records the files that
 you don't wish to be added to the git system. For example, model output files should not
 be added to the git. Ideally, when you execute `git status`, there should be no untracked
 files in your git working directory.
 
-### 5. Add changed files to git system
+#### 5. Add changed files to git system
 When you want to take a pause on working on the issue, you should add your changes to
 the git system. This is done by using:
 ```
@@ -101,7 +174,7 @@ git add .
 ```
 This command adds all untracked files to git excluding the files listed in the `.gitignore` file.
 
-### 6. Commit your message
+#### 6. Commit your message
 After you add the changed files, you can use
 ```
 git status
@@ -118,7 +191,7 @@ be squashed later into one message, you write later. You can either use a meanin
 message like "work on XXX", "working XXX", or an unmeanding message like "wip", which
 stands for "work in progress".
 
-### 7. Upload your branch to GitHub
+#### 7. Upload your branch to GitHub
 The previous command only commits the changes to your local machine. You can push your
 changes to Github using
 ```
@@ -127,7 +200,7 @@ git push origin <branch_name>
 At this point, GitHub shall have a remote branch that tracks your local branch. You
 should be able to see the remote branch by going to the git repo and look for "insights/network"
 
-### 8. Submit a pull request (PR)
+#### 8. Submit a pull request (PR)
 This step is done on GitHub site. At this stage, only fill in the title of the PR to
 indicate what this branch is for. No content is needed.
 

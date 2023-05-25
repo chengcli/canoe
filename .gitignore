@@ -3,3 +3,6 @@ build/
 
 # junk
 z.junk/
+
+# homebrew
+Brewfile.lock.json
