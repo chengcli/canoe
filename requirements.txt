@@ -1,5 +1,6 @@
 black
 cmakelang
 cpplint
+netcdf4
 numpy
 pre-commit
