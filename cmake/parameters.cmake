@@ -15,3 +15,7 @@ set_if_empty(AMMONIA_VAPOR_ID -1)
 set_if_empty(WATER_VAPOR_ID -1)
 
 set_if_empty(EQUATION_OF_STATE "ideal_moist")
+
+set_if_empty(NETCDF_OPTION "NO_NETCDFOUTPUT")
+
+set_if_empty(PNETCDF_OPTION "NO_PNETCDFOUTPUT")
