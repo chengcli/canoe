@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 project(canoe
-    LANGUAGES CXX C
+	LANGUAGES CXX C Fortran
 	)
 
 message(STATUS "")
@@ -37,11 +37,13 @@ message(STATUS "3. Set up system libraries")
 message(STATUS "Include ${CMAKE_SOURCE_DIR}/cmake/athena.cmake")
 include(${CMAKE_SOURCE_DIR}/cmake/eigen.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/athena.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/rfm.cmake)
 
 ## 4. set up project configure file and library ##
 message(STATUS "4. Set up project libraries")
 configure_file(${CMAKE_SOURCE_DIR}/configure.hpp.in configure.hpp @ONLY)
 add_subdirectory(src)
+add_subdirectory(tools)
 
 ## 5. set up python binding ##
 message(STATUS "5. Set up python binding")
