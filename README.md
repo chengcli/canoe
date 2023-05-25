@@ -25,7 +25,6 @@ On a Ubuntu linux system, use `apt` to install
 ```
 sudo apt install clang-format cmake
 ```
-- Redhat Linux:
 
 ### Redhat Linux Installation Guide
 On a Redhat linux system, use `yum` to install
