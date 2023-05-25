@@ -37,6 +37,7 @@ message(STATUS "3. Set up system libraries")
 message(STATUS "Include ${CMAKE_SOURCE_DIR}/cmake/athena.cmake")
 include(${CMAKE_SOURCE_DIR}/cmake/eigen.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/athena.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/rfm.cmake)
 
 ## 4. set up project configure file and library ##
 message(STATUS "4. Set up project libraries")

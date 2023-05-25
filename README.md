@@ -123,7 +123,7 @@ conventions to let you pass lints easier and help you write better and readable 
 - use `rand_r` instead of `rand`
 - use `strtok_r` instead of `strtok`
 
-### Git workflow
+## Git workflow
 We adopt the idea of **linear history** and **squash merging**, meaning that there will
 only be one permanent branch (main) and only way to push to main is by submitting a Pull
 Request (PR). The main branch is protected such that no one can push to main directly.
@@ -136,7 +136,7 @@ the issues very well. We want to make sure that each stage in the history solves
 that people can trace back and understand the context of this problem. Another way to
 say it, the development is *issue driven*. The git workflow goes as the following:
 
-#### 1. Submit an issue ticket on Github website
+### 1. Submit an issue ticket on Github website
 Before you perform any work, think about what issue you want to solve by yourself or you
 want other developers to solve it for you. When you have an idea of what this issue is
 about, you create an issue ticket on Github. If you are going to solve the issue by
@@ -144,7 +144,7 @@ yourself, you can simply write a brief tile and not worrying about the details. 
 want some other developer to solve it for you, you may want to elaborate this issue for
 others.
 
-#### 2. Create a new branch locally
+### 2. Create a new branch locally
 If you have created or have seen an issue and you want to solve it by writing some new
 code, you begin with creating a new branch locally.
 ```
@@ -154,19 +154,19 @@ git checkout -b <branch_name>
 nature of this issue `job`. For example, `cli/add_cpptest_case` is a good branch name
 indicating that this branch is created by user `cli` and works on adding cpp test cases.
 
-#### 3. Work on this branch
+### 3. Work on this branch
 You can work on this branch by creating a document file under `doc/` folder.
 This document should begin with a paragraph stating what is the problem and how you are
 going to solve it. As you make progress, keep updating the document.
 
-#### 4. Update the `.gitignore` file
+### 4. Update the `.gitignore` file
 The `.gitignore` file helps you keep your working directory clean.
 Each folder can have its own `.gitignore` file. This file records the files that
 you don't wish to be added to the git system. For example, model output files should not
 be added to the git. Ideally, when you execute `git status`, there should be no untracked
 files in your git working directory.
 
-#### 5. Add changed files to git system
+### 5. Add changed files to git system
 When you want to take a pause on working on the issue, you should add your changes to
 the git system. This is done by using:
 ```
@@ -174,7 +174,7 @@ git add .
 ```
 This command adds all untracked files to git excluding the files listed in the `.gitignore` file.
 
-#### 6. Commit your message
+### 6. Commit your message
 After you add the changed files, you can use
 ```
 git status
@@ -191,7 +191,7 @@ be squashed later into one message, you write later. You can either use a meanin
 message like "work on XXX", "working XXX", or an unmeanding message like "wip", which
 stands for "work in progress".
 
-#### 7. Upload your branch to GitHub
+### 7. Upload your branch to GitHub
 The previous command only commits the changes to your local machine. You can push your
 changes to Github using
 ```
@@ -200,7 +200,7 @@ git push origin <branch_name>
 At this point, GitHub shall have a remote branch that tracks your local branch. You
 should be able to see the remote branch by going to the git repo and look for "insights/network"
 
-#### 8. Submit a pull request (PR)
+### 8. Submit a pull request (PR)
 This step is done on GitHub site. At this stage, only fill in the title of the PR to
 indicate what this branch is for. No content is needed.
 
