@@ -209,6 +209,15 @@ PR and when the PR is merged to the main branch. All commits in this PR will be
 squashed. Then, you will write a meaningful title and contents documenting the changes,
 use cases and notes of this PR.
 
+## Optional packages
+- The [Reference Forward Model](http://eodg.atm.ox.ac.uk/RFM/) (RFM) is provided optionally as
+a tool to generate opacity tables. The source code of this package is not publically available.
+Please contact the original author or Cheng Li to obtain access. The build process turns on RFM
+by default, to turn off building RFM, use
+```
+cmake -DRFM=OFF ..
+```
+
 ## Quick tips
 - undo a "git add"
 ```
