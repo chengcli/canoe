@@ -219,7 +219,11 @@ cmake -DRFM=OFF ..
 ```
 
 ## Large file storage
-This repo uses Git Large File Storage to store opacity data.
+This repo uses Git Large File (lfs) Storage to store opacity data.
+To install lfs for this repo, use
+```
+git lfs install
+```
 Sometimes, you will run into a authentication issue with git lfs.
 Run the following command to check your environment:
 ```
