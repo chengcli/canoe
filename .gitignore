@@ -11,4 +11,4 @@ Brewfile.lock.json
 *.par
 
 # datafile
-data/*.txt
+data/new_jup_lat30_modelc.txt
