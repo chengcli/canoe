@@ -1,6 +1,6 @@
-#! /usr/bin/env python3
-from pylab import *
-from netCDF4 import *
+#! python3
+from numpy import genfromtxt
+#from netCDF4 import *
 from collections import OrderedDict
 import os, sys, glob, getopt, argparse
 

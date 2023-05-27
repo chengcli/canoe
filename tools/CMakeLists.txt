@@ -42,6 +42,8 @@ foreach(pyfile ${pyfiles})
         )
 endforeach()
 
+configure_file(run_ktable.py.in ${CMAKE_BINARY_DIR}/bin/run_ktable.py @ONLY)
+
 ## installation
 #install(PROGRAMS
 #  DESTINATION ${EXECUTABLE_RELDIR}

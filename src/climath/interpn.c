@@ -10,7 +10,7 @@
  * coordinates of each dimesnion is placed sequentially in axis
  */
 void interpn(double *val, double const *coor, double const *data,
-             double const *axis, int const *len, int ndim, int nval) {
+             double const *axis, size_t const *len, int ndim, int nval) {
   int i1, i2;
   i1 = locate(axis, *coor, *len);
 
@@ -58,7 +58,7 @@ void interpn(double *val, double const *coor, double const *data,
  * data[0..len-1] : data array
  * axis[0..len-1] : coordinates
  */
-double interp1(double x, double const *data, double const *axis, int len) {
+double interp1(double x, double const *data, double const *axis, size_t len) {
   double value;
   interpn(&value, &x, data, axis, &len, 1, 1);
   return value;

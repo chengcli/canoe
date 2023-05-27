@@ -6,9 +6,14 @@
 #include <stdexcept>
 #include <string>
 
+// canoe
+#include <configure.hpp>
+
 // netcdf
-#if NETCDFOUTPUT
+#ifdef NETCDFOUTPUT
+extern "C" {
 #include <netcdf.h>
+}
 #endif
 
 // climath
@@ -21,8 +26,8 @@
 // harp
 #include "correlatedk_absorber.hpp"
 
-void CorrelatedKAbsorber::loadCoefficient(std::string fname, int bid) {
-#if NETCDFOUTPUT
+void CorrelatedKAbsorber::loadCoefficient(std::string fname, size_t bid) {
+#ifdef NETCDFOUTPUT
   int fileid, dimid, varid, err;
   len_[0] = 22;  // number of pressure
   len_[1] = 27;  // number of temperature
@@ -42,9 +47,8 @@ void CorrelatedKAbsorber::loadCoefficient(std::string fname, int bid) {
 
   kcoeff_.resize(len_[0] * len_[1] * len_[2]);
   nc_inq_varid(fileid, name_.c_str(), &varid);
-  size_t start[4] = {0, 0, static_cast<size_t>(bid), 0};
-  size_t count[4] = {static_cast<size_t>(len_[0]), static_cast<size_t>(len_[1]),
-                     1, static_cast<size_t>(len_[2])};
+  size_t start[4] = {0, 0, bid, 0};
+  size_t count[4] = {len_[0], len_[1], 1, len_[2]};
   nc_get_vara_double(fileid, varid, start, count, kcoeff_.data());
   nc_close(fileid);
 #endif
@@ -52,13 +56,6 @@ void CorrelatedKAbsorber::loadCoefficient(std::string fname, int bid) {
 
 Real CorrelatedKAbsorber::getAttenuation(Real g1, Real g2,
                                          CellVariables const& var) const {
-#if NETCDFOUTPUT == OFF
-  std::stringstream msg;
-  msg << "### FATAL ERROR in function CorrelatedKAbsorber::getAttenuation"
-      << std::endl
-      << "NETCDF library is needed for Correlated-K absorber";
-  ATHENA_ERROR(msg);
-#endif
   // first axis is wavenumber, second is pressure, third is temperature anomaly
   Real val, coord[3] = {log(var.q[IPR]), var.q[IDN], g1};
   interpn(&val, coord, kcoeff_.data(), axis_.data(), len_, 3, 1);
