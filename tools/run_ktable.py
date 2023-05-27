@@ -1,14 +1,14 @@
-#! /usr/bin/env python3
+#! python3
 from multiprocessing import Pool
 import os, re, subprocess
 
 # file architecture
-hitbin  = "./build/bin/hitbin.release"
-rfm     = "./build/bin/rfm.release"
-run_rfm = "./build/bin/run_rfm.py"
-kcoeff  = "./build/bin/kcoeff.release"
+hitbin  = "./hitbin.release"
+rfm     = "./rfm.release"
+run_rfm = "./run_rfm.py"
+kcoeff  = "./kcoeff.release"
 
-hitran  = "./HITRAN2012.par"
+hitran  = "HITRAN2012.par"
 hitfile = ""
 
 # ktable specifics
@@ -43,7 +43,8 @@ band.append("10 200 0.01")
 #band.append("7800 9300 0.01")
 
 # number of parallel threads
-nthreads = len(band)
+#nthreads = len(band)
+nthreads = 1
 
 # run ktable in single thread
 def RunSingleKtable(wave):
@@ -55,7 +56,7 @@ def RunSingleKtable(wave):
   kncfile = "kcoeff." + wname +".nc"
   # create tab files and kcoeff.inp
   if generate_tab:
-    script = [run_rfm,'--hitbin',hitbin,'--rfm',rfm,'--par',hitran,'--hit',hitfile,
+    script = ['python', run_rfm,'--hitbin',hitbin,'--rfm',rfm,'--par',hitran,'--hit',hitfile,
                       '--atm',atm,'--wave',wave,'--temp',temp,
                       '--molecule',mol,'--output',kinp,'--rundir',tab_folder]
     out, err = subprocess.Popen(script,
@@ -71,7 +72,8 @@ def RunSingleKtable(wave):
     print(out.decode(), err.decode())
   print("band %s finishes." % wave)
 
+if __name__ == '__main__':
 # parallel on spectral bands
-pool = Pool(nthreads)
-pool.map(RunSingleKtable, band)
+    pool = Pool(nthreads)
+    pool.map(RunSingleKtable, band)
 #RunSingleKtable(band[0])
