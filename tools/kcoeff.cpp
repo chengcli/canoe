@@ -17,13 +17,11 @@ extern "C" {
 }
 #endif
 
-using namespace std;
-
 template<typename T, int N>
 class Array {
 protected:
     int m_size[N];
-    vector<T> m_data;
+    std::vector<T> m_data;
 
 public:
     Array() {};
@@ -68,23 +66,23 @@ public:
     }
 };
 
-bool fexists(string fname)
+bool fexists(std::string fname)
 {
-    ifstream ifile(fname.c_str());
+    std::ifstream ifile(fname.c_str());
     return ifile.is_open();
 }
 
-string decomment(
-        string fname
+std::string decomment(
+        std::string fname
         )
 {
     if (!fexists(fname)) {
-        cout << fname << " does not exist." << endl;
+        std::cout << fname << " does not exist." << std::endl;
         assert(0);
     }
     //assert(fexists(fname));
-    ifstream file(fname.c_str(), ios::in);
-    string ss;
+    std::ifstream file(fname.c_str(), std::ios::in);
+    std::string ss;
     char c;
     while (file) {
         file.get(c);
@@ -106,28 +104,28 @@ string decomment(
 
 int main(int argc, char *argv[]) {
   clock_t cpu_tic = clock();
-  cout << "kcoeff program running ..." << endl;
+  std::cout << "kcoeff program running ..." << std::endl;
 
-  string line;
-  vector<string> mols, cfiles, mfiles;
-  vector<vector<double> > cwave, ctemp;
-  vector<double> wave_axis, temp_axis, temp, pres;
+  std::string line;
+  std::vector<std::string> mols, cfiles, mfiles;
+  std::vector<std::vector<double> > cwave, ctemp;
+  std::vector<double> wave_axis, temp_axis, temp, pres;
   Array<double, 3> kcoeff_mol;
   int nmols, nwaves, ntemps, nlevels;
   double wmin, wmax, tmin, tmax, junk;
 
   int iarg;
-  string inpfile, outfile;
+  std::string inpfile, outfile;
   while ((iarg = getopt(argc, argv, "i:o:")) != -1) {
     switch (iarg) {
       case 'i':
-        inpfile = string(optarg);
+        inpfile = std::string(optarg);
         break;
       case 'o':
-        outfile = string(optarg);
+        outfile = std::string(optarg);
         break;
       default:
-        cerr << "unhandled option." << endl;
+        std::cerr << "unhandled option." << std::endl;
         exit(1);
     }
   }
@@ -171,7 +169,7 @@ int main(int argc, char *argv[]) {
 
 
   if (outfile.empty()) {
-    cerr << "output netcdf file not specifeid." << endl;
+    std::cerr << "output netcdf file not specifeid." << std::endl;
     exit(1);
   }
 
@@ -213,12 +211,12 @@ int main(int argc, char *argv[]) {
   nc_put_var_double(ncid, pres_varid, pres.data());
   nc_put_var_double(ncid, tp_varid, temp.data());
 
-  ifstream infile;
+  std::ifstream infile;
   // molecule absorption
   kcoeff_mol.resize(nwaves, nlevels, ntemps);
   //kcoeff_mol.NewAthenaArray(nwaves, nlevels, ntemps);
   for (int m = 0; m < nmols; m++) {
-    cout << "making absorption file for " << mols[m] << " ..." << endl;
+    std::cout << "making absorption file for " << mols[m] << " ..." << std::endl;
     infile.open(mfiles[m].c_str());
     if (infile.is_open()) {
       for (int i = 0; i < 10; i++) getline(infile, line);
@@ -230,7 +228,7 @@ int main(int argc, char *argv[]) {
       }
       infile.close();
     } else {
-      cerr << "cannot open file: " << mfiles[m] << endl;
+      std::cerr << "cannot open file: " << mfiles[m] << std::endl;
       exit(1);
     }
     nc_put_var_double(ncid, temp_varid[m], temp_axis.data());
@@ -241,14 +239,14 @@ int main(int argc, char *argv[]) {
   nc_close(ncid);
 
 #else // NO_NETCDFOUTPUT
-  cout << "NO NETCDF, NO OUPUT" << std::endl;
+  std::cout << "NO NETCDF, NO OUPUT" << std::endl;
 #endif  // NETCDFOUTPUT
 
   clock_t cpu_toc = clock();
-  cout << "kcoeff program ends successfully in "
+  std::cout << "kcoeff program ends successfully in "
        << double(cpu_toc - cpu_tic) / CLOCKS_PER_SEC
-       << " s." << endl
+       << " s." << std::endl
        << "output file written into "
        << outfile
-       << endl;
+       << std::endl;
 }
