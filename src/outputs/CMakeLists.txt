@@ -37,6 +37,7 @@ set_target_properties(${namel}_${buildl}
 target_include_directories(${namel}_${buildl}
 	PRIVATE
     ${ATHENAPP_INCLUDE_DIR}
+    ${NETCDF_INCLUDES}
 	${CMAKE_BINARY_DIR}
 	)
 

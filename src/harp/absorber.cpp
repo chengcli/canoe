@@ -20,7 +20,7 @@ Absorber::Absorber(MeshBlock* pmb, ParameterInput* pin, std::string bname,
 
 Absorber::~Absorber() {}
 
-void Absorber::loadCoefficient(std::string fname, int bid) {}
+void Absorber::loadCoefficient(std::string fname, size_t bid) {}
 
 Real Absorber::getAttenuation(Real wave1, Real wave2,
                               CellVariables const& var) const {

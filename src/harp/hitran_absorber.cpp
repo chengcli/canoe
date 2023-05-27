@@ -6,6 +6,16 @@
 #include <stdexcept>
 #include <string>
 
+// canoe
+#include <configure.hpp>
+
+// netcdf
+#ifdef NETCDFOUTPUT
+extern "C" {
+#include <netcdf.h>
+}
+#endif
+
 // climath
 #include <climath/interpolation.h>
 
@@ -14,19 +24,11 @@
 
 // snap
 #include <snap/cell_variables.hpp>
-
-// canoe
-#include <configure.hpp>
+#include <snap/constants.hpp>
 
 // harp
 #include "hitran_absorber.hpp"
 
-// External library headers
-#if NETCDFOUTPUT
-extern "C" {
-#include <netcdf.h>
-}
-#endif
 std::ostream &operator<<(std::ostream &os, HitranAbsorber const &ab) {
   for (int i = 0; i < 3; ++i) {
     os << "Axis " << i << " = " << ab.len_[i] << std::endl;
@@ -89,19 +91,19 @@ Real HitranAbsorber::RefTemp_(Real pres) const {
 }
 
 void HitranAbsorber::loadCoefficient(std::string fname, int bid) {
-#if NETCDFOUTPUT
+#ifdef NETCDFOUTPUT
   int fileid, dimid, varid, err;
   char tname[80];
   nc_open(fname.c_str(), NC_NETCDF4, &fileid);
 
   nc_inq_dimid(fileid, "Wavenumber", &dimid);
-  nc_inq_dimlen(fileid, dimid, static_cast<size_t *>(len_));
+  nc_inq_dimlen(fileid, dimid, len_);
   nc_inq_dimid(fileid, "Pressure", &dimid);
-  nc_inq_dimlen(fileid, dimid, static_cast<size_t *>(len_ + 1));
+  nc_inq_dimlen(fileid, dimid, len_ + 1);
   strcpy(tname, "T_");
   strcat(tname, name_.c_str());
   nc_inq_dimid(fileid, tname, &dimid);
-  nc_inq_dimlen(fileid, dimid, static_cast<size_t *>(len_ + 2));
+  nc_inq_dimlen(fileid, dimid, len_ + 2);
 
   axis_.resize(len_[0] + len_[1] + len_[2]);
 
@@ -138,8 +140,7 @@ Real HitranAbsorber::getAttenuation(Real wave1, Real wave2,
   Real val, coord[3] = {wave1, var.q[IPR], var.q[IDN] - RefTemp_(var.q[IPR])};
   interpn(&val, coord, kcoeff_.data(), axis_.data(), len_, 3, 1);
 
-  static const Real Rgas = 8.314462;
-  Real dens = var.q[IPR] / (Rgas * var.q[IDN]);
+  Real dens = var.q[IPR] / (Constants::Rgas * var.q[IDN]);
   Real x0 = 1.;
   if (imols_[0] == 0) {
     for (int n = 1; n <= NVAPOR; ++n) x0 -= var.q[n];

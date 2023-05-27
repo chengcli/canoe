@@ -11,8 +11,10 @@
 // canoe
 #include <configure.hpp>
 
-#if NETCDFOUTPUT
+#ifdef NETCDFOUTPUT
+extern "C" {
   #include "netcdf.h"
+}
 #endif
 
 using namespace std;
@@ -174,7 +176,7 @@ int main(int argc, char *argv[]) {
   }
 
 
-#if NETCDFOUTPUT
+#ifdef NETCDFOUTPUT
 
   // write netcdf output
   int ncid, dimid, varid;

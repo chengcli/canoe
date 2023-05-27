@@ -15,9 +15,9 @@
 #include "jup_fletcher16_cirs.hpp"
 
 namespace Jupiter {
-int const fletcher16_nglat = 79;
-int const fletcher16_npres = 120;
-int const fletcher16_cirs_dims[2] = {79, 120};
+size_t const fletcher16_nglat = 79;
+size_t const fletcher16_npres = 120;
+size_t const fletcher16_cirs_dims[2] = {79, 120};
 double const fletcher16_cirs_coord[199] = {-78.0,
                                            -76.0,
                                            -74.0,

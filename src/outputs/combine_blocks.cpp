@@ -15,7 +15,7 @@ int mppnccombine(int argc, char *argv[]);
 
 void NetcdfOutput::CombineBlocks() {
 // Only proceed if NETCDF output enabled
-#if NETCDFOUTPUT
+#ifdef NETCDFOUTPUT
 
   std::stringstream msg;
 #ifdef MPI_PARALLEL

@@ -49,9 +49,11 @@
 #include <configure.hpp>
 
 // Only proceed if NETCDF output enabled
-#if NETCDFOUTPUT
+#ifdef NETCDFOUTPUT
 
+extern "C" {
 #include <netcdf.h>
+}
 
 /* Information structure for a file */
 struct fileinfo {
@@ -165,7 +167,7 @@ int mppnccombine(int argc, char *argv[]) {
     return (1);
   }
   if (argc - 1 > outputarg) inputarg = outputarg + 1;
-  sprintf(outfilename, argv[outputarg]);
+  sprintf(outfilename, "%s", argv[outputarg]);
   outlen = strlen(outfilename);
   if (outlen > 4) {
     strptr = outfilename + outlen - 5;
