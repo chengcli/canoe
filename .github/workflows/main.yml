@@ -62,11 +62,6 @@ jobs:
         run: sudo apt-get install -y libnetcdf-dev
 
       - uses: actions/checkout@v3
-        with:
-          lfs: true
-
-      - name: checkout lfs objects
-        run: git lfs checkout
 
       - name: install python modules
         run: sudo pip install -r requirements.txt

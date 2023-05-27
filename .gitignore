@@ -9,3 +9,6 @@ Brewfile.lock.json
 
 # hitran par file
 *.par
+
+# datafile
+data/*.txt

@@ -44,6 +44,7 @@ message(STATUS "4. Set up project libraries")
 configure_file(${CMAKE_SOURCE_DIR}/configure.hpp.in configure.hpp @ONLY)
 add_subdirectory(src)
 add_subdirectory(tools)
+add_subdirectory(data)
 
 ## 5. set up python binding ##
 message(STATUS "5. Set up python binding")
