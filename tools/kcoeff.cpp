@@ -25,7 +25,7 @@ class Array {
   std::vector<T> m_data;
 
  public:
-  Array(){};
+  Array() {}
 
   void resize(int n2, int n1) {
     m_size[0] = n1;
