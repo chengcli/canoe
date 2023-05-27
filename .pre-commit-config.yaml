@@ -4,8 +4,11 @@ repos:
     hooks:
       - id: requirements-txt-fixer
       - id: trailing-whitespace
+        exclude: ^data/
       - id: end-of-file-fixer
+        exclude: ^data/
       - id: check-yaml
+        exclude: ^data/
 
   - repo: local
     hooks:

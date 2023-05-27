@@ -218,6 +218,28 @@ by default, to turn off building RFM, use
 cmake -DRFM=OFF ..
 ```
 
+## Large file storage
+This repo uses Git Large File (lfs) Storage to store opacity data.
+To install lfs for this repo, use
+```
+git lfs install
+```
+Sometimes, you will run into a authentication issue with git lfs.
+Run the following command to check your environment:
+```
+git lfs env
+```
+If you find that the output looks like this
+```
+Endpoint=https://chengcli@github.com/chengcli/canoe.git/info/lfs (auth=none)
+```
+then you have encountered an authentication problem. Use the following step
+to fix it:
+```
+git config --global lfs.https://github.com/chengcli/canoe.git/info/lfs.access basic
+```
+This command changes the autentication method from `none` to `basic`.
+
 ## Quick tips
 - undo a "git add"
 ```
