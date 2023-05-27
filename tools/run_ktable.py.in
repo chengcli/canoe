@@ -2,17 +2,23 @@
 from multiprocessing import Pool
 import os, re, subprocess
 
-# file architecture
-hitbin  = "./hitbin.release"
-rfm     = "./rfm.release"
-run_rfm = "./run_rfm.py"
-kcoeff  = "./kcoeff.release"
+cmake_source_dir = '@CMAKE_SOURCE_DIR@'
+cmake_binary_dir = '@CMAKE_BINARY_DIR@'
 
-hitran  = "HITRAN2012.par"
+# file architecture
+hitbin  = f"{cmake_binary_dir}/bin/hitbin.release"
+rfm     = f"{cmake_binary_dir}/bin/rfm.release"
+run_rfm = f"{cmake_binary_dir}/bin/run_rfm.py"
+kcoeff  = f"{cmake_binary_dir}/bin/kcoeff.release"
+
+hitran  = f"{cmake_source_dir}/data/HITRAN2012.par"
 hitfile = ""
 
+# number of threads
+max_threads = 4
+
 # ktable specifics
-atm     = "new_jup_lat30_modelc.txt"
+atm     = f"{cmake_source_dir}/data/new_jup_lat30_modelc.txt"
 mol     = "CH4 C2H2 C2H4 C2H6"
 
 # temperature grid
@@ -43,8 +49,7 @@ band.append("10 200 0.01")
 #band.append("7800 9300 0.01")
 
 # number of parallel threads
-#nthreads = len(band)
-nthreads = 1
+nthreads = min(max_threads, len(band))
 
 # run ktable in single thread
 def RunSingleKtable(wave):
