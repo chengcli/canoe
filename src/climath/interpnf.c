@@ -11,7 +11,7 @@
  * coordinates of each dimesnion is placed sequentially in axis
  */
 void interpnf(double *val, double const *coor, double const *data,
-              double const *axis, int const *len, int ndim) {
+              double const *axis, size_t const *len, int ndim) {
   int i1, i2;
   i1 = locate(axis, *coor, *len);
 

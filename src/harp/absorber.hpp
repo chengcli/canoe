@@ -32,7 +32,7 @@ class Absorber {
 
   virtual ~Absorber();
 
-  virtual void loadCoefficient(std::string fname, int bid);
+  virtual void loadCoefficient(std::string fname, size_t bid);
 
   virtual Real getAttenuation(Real wave1, Real wave2,
                               CellVariables const& var) const;

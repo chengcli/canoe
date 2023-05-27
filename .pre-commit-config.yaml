@@ -16,7 +16,7 @@ repos:
         name: Fix *.c,*.cc,*.cpp,*.h,*.hpp
         entry: clang-format
         language: system
-        files: ^(src|python)/.*\.(c|cc|cpp|h|hpp)$
+        files: ^(src|python|tools)/.*\.(c|cc|cpp|h|hpp)$
         args: ["-i", "-style=Google"]
 
       - id: cmake-format

@@ -20,7 +20,7 @@ class HitranAbsorber : public Absorber {
   Real getAttenuation(Real wave1, Real wave2, CellVariables const& var) const;
 
  protected:
-  int len_[3];               /**< length of interpolation axis */
+  size_t len_[3];            /**< length of interpolation axis */
   std::vector<Real> axis_;   /**< interpolation axis */
   std::vector<Real> kcoeff_; /**< absorption coefficient */
   AthenaArray<Real> refatm_; /**< reference atmosphere */

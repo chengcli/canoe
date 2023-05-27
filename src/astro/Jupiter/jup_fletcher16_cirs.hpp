@@ -9,8 +9,8 @@
  */
 
 namespace Jupiter {
-extern int const fletcher16_cirs_npres;
-extern int const fletcher16_cirs_nglat;
+extern size_t const fletcher16_cirs_npres;
+extern size_t const fletcher16_cirs_nglat;
 extern double const fletcher16_cirs_glat[];
 extern double const fletcher16_cirs_pres[];
 extern double const fletcher16_cirs_temp[][120];

@@ -1,0 +1,6 @@
+The data folder is managed by git fls
+To pull data from lfs, run `git lfs pull`
+
+Brief description of data
+- HITRAN2012.par: hitran par files
+- new_jup_lat30_modelc.txt: Jupiter atmosphere profile from Julie Moses

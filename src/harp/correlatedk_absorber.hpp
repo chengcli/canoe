@@ -14,12 +14,13 @@ class CorrelatedKAbsorber : public Absorber {
                       std::string name)
       : Absorber(pmb, pin, bname, name) {}
   virtual ~CorrelatedKAbsorber() {}
-  void loadCoefficient(std::string fname, int bid);
+  void loadCoefficient(std::string fname, size_t bid) override;
   // Real ckAbsorptionCoefficient(int mw, int mg, Real const prim[]) const;
-  Real getAttenuation(Real g1, Real g2, CellVariables const &var) const;
+  Real getAttenuation(Real g1, Real g2,
+                      CellVariables const &var) const override;
 
  protected:
-  int len_[3];               /**< length of interpolation axis */
+  size_t len_[3];            /**< length of interpolation axis */
   std::vector<Real> axis_;   /**< interpolation axis */
   std::vector<Real> kcoeff_; /**< absorption coefficient */
 };
