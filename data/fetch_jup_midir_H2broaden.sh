@@ -5,7 +5,7 @@ FILE="MidIR_HITRAN_0-2500_H2broaden_C2H2_C2H6_AIRbroaden.par"
 DATA_DIR=$1/
 
 # Dropbox link
-DROPBOX_LINK="https://www.dropbox.com/s/6zgf3uq3vrsuv5g/new_jup_lat30_modelc.txt.tar.gz?dl=0"
+DROPBOX_LINK="https://www.dropbox.com/s/cw1891knb31winb/MidIR_HITRAN_0-2500_H2broaden_C2H2_C2H6_AIRbroaden.par.tar.gz?dl=0"
 
 # Read expected SHA256 from the file
 EXPECTED_SHA256=$(grep "$FILE" ${DATA_DIR}checksums.txt | awk '{print $1}')
