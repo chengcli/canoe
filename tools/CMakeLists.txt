@@ -42,10 +42,8 @@ foreach(pyfile ${pyfiles})
         )
 endforeach()
 
-configure_file(run_ktable.py.in ${CMAKE_BINARY_DIR}/bin/run_ktable.py @ONLY)
-configure_file(run_cktable.py.in ${CMAKE_BINARY_DIR}/bin/run_cktable.py @ONLY)
+file(COPY clean_rfm_runs.sh DESTINATION ${CMAKE_BINARY_DIR}/bin)
 
-## installation
-#install(PROGRAMS
-#  DESTINATION ${EXECUTABLE_RELDIR}
-#  )
+configure_file(run_ktable.py.in ${CMAKE_BINARY_DIR}/bin/run_ktable.py @ONLY)
+configure_file(run_ktable_jup.py.in ${CMAKE_BINARY_DIR}/bin/run_ktable_jup.py @ONLY)
+configure_file(run_cktable.py.in ${CMAKE_BINARY_DIR}/bin/run_cktable.py @ONLY)
