@@ -32,3 +32,6 @@ cpplint --filter=${filters} --recursive src/snap/thermodynamics
 
 # tools
 cpplint --filter=${filters} tools/*.cpp
+
+# transport
+cpplint --filter=${filters} --recursive src/transport
