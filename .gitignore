@@ -6,3 +6,9 @@ z.junk/
 
 # homebrew
 Brewfile.lock.json
+
+# hitran par file
+*.par
+
+# datafile
+data/new_jup_lat30_modelc.txt
