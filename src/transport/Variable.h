@@ -1,5 +1,5 @@
-#ifndef VARIABLE_H_
-#define VARIABLE_H_
+#ifndef SRC_TRANSPORT_VARIABLE_H_
+#define SRC_TRANSPORT_VARIABLE_H_
 #include <deal.II/lac/sparse_matrix.h>
 
 #include <Eigen/Core>
@@ -7,6 +7,7 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <string>
 
 #include "Boundary.h"
 #include "RectGrid.h"
@@ -60,7 +61,8 @@ class Variable<_Scalar, 2>
   Variable() {}
 
   template <typename OtherDerived>
-  Variable(const Eigen::DenseBase<OtherDerived>& other) : Base(other) {}
+  explicit Variable(const Eigen::DenseBase<OtherDerived>& other)
+      : Base(other) {}
 
   template <typename OtherDerived>
   Variable& operator=(const Eigen::ArrayBase<OtherDerived>& other) {
@@ -121,10 +123,10 @@ class Variable<_Scalar, 2>
                       std::ios::out | std::ios::binary | std::ios::trunc);
     int nrows = m_grid.rows(), ncols = m_grid.cols(), ncolsh = m_grid.colsh(),
         nhalo = m_grid.halo();
-    out.write((char*)(&nrows), sizeof(int));
-    out.write((char*)(&ncols), sizeof(int));
+    out.write(static_cast<char*>(&nrows), sizeof(int));
+    out.write(static_cast<char*>(&ncols), sizeof(int));
     for (int i = nhalo; i < nhalo + nrows; i++)
-      out.write((char*)(this->data() + nhalo + i * ncolsh),
+      out.write(static_cast<char*>(this->data() + nhalo + i * ncolsh),
                 ncols * sizeof(Scalar));
     out.close();
   }
@@ -221,4 +223,4 @@ void Variable<_Scalar, 2>::finish() {
       m_neumann.set(m_grid.globalh(i, j), m_grid.global(i, j), 1.);
 }
 
-#endif
+#endif  // SRC_TRANSPORT_VARIABLE_H_

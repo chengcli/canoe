@@ -1,5 +1,5 @@
-#ifndef KINETICS_H_
-#define KINETICS_H_
+#ifndef SRC_TRANSPORT_KINETICS_H_
+#define SRC_TRANSPORT_KINETICS_H_
 
 #include <deal.II/lac/sparse_matrix.h>
 #include <deal.II/lac/vector.h>
@@ -41,4 +41,4 @@ class Kinetics {
   dealii::SparseMatrix<Scalar> m_buffer;
 };
 
-#endif
+#endif  // SRC_TRANSPORT_KINETICS_H_

@@ -1,5 +1,5 @@
-#ifndef BOUNDARY_H_
-#define BOUNDARY_H_
+#ifndef SRC_TRANSPORT_BOUNDARY_H_
+#define SRC_TRANSPORT_BOUNDARY_H_
 
 enum BoundaryType { Dirichlet, Neumann, Periodic };
 
@@ -8,8 +8,8 @@ struct BoundaryInfo {
   BoundaryType m_type;
   Scalar m_value;
 
-  BoundaryInfo(BoundaryType type = Dirichlet, Scalar value = 0)
+  explicit BoundaryInfo(BoundaryType type = Dirichlet, Scalar value = 0)
       : m_type(type), m_value(value) {}
 };
 
-#endif
+#endif  // SRC_TRANSPORT_BOUNDARY_H_

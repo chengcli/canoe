@@ -2,7 +2,7 @@
 #include <deal.II/lac/precondition.h>
 
 // athena headers
-#include <athena.hpp>
+#include <athena/athena.hpp>
 
 // IceChem headers
 #include "stream_transport.hpp"
@@ -46,7 +46,7 @@ StreamTransport::StreamTransport(int rows, int cols, bool fourth_order)
   // 9 elements maximum
   for (int j = 0; j < rows_; ++j)
     for (int i = 0; i < cols_; ++i) {
-      long k = global(j, i);
+      int64_t k = global(j, i);
       skk_.add(k, global(j, i));
       if (j > 0) skk_.add(k, global(j - 1, i));
       if (i > 0) skk_.add(k, global(j, i - 1));
@@ -85,7 +85,7 @@ void StreamTransport::setDiffusionMatrix(Real kdiff, Real dx) {
   if (fourth_order_) {
     for (int j = 0; j < rows_; ++j)
       for (int i = 0; i < cols_; ++i) {
-        long k = global(j, i);
+        int64_t k = global(j, i);
         diffusion_.set(k, globalh(j, i), -10. / 3.);
         diffusion_.set(k, globalh(j - 1, i), 2. / 3.);
         diffusion_.set(k, globalh(j, i - 1), 2. / 3.);
@@ -99,7 +99,7 @@ void StreamTransport::setDiffusionMatrix(Real kdiff, Real dx) {
   } else {
     for (int j = 0; j < rows_; ++j)
       for (int i = 0; i < cols_; ++i) {
-        long k = global(j, i);
+        int64_t k = global(j, i);
         diffusion_.set(k, globalh(j, i), -4.);
         diffusion_.set(k, globalh(j - 1, i), 1.);
         diffusion_.set(k, globalh(j + 1, i), 1.);
@@ -114,7 +114,7 @@ void StreamTransport::setAdvectionMatrix(AthenaArray<Real> const& streamf,
                                          Real dx) {
   for (int j = 0; j < rows_; ++j)
     for (int i = 0; i < cols_; ++i) {
-      long k = global(j, i);
+      int64_t k = global(j, i);
       int j1 = j + GhostZoneSize;
       int i1 = i + GhostZoneSize;
       advection_.set(k, globalh(j - 1, i - 1),
@@ -159,15 +159,15 @@ void StreamTransport::assembleSystem(Real dt, Real theta) {
   mass_.add(-theta, KmJmN_);
 }
 
-void StreamTransport::evolve(AthenaArray<Real>& q, Real dt, Real theta) {
+void StreamTransport::evolve(AthenaArray<Real>* q, Real dt, Real theta) {
   assembleSystem(dt, theta);
 
   for (int j = 0; j < rowsh_; ++j)
     for (int i = 0; i < colsh_; ++i) {
       int j1 = j - GhostZoneSize;
       int i1 = i - GhostZoneSize;
-      long k = globalh(j1, i1);
-      qvec_(k) = q(j, i);
+      int64_t k = globalh(j1, i1);
+      qvec_(k) = (*q)(j, i);
     }
 
   KmJ_.vmult(rhs_, qvec_);
@@ -175,9 +175,9 @@ void StreamTransport::evolve(AthenaArray<Real>& q, Real dt, Real theta) {
 
   for (int j = 0; j < rows_; ++j)
     for (int i = 0; i < cols_; ++i) {
-      long k = global(j, i);
+      int64_t k = global(j, i);
       int j1 = j + GhostZoneSize;
       int i1 = i + GhostZoneSize;
-      q(j1, i1) += dqvec_(k);
+      (*q)(j1, i1) += dqvec_(k);
     }
 }

@@ -1,5 +1,5 @@
-#ifndef ADVECTION_H_
-#define ADVECTION_H_
+#ifndef SRC_TRANSPORT_ADVECTION_H_
+#define SRC_TRANSPORT_ADVECTION_H_
 #include <deal.II/lac/sparse_matrix.h>
 
 #include "Variable.h"
@@ -27,7 +27,7 @@ class Advection<_Scalar, 2, 4> {
   void update() {
     for (int i = 0; i < m_grid.rows(); i++)
       for (int j = 0; j < m_grid.cols(); j++) {
-        long k = m_grid.global(i, j);
+        int64_t k = m_grid.global(i, j);
         m_jacobian.set(k, m_grid.globalh(i - 1, j - 1),
                        -m_streamf.val(i, j - 1) + m_streamf.val(i - 1, j));
         m_jacobian.set(k, m_grid.globalh(i - 1, j),
@@ -63,4 +63,4 @@ class Advection<_Scalar, 2, 4> {
   }
 };
 
-#endif
+#endif  // SRC_TRANSPORT_ADVECTION_H_

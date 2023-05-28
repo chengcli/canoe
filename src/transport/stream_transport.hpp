@@ -1,5 +1,5 @@
-#ifndef STREAM_TRANSPORT_HPP
-#define STREAM_TRANSPORT_HPP
+#ifndef SRC_TRANSPORT_STREAM_TRANSPORT_HPP_
+#define SRC_TRANSPORT_STREAM_TRANSPORT_HPP_
 
 // dealii headers
 #include <deal.II/lac/solver_gmres.h>
@@ -27,11 +27,11 @@ class StreamTransport {
   void assembleSystem(Real dt, Real theta);
 
   // theta = 1: Backward Euler
-  void evolve(AthenaArray<Real>& q, Real dt, Real theta = 1.);
+  void evolve(AthenaArray<Real>* q, Real dt, Real theta = 1.);
 
-  long global(int i, int j) const { return i * cols_ + j; }
+  int64_t global(int i, int j) const { return i * cols_ + j; }
 
-  long globalh(int i, int j) const {
+  int64_t globalh(int i, int j) const {
     return (i + GhostZoneSize) * colsh_ + (j + GhostZoneSize);
   }
 
@@ -70,4 +70,4 @@ class StreamTransport {
   dealii::SolverGMRES<> solver_;
 };
 
-#endif
+#endif  // SRC_TRANSPORT_STREAM_TRANSPORT_HPP_

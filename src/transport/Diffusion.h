@@ -1,5 +1,5 @@
-#ifndef DIFFUSION_H_
-#define DIFFUSION_H_
+#ifndef SRC_TRANSPORT_DIFFUSION_H_
+#define SRC_TRANSPORT_DIFFUSION_H_
 
 #include <deal.II/lac/sparse_matrix.h>
 
@@ -26,7 +26,7 @@ class Diffusion<_Scalar, 2, 2> {
   void update() {
     for (int i = 0; i < m_grid.rows(); i++)
       for (int j = 0; j < m_grid.cols(); j++) {
-        long k = m_grid.global(i, j);
+        int64_t k = m_grid.global(i, j);
         m_jacobian.set(k, m_grid.globalh(i, j), -4.);
         m_jacobian.set(k, m_grid.globalh(i - 1, j), 1.);
         m_jacobian.set(k, m_grid.globalh(i + 1, j), 1.);
@@ -63,7 +63,7 @@ class Diffusion<_Scalar, 2, 4> {
   void update() {
     for (int i = 0; i < m_grid.rows(); i++)
       for (int j = 0; j < m_grid.cols(); j++) {
-        long k = m_grid.global(i, j);
+        int64_t k = m_grid.global(i, j);
         m_jacobian.set(k, m_grid.globalh(i, j), -10. / 3.);
         m_jacobian.set(k, m_grid.globalh(i - 1, j), 2. / 3.);
         m_jacobian.set(k, m_grid.globalh(i, j - 1), 2. / 3.);
@@ -84,4 +84,4 @@ class Diffusion<_Scalar, 2, 4> {
   }
 };
 
-#endif
+#endif  // SRC_TRANSPORT_DIFFUSION_H_

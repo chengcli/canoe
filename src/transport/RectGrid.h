@@ -1,5 +1,5 @@
-#ifndef RECTGRID_H_
-#define RECTGRID_H_
+#ifndef SRC_TRANSPORT_RECTGRID_H_
+#define SRC_TRANSPORT_RECTGRID_H_
 #include <deal.II/lac/sparse_matrix.h>
 
 #include <Eigen/Core>
@@ -15,7 +15,7 @@ class RectGrid<_Scalar, 2> {
 
   int m_nrows, m_ncols, m_nhalo, m_nrowsh, m_ncolsh;
 
-  long m_rank, m_rankh;
+  int64_t m_rank, m_rankh;
 
   Scalar m_dd;  // reference grid size
 
@@ -44,7 +44,7 @@ class RectGrid<_Scalar, 2> {
         m_pattern(m_rank, m_rankh, 9) {
     for (int i = 0; i < m_nrows; i++)
       for (int j = 0; j < m_ncols; j++) {
-        long k = global(i, j);
+        int64_t k = global(i, j);
         m_pattern.add(k, globalh(i, j));
         m_pattern.add(k, globalh(i - 1, j));
         m_pattern.add(k, globalh(i, j - 1));
@@ -63,9 +63,9 @@ class RectGrid<_Scalar, 2> {
 
   inline const dealii::SparsityPattern& pattern() const { return m_pattern; }
 
-  inline long global(int i, int j) const { return i * m_ncols + j; }
+  inline int64_t global(int i, int j) const { return i * m_ncols + j; }
 
-  inline long globalh(int i, int j) const {
+  inline int64_t globalh(int i, int j) const {
     return (i + m_nhalo) * m_ncolsh + (j + m_nhalo);
   }
 
@@ -79,11 +79,11 @@ class RectGrid<_Scalar, 2> {
 
   inline int halo() const { return m_nhalo; }
 
-  inline long rank() const { return m_rank; }
+  inline int64_t rank() const { return m_rank; }
 
-  inline long rankh() const { return m_rankh; }
+  inline int64_t rankh() const { return m_rankh; }
 
   inline Scalar dd() const { return m_dd; }
 };
 
-#endif
+#endif  // SRC_TRANSPORT_RECTGRID_H_
