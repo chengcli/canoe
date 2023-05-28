@@ -11,4 +11,7 @@ Brewfile.lock.json
 *.par
 
 # datafile
-data/new_jup_lat30_modelc.txt
+data/[^(CMakeLists)]*.txt
+
+# tmp file
+*.tmp

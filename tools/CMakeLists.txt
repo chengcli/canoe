@@ -43,6 +43,7 @@ foreach(pyfile ${pyfiles})
 endforeach()
 
 configure_file(run_ktable.py.in ${CMAKE_BINARY_DIR}/bin/run_ktable.py @ONLY)
+configure_file(run_cktable.py.in ${CMAKE_BINARY_DIR}/bin/run_cktable.py @ONLY)
 
 ## installation
 #install(PROGRAMS
