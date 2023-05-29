@@ -35,3 +35,6 @@ cpplint --filter=${filters} tools/*.cpp
 
 # transport
 cpplint --filter=${filters} --recursive src/transport
+
+# tests
+cpplint --filter=${filters},-runtime/references --recursive tests/1d-rad-jupiter/*.cpp
