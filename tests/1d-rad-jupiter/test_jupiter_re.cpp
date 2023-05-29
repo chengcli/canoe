@@ -271,7 +271,7 @@ int main(int argc, char **argv) {
   Real Ts = T0 * pow(Ps / P0, Rd / cp);
   Real dlnp, **w1, *z1, *t1;
   dlnp = (x1max - x1min) / pmesh->mesh_size.nx1 / (2. * H0);
-  int nx1 = (int)((x1max - x1min) / (H0 * dlnp));
+  int nx1 = static_cast<int>((x1max - x1min) / (H0 * dlnp));
   NewCArray(w1, nx1, NumHydros + 2 * NumVapors);
   z1 = new Real[nx1];
   t1 = new Real[nx1];
@@ -352,9 +352,9 @@ int main(int argc, char **argv) {
           for (int n = 0; n < NumHydros; ++n)
             for (int k = ks; k <= ke; ++k)
               for (int j = js; j <= je; ++j) {
-                if (n == iv1 || n == iv2 || n == iv3)
+                if (n == iv1 || n == iv2 || n == iv3) {
                   phydro->w(n, k, j, i) = 0.;
-                else {
+                } else {
                   phydro->w(n, k, j, i) = exp(buf[n]);
                 }
               }
