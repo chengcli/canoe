@@ -36,8 +36,13 @@ class MeshBlock::Impl {
   Radiation *prad;
   std::vector<Inversion *> fitq;
 
+  Real GetReferencePressure() const { return reference_pressure_; }
+  Real GetPressureScaleHeight() const { return pressure_scale_height_; }
+
  private:
   MeshBlock *pmy_block_;
+  Real reference_pressure_;
+  Real pressure_scale_height_;
 };
 
 #endif  // SRC_SNAP_MESHBLOCK_IMPL_HPP_

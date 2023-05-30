@@ -20,11 +20,7 @@
 
 RadiationBand::RadiationBand(MeshBlock *pmb, ParameterInput *pin,
                              std::string name)
-    : name_(name),
-      bflags_(0LL),
-      pcoord_(pmb->pcoord),
-      phydro_(pmb->phydro),
-      pscalars_(pmb->pscalars) {
+    : name_(name), bflags_(0LL), pmy_block_(pmb) {
   pdebug->Enter("RadiationBand " + name_);
   std::stringstream msg;
 
@@ -161,7 +157,7 @@ RadiationBand::RadiationBand(MeshBlock *pmb, ParameterInput *pin,
   for (int i = 0; i < aname.size(); ++i) {
     snprintf(astr, 80, "%s.%s", name.c_str(), aname[i].c_str());
     std::string afile = pin->GetOrAddString("radiation", astr, default_file);
-    addAbsorber(pmb, pin, name_, aname[i], afile);
+    addAbsorber(pin, name_, aname[i], afile);
   }
 
   // band parameters
@@ -230,9 +226,8 @@ void RadiationBand::writeBinRadiance(OutputParameters const *pout) const {
 
 // overide in the pgen file
 void __attribute__((weak))
-RadiationBand::addAbsorber(MeshBlock *pmb, ParameterInput *pin,
-                           std::string bname, std::string name,
-                           std::string file) {}
+RadiationBand::addAbsorber(ParameterInput *pin, std::string bname,
+                           std::string name, std::string file) {}
 
 // overide in rtsolver folder
 void __attribute__((weak))

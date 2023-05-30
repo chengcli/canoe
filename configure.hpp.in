@@ -18,4 +18,7 @@ enum class VariableType {prim, cons, chem};
 // PNetCDF output (PNETCDFOUTPUT or NO_PNETCDFOUTPUT)
 #define @PNETCDF_OPTION@
 
+// HYDROSTATIC option (HYDROSTATIC or NOT_HYDROSTATIC)
+#define @HYDROSTATIC_OPTION@
+
 #endif

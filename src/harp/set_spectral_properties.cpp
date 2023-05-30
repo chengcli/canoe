@@ -1,28 +1,23 @@
-/** @file set_spectral_properties.cpp
- * @brief
- *
- * @author Cheng Li (chengcli@umich.edu)
- * @date Friday Apr 15, 2022 10:41:21 EDT
- * @bug No known bugs.
- */
-
-// Athena++ header
+// athena
 #include <athena/coordinates/coordinates.hpp>
 #include <athena/hydro/hydro.hpp>
 #include <athena/mesh/mesh.hpp>
 #include <athena/scalars/scalars.hpp>
 #include <athena/stride_iterator.hpp>
 
-// harp
+// cnaoe
 #include <configure.hpp>
+
+// snap
+#include <snap/cell_variables.hpp>
+#include <snap/meshblock_impl.hpp>
+#include <snap/reconstruct/interpolation.hpp>
 #include <snap/thermodynamics/thermodynamics.hpp>
 
 #include "absorber.hpp"
 #include "radiation.hpp"
 #include "radiation_band.hpp"
 // #include "../particles/particles.hpp"
-#include <snap/cell_variables.hpp>
-#include <snap/reconstruct/interpolation.hpp>
 
 // setting optical properties
 void RadiationBand::setSpectralProperties(int k, int j, int il, int iu) {
@@ -39,12 +34,14 @@ void RadiationBand::setSpectralProperties(int k, int j, int il, int iu) {
   CellVariables var;
   // Particles *ppart;
 
-  AthenaArray<Real> const& w = phydro_->w;
+  MeshBlock* pmb = pmy_block_;
+  AthenaArray<Real> const& w = pmb->phydro->w;
 
   for (auto a : absorbers) {
     for (int i = il; i <= iu; ++i) {
-      for (int n = 0; n < NSCALARS; ++n) var.s[n] = pscalars_->s(n, k, j, i);
-      pthermo_->PrimitiveToChemical(var.w, w.at(k, j, i));
+      for (int n = 0; n < NSCALARS; ++n)
+        var.s[n] = pmb->pscalars->s(n, k, j, i);
+      pmb->pimpl->pthermo->PrimitiveToChemical(var.w, w.at(k, j, i));
       //! \todo do we need it?
       // molar concentration to molar mixing ratio
       Real nmols = var.w[IPR] / (Thermodynamics::Rgas * var.w[IDN]);
@@ -98,13 +95,14 @@ void RadiationBand::setSpectralProperties(int k, int j, int il, int iu) {
         pmom_(m, i, 0) = 1.;
         for (int p = 1; p <= npmom; ++p) pmom_(m, i, p) = 0.;
       }
-#if HYDROSTATIC
-      Real grav = -phydro_->hsrc.GetG1();
-      // \delta z = \delt Z * P/(\rho g H), cli, TODO
-      tau_(m, i) *= pcoord_->dx1f(i) * w(IPR, k, j, i) /
+#ifdef HYDROSTATIC
+      Real grav = -pmb->phydro->hsrc.GetG1();
+      // TODO(cli) check this
+      // \delta z = \delt Z * P/(\rho g H)
+      tau_(m, i) *= pmb->pcoord->dx1f(i) * w(IPR, k, j, i) /
                     (w(IDN, k, j, i) * grav * Constants::PressureScaleHeight);
 #else
-      tau_(m, i) *= pcoord_->dx1f(i);
+      tau_(m, i) *= pmb->pcoord->dx1f(i);
 #endif
     }
   }

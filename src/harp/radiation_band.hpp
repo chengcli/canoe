@@ -42,8 +42,8 @@ class RadiationBand {
 
   Real getAzimuthalAngle(int n) const { return rayOutput_[n].phi; }
 
-  void addAbsorber(MeshBlock *pmb, ParameterInput *pin, std::string bname,
-                   std::string name, std::string file);
+  void addAbsorber(ParameterInput *pin, std::string bname, std::string name,
+                   std::string file);
 
   void setSpectralProperties(int k, int j, int il, int iu);
 
@@ -58,11 +58,6 @@ class RadiationBand {
   int test(uint64_t flag) const { return bflags_ & flag; }
 
   void set(uint64_t flag) { bflags_ |= flag; }
-
-  RadiationBand *use(Thermodynamics const *p) {
-    pthermo_ = p;
-    return this;
-  }
 
   void writeBinRadiance(OutputParameters const *) const;
 
@@ -93,10 +88,7 @@ class RadiationBand {
   Real alpha_;  // T ~ Ts*(\tau/\tau_s)^\alpha at lower boundary
 
   // connection
-  Coordinates const *pcoord_;
-  Hydro const *phydro_;
-  PassiveScalars const *pscalars_;
-  Thermodynamics const *pthermo_;
+  MeshBlock *pmy_block_;
 };
 
 #endif  // SRC_HARP_RADIATION_BAND_HPP_

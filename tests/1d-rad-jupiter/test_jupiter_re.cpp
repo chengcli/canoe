@@ -2,7 +2,6 @@
 #include <ctime>
 
 // athena
-#include <ahtnea/utils/utils.hpp>  // replaceChar
 #include <athena/athena.hpp>
 #include <athena/coordinates/coordinates.hpp>
 #include <athena/eos/eos.hpp>
@@ -10,17 +9,30 @@
 #include <athena/globals.hpp>
 #include <athena/hydro/hydro.hpp>
 #include <athena/mesh/mesh.hpp>
+#include <athena/outputs/outputs.hpp>
 #include <athena/parameter_input.hpp>
+#include <athena/stride_iterator.hpp>
+
+// canoe
+#include <configure.hpp>
 
 // math
 #include <climath/interpolation.h>
 
+// utils
+#include <utils/ndarrays.hpp>
+
+// debugger
+#include <debugger/debugger.hpp>
+
 // thermodynamics
-#include <thermodynamics/thermodynamics.hpp>
-#include <thermodynamics/thermodynamics_helper.hpp>
+#include <snap/meshblock_impl.hpp>
+#include <snap/thermodynamics/thermodynamics.hpp>
+#include <snap/thermodynamics/thermodynamics_helper.hpp>
 
 // harp
 #include <harp/radiation.hpp>
+#include <harp/radiation_band.hpp>
 
 // global parameters
 Real grav, P0, T0, Z0, Tmin;
@@ -37,13 +49,15 @@ void MeshBlock::UserWorkBeforeOutput(ParameterInput *pin) {
   for (int k = ks; k <= ke; ++k)
     for (int j = js; j <= je; ++j)
       for (int i = is; i <= ie; ++i) {
-        user_out_var(0, k, j, i) = pthermo->GetTemp(phydro->w.at(k, j, i));
+        user_out_var(0, k, j, i) =
+            pimpl->pthermo->GetTemp(phydro->w.at(k, j, i));
         user_out_var(1, k, j, i) =
-            PotentialTemp(phydro->w.at(k, j, i), P0, pthermo);
+            PotentialTemp(phydro->w.at(k, j, i), P0, pimpl->pthermo);
       }
 }
 
-void RadiationBand::addAbsorber(std::string name, std::string file,
+/*void RadiationBand::addAbsorber(
+        std::string name, std::string file,
                                 ParameterInput *pin) {
   Real xHe = pin->GetOrAddReal("radiation", "xHe", 0.136);
   Real xH2 = 1. - xHe;
@@ -77,7 +91,7 @@ void RadiationBand::addAbsorber(std::string name, std::string file,
         << "Unknown absorber: '" << name << "' ";
     ATHENA_ERROR(msg);
   }
-}
+}*/
 
 void Forcing(MeshBlock *pmb, Real const time, Real const dt,
              AthenaArray<Real> const &w, AthenaArray<Real> const &bcc,
@@ -114,13 +128,14 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
 
   Real **w1, *z1, *p1, *t1;
   Real dz = (x1max - x1min) / pmy_mesh->mesh_size.nx1 / 2.;
-  int nx1 = 2 * pmy_mesh->mesh_size.nx1 + 1;
+  size_t nx1 = 2 * pmy_mesh->mesh_size.nx1 + 1;
   NewCArray(w1, nx1, NHYDRO);
   z1 = new Real[nx1];
   p1 = new Real[nx1];
   t1 = new Real[nx1];
 
   // estimate surface temperature and pressure
+  Thermodynamics *pthermo = pimpl->pthermo;
   Real Rd = pthermo->GetRd();
   Real cp = gamma / (gamma - 1.) * Rd;
   Real Ts = T0 - grav / cp * (x1min - Z0);
@@ -196,16 +211,13 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
     // add noise
     for (int k = ks; k <= ke; ++k)
       for (int j = js; j <= je; ++j)
-        phydro->w(IV1, k, j, i) = 0.01 * (1. * rand_r(&seed) / RAND_MAX - 0.5);
+        phydro->w(IVX, k, j, i) = 0.01 * (1. * rand_r(&seed) / RAND_MAX - 0.5);
   }
 
   // set spectral properties
-  RadiationBand *p = prad->pband;
-  while (p != NULL) {
+  for (auto p : pimpl->prad->bands) {
     for (int k = kl; k <= ku; ++k)
-      for (int j = jl; j <= ju; ++j)
-        p->setSpectralProperties(phydro->w, k, j, is, ie);
-    p = p->next;
+      for (int j = jl; j <= ju; ++j) p->setSpectralProperties(k, j, is, ie);
   }
 
   peos->PrimitiveToConserved(phydro->w, pfield->bcc, phydro->u, pcoord, is, ie,
@@ -219,8 +231,9 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
 }
 
 int main(int argc, char **argv) {
-  static_assert(HYDROSTATIC,
-                "This problem requires turning on hydrostatic option");
+#ifndef HYDROSTATIC
+  static_assert(false, "This problem requires turning on hydrostatic option");
+#endif
   std::stringstream msg;
 
   // no MPI
@@ -271,8 +284,8 @@ int main(int argc, char **argv) {
   Real Ts = T0 * pow(Ps / P0, Rd / cp);
   Real dlnp, **w1, *z1, *t1;
   dlnp = (x1max - x1min) / pmesh->mesh_size.nx1 / (2. * H0);
-  int nx1 = static_cast<int>((x1max - x1min) / (H0 * dlnp));
-  NewCArray(w1, nx1, NumHydros + 2 * NumVapors);
+  size_t nx1 = static_cast<size_t>((x1max - x1min) / (H0 * dlnp));
+  NewCArray(w1, nx1, NHYDRO + 2 * NVAPOR);
   z1 = new Real[nx1];
   t1 = new Real[nx1];
 
@@ -303,10 +316,10 @@ int main(int argc, char **argv) {
       int ii = 0;
       for (; ii < nx1 - 1; ++ii)
         if (pthermo->GetTemp(w1[ii]) < Tmin) break;
-      Real Tv = w1[ii][ipr] / (w1[ii][idn] * Rd);
+      Real Tv = w1[ii][IPR] / (w1[ii][IDN] * Rd);
       for (int i = ii; i < nx1; ++i) {
-        w1[i][idn] = w1[i][ipr] / (Rd * Tv);
-        for (int n = 1; n <= NumVapors; ++n) w1[i][n] = w1[ii][n];
+        w1[i][IDN] = w1[i][IPR] / (Rd * Tv);
+        for (int n = 1; n <= NVAPOR; ++n) w1[i][n] = w1[ii][n];
       }
 
       // Find T at p = p0
@@ -331,8 +344,8 @@ int main(int argc, char **argv) {
 
     // Change to log quantity
     for (int i = 0; i < nx1; ++i)
-      for (int n = 0; n < NumHydros + 2 * NumVapors; ++n) {
-        if (n == iv1 || n == iv2 || n == iv3)
+      for (int n = 0; n < NHYDRO + 2 * NVAPOR; ++n) {
+        if (n == IVX || n == IVY || n == IVZ)
           w1[i][n] = 0.;
         else
           w1[i][n] = log(w1[i][n]);
@@ -344,15 +357,14 @@ int main(int argc, char **argv) {
     for (int k = ks; k <= ke; ++k)
       for (int j = js; j <= je; ++j)
         for (int i = is; i <= ie; ++i) {
-          Real buf[NumHydros + 2 * NumVapors];
+          Real buf[NHYDRO + 2 * NVAPOR];
 
           // set gas concentration and velocity
-          interpn(buf, &pcoord->x1v(i), *w1, z1, &nx1, 1,
-                  NumHydros + 2 * NumVapors);
-          for (int n = 0; n < NumHydros; ++n)
+          interpn(buf, &pcoord->x1v(i), *w1, z1, &nx1, 1, NHYDRO + 2 * NVAPOR);
+          for (int n = 0; n < NHYDRO; ++n)
             for (int k = ks; k <= ke; ++k)
               for (int j = js; j <= je; ++j) {
-                if (n == iv1 || n == iv2 || n == iv3) {
+                if (n == IVX || n == IVY || n == IVZ) {
                   phydro->w(n, k, j, i) = 0.;
                 } else {
                   phydro->w(n, k, j, i) = exp(buf[n]);
