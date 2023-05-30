@@ -43,7 +43,7 @@ target_include_directories(${namel}_${buildl}
     ${CMAKE_BINARY_DIR}
 	)
 
-set(${nameu}_LIBRARY_${buildu} ${nameu}_${buildl}
+set(${nameu}_LIBRARY_${buildu} ${namel}_${buildl}
     CACHE STRING
     "${namel} library ${buildl}")
 mark_as_advanced(${nameu}_LIBRARY_${buildu})

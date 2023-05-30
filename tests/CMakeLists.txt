@@ -2,4 +2,9 @@
 # A collection of unit tests
 # ============================
 
-add_subdirectory(1d-rad-jupiter)
+# Enable testing functionality
+enable_testing()
+
+if (${HYDROSTATIC})
+  add_subdirectory(1d-rad-jupiter)
+endif()

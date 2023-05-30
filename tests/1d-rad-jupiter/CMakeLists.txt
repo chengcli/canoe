@@ -16,8 +16,12 @@ set_target_properties(
 
 target_link_libraries(test_jupiter_re.${buildl}
     ${CPPDISORT_LIBRARY_${buildu}}
-    ${ATHENA_LIBRARY_${buildu}}
+    ${ATHENAPP_LIBRARY_${buildu}}
+    ${ASTRO_LIBRARY_${buildu}}
     ${HARP_LIBRARY_${buildu}}
+    ${DEBUGGER_LIBRARY_${buildu}}
+    ${SNAP_LIBRARY_${buildu}}
+    ${CLIMATH_LIBRARY_${buildu}}
     )
 
 target_include_directories(
@@ -36,3 +40,5 @@ file(GLOB inputs *.inp *.toml)
 foreach(input ${inputs})
     file(COPY input DESTINATION ${CMAKE_BINARY_DIR}/bin)
 endforeach()
+
+add_test(NAME test_jupiter_re COMMAND test_jupiter_re)

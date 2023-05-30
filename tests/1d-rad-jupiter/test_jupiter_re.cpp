@@ -93,9 +93,14 @@ void MeshBlock::UserWorkBeforeOutput(ParameterInput *pin) {
   }
 }*/
 
+// w, primitive hydro
+// r, primitive scalar
+// u, conserved hydro
+// s, conserved scalar
 void Forcing(MeshBlock *pmb, Real const time, Real const dt,
-             AthenaArray<Real> const &w, AthenaArray<Real> const &bcc,
-             AthenaArray<Real> &u) {
+             AthenaArray<Real> const &w, AthenaArray<Real> const &r,
+             AthenaArray<Real> const &bcc, AthenaArray<Real> &u,
+             AthenaArray<Real> &s) {
   int is = pmb->is, js = pmb->js, ks = pmb->ks;
   int ie = pmb->ie, je = pmb->je, ke = pmb->ke;
   for (int k = ks; k <= ke; ++k)
@@ -263,11 +268,12 @@ int main(int argc, char **argv) {
 
   // initialize mesh
   pmesh->Initialize(restart, pinput);
+  auto psnap = pmesh->my_blocks(0)->pimpl;
 
   // mesh limits
   Real x1min = pmesh->mesh_size.x1min;
   Real x1max = pmesh->mesh_size.x1max;
-  Real H0 = Constants::PressureScaleHeight;
+  Real H0 = psnap->GetPressureScaleHeight();
 
   // request temperature and pressure
   pdebug->Message("request T", T0);
@@ -290,6 +296,9 @@ int main(int argc, char **argv) {
   t1 = new Real[nx1];
 
   // read in vapors
+  size_t iH2O = psnap->GetVaporIndex("H2O");
+  size_t iNH3 = psnap->GetVaporIndex("NH3");
+
   w1[0][iH2O] = pinput->GetReal("problem", "qH2O");
   w1[0][iNH3] = pinput->GetReal("problem", "qNH3");
   z1[0] = x1min;
