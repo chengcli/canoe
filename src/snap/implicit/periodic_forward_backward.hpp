@@ -1,5 +1,5 @@
-#ifndef PERIODIC_FORWARD_BACKWARD_HPP
-#define PERIODIC_FORWARD_BACKWARD_HPP
+#ifndef SRC_SNAP_IMPLICIT_PERIODIC_FORWARD_BACKWARD_HPP_
+#define SRC_SNAP_IMPLICIT_PERIODIC_FORWARD_BACKWARD_HPP_
 
 // C/C++ headers
 #include <vector>
@@ -239,4 +239,4 @@ void ImplicitSolver::PeriodicBackwardSubstitution(std::vector<T1> &ainv,
 #endif
 }
 
-#endif
+#endif  //  SRC_SNAP_IMPLICIT_PERIODIC_FORWARD_BACKWARD_HPP_

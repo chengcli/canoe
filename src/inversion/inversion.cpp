@@ -35,9 +35,10 @@ Inversion::Inversion(MeshBlock *pmb, ParameterInput *pin, std::string name)
   opts_.mpi_comm = MPI_COMM_WORLD;
 #endif
 
-  strcpy(opts_.logfile, pin->GetOrAddString("inversion", name + ".logfile",
-                                            name + "_inversion.log")
-                            .c_str());
+  snprintf(opts_.logfile, sizeof(opts_.logfile),
+           pin->GetOrAddString("inversion", name + ".logfile",
+                               name + "_inversion.log")
+               .c_str());
 
   std::string obsfile = pin->GetOrAddString("inversion", "obsfile", "none");
   if (obsfile != "none") {

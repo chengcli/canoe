@@ -100,8 +100,8 @@ void HitranAbsorber::loadCoefficient(std::string fname, int bid) {
   nc_inq_dimlen(fileid, dimid, len_);
   nc_inq_dimid(fileid, "Pressure", &dimid);
   nc_inq_dimlen(fileid, dimid, len_ + 1);
-  strcpy(tname, "T_");
-  strcat(tname, name_.c_str());
+  snprintf(tname, sizeof(tname), "%s", "T_");
+  snprintf(tname, sizeof(tname), "%s%s", tname, name_.c_str());
   nc_inq_dimid(fileid, tname, &dimid);
   nc_inq_dimlen(fileid, dimid, len_ + 2);
 

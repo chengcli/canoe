@@ -1,5 +1,5 @@
-#ifndef FORWARD_BACKWARD_HPP
-#define FORWARD_BACKWARD_HPP
+#ifndef SRC_SNAP_IMPLICIT_FORWARD_BACKWARD_HPP_
+#define SRC_SNAP_IMPLICIT_FORWARD_BACKWARD_HPP_
 
 // C/C++ headers
 #include <vector>
@@ -121,14 +121,16 @@ void ImplicitSolver::BackwardSubstitution(std::vector<T1> &a,
 #ifdef MPI_PARALLEL
   MPI_Status status;
 
-  if (!last_block && (tblock.snb.rank != Globals::my_rank))
+  if (!last_block && (tblock.snb.rank != Globals::my_rank)) {
     for (int k = kl; k <= ku; ++k)
       for (int j = jl; j <= ju; ++j) MPI_Wait(&req_send_data2_[k][j], &status);
+  }
 
-  if (!first_block && (bblock.snb.rank != Globals::my_rank))
+  if (!first_block && (bblock.snb.rank != Globals::my_rank)) {
     for (int k = kl; k <= ku; ++k)
       for (int j = jl; j <= ju; ++j) MPI_Wait(&req_send_data1_[k][j], &status);
+  }
 #endif
 }
 
-#endif
+#endif  // SRC_SNAP_IMPLICIT_FORWARD_BACKWARD_HPP_

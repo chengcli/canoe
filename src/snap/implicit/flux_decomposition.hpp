@@ -1,5 +1,5 @@
-#ifndef FLUX_DECOMPOSITION_HPP
-#define FLUX_DECOMPOSITION_HPP
+#ifndef SRC_SNAP_IMPLICIT_FLUX_DECOMPOSITION_HPP_
+#define SRC_SNAP_IMPLICIT_FLUX_DECOMPOSITION_HPP_
 
 // athena
 #include <athena/athena.hpp>
@@ -13,21 +13,22 @@
 
 inline void CopyPrimitives(Real wl[], Real wr[], AthenaArray<Real> const& w,
                            int k, int j, int i, CoordinateDirection dir) {
-  if (dir == X1DIR)
+  if (dir == X1DIR) {
     for (int n = 0; n < NHYDRO; ++n) {
       wl[n] = w(n, k, j, i - 1);
       wr[n] = w(n, k, j, i);
     }
-  else if (dir == X2DIR)
+  } else if (dir == X2DIR) {
     for (int n = 0; n < NHYDRO; ++n) {
       wl[n] = w(n, j, i - 1, k);
       wr[n] = w(n, j, i, k);
     }
-  else  // X3DIR
+  } else {  // X3DIR
     for (int n = 0; n < NHYDRO; ++n) {
       wl[n] = w(n, i - 1, k, j);
       wr[n] = w(n, i, k, j);
     }
+  }
 }
 
 inline void RoeAverage(Real prim[], Real gm1, Real wl[], Real wr[]) {
@@ -118,4 +119,4 @@ inline void FluxJacobian(Eigen::DenseBase<Derived1>& dfdq, Real gm1, Real w[],
       c2, -gm1 * v2 * v1, -gm1 * v3 * v1, (gm1 + 1) * v1;
 }
 
-#endif
+#endif  //  SRC_SNAP_IMPLICIT_FLUX_DECOMPOSITION_HPP_
