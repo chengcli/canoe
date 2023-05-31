@@ -1,16 +1,16 @@
-// Athena++ headers
-#include <coordinates/coordinates.hpp>
-#include <mesh/mesh.hpp>
-
-// canoe headers
+// athena
+#include <athena/coordinates/coordinates.hpp>
+#include <athena/hydro/hydro.hpp>
+#include <athena/mesh/mesh.hpp>
+// canoe
 #include "decomposition.hpp"
 
 void Decomposition::ApplyHydroBoundary(AthenaArray<Real> &w,
                                        AthenaArray<Real> &psf, int kl, int ku,
                                        int jl, int ju) {
-  MeshBlock *pmb = pmy_hydro->pmy_block;
+  MeshBlock *pmb = pmy_block_;
   Coordinates *pco = pmb->pcoord;
-  Real grav = -pmy_hydro->hsrc.GetG1();  // positive downward pointing
+  Real grav = -pmb->phydro->hsrc.GetG1();  // positive downward pointing
   int is = pmb->is, ie = pmb->ie;
 
   if (pmb->pbval->block_bcs[inner_x1] == BoundaryFlag::reflect) {

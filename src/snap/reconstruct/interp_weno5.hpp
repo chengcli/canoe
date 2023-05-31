@@ -1,11 +1,13 @@
-#ifndef INTERP_WENO5_HPP_
-#define INTERP_WENO5_HPP_
-#include "../defs.hpp"
+#ifndef SRC_SNAP_RECONSTRUCT_INTERP_WENO5_HPP_
+#define SRC_SNAP_RECONSTRUCT_INTERP_WENO5_HPP_
+
+// athena
+#include <athena/defs.hpp>
 
 namespace Weno5Coeff {
 double a1[3] = {
     -RAT1 * RAT1 * RAT1 * RAT1 * RAT1 / ((1 + RAT1) * (1 + RAT1 + RAT1 * RAT1)),
-    RAT1* RAT1 * (1 + 2 * RAT1 + 2 * RAT1 * RAT1) /
+    RAT1* RAT1*(1 + 2 * RAT1 + 2 * RAT1 * RAT1) /
         ((1 + RAT1) * (1 + RAT1 + RAT1 * RAT1)),
     1 / (1 + RAT1 + RAT1 * RAT1)};
 
@@ -60,7 +62,7 @@ double c4[5] = {-513. / 1440., -513. / 1440., -673. / 1440., 5087. / 1440.,
 
 inline Real interp_weno5(Real phim2, Real phim1, Real phi, Real phip1,
                          Real phip2) {
-  using namespace Weno5Coeff;
+  using Weno5Coeff::*;
   Real p1 = 0, p2 = 0, p3 = 0;
   Real phis[5] = {phim2, phim1, phi, phip1, phip2};
   for (int i = 0; i < 3; ++i) {
@@ -93,7 +95,7 @@ inline Real interp_weno5(Real phim2, Real phim1, Real phi, Real phip1,
 
 inline Real interp_cp5(Real phim2, Real phim1, Real phi, Real phip1,
                        Real phip2) {
-  using namespace Weno5Coeff;
+  using Weno5Coeff::*;
   Real phis[5] = {phim2, phim1, phi, phip1, phip2};
   Real result = 0.;
   Real eps = RAT1 - 1.;
@@ -106,4 +108,4 @@ inline Real interp_cp5(Real phim2, Real phim1, Real phi, Real phip1,
 
 #endif  // STRETCHED_GRID
 
-#endif
+#endif  // SRC_SNAP_RECONSTRUCT_INTERP_WENO5_HPP_

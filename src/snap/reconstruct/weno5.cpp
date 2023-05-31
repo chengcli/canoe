@@ -1,15 +1,13 @@
-//! \file weno5.cpp
-//  \brief  WENO5 interpolation
-
-// Athena++ headers
-#include <athena.hpp>
-#include <mesh/mesh.hpp>
+// athena
+#include <athena/athena.hpp>
+#include <athena/mesh/mesh.hpp>
 // #include "interp_weno5.hpp"
 // #include "interp_weno3.hpp"
 
-// canoe headers
+// canoe
 #include <configure.hpp>
 
+// snap
 #include "face_reconstruct.hpp"
 #include "interpolation.hpp"
 
@@ -18,7 +16,7 @@ void FaceReconstruct::Weno5X1(const int k, const int j, const int il,
                               const AthenaArray<Real> &bcc,
                               AthenaArray<Real> &wl, AthenaArray<Real> &wr) {
   MeshBlock *pmb = pmy_block_;
-  for (int n = 0; n <= NumVapors; ++n) {
+  for (int n = 0; n <= NVAPOR; ++n) {
 #pragma omp simd
     for (int i = il; i <= iu; ++i) {
       Real scale = 0.;
@@ -37,12 +35,10 @@ void FaceReconstruct::Weno5X1(const int k, const int j, const int il,
   }
 
   int ng1 = 0, ng2 = 0;
-  if (pmb->pbval->block_bcs[inner_x1] != BoundaryFlag::block)
-    ng1 = GhostZoneSize;
-  if (pmb->pbval->block_bcs[outer_x1] != BoundaryFlag::block)
-    ng2 = GhostZoneSize;
+  if (pmb->pbval->block_bcs[inner_x1] != BoundaryFlag::block) ng1 = NGHOST;
+  if (pmb->pbval->block_bcs[outer_x1] != BoundaryFlag::block) ng2 = NGHOST;
 
-  for (int n = iv1; n < NumHydros; ++n) {
+  for (int n = IVX; n < NHYDRO; ++n) {
     // left boundary
     for (int i = il; i < il + ng1; ++i) {
       wl(n, i + 1) =
@@ -81,7 +77,7 @@ void FaceReconstruct::Weno5X2(const int k, const int j, const int il,
                               const int iu, const AthenaArray<Real> &w,
                               const AthenaArray<Real> &bcc,
                               AthenaArray<Real> &wl, AthenaArray<Real> &wr) {
-  for (int n = 0; n <= NumVapors; ++n) {
+  for (int n = 0; n <= NVAPOR; ++n) {
     for (int i = il; i <= iu; ++i) {
       Real scale = 0.;
       for (int m = -2; m <= 2; ++m) scale += (w(n, k, j + m, i) + 1.E-16) / 5.;
@@ -98,7 +94,7 @@ void FaceReconstruct::Weno5X2(const int k, const int j, const int il,
     }
   }
 
-  for (int n = iv1; n < NumHydros; ++n) {
+  for (int n = IVX; n < NHYDRO; ++n) {
 #pragma omp simd
     for (int i = il; i <= iu; ++i) {
       wl(n, i) = interp_cp5(w(n, k, j + 2, i), w(n, k, j + 1, i), w(n, k, j, i),
@@ -115,7 +111,7 @@ void FaceReconstruct::Weno5X3(const int k, const int j, const int il,
                               const int iu, const AthenaArray<Real> &w,
                               const AthenaArray<Real> &bcc,
                               AthenaArray<Real> &wl, AthenaArray<Real> &wr) {
-  for (int n = 0; n <= NumVapors; ++n) {
+  for (int n = 0; n <= NVAPOR; ++n) {
     for (int i = il; i <= iu; ++i) {
       Real scale = 0.;
       for (int m = -2; m <= 2; ++m) scale += (w(n, k + m, j, i) + 1.E-16) / 5.;
@@ -132,7 +128,7 @@ void FaceReconstruct::Weno5X3(const int k, const int j, const int il,
     }
   }
 
-  for (int n = iv1; n < NumHydros; ++n) {
+  for (int n = IVX; n < NHYDRO; ++n) {
 #pragma omp simd
     for (int i = il; i <= iu; ++i) {
       wl(n, i) = interp_cp5(w(n, k + 2, j, i), w(n, k + 1, j, i), w(n, k, j, i),

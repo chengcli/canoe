@@ -1,13 +1,11 @@
-//! \file weno5_simple.cpp
-//  \brief  WENO5 interpolation
+// athena
+#include <athena/athena.hpp>
+#include <athena/mesh/mesh.hpp>
 
-// Athena++ headers
-#include <athena.hpp>
-#include <mesh/mesh.hpp>
-
-// canoe headers
+// canoe
 #include <configure.hpp>
 
+// snap
 #include "face_reconstruct.hpp"
 #include "interpolation.hpp"
 

@@ -1,17 +1,18 @@
-/** @file profile_inversion_prior.cpp
- * @brief
- *
- * @author Cheng Li (chengcli@umich.edu)
- * @date Saturday Nov 20, 2021 09:21:41 EST
- * @bug No known bugs.
- */
+// C/C++
+#include <iostream>
 
-// C/C++ header
+// canoe
+#include <configure.hpp>
+
+// athena
 #include <athena/hydro/hydro.hpp>
 #include <athena/mesh/mesh.hpp>
-#include <configure.hpp>
+
+// snap
+#include <snap/meshblock_impl.hpp>
+
+// debugger
 #include <debugger/debugger.hpp>
-#include <iostream>
 
 #include "gaussian_process.hpp"
 #include "profile_inversion.hpp"
@@ -23,8 +24,8 @@ Real ProfileInversion::LogPriorProbability(Real **XpSample) const {
   std::vector<Real> zlev(nsample);
   std::vector<Real> zstd(nsample);
 
-  Real P0 = reference_pressure_;
-  Real H0 = pressure_scale_height_;
+  Real P0 = pmy_block_->pimpl->GetReferencePressure();
+  Real H0 = pmy_block_->pimpl->GetPressureScaleHeight();
 
   for (int i = 0; i < nsample; ++i) zlev[i] = -H0 * log(plevel_[i] / P0);
 

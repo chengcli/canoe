@@ -29,9 +29,15 @@ cpplint --filter=${filters} src/snap/*.hpp
 cpplint --filter=${filters} src/snap/*.cpp
 cpplint --filter=${filters} --recursive src/snap/eos
 cpplint --filter=${filters} --recursive src/snap/thermodynamics
+#cpplint --filter=${filters} --recursive src/snap/reconstruct
+#cpplint --filter=${filters} --recursive src/snap/decomposition
+#cpplint --filter=${filters} --recursive src/snap/implicit
 
 # tools
 cpplint --filter=${filters} tools/*.cpp
 
 # transport
 cpplint --filter=${filters} --recursive src/transport
+
+# tests
+cpplint --filter=${filters},-runtime/references --recursive tests/1d-rad-jupiter/*.cpp

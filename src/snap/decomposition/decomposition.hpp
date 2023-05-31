@@ -2,6 +2,7 @@
 #define DECOMPOSITION_HPP
 
 #include <athena/athena.hpp>
+#include <athena/bvals/bvals.hpp>
 
 // MPI headers
 #ifdef MPI_PARALLEL
@@ -51,7 +52,7 @@ class Decomposition {
                                int iu);
 
  private:
-  Hydro *pmy_block_;
+  MeshBlock *pmy_block_;
 
   // pressure decomposition
   AthenaArray<Real>

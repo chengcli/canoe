@@ -1,13 +1,13 @@
 #ifndef IMPLICIT_SOLVER_HPP_
 #define IMPLICIT_SOLVER_HPP_
 
-// C/C++ headers
+// C/C++
 #include <vector>
 
-// Eigen headers
+// Eigen
 #include <Eigen/Core>
 
-// Athena++ headers
+// athena
 #include <athena/athena.hpp>
 // #include <bvals/bvals_interfaces.hpp>
 
@@ -136,26 +136,8 @@ class ImplicitSolver {
   // void LoadForcingJacobian(T &phi, int k, int j ,int i, CoordinateDirection
   // dir);
 
-  ImplicitSolver *use(BlockIndex const *p) {
-    pblock_ = p;
-    return this;
-  }
-
-  ImplicitSolver *use(Thermodynamics const *p) {
-    pthermo_ = p;
-    return this;
-  }
-
  private:
-  Coordinates *pcoord_;
-  Mesh *pmesh_;
-  BoundaryValues *pbval_;
-  EquationOfState *peos_;
-  Hydro const *phydro_;
-  MeshBlock const *pmb_;
-
-  BlockIndex const *pblock_;
-  Thermodynamics const *pthermo_;
+  MeshBlock const *pmy_block_;
 
   CoordinateDirection mydir_;
   // Real *usend_top_, *urecv_top_;      // MPI data buffer

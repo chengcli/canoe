@@ -1,4 +1,7 @@
-// Athena++ headers
+#ifndef SRC_SNAP_RECONSTRUCT_FACE_RECONSTRUCT_HPP_
+#define SRC_SNAP_RECONSTRUCT_FACE_RECONSTRUCT_HPP_
+
+// athena
 #include <athena/athena.hpp>
 
 // Forward declarations
@@ -52,3 +55,5 @@ class FaceReconstruct {
  protected:
   MeshBlock *pmy_block_;
 };
+
+#endif  // SRC_SNAP_RECONSTRUCT_FACE_RECONSTRUCT_HPP_

@@ -1,15 +1,13 @@
 #ifndef FLUX_DECOMPOSITION_HPP
 #define FLUX_DECOMPOSITION_HPP
 
-// Athena++ headers
-#include <athena.hpp>
+// athena
+#include <athena/athena.hpp>
 
-// climath headers
-extern "C" {
-#include <core.h>  // sqr
-}
+// climath
+#include <climath/core.h>
 
-// Eigen headers
+// Eigen
 #include <Eigen/Core>
 #include <Eigen/Dense>
 

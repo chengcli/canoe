@@ -1,5 +1,5 @@
-#ifndef INTERPOLATION_H_
-#define INTERPOLATION_H_
+#ifndef SRC_CLIMATH_INTERPOLATION_H_
+#define SRC_CLIMATH_INTERPOLATION_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -21,8 +21,8 @@ double splint(double xx, struct float_triplet *table, double dx);
 void interpnf(double *val, double const *coor, double const *data,
               double const *axis, size_t const *len, int ndim);
 
-#endif
-
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
+
+#endif  // SRC_CLIMATH_INTERPOLATION_H_
