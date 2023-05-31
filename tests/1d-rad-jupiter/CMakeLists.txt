@@ -19,6 +19,7 @@ target_link_libraries(test_jupiter_re.${buildl}
     ${ATHENAPP_LIBRARY_${buildu}}
     ${ASTRO_LIBRARY_${buildu}}
     ${HARP_LIBRARY_${buildu}}
+    ${INVERSION_LIBRARY_${buildu}}
     ${DEBUGGER_LIBRARY_${buildu}}
     ${SNAP_LIBRARY_${buildu}}
     ${CLIMATH_LIBRARY_${buildu}}

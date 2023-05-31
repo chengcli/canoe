@@ -25,7 +25,7 @@ string(TOLOWER ${CMAKE_BUILD_TYPE} buildl)
 string(TOUPPER ${CMAKE_BUILD_TYPE} buildu)
 
 add_library(${namel}_${buildl}
-    OBJECT
+    STATIC
     ${src_files}
     )
 
