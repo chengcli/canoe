@@ -1,8 +1,8 @@
-// Athena++ headers
-#include <mesh/mesh.hpp>
-#include <parameter_input.hpp>
+// athena
+#include <athena/mesh/mesh.hpp>
+#include <athena/parameter_input.hpp>
 
-// canoe headers
+// snap
 #include "face_reconstruct.hpp"
 
 FaceReconstruct::FaceReconstruct(MeshBlock *pmb, ParameterInput *pin)

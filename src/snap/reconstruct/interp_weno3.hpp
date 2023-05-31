@@ -1,6 +1,8 @@
-#ifndef INTERP_WENO3_HPP_
-#define INTERP_WENO3_HPP_
-#include "../defs.hpp"
+#ifndef SRC_SNAP_RECONSTRUCT_INTERP_WENO3_HPP_
+#define SRC_SNAP_RECONSTRUCT_INTERP_WENO3_HPP_
+
+// athena
+#include <athena/defs.hpp>
 
 namespace Weno3Coeff {
 double a1[2] = {RAT1 * RAT1 / (1 + RAT1), 1 / (1 + RAT1)};
@@ -22,7 +24,7 @@ double c1[3] = {
 }  // namespace Weno3Coeff
 
 inline Real interp_weno3x1(Real phim1, Real phi, Real phip1) {
-  using namespace Weno3Coeff;
+  using Weno3Coeff::*;
   Real p1 = a1[0] * phim1 + a1[1] * phi;
   Real p2 = a2[0] * phi + a2[1] * phip1;
 
@@ -46,8 +48,8 @@ inline Real interp_weno3x1(Real phim1, Real phi, Real phip1) {
 }
 
 inline Real interp_cp3x1(Real phim1, Real phi, Real phip1) {
-  using namespace Weno3Coeff;
+  using Weno3Coeff::*;
   return c1[0] * phim1 + c1[1] * phi + c1[2] * phip1;
 }
 
-#endif
+#endif  // SRC_SNAP_RECONSTRUCT_INTERP_WENO3_HPP_

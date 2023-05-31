@@ -1,25 +1,25 @@
-// C/C++ headers
+// C/C++
 #include <functional>
 #include <string>
 
+// athena
+#include <athena/bvals/bvals_interfaces.hpp>
+#include <athena/hydro/hydro.hpp>
+#include <athena/mesh/mesh.hpp>
+#include <athena/parameter_input.hpp>
+
 // debugger
-#include <debugger.hpp>
+#include <debugger/debugger.hpp>
 
-// cliutils
-#include <cliutils/ndarrays.hpp>
-#include <cliutils/program_setup.hpp>
+// utils
+#include <utils/ndarrays.hpp>
+#include <utils/program_setup.hpp>
 
-// Athena++ headers
-#include <bvals/bvals_interfaces.hpp>
-#include <hydro/hydro.hpp>
-#include <mesh/mesh.hpp>
-#include <parameter_input.hpp>
-
-// canoe headers
+// canoe
 #include <configure.hpp>
 
-#include "../../constants.hpp"
-#include "../../mesh/block_index.hpp"
+// snap
+#include "../constants.hpp"
 #include "implicit_solver.hpp"
 
 // MPI headers
@@ -37,12 +37,7 @@ ImplicitSolver::ImplicitSolver(MeshBlock *pmb, ParameterInput *pin)
       periodic_boundary(false),
       pole_at_bot(false),
       pole_at_top(false),
-      pcoord_(pmb->pcoord),
-      pmesh_(pmb->pmy_mesh),
-      pbval_(pmb->pbval),
-      peos_(pmb->peos),
-      phydro_(pmb->phydro),
-      pmb_(pmb) {
+      pmy_block_(pmb) {
   pdebug->Enter("ImplicitSolver");
 
   implicit_flag = pin->GetOrAddInteger("hydro", "implicit_flag", 0);
@@ -108,11 +103,14 @@ void ImplicitSolver::SetDirection(CoordinateDirection dir) {
   mydir_ = dir;
   int nc1, nc2, nc3;
   if (dir == X1DIR) {
-    nc1 = pblock_->ncells1, nc2 = pblock_->ncells2, nc3 = pblock_->ncells3;
+    nc1 = pmy_block_->ncells1, nc2 = pmy_block_->ncells2,
+    nc3 = pmy_block_->ncells3;
   } else if (dir == X2DIR) {
-    nc1 = pblock_->ncells2, nc2 = pblock_->ncells3, nc3 = pblock_->ncells1;
+    nc1 = pmy_block_->ncells2, nc2 = pmy_block_->ncells3,
+    nc3 = pmy_block_->ncells1;
   } else {  // X3DIR
-    nc1 = pblock_->ncells3, nc2 = pblock_->ncells1, nc3 = pblock_->ncells2;
+    nc1 = pmy_block_->ncells3, nc2 = pmy_block_->ncells1,
+    nc3 = pmy_block_->ncells2;
   }
 
   du_.SetDim1(nc1);
@@ -123,19 +121,19 @@ void ImplicitSolver::SetDirection(CoordinateDirection dir) {
   coefficients_.SetDim3(nc2);
   coefficients_.SetDim4(nc3);
 
-  if ((pmesh_->mesh_bcs[2 * dir] == BoundaryFlag::periodic) &&
-      (pmesh_->mesh_bcs[2 * dir + 1] == BoundaryFlag::periodic)) {
+  if ((pmy_block_->pmy_mesh->mesh_bcs[2 * dir] == BoundaryFlag::periodic) &&
+      (pmy_block_->pmy_mesh->mesh_bcs[2 * dir + 1] == BoundaryFlag::periodic)) {
     periodic_boundary = true;
   } else {
     periodic_boundary = false;
   }
 
-  if (pbval_->block_bcs[2 * dir] == BoundaryFlag::polar)
+  if (pmy_block_->pbval->block_bcs[2 * dir] == BoundaryFlag::polar)
     pole_at_bot = true;
   else
     pole_at_bot = false;
 
-  if (pbval_->block_bcs[2 * dir + 1] == BoundaryFlag::polar)
+  if (pmy_block_->pbval->block_bcs[2 * dir + 1] == BoundaryFlag::polar)
     pole_at_top = true;
   else
     pole_at_top = false;
@@ -148,8 +146,8 @@ void ImplicitSolver::FindNeighbors() {
   first_block = true;
   last_block = true;
 
-  for (int n = 0; n < pbval_->nneighbor; ++n) {
-    NeighborBlock &nb = pbval_->neighbor[n];
+  for (int n = 0; n < pmy_block_->pbval->nneighbor; ++n) {
+    NeighborBlock &nb = pmy_block_->pbval->neighbor[n];
     if (mydir_ == X1DIR) {
       if ((nb.ni.ox1 == -1) && (nb.ni.ox2 == 0) && (nb.ni.ox3 == 0)) {
         bblock = nb;
@@ -180,15 +178,18 @@ void ImplicitSolver::FindNeighbors() {
     }
   }
 
+  MeshBlock const *pmb = pmy_block_;
+  Mesh const *pmesh = pmb->pmy_mesh;
+
   if (mydir_ == X1DIR) {
-    if (pmb_->block_size.x1min > pmesh_->mesh_size.x1min) first_block = false;
-    if (pmb_->block_size.x1max < pmesh_->mesh_size.x1max) last_block = false;
+    if (pmb->block_size.x1min > pmesh->mesh_size.x1min) first_block = false;
+    if (pmb->block_size.x1max < pmesh->mesh_size.x1max) last_block = false;
   } else if (mydir_ == X2DIR) {
-    if (pmb_->block_size.x2min > pmesh_->mesh_size.x2min) first_block = false;
-    if (pmb_->block_size.x2max < pmesh_->mesh_size.x2max) last_block = false;
+    if (pmb->block_size.x2min > pmesh->mesh_size.x2min) first_block = false;
+    if (pmb->block_size.x2max < pmesh->mesh_size.x2max) last_block = false;
   } else {  // X3DIR
-    if (pmb_->block_size.x3min > pmesh_->mesh_size.x3min) first_block = false;
-    if (pmb_->block_size.x3max < pmesh_->mesh_size.x3max) last_block = false;
+    if (pmb->block_size.x3min > pmesh->mesh_size.x3min) first_block = false;
+    if (pmb->block_size.x3max < pmesh->mesh_size.x3max) last_block = false;
   }
 
   // if (first_block)

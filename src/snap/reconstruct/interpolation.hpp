@@ -1,9 +1,13 @@
-#ifndef INTERPOLATION_HPP
-#define INTERPOLATION_HPP
+#ifndef SRC_SNAP_RECONSTRUCT_INTERPOLATION_HPP_
+#define SRC_SNAP_RECONSTRUCT_INTERPOLATION_HPP_
+
+// C/C++
+#include <algorithm>
 
 // climath
 #include <climath/core.h>
 
+// canoe
 #include <configure.hpp>
 
 /* 2-nd order plm for non-uniform grid
@@ -66,14 +70,14 @@ inline T interp_bp2(T phim1, T phi, int sgn) {
 template <typename T>
 inline T interp_cp3(T phim1, T phi, T phip1) {
   return 1. / 3. * phim1 + 5. / 6. * phi - 1. / 6. * phip1;
-};
+}
 
 // 4-th polynomial
 template <typename T>
 inline T interp_cp4(T phim2, T phim1, T phi, T phip1) {
   return -1. / 12. * phim2 + 7. / 12. * phim1 + 7. / 12. * phi -
          1. / 12. * phip1;
-};
+}
 
 // 3-rd upwind-biased polynomial
 template <typename T>
@@ -96,7 +100,7 @@ inline T interp_weno3(T const& phim1, T const& phi, T const& phip1) {
   T alpha1 = (1.0 / 3.0) / sqr(beta1 + 1e-10);
 
   return (alpha0 * p0 + alpha1 * p1) / (alpha0 + alpha1);
-};
+}
 
 // 5-th polynomial
 template <typename T>
@@ -104,14 +108,14 @@ inline T interp_cp5(T const& phim2, T const& phim1, T const& phi,
                     T const& phip1, T const& phip2) {
   return -1. / 20. * phim2 + 9. / 20. * phim1 + 47. / 60. * phi -
          13. / 60. * phip1 + 1. / 30. * phip2;
-};
+}
 
 // 6-th polynomial
 template <typename T>
 inline T interp_cp6(T phim3, T phim2, T phim1, T phi, T phip1, T phip2) {
   return 1. / 60. * phim3 - 2. / 15. * phim2 + 37. / 60. * phim1 +
          37. / 60. * phi - 2. / 15. * phip1 + 1. / 60. * phip2;
-};
+}
 
 // 5-th upwind-biased polynomial
 template <typename T>
@@ -120,7 +124,7 @@ inline T interp_bp5(T phim3, T phim2, T phim1, T phi, T phip1, T phip2,
   T phih = interp_cp6(phim3, phim2, phim1, phi, phip1, phip2);
   T phid = ((phip2 - phim3) - 5. * (phip1 - phim2) + 10. * (phi - phim1)) / 60.;
   return phih - sgn * phid;
-};
+}
 
 // WENO 5 interpolation
 template <typename T>
@@ -142,7 +146,7 @@ inline T interp_weno5(T const& phim2, T const& phim1, T const& phi,
   T alpha2 = .1 / sqr(beta2 + 1e-10);
 
   return (alpha0 * p0 + alpha1 * p1 + alpha2 * p2) / (alpha0 + alpha1 + alpha2);
-};
+}
 
 // 3rd order polynomial with inflection point
 template <typename T>
@@ -160,4 +164,4 @@ inline T inflection3_cell3(T f1, T f2, T f3) {
   return 10. / 3. * f1 - 5. / 3. * f2 - 2. / 3. * f3;
 }
 
-#endif
+#endif  // SRC_SNAP_RECONSTRUCT_INTERPOLATION_HPP_
