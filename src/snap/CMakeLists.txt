@@ -50,6 +50,7 @@ target_include_directories(${namel}_${buildl}
 target_link_libraries(${namel}_${buildl}
     ${CLIMATH_LIBRARY_${buildu}}
     ${DEBUGGER_LIBRARY_${buildu}}
+    ${HARP_LIBRARY_${buildu}}
     ${ATHENAPP_LIBRARY_${buildu}}
     ${INVERSION_LIBRARY_${buildu}}
     )
