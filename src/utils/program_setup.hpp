@@ -10,7 +10,6 @@ class ParameterInput;
 struct CommandLine;
 
 namespace Globals {
-extern int mpi_tag_ub;
 extern clock_t tstart;
 extern std::uint64_t mbcnt;
 extern CommandLine *cli;

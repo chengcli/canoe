@@ -2,6 +2,7 @@
 #define DECOMPOSITION_HPP
 
 #include <athena/athena.hpp>
+#include <athena/bvals/bvals.hpp>
 
 // MPI headers
 #ifdef MPI_PARALLEL

@@ -3,6 +3,7 @@
 #include <string>
 
 // athena
+#include <athena/bvals/bvals.hpp>
 #include <athena/bvals/bvals_interfaces.hpp>
 #include <athena/hydro/hydro.hpp>
 #include <athena/mesh/mesh.hpp>

@@ -27,10 +27,8 @@ string(TOLOWER ${CMAKE_BUILD_TYPE} buildl)
 string(TOUPPER ${CMAKE_BUILD_TYPE} buildu)
 
 add_library(${namel}_${buildl}
-    STATIC
+    OBJECT
     ${src_files})
-
-  #add_dependencies(cliastro_${buildl} athenapp_${buildl})
 
 set_target_properties(${namel}_${buildl}
     PROPERTIES
@@ -42,13 +40,6 @@ target_include_directories(${namel}_${buildl}
     ${ATHENAPP_INCLUDE_DIR}
     ${MODULES_INCLUDE_DIR}
     ${CMAKE_BINARY_DIR}
-    )
-
-target_link_libraries(${namel}_${buildl}
-    ${UTILS_LIBRARY_${buildu}}
-    ${CLIMATH_LIBRARY_${buildu}}
-    ${DEBUGGER_LIBRARY_${buildu}}
-    ${ATHENAPP_LIBRARY_${buildu}}
     )
 
 set(${nameu}_LIBRARY_${buildu} ${namel}_${buildl}

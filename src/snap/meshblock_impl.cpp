@@ -1,16 +1,22 @@
-// Athena++ headers
-#include "meshblock_impl.hpp"
-
+// athena
 #include <athena/athena.hpp>
 #include <athena/parameter_input.hpp>
+
+// canoe
 #include <configure.hpp>
+
+// harp
 #include <harp/radiation.hpp>
 #include <harp/radiation_band.hpp>
+
+// inversion
 #include <inversion/inversion.hpp>
 #include <inversion/inversion_helper.hpp>
 
+// snap
 #include "decomposition/decomposition.hpp"
 #include "implicit/implicit_solver.hpp"
+#include "meshblock_impl.hpp"
 #include "reconstruct/face_reconstruct.hpp"
 #include "thermodynamics/thermodynamics.hpp"
 

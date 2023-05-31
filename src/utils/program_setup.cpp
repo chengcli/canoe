@@ -24,7 +24,6 @@
 #include "program_setup.hpp"
 
 namespace Globals {
-int mpi_tag_ub;
 clock_t tstart;
 std::uint64_t mbcnt;
 CommandLine *cli;

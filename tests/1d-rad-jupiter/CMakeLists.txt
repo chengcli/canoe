@@ -14,17 +14,6 @@ set_target_properties(
     COMPILE_FLAGS ${CMAKE_CXX_FLAGS_${buildu}}
     )
 
-target_link_libraries(test_jupiter_re.${buildl}
-    ${CPPDISORT_LIBRARY_${buildu}}
-    ${ATHENAPP_LIBRARY_${buildu}}
-    ${ASTRO_LIBRARY_${buildu}}
-    ${HARP_LIBRARY_${buildu}}
-    ${INVERSION_LIBRARY_${buildu}}
-    ${DEBUGGER_LIBRARY_${buildu}}
-    ${SNAP_LIBRARY_${buildu}}
-    ${CLIMATH_LIBRARY_${buildu}}
-    )
-
 target_include_directories(
   ${namel}.${buildl}
   PRIVATE
@@ -34,6 +23,18 @@ target_include_directories(
   ${CMAKE_BINARY_DIR}
   ${TOMLPP_INCLUDE_DIR}
   )
+
+target_link_libraries(${namel}.${buildl}
+    ${ATHENAPP_LIBRARY_${buildu}}
+    ${CLIMATH_LIBRARY_${buildu}}
+    ${DEBUGGER_LIBRARY_${buildu}}
+    ${UTILS_LIBRARY_${buildu}}
+    ${ASTRO_LIBRARY_${buildu}}
+    ${SNAP_LIBRARY_${buildu}}
+    ${HARP_LIBRARY_${buildu}}
+    ${INVERSION_LIBRARY_${buildu}}
+    ${CPPDISORT_LIBRARY_${buildu}}
+    )
 
 # 1. Copy input file to run directory
 

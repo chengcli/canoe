@@ -30,7 +30,7 @@ string(TOLOWER ${CMAKE_BUILD_TYPE} buildl)
 string(TOUPPER ${CMAKE_BUILD_TYPE} buildu)
 
 add_library(${namel}_${buildl}
-	STATIC
+    OBJECT
     ${src_files}
     )
 
@@ -46,14 +46,6 @@ target_include_directories(${namel}_${buildl}
     ${EIGEN_INCLUDE_DIR}
 	${CMAKE_BINARY_DIR}
 	)
-
-target_link_libraries(${namel}_${buildl}
-    ${CLIMATH_LIBRARY_${buildu}}
-    ${DEBUGGER_LIBRARY_${buildu}}
-    ${HARP_LIBRARY_${buildu}}
-    ${ATHENAPP_LIBRARY_${buildu}}
-    ${INVERSION_LIBRARY_${buildu}}
-    )
 
 set(${nameu}_LIBRARY_${buildu} ${namel}_${buildl}
     CACHE STRING
