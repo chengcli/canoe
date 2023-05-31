@@ -1,21 +1,29 @@
-// C/C++ headers
-#include "radiation_band.hpp"
+// C/C++
+#include <stdexcept>
+#include <type_traits>
+#include <vector>
 
-#include <climath/core.h>
-
+// athena
 #include <athena/mesh/mesh.hpp>
 #include <athena/outputs/outputs.hpp>
 #include <athena/parameter_input.hpp>
+#include <athena/utils/utils.hpp>
+
+// climath
+#include <climath/core.h>
+
+// debugger
 #include <debugger/debugger.hpp>
-#include <stdexcept>
-#include <type_traits>
+
+// utils
 #include <utils/fileio.hpp>
 #include <utils/ndarrays.hpp>
 #include <utils/vectorize.hpp>
-#include <vector>
 
+// harp
 #include "absorber.hpp"
 #include "radiation.hpp"
+#include "radiation_band.hpp"
 #include "radiation_utils.hpp"  // readRadiationDirections
 
 RadiationBand::RadiationBand(MeshBlock *pmb, ParameterInput *pin,
@@ -236,8 +244,8 @@ RadiationBand::calculateBandFlux(AthenaArray<Real> *flxup,
                                  Direction const &rayInput, Real dist, int k,
                                  int j, int il, int iu) {}
 
-/* overide in rtsolver folder
-void __attribute__((weak)) RadiationBand::calculateBandRadiance(
-  AthenaArray<Real> *radiance,
-  Direction const& rayInput, Real dist, int k, int j, int il, int iu)
-{}*/
+// overide in rtsolver folder
+void __attribute__((weak))
+RadiationBand::calculateBandRadiance(AthenaArray<Real> *radiance,
+                                     Direction const &rayInput, Real dist,
+                                     int k, int j, int il, int iu) {}

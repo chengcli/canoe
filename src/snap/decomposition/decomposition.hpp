@@ -51,7 +51,7 @@ class Decomposition {
                                int iu);
 
  private:
-  Hydro *pmy_block_;
+  MeshBlock *pmy_block_;
 
   // pressure decomposition
   AthenaArray<Real>

@@ -43,6 +43,12 @@ target_include_directories(${namel}_${buildl}
     ${CMAKE_BINARY_DIR}
 	)
 
+target_link_libraries(${namel}_${buildl}
+    ${ATHENAPP_LIBRARY_${buildu}}
+    ${UTILS_LIBRARY_${buildu}}
+    ${ASTRO_LIBRARY_${buildu}}
+    )
+
 set(${nameu}_LIBRARY_${buildu} ${namel}_${buildl}
     CACHE STRING
     "${namel} library ${buildl}")

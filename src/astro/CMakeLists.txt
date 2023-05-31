@@ -45,9 +45,9 @@ target_include_directories(${namel}_${buildl}
     )
 
 target_link_libraries(${namel}_${buildl}
-    ${CLIMATH_LIBRARY_${build}}
-    ${DEBUGGER_LIBRARY_${build}}
-    ${ATHENAPP_LIBRARY_${build}}
+    ${CLIMATH_LIBRARY_${buildu}}
+    ${DEBUGGER_LIBRARY_${buildu}}
+    ${ATHENAPP_LIBRARY_${buildu}}
     )
 
 set(${nameu}_LIBRARY_${buildu} ${namel}_${buildl}

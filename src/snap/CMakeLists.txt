@@ -21,6 +21,7 @@ file(GLOB src_files
     *.cpp
     eos/*.cpp
     thermodynamics/*.cpp
+    decomposition/*.cpp
     )
 
 string(TOLOWER ${CMAKE_BUILD_TYPE} buildl)
@@ -43,6 +44,13 @@ target_include_directories(${namel}_${buildl}
     ${EIGEN_INCLUDE_DIR}
 	${CMAKE_BINARY_DIR}
 	)
+
+target_link_libraries(${namel}_${buildl}
+    ${CLIMATH_LIBRARY_${buildu}}
+    ${DEBUGGER_LIBRARY_${buildu}}
+    ${ATHENAPP_LIBRARY_${buildu}}
+    ${INVERSION_LIBRARY_${buildu}}
+    )
 
 set(${nameu}_LIBRARY_${buildu} ${namel}_${buildl}
     CACHE STRING

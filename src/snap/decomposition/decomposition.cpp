@@ -6,6 +6,7 @@
 // Athena++ headers
 #include <athena/globals.hpp>
 #include <athena/mesh/mesh.hpp>
+#include <athena/stride_iterator.hpp>
 
 // debugger
 #include <debugger/debugger.hpp>
@@ -15,7 +16,7 @@
 // #include <utils/stride_iterator.hpp>
 
 #include "../constants.hpp"
-#include "../mesh/meshblock_impl.hpp"
+#include "../meshblock_impl.hpp"
 #include "../thermodynamics/thermodynamics.hpp"
 #include "decomposition.hpp"
 
@@ -101,7 +102,7 @@ void Decomposition::FindNeighbors() {
 // the upper boundary executes before the lower boundary
 void Decomposition::RecvFromTop(AthenaArray<Real> &psf, int kl, int ku, int jl,
                                 int ju) {
-  MeshBlock *pmb = pmy_hydro->pmy_block;
+  MeshBlock *pmb = pmy_block_;
   int ssize = (ju - jl + 1) * (ku - kl + 1) * (NGHOST + 1);
 
   std::stringstream msg;
@@ -144,8 +145,7 @@ void Decomposition::SendToBottom(AthenaArray<Real> const &psf, int kl, int ku,
               MPI_COMM_WORLD, &req_send_bot_);
 #endif
   } else {  // local boundary
-    MeshBlock *pbl =
-        pmy_hydro->pmy_block->pmy_mesh->FindMeshBlock(bblock.snb.gid);
+    MeshBlock *pbl = pmy_block_->pmy_mesh->FindMeshBlock(bblock.snb.gid);
     std::memcpy(pbl->pimpl->pdec->buffer_, buffer_, ssize * sizeof(Real));
   }
 }
@@ -172,8 +172,7 @@ void Decomposition::SyncNewVariables(AthenaArray<Real> const &w, int kl, int ku,
                 MPI_COMM_WORLD, &req_recv_sync_bot_);
 #endif
     } else {  // local boundary
-      MeshBlock *pbl =
-          pmy_hydro->pmy_block->pmy_mesh->FindMeshBlock(bblock.snb.gid);
+      MeshBlock *pbl = pmy_block_->pmy_mesh->FindMeshBlock(bblock.snb.gid);
       std::memcpy(pbl->pimpl->pdec->wrecv_top_, wsend_bot_,
                   sbot * sizeof(Real));
       std::memcpy(wrecv_bot_, pbl->pimpl->pdec->wsend_top_,
@@ -199,8 +198,7 @@ void Decomposition::SyncNewVariables(AthenaArray<Real> const &w, int kl, int ku,
                 MPI_COMM_WORLD, &req_recv_sync_top_);
 #endif
     } else {  // local boundary
-      MeshBlock *pbl =
-          pmy_hydro->pmy_block->pmy_mesh->FindMeshBlock(bblock.snb.gid);
+      MeshBlock *pbl = pmy_block_->pmy_mesh->FindMeshBlock(bblock.snb.gid);
       std::memcpy(pbl->pimpl->pdec->wrecv_bot_, wsend_top_,
                   stop * sizeof(Real));
       std::memcpy(wrecv_top_, pbl->pimpl->pdec->wsend_bot_,
@@ -222,7 +220,7 @@ void Decomposition::WaitToFinishSend() {
 
 void Decomposition::WaitToFinishSync(AthenaArray<Real> &w, int kl, int ku,
                                      int jl, int ju) {
-  MeshBlock *pmb = pmy_hydro->pmy_block;
+  MeshBlock *pmb = pmy_block_;
 #ifdef MPI_PARALLEL
   MPI_Status status;
   if (has_bot_neighbor && (bblock.snb.rank != Globals::my_rank)) {
@@ -264,7 +262,7 @@ void Decomposition::WaitToFinishSync(AthenaArray<Real> &w, int kl, int ku,
 // the upper boundary executes before the lower boundary
 void Decomposition::RecvBuffer(AthenaArray<Real> &psf, int kl, int ku, int jl,
                                int ju, int il, int iu, NeighborBlock nb) {
-  MeshBlock *pmb = pmy_hydro->pmy_block;
+  MeshBlock *pmb = pmy_block_;
   int ssize = (iu - il + 1) * (ju - jl + 1) * (ku - kl + 1);
 
   std::stringstream msg;
@@ -292,7 +290,7 @@ void Decomposition::RecvBuffer(AthenaArray<Real> &psf, int kl, int ku, int jl,
 
 void Decomposition::SendBuffer(AthenaArray<Real> const &psf, int kl, int ku,
                                int jl, int ju) {
-  MeshBlock *pmb = pmy_hydro->pmy_block;
+  MeshBlock *pmb = pmy_block_;
   int s1 = 0;
   for (int k = kl; k <= ku; ++k)
     for (int j = jl; j <= ju; ++j)
@@ -313,8 +311,7 @@ void Decomposition::SendBuffer(AthenaArray<Real> const &psf, int kl, int ku,
                 MPI_COMM_WORLD, &req_send_bot_);
 #endif
     } else {  // local boundary, place holder, may not work
-      MeshBlock *pbl =
-          pmy_hydro->pmy_block->pmy_mesh->FindMeshBlock(bblock.snb.gid);
+      MeshBlock *pbl = pmy_block_->pmy_mesh->FindMeshBlock(bblock.snb.gid);
       std::memcpy(pbl->pimpl->pdec->buffer_, send_buffer_, s1 * sizeof(Real));
     }
   }
@@ -327,8 +324,7 @@ void Decomposition::SendBuffer(AthenaArray<Real> const &psf, int kl, int ku,
                 MPI_COMM_WORLD, &req_send_top_);
 #endif
     } else {  // local boundary, place holder, may not work
-      MeshBlock *pbl =
-          pmy_hydro->pmy_block->pmy_mesh->FindMeshBlock(tblock.snb.gid);
+      MeshBlock *pbl = pmy_block_->pmy_mesh->FindMeshBlock(tblock.snb.gid);
       std::memcpy(pbl->pimpl->pdec->buffer_, send_buffer_ + s1,
                   s1 * sizeof(Real));
     }
@@ -337,7 +333,7 @@ void Decomposition::SendBuffer(AthenaArray<Real> const &psf, int kl, int ku,
 
 void Decomposition::PopulateBotEntropy(AthenaArray<Real> const &w, int kl,
                                        int ku, int jl, int ju) {
-  MeshBlock *pmb = pmy_hydro->pmy_block;
+  MeshBlock *pmb = pmy_block_;
   int c = 0;
   for (int i = 0; i < Globals::nranks; ++i) {
     if (brank_[i] == -1)
@@ -350,7 +346,7 @@ void Decomposition::PopulateBotEntropy(AthenaArray<Real> const &w, int kl,
   if (!has_bot_neighbor) {
     for (int k = kl; k <= ku; ++k)
       for (int j = jl; j <= ju; ++j) {
-        Real gamma = pmb->pimpl->pthermo->getGamma(w.at(k, j, pmb->is));
+        Real gamma = pmb->pimpl->pthermo->GetGamma(w.at(k, j, pmb->is));
         buffer_[p++] = gamma;
         buffer_[p++] =
             log(w(IPR, k, j, pmb->is)) - gamma * log(w(IDN, k, j, pmb->is));

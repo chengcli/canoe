@@ -1,5 +1,9 @@
-#ifndef LINALG_H_
-#define LINALG_H_
+#ifndef SRC_CLIMATH_LINALG_H_
+#define SRC_CLIMATH_LINALG_H_
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 double vvdot(double const *a, double const *b, int n);
 void mvdot(double *r, double **m, double const *v, int n1, int n2);
@@ -17,4 +21,8 @@ void band_multiply(int n, int m1, int m2, double *a, double *x, double *b);
 void band_improve(int n, int m1, int m2, double *aorig, double *a, double *al,
                   int *index, double *b, double *x);
 
+#ifdef __cplusplus
+} /* extern "C" */
 #endif
+
+#endif  // SRC_CLIMATH_LINALG_H_

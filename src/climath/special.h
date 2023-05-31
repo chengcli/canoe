@@ -1,5 +1,5 @@
-#ifndef SPECIAL_H_
-#define SPECIAL_H_
+#ifndef SRC_CLIMATH_SPECIAL_H_
+#define SRC_CLIMATH_SPECIAL_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -8,8 +8,8 @@ extern "C" {
 double gammp(double a, double x);
 double gammq(double a, double x);
 
-#endif
-
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
+
+#endif  // SRC_CLIMATH_SPECIAL_H_
