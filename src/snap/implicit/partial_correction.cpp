@@ -1,26 +1,22 @@
-//! \file partial_correction.cpp
-//  \brief vertical implicit roe solver
-
-// C/C++ headers
+// C/C++
 #include <iostream>
 #include <vector>
 
-// Eigen headers
+// Eigen
 #include <Eigen/Core>
 #include <Eigen/Dense>
 
 // debugger
-#include <debugger.hpp>
+#include <debugger/debugger.hpp>
 
-// Athena++ headers
-#include <eos/eos.hpp>
-#include <hydro/hydro.hpp>
-#include <mesh/mesh.hpp>
+// athena
+#include <athena/eos/eos.hpp>
+#include <athena/hydro/hydro.hpp>
+#include <athena/mesh/mesh.hpp>
 
-// canoe headers
-#include "../../mesh/block_index.hpp"
-#include "../../mesh/meshblock_impl.hpp"
-#include "../../thermodynamics/thermodynamics.hpp"
+// snap
+#include "../meshblock_impl.hpp"
+#include "../thermodynamics/thermodynamics.hpp"
 #include "flux_decomposition.hpp"
 #include "forward_backward.hpp"
 #include "periodic_forward_backward.hpp"
@@ -32,23 +28,26 @@ void ImplicitSolver::PartialCorrection(AthenaArray<Real>& du,
 
   int is, ie, js, je, ks, ke;
   int idn = 0, ivx = 1, ivy = 2, ivz = 3, ien = 4;
+
+  MeshBlock const* pmb = pmy_block_;
+
   if (mydir_ == X1DIR) {
-    ks = pblock_->ks, js = pblock_->js, is = pblock_->is;
-    ke = pblock_->ke, je = pblock_->je, ie = pblock_->ie;
+    ks = pmb->ks, js = pmb->js, is = pmb->is;
+    ke = pmb->ke, je = pmb->je, ie = pmb->ie;
     for (int n = 0; n < NHYDRO; ++n)
       for (int k = ks; k <= ke; ++k)
         for (int j = js; j <= je; ++j)
           for (int i = is; i <= ie; ++i) du_(n, k, j, i) = du(n, k, j, i);
   } else if (mydir_ == X2DIR) {
-    ks = pblock_->is, js = pblock_->ks, is = pblock_->js;
-    ke = pblock_->ie, je = pblock_->ke, ie = pblock_->je;
+    ks = pmb->is, js = pmb->ks, is = pmb->js;
+    ke = pmb->ie, je = pmb->ke, ie = pmb->je;
     for (int n = 0; n < NHYDRO; ++n)
       for (int k = ks; k <= ke; ++k)
         for (int j = js; j <= je; ++j)
           for (int i = is; i <= ie; ++i) du_(n, k, j, i) = du(n, j, i, k);
   } else {  // X3DIR
-    ks = pblock_->js, js = pblock_->is, is = pblock_->ks;
-    ke = pblock_->je, je = pblock_->ie, ie = pblock_->ke;
+    ks = pmb->js, js = pmb->is, is = pmb->ks;
+    ke = pmb->je, je = pmb->ie, ie = pmb->ke;
     for (int n = 0; n < NHYDRO; ++n)
       for (int k = ks; k <= ke; ++k)
         for (int j = js; j <= je; ++j)
@@ -81,8 +80,8 @@ void ImplicitSolver::PartialCorrection(AthenaArray<Real>& du,
   // SynchronizeConserved(du_, ks, ke, js, je, is, ie);
   // WaitToFinishSync(ks, ke, js, je, is, ie);
 
-  Real gamma = peos_->getGamma();
-  Real grav = phydro_->hsrc.GetG1();
+  Real gamma = pmy_block_->peos->GetGamma();
+  Real grav = pmy_block_->phydro->hsrc.GetG1();
   Eigen::Matrix<Real, 3, 3> Phi, Dt, Bnd;
   if (mydir_ == X1DIR) {
     Phi << 0., 0., 0., grav, 0., 0., 0., grav, 0.;
@@ -95,6 +94,7 @@ void ImplicitSolver::PartialCorrection(AthenaArray<Real>& du,
   Bnd << 1., 0., 0., 0., -1., 0., 0., 0., 1.;
 
   Real wl[NHYDRO], wr[NHYDRO];
+  Thermodynamics* pthermo = pmy_block_->pimpl->pthermo;
   for (int k = ks; k <= ke; ++k)
     for (int j = js; j <= je; ++j) {
       // calculate and save flux Jacobian matrix
@@ -102,8 +102,8 @@ void ImplicitSolver::PartialCorrection(AthenaArray<Real>& du,
         Real fsig = 1., feps = 1.;
         CopyPrimitives(wl, wr, w, k, j, i, mydir_);
         for (int n = 1; n <= NVAPOR; ++n) {
-          fsig += wr[n] * (pthermo_->getCvRatio(n) - 1.);
-          feps += wr[n] * (1. / pthermo_->getMassRatio(n) - 1.);
+          fsig += wr[n] * (pthermo->GetCvRatio(n) - 1.);
+          feps += wr[n] * (1. / pthermo->GetMassRatio(n) - 1.);
         }
 
         gamma_m1[i] = (gamma - 1.) * feps / fsig;
@@ -121,7 +121,7 @@ void ImplicitSolver::PartialCorrection(AthenaArray<Real>& du,
       CopyPrimitives(wl, wr, w, k, j, is - 1, mydir_);
       Real gm1 = 0.5 * (gamma_m1[is - 2] + gamma_m1[is - 1]);
       RoeAverage(prim, gm1, wl, wr);
-      Real cs = peos_->SoundSpeed(prim);
+      Real cs = pmy_block_->peos->SoundSpeed(prim);
       Eigenvalue(Lambda, prim[IVX + mydir_], cs);
       Eigenvector(Rmat, Rimat, prim, cs, gm1, mydir_);
       Am = Rmat * Lambda * Rimat;
@@ -134,7 +134,7 @@ void ImplicitSolver::PartialCorrection(AthenaArray<Real>& du,
         CopyPrimitives(wl, wr, w, k, j, i + 1, mydir_);
         gm1 = 0.5 * (gamma_m1[i] + gamma_m1[i + 1]);
         RoeAverage(prim, gm1, wl, wr);
-        Real cs = peos_->SoundSpeed(prim);
+        Real cs = pmy_block_->peos->SoundSpeed(prim);
         Eigenvalue(Lambda, prim[IVX + mydir_], cs);
         Eigenvector(Rmat, Rimat, prim, cs, gm1, mydir_);
         Ap = Rmat * Lambda * Rimat;
@@ -146,18 +146,19 @@ void ImplicitSolver::PartialCorrection(AthenaArray<Real>& du,
 
         // set up diagonals a, b, c.
         Real aleft, aright, vol;
+        Coordinates* pcoord = pmy_block_->pcoord;
         if (mydir_ == X1DIR) {
-          aleft = pcoord_->GetFace1Area(k, j, i);
-          aright = pcoord_->GetFace1Area(k, j, i + 1);
-          vol = pcoord_->GetCellVolume(k, j, i);
+          aleft = pcoord->GetFace1Area(k, j, i);
+          aright = pcoord->GetFace1Area(k, j, i + 1);
+          vol = pcoord->GetCellVolume(k, j, i);
         } else if (mydir_ == X2DIR) {
-          aleft = pcoord_->GetFace2Area(j, i, k);
-          aright = pcoord_->GetFace2Area(j, i + 1, k);
-          vol = pcoord_->GetCellVolume(j, i, k);
+          aleft = pcoord->GetFace2Area(j, i, k);
+          aright = pcoord->GetFace2Area(j, i + 1, k);
+          vol = pcoord->GetCellVolume(j, i, k);
         } else {  // X3DIR
-          aleft = pcoord_->GetFace3Area(i, k, j);
-          aright = pcoord_->GetFace3Area(i + 1, k, j);
-          vol = pcoord_->GetCellVolume(i, k, j);
+          aleft = pcoord->GetFace3Area(i, k, j);
+          aright = pcoord->GetFace3Area(i + 1, k, j);
+          vol = pcoord->GetCellVolume(i, k, j);
         }
         a[i] = (Am2 * aleft + Ap2 * aright + (aright - aleft) * dfdq2[i]) /
                    (2. * vol) +

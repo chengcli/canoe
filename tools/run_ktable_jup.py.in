@@ -36,20 +36,20 @@ cia     = "H2-H2-eq H2-He-eq"
 # spectral bands
 band= []
 band.append("10 200 0.01")
-#band.append("200 400 0.01")
-#band.append("400 600 0.01")
-#band.append("600 700 0.01")
-#band.append("700 860 0.01")
-#band.append("860 960 0.01")
-#band.append("960 1200 0.01")
-#band.append("1200 1400 0.01")
-#band.append("1400 1700 0.01")
-#band.append("1700 2100 0.01")
-#band.append("2100 3450 0.01")
-#band.append("3450 4800 0.01")
-#band.append("4800 6300 0.01")
-#band.append("6300 7800 0.01")
-#band.append("7800 9300 0.01")
+band.append("200 400 0.01")
+band.append("400 600 0.01")
+band.append("600 700 0.01")
+band.append("700 860 0.01")
+band.append("860 960 0.01")
+band.append("960 1200 0.01")
+band.append("1200 1400 0.01")
+band.append("1400 1700 0.01")
+band.append("1700 2100 0.01")
+band.append("2100 3450 0.01")
+band.append("3450 4800 0.01")
+band.append("4800 6300 0.01")
+band.append("6300 7800 0.01")
+band.append("7800 9300 0.01")
 
 # number of parallel threads
 nthreads = min(max_threads, len(band))
@@ -83,7 +83,7 @@ def RunSingleKtable(wave):
     print(out.decode(), err.decode())
     #if err != b'':
     #    raise RuntimeError("Error in generating kcoeff.**.nc.")
-
+  print("band %s finishes." % wave)
 
   # create correlated-K table
   if generate_cktable:

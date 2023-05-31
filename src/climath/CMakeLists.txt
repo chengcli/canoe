@@ -25,7 +25,7 @@ string(TOLOWER ${CMAKE_BUILD_TYPE} buildl)
 string(TOUPPER ${CMAKE_BUILD_TYPE} buildu)
 
 add_library(${namel}_${buildl}
-	STATIC
+    STATIC
     ${src_files}
     )
 
@@ -34,7 +34,7 @@ set_target_properties(${namel}_${buildl}
     COMPILE_FLAGS ${CMAKE_C_FLAGS_${buildu}}
     )
 
-set(${nameu}_LIBRARY_${buildu} ${nameu}_${buildl}
+set(${nameu}_LIBRARY_${buildu} ${namel}_${buildl}
     CACHE STRING
     "${namel} library ${buildl}")
 mark_as_advanced(${nameu}_LIBRARY_${buildu})

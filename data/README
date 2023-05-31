@@ -4,3 +4,5 @@ To pull data from lfs, run `git lfs pull`
 Brief description of data
 - HITRAN2012.par: hitran par files
 - new_jup_lat30_modelc.txt: Jupiter atmosphere profile from Julie Moses
+- MidIR_HITRAN_0-2500_H2broaden_C2H2_C2H6_AIRbroaden.par: hitran par files for C2H2 and
+  C2H6 with H2 broadening

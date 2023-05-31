@@ -1,5 +1,5 @@
-#ifndef CORE_H_
-#define CORE_H_
+#ifndef SRC_CLIMATH_CORE_H_
+#define SRC_CLIMATH_CORE_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -49,8 +49,8 @@ inline double sec2day(double x) { return x / 86400.; }
 inline double au2m(double x) { return x * 1.495978707E11; }
 inline double m2au(double x) { return x / 1.495978707E11; }
 
-#endif
-
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
+
+#endif  // SRC_CLIMATH_CORE_H_

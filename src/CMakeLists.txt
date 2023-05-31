@@ -12,9 +12,9 @@ set(MODULES_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}
 	CACHE PATH
 	"canoe module include directory")
 
-add_subdirectory(astro)
 add_subdirectory(climath)
 add_subdirectory(debugger)
+add_subdirectory(astro)
 add_subdirectory(utils)
 add_subdirectory(snap)
 add_subdirectory(harp)

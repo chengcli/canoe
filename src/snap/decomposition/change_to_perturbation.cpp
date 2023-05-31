@@ -3,15 +3,16 @@
 #include <sstream>
 
 // Athena++ headers
-#include <coordinates/coordinates.hpp>
+#include <athena/coordinates/coordinates.hpp>
+#include <athena/hydro/hydro.hpp>
+#include <athena/stride_iterator.hpp>
 
-// cliutils
-#include <cliutils/ndarrays.hpp>
-#include <cliutils/stride_iterator.hpp>
+// utils
+#include <utils/ndarrays.hpp>
 
-// canoe headers
-#include "../../mesh/meshblock_impl.hpp"
-#include "../../thermodynamics/thermodynamics.hpp"
+// canoe
+#include "../meshblock_impl.hpp"
+#include "../thermodynamics/thermodynamics.hpp"
 #include "decomposition.hpp"
 
 inline void IntegrateUpwards(AthenaArray<Real> &psf, AthenaArray<Real> const &w,
@@ -36,11 +37,11 @@ inline void IntegrateDownwards(AthenaArray<Real> &psf,
 void Decomposition::ChangeToPerturbation(AthenaArray<Real> &w, int kl, int ku,
                                          int jl, int ju) {
   // Need to integrate upwards
-  MeshBlock *pmb = pmy_hydro->pmy_block;
+  MeshBlock *pmb = pmy_block_;
   Coordinates *pco = pmb->pcoord;
 
-  Real grav = -pmy_hydro->hsrc.GetG1();  // positive downward pointing
-  Real Rd = pmb->pimpl->pthermo->getRd();
+  Real grav = -pmb->phydro->hsrc.GetG1();  // positive downward pointing
+  Real Rd = pmb->pimpl->pthermo->GetRd();
   int is = pmb->is, ie = pmb->ie;
   if (grav == 0.) return;
 
@@ -154,10 +155,11 @@ void Decomposition::RestoreFromPerturbation(AthenaArray<Real> &w,
                                             AthenaArray<Real> &wl,
                                             AthenaArray<Real> &wr, int k, int j,
                                             int il, int iu) {
-  MeshBlock *pmb = pmy_hydro->pmy_block;
-  Real Rd = pmb->pimpl->pthermo->getRd();
+  MeshBlock *pmb = pmy_block_;
+  Hydro *phydro = pmb->phydro;
+  Real Rd = pmb->pimpl->pthermo->GetRd();
   int is = pmb->is, ie = pmb->ie;
-  if (pmy_hydro->hsrc.GetG1() == 0.) return;
+  if (phydro->hsrc.GetG1() == 0.) return;
 
   for (int i = is - NGHOST; i <= ie + NGHOST; ++i) {
     w(IPR, k, j, i) = pres_(k, j, i);

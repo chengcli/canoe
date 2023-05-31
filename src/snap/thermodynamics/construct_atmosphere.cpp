@@ -62,7 +62,7 @@ void Thermodynamics::ConstructAtmosphere(Real **w, Real Ts, Real Ps, Real grav,
   for (int i = 1; i < len; ++i) {
     // RK4 integration
     Real rdlnTdlnP, adTdz;
-#if HYDROSTATIC
+#ifdef HYDROSTATIC
     rdlnTdlnP = userp;
     rk4_integrate_lnp_adaptive(q1, isat, rcp, beta_, delta_, t3_, p3_, gamma,
                                dzORdlnp, ftol_, static_cast<int>(method),

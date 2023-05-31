@@ -6,17 +6,17 @@
 #include <mpi.h>
 #endif
 
-// C/C++ headers
+// C/C++
 #include <cstring>
 #include <functional>
 
-// Athena++ headers
-#include <globals.hpp>
-#include <hydro/hydro.hpp>
-#include <mesh/mesh.hpp>
+// athena
+#include <athena/globals.hpp>
+#include <athena/hydro/hydro.hpp>
+#include <athena/mesh/mesh.hpp>
 
-// canoe headers
-#include "../../mesh/meshblock_impl.hpp"
+// snap
+#include "../meshblock_impl.hpp"
 #include "implicit_solver.hpp"
 
 template <typename T>
@@ -29,12 +29,12 @@ void ImplicitSolver::SendBuffer(T const &a, int k, int j, NeighborBlock nb) {
 
   if (nb.snb.rank != Globals::my_rank) {  // MPI boundary
 #ifdef MPI_PARALLEL
-    int tag = CreateMPITag(nb.snb.gid, pblock_->gid, phy);
+    int tag = CreateMPITag(nb.snb.gid, pmy_block_->gid, phy);
     MPI_Isend(buffer_[k][j], s1, MPI_ATHENA_REAL, nb.snb.rank, tag,
               MPI_COMM_WORLD, &req_send_data1_[k][j]);
 #endif
   } else {  // local boundary
-    MeshBlock *pbl = pmesh_->FindMeshBlock(bblock.snb.gid);
+    MeshBlock *pbl = pmy_block_->pmy_mesh->FindMeshBlock(bblock.snb.gid);
     std::memcpy(pbl->pimpl->phevi->buffer_[k][j], buffer_[k][j],
                 s1 * sizeof(Real));
   }
@@ -52,12 +52,12 @@ void ImplicitSolver::SendBuffer(T1 const &a, T2 const &b, int k, int j,
 
   if (nb.snb.rank != Globals::my_rank) {  // MPI boundary
 #ifdef MPI_PARALLEL
-    int tag = CreateMPITag(nb.snb.gid, pblock_->gid, phy);
+    int tag = CreateMPITag(nb.snb.gid, pmy_block_->gid, phy);
     MPI_Isend(buffer_[k][j], s1 + s2, MPI_ATHENA_REAL, nb.snb.rank, tag,
               MPI_COMM_WORLD, &req_send_data2_[k][j]);
 #endif
   } else {  // local boundary
-    MeshBlock *pbl = pmesh_->FindMeshBlock(bblock.snb.gid);
+    MeshBlock *pbl = pmy_block_->pmy_mesh->FindMeshBlock(bblock.snb.gid);
     std::memcpy(pbl->pimpl->phevi->buffer_[k][j], buffer_[k][j],
                 (s1 + s2) * sizeof(Real));
   }
@@ -90,12 +90,12 @@ void ImplicitSolver::SendBuffer(T1 const &a, T2 const &b, T3 const &c,
 
   if (nb.snb.rank != Globals::my_rank) {  // MPI boundary
 #ifdef MPI_PARALLEL
-    int tag = CreateMPITag(nb.snb.gid, pblock_->gid, phy);
+    int tag = CreateMPITag(nb.snb.gid, pmy_block_->gid, phy);
     MPI_Isend(buffer_[k][j], st, MPI_ATHENA_REAL, nb.snb.rank, tag,
               MPI_COMM_WORLD, &req_send_data6_[k][j]);
 #endif
   } else {  // local boundary
-    MeshBlock *pbl = pmesh_->FindMeshBlock(bblock.snb.gid);
+    MeshBlock *pbl = pmy_block_->pmy_mesh->FindMeshBlock(bblock.snb.gid);
     std::memcpy(pbl->pimpl->phevi->buffer_[k][j], buffer_[k][j],
                 st * sizeof(Real));
   }
@@ -129,12 +129,12 @@ void ImplicitSolver::SendBuffer(T1 const &a, T2 const &b, T3 const &c,
 
   if (nb.snb.rank != Globals::my_rank) {  // MPI boundary
 #ifdef MPI_PARALLEL
-    int tag = CreateMPITag(nb.snb.gid, pblock_->gid, phy);
+    int tag = CreateMPITag(nb.snb.gid, pmy_block_->gid, phy);
     MPI_Isend(buffer_[k][j], st, MPI_ATHENA_REAL, nb.snb.rank, tag,
               MPI_COMM_WORLD, &req_send_data7_[k][j]);
 #endif
   } else {  // local boundary
-    MeshBlock *pbl = pmesh_->FindMeshBlock(bblock.snb.gid);
+    MeshBlock *pbl = pmy_block_->pmy_mesh->FindMeshBlock(bblock.snb.gid);
     std::memcpy(pbl->pimpl->phevi->buffer_[k][j], buffer_[k][j],
                 st * sizeof(Real));
   }
@@ -151,7 +151,7 @@ void ImplicitSolver::RecvBuffer(T &a, int k, int j, NeighborBlock nb) {
 
   if (nb.snb.rank != Globals::my_rank) {  // MPI boundary
 #ifdef MPI_PARALLEL
-    int tag = CreateMPITag(pblock_->gid, nb.snb.gid, phy);
+    int tag = CreateMPITag(pmy_block_->gid, nb.snb.gid, phy);
     MPI_Recv(buffer_[k][j], s1, MPI_ATHENA_REAL, nb.snb.rank, tag,
              MPI_COMM_WORLD, &status);
 #endif
@@ -171,7 +171,7 @@ void ImplicitSolver::RecvBuffer(T1 &a, T2 &b, int k, int j, NeighborBlock nb) {
 
   if (nb.snb.rank != Globals::my_rank) {  // MPI boundary
 #ifdef MPI_PARALLEL
-    int tag = CreateMPITag(pblock_->gid, nb.snb.gid, phy);
+    int tag = CreateMPITag(pmy_block_->gid, nb.snb.gid, phy);
     MPI_Recv(buffer_[k][j], s1 + s2, MPI_ATHENA_REAL, nb.snb.rank, tag,
              MPI_COMM_WORLD, &status);
 #endif
@@ -197,7 +197,7 @@ void ImplicitSolver::RecvBuffer(T1 &a, T2 &b, T3 &c, T4 &d, T5 &e, T6 &f, int k,
 
   if (nb.snb.rank != Globals::my_rank) {  // MPI boundary
 #ifdef MPI_PARALLEL
-    int tag = CreateMPITag(pblock_->gid, nb.snb.gid, phy);
+    int tag = CreateMPITag(pmy_block_->gid, nb.snb.gid, phy);
     MPI_Recv(buffer_[k][j], st, MPI_ATHENA_REAL, nb.snb.rank, tag,
              MPI_COMM_WORLD, &status);
 #endif
@@ -233,7 +233,7 @@ void ImplicitSolver::RecvBuffer(T1 &a, T2 &b, T3 &c, T4 &d, T5 &e, T6 &f, T7 &g,
 
   if (nb.snb.rank != Globals::my_rank) {  // MPI boundary
 #ifdef MPI_PARALLEL
-    int tag = CreateMPITag(pblock_->gid, nb.snb.gid, phy);
+    int tag = CreateMPITag(pmy_block_->gid, nb.snb.gid, phy);
     MPI_Recv(buffer_[k][j], st, MPI_ATHENA_REAL, nb.snb.rank, tag,
              MPI_COMM_WORLD, &status);
 #endif

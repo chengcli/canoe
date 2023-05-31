@@ -11,6 +11,8 @@
 // inversion
 #include "inversion.hpp"
 
+class MeshBlock;
+
 class ProfileInversion : public Inversion {
  public:
   ProfileInversion(MeshBlock *pmb, ParameterInput *pin, std::string name);
@@ -34,14 +36,8 @@ class ProfileInversion : public Inversion {
 
   int getX2Span() const override { return idx_.size() + 1; }
 
-  Real getReferencePressure() const { return reference_pressure_; }
-
-  Real getPressureScaleHeight() const { return pressure_scale_height_; }
-
  protected:
   // pressure levels
-  Real reference_pressure_;
-  Real pressure_scale_height_;
   std::vector<Real> plevel_;
 
   // inversion variable id

@@ -1,33 +1,28 @@
-//! \file full_correction.cpp
-//  \brief vertical implicit roe solver
-
-// C/C++ headers
+// C/C++
 #include <iostream>
 #include <vector>
 
-// Eigen headers
+// Eigen
 #include <Eigen/Core>
 #include <Eigen/Dense>
 
-// climath headers
-extern "C" {
-#include <core.h>  // _sqr
-}
+// climath
+#include <climath/core.h>
 
-// debugger headers
-#include <debugger.hpp>
+// athena
+#include <athena/eos/eos.hpp>
+#include <athena/hydro/hydro.hpp>
+#include <athena/mesh/mesh.hpp>
 
-// Athena++ headers
-#include <eos/eos.hpp>
-#include <hydro/hydro.hpp>
-#include <mesh/mesh.hpp>
+// debugger
+#include <debugger/debugger.hpp>
 
-// canoe headers
+// canoe
 #include <configure.hpp>
 
-#include "../../mesh/block_index.hpp"
-#include "../../mesh/meshblock_impl.hpp"
-#include "../../thermodynamics/thermodynamics.hpp"
+// snap
+#include "../meshblock_impl.hpp"
+#include "../thermodynamics/thermodynamics.hpp"
 #include "flux_decomposition.hpp"
 #include "forward_backward.hpp"
 #include "implicit_solver.hpp"
@@ -38,26 +33,27 @@ void ImplicitSolver::FullCorrection(AthenaArray<Real>& du,
                                     AthenaArray<Real> const& w, Real dt) {
   // pdebug->Call("ImplicitSolver::FullCorrectin-X" + std::to_string(mydir_+1));
 
+  MeshBlock const* pmb = pmy_block_;
   int is, ie, js, je, ks, ke;
   int idn = 0, ivx = 1, ivy = 2, ivz = 3, ien = 4;
   if (mydir_ == X1DIR) {
-    ks = pblock_->ks, js = pblock_->js, is = pblock_->is;
-    ke = pblock_->ke, je = pblock_->je, ie = pblock_->ie;
-    for (int n = 0; n < NumHydros; ++n)
+    ks = pmb->ks, js = pmb->js, is = pmb->is;
+    ke = pmb->ke, je = pmb->je, ie = pmb->ie;
+    for (int n = 0; n < NHYDRO; ++n)
       for (int k = ks; k <= ke; ++k)
         for (int j = js; j <= je; ++j)
           for (int i = is; i <= ie; ++i) du_(n, k, j, i) = du(n, k, j, i);
   } else if (mydir_ == X2DIR) {
-    ks = pblock_->is, js = pblock_->ks, is = pblock_->js;
-    ke = pblock_->ie, je = pblock_->ke, ie = pblock_->je;
-    for (int n = 0; n < NumHydros; ++n)
+    ks = pmb->is, js = pmb->ks, is = pmb->js;
+    ke = pmb->ie, je = pmb->ke, ie = pmb->je;
+    for (int n = 0; n < NHYDRO; ++n)
       for (int k = ks; k <= ke; ++k)
         for (int j = js; j <= je; ++j)
           for (int i = is; i <= ie; ++i) du_(n, k, j, i) = du(n, j, i, k);
   } else {  // X3DIR
-    ks = pblock_->js, js = pblock_->is, is = pblock_->ks;
-    ke = pblock_->je, je = pblock_->ie, ie = pblock_->ke;
-    for (int n = 0; n < NumHydros; ++n)
+    ks = pmb->js, js = pmb->is, is = pmb->ks;
+    ke = pmb->je, je = pmb->ie, ie = pmb->ke;
+    for (int n = 0; n < NHYDRO; ++n)
       for (int k = ks; k <= ke; ++k)
         for (int j = js; j <= je; ++j)
           for (int i = is; i <= ie; ++i) du_(n, k, j, i) = du(n, i, k, j);
@@ -69,7 +65,7 @@ void ImplicitSolver::FullCorrection(AthenaArray<Real>& du,
   // reduced diffusion matrix |A_{i-1/2}|, |A_{i+1/2}|
   Eigen::Matrix<Real, 5, 5> Am, Ap;
 
-  Real prim[NumHydros];  // Roe averaged primitive variables of cell i-1/2
+  Real prim[NHYDRO];  // Roe averaged primitive variables of cell i-1/2
 
   int nc = ie - is + 1 + 2 * NGHOST;
   std::vector<Eigen::Matrix<Real, 5, 1>> rhs(nc);
@@ -81,7 +77,7 @@ void ImplicitSolver::FullCorrection(AthenaArray<Real>& du,
   // 0. forcing and volume matrix
   FindNeighbors();
 
-  Real gamma = peos_->getGamma();
+  Real gamma = pmy_block_->peos->GetGamma();
   Eigen::Matrix<Real, 5, 5> Phi, Dt, Bnds, Bnde, tmp;
 
   Dt.setIdentity();
@@ -97,7 +93,9 @@ void ImplicitSolver::FullCorrection(AthenaArray<Real>& du,
 
   Real* gamma_m1 = new Real[nc];
 
-  Real wl[NumHydros], wr[NumHydros];
+  Real wl[NHYDRO], wr[NHYDRO];
+  Thermodynamics* pthermo = pmy_block_->pimpl->pthermo;
+
   for (int k = ks; k <= ke; ++k)
     for (int j = js; j <= je; ++j) {
       // 3. calculate and save flux Jacobian matrix
@@ -105,8 +103,8 @@ void ImplicitSolver::FullCorrection(AthenaArray<Real>& du,
         Real fsig = 1., feps = 1.;
         CopyPrimitives(wl, wr, w, k, j, i, mydir_);
         for (int n = 1; n <= NVAPOR; ++n) {
-          fsig += w(n, k, j, i) * (pthermo_->getCvRatio(n) - 1.);
-          feps += w(n, k, j, i) * (1. / pthermo_->getMassRatio(n) - 1.);
+          fsig += w(n, k, j, i) * (pthermo->GetCvRatio(n) - 1.);
+          feps += w(n, k, j, i) * (1. / pthermo->GetMassRatio(n) - 1.);
         }
 
         gamma_m1[i] = (gamma - 1.) * feps / fsig;
@@ -116,17 +114,18 @@ void ImplicitSolver::FullCorrection(AthenaArray<Real>& du,
       CopyPrimitives(wl, wr, w, k, j, is - 1, mydir_);
       Real gm1 = 0.5 * (gamma_m1[is - 2] + gamma_m1[is - 1]);
       RoeAverage(prim, gm1, wl, wr);
-      Real cs = peos_->SoundSpeed(prim);
+      Real cs = pmy_block_->peos->SoundSpeed(prim);
       Eigenvalue(Lambda, prim[IVX + mydir_], cs);
       Eigenvector(Rmat, Rimat, prim, cs, gm1, mydir_);
       Am = Rmat * Lambda * Rimat;
 
+      Coordinates* pcoord = pmy_block_->pcoord;
       for (int i = is - 1; i <= ie; ++i) {
         CopyPrimitives(wl, wr, w, k, j, i + 1, mydir_);
         // right edge
         gm1 = 0.5 * (gamma_m1[i] + gamma_m1[i + 1]);
         RoeAverage(prim, gm1, wl, wr);
-        Real cs = peos_->SoundSpeed(prim);
+        Real cs = pmy_block_->peos->SoundSpeed(prim);
         Eigenvalue(Lambda, prim[IVX + mydir_], cs);
         Eigenvector(Rmat, Rimat, prim, cs, gm1, mydir_);
         Ap = Rmat * Lambda * Rimat;
@@ -134,23 +133,23 @@ void ImplicitSolver::FullCorrection(AthenaArray<Real>& du,
         // set up diagonals a, b, c, and Jacobian of the forcing function
         Real aleft, aright, vol;
         if (mydir_ == X1DIR) {
-          aleft = pcoord_->GetFace1Area(k, j, i);
-          aright = pcoord_->GetFace1Area(k, j, i + 1);
-          vol = pcoord_->GetCellVolume(k, j, i);
+          aleft = pcoord->GetFace1Area(k, j, i);
+          aright = pcoord->GetFace1Area(k, j, i + 1);
+          vol = pcoord->GetCellVolume(k, j, i);
           // JACOBIAN_FUNCTION(Phi,wl,k,j,i);
           // memcpy(jacobian_[k][j][i], Phi.data(), Phi.size()*sizeof(Real));
         } else if (mydir_ == X2DIR) {
-          aleft = pcoord_->GetFace2Area(j, i, k);
-          aright = pcoord_->GetFace2Area(j, i + 1, k);
-          vol = pcoord_->GetCellVolume(j, i, k);
+          aleft = pcoord->GetFace2Area(j, i, k);
+          aright = pcoord->GetFace2Area(j, i + 1, k);
+          vol = pcoord->GetCellVolume(j, i, k);
           Phi.setZero();
           // JACOBIAN_FUNCTION(Phi,wl,j,i,k);
           // tmp = p3_*Phi*p2_;
           // memcpy(jacobian_[j][i][k], tmp.data(), tmp.size()*sizeof(Real));
         } else {  // X3DIR
-          aleft = pcoord_->GetFace3Area(i, k, j);
-          aright = pcoord_->GetFace3Area(i + 1, k, j);
-          vol = pcoord_->GetCellVolume(i, k, j);
+          aleft = pcoord->GetFace3Area(i, k, j);
+          aright = pcoord->GetFace3Area(i + 1, k, j);
+          vol = pcoord->GetCellVolume(i, k, j);
           Phi.setZero();
           // JACOBIAN_FUNCTION(Phi,wl,i,k,j);
           // tmp = p2_*Phi*p3_;
@@ -189,24 +188,21 @@ void ImplicitSolver::FullCorrection(AthenaArray<Real>& du,
       for (int j = js; j <= je; ++j)
         for (int i = is; i <= ie; ++i) {
           du(IDN, k, j, i) = du_(IDN, k, j, i);
-          for (int n = IVX; n < NumHydros; ++n)
-            du(n, k, j, i) = du_(n, k, j, i);
+          for (int n = IVX; n < NHYDRO; ++n) du(n, k, j, i) = du_(n, k, j, i);
         }
   } else if (mydir_ == X2DIR) {
     for (int k = ks; k <= ke; ++k)
       for (int j = js; j <= je; ++j)
         for (int i = is; i <= ie; ++i) {
           du(IDN, j, i, k) = du_(IDN, k, j, i);
-          for (int n = IVX; n < NumHydros; ++n)
-            du(n, j, i, k) = du_(n, k, j, i);
+          for (int n = IVX; n < NHYDRO; ++n) du(n, j, i, k) = du_(n, k, j, i);
         }
   } else {  // X3DIR
     for (int k = ks; k <= ke; ++k)
       for (int j = js; j <= je; ++j)
         for (int i = is; i <= ie; ++i) {
           du(IDN, i, k, j) = du_(IDN, k, j, i);
-          for (int n = IVX; n < NumHydros; ++n)
-            du(n, i, k, j) = du_(n, k, j, i);
+          for (int n = IVX; n < NHYDRO; ++n) du(n, i, k, j) = du_(n, k, j, i);
         }
   }
 
