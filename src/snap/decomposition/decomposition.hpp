@@ -1,5 +1,5 @@
-#ifndef DECOMPOSITION_HPP
-#define DECOMPOSITION_HPP
+#ifndef SRC_SNAP_DECOMPOSITION_DECOMPOSITION_HPP_
+#define SRC_SNAP_DECOMPOSITION_DECOMPOSITION_HPP_
 
 #include <athena/athena.hpp>
 #include <athena/bvals/bvals.hpp>
@@ -20,7 +20,7 @@ class Decomposition {
   NeighborBlock tblock, bblock;
 
   // functions
-  Decomposition(MeshBlock *pmb);
+  explicit Decomposition(MeshBlock *pmb);
   ~Decomposition();
   void FindNeighbors();
   int CreateMPITag(int lid, int bufid, int phy);
@@ -75,4 +75,4 @@ class Decomposition {
 #endif
 };
 
-#endif
+#endif  // SRC_SNAP_DECOMPOSITION_DECOMPOSITION_HPP_

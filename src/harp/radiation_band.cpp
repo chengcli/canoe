@@ -49,7 +49,7 @@ RadiationBand::RadiationBand(MeshBlock *pmb, ParameterInput *pin,
   // name radiation band in the format of "min_wave max_wave nbins"
   std::string str = pin->GetString("radiation", name_);
   char default_file[80];
-  snprintf(default_file, 80, "kcoeff.%s.nc", str.c_str());
+  snprintf(default_file, sizeof(default_file), "kcoeff.%s.nc", str.c_str());
   replaceChar(default_file, ' ', '-');
 
   std::vector<Real> val = Vectorize<Real>(str.c_str());
@@ -163,7 +163,7 @@ RadiationBand::RadiationBand(MeshBlock *pmb, ParameterInput *pin,
 
   char astr[1024];
   for (int i = 0; i < aname.size(); ++i) {
-    snprintf(astr, 80, "%s.%s", name.c_str(), aname[i].c_str());
+    snprintf(astr, sizeof(astr), "%s.%s", name.c_str(), aname[i].c_str());
     std::string afile = pin->GetOrAddString("radiation", astr, default_file);
     addAbsorber(pin, name_, aname[i], afile);
   }
@@ -172,7 +172,7 @@ RadiationBand::RadiationBand(MeshBlock *pmb, ParameterInput *pin,
   alpha_ = pin->GetOrAddReal("radiation", name + ".alpha", 0.);
 
   char buf[80];
-  snprintf(buf, 80, "%.2f - %.2f", wmin_, wmax_);
+  snprintf(buf, sizeof(buf), "%.2f - %.2f", wmin_, wmax_);
   pdebug->Message("spectral range", buf);
   pdebug->Message("number of spectral bins", num_bins);
 
@@ -191,8 +191,8 @@ void RadiationBand::writeBinRadiance(OutputParameters const *pout) const {
   if (!test(RadiationFlags::WriteBinRadiance)) return;
 
   char fname[80], number[6];
-  snprintf(number, 6, "%05d", pout->file_number);
-  snprintf(fname, 80, "%s.radiance.%s.txt", name_.c_str(), number);
+  snprintf(number, sizeof(number), "%05d", pout->file_number);
+  snprintf(fname, sizeof(fname), "%s.radiance.%s.txt", name_.c_str(), number);
   FILE *pfile = fopen(fname, "w");
 
   fprintf(pfile, "# Bin Radiances of Band %s: %.3g - %.3g\n", name_.c_str(),

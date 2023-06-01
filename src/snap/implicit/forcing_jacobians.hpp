@@ -1,5 +1,5 @@
-#ifndef FORCING_JACOBIANS_HPP
-#define FORCING_JACOBIANS_HPP
+#ifndef SRC_SNAP_IMPLICIT_FORCING_JACOBIANS_HPP_
+#define SRC_SNAP_IMPLICIT_FORCING_JACOBIANS_HPP_
 
 // Athena++ header
 #include <coordinates/coordinates.hpp>
@@ -99,4 +99,4 @@ void ImplicitSolver::JacobianGravityCoriolis(T &jac, Real const prim[], int k,
   }*/
 }
 
-#endif
+#endif  // SRC_SNAP_IMPLICIT_FORCING_JACOBIANS_HPP_

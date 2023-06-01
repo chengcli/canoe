@@ -298,10 +298,10 @@ void mcmc_save_fits(char const *fname, mcmc_opts *opts, mcmc_recs *recs,
     fits_write_key(fp, TSTRING, "CREATOR", key, "file created by Cheng Li",
                    &status);
 
-    strcpy(key, "par");
+    snprintf(key, sizeof(key), "%s", "par");
     fits_write_key(fp, TSTRING, "VAR", key, "retrieved parameters", &status);
 
-    strcpy(key, "MCMC");
+    snprintf(key, sizeof(key), "%s", "MCMC");
     fits_write_key(fp, TSTRING, "METHOD", key, "retrieval method", &status);
 
     fits_write_key(fp, TDOUBLE, "A", &opts->a, "stretch move parameter",
@@ -329,7 +329,7 @@ void mcmc_save_fits(char const *fname, mcmc_opts *opts, mcmc_recs *recs,
 #endif
     if (status) fits_report_error(stderr, status);
 
-    strcpy(key, "val");
+    snprintf(key, sizeof(key), "%s", "val");
     fits_write_key(fp, TSTRING, "VAR", key, "values of forward model", &status);
 
     // 6.5 create log probability fields, 3rd HDU
@@ -338,7 +338,7 @@ void mcmc_save_fits(char const *fname, mcmc_opts *opts, mcmc_recs *recs,
     fits_create_img(fp, DOUBLE_IMG, naxis, naxes + 1, &status);
     if (status) fits_report_error(stderr, status);
 
-    strcpy(key, "lnp");
+    snprintf(key, sizeof(key), "%s", "lnp");
     fits_write_key(fp, TSTRING, "VAR", key, "log probability", &status);
 
     // write log probability
@@ -353,7 +353,7 @@ void mcmc_save_fits(char const *fname, mcmc_opts *opts, mcmc_recs *recs,
     fits_create_img(fp, SHORT_IMG, naxis, naxes + 1, &status);
     if (status) fits_report_error(stderr, status);
 
-    strcpy(key, "inew");
+    snprintf(key, sizeof(key), "%s", "inew");
     fits_write_key(fp, TSTRING, "VAR", key, "new state indicator", &status);
 
     // write new state indicator

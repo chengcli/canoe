@@ -61,9 +61,11 @@ ProfileInversion::ProfileInversion(MeshBlock *pmb, ParameterInput *pin,
       Xlen_[m] = pin->GetReal("inversion", name + ".qvapor" +
                                                std::to_string(m) + ".corr.km") *
                  1.E3;
-      snprintf(buf, 80, "%s::vapor %d standard deviation", name.c_str(), m);
+      snprintf(buf, sizeof(buf), "%s::vapor %d standard deviation",
+               name.c_str(), m);
       pdebug->Message(buf, Xstd_[m]);
-      snprintf(buf, 80, "%s::vapor %d correlation length", name.c_str(), m);
+      snprintf(buf, sizeof(buf), "%s::vapor %d correlation length",
+               name.c_str(), m);
       pdebug->Message(buf, Xlen_[m]);
     }
   }
@@ -155,9 +157,9 @@ void ProfileInversion::UpdateHydro(Hydro *phydro, ParameterInput *pin) const {
 
   for (auto m : idx_) {
     if (m == IDN) {  // temperature
-      snprintf(buf, 80, "%s.tema.K", name_.c_str());
+      snprintf(buf, sizeof(buf), "%s.tema.K", name_.c_str());
     } else {  // vapors
-      snprintf(buf, 80, "%s.qvapor%da.gkg", name_.c_str(), m);
+      snprintf(buf, sizeof(buf), "%s.qvapor%da.gkg", name_.c_str(), m);
     }
     std::string str = pin->GetString("problem", buf);
     std::vector<Real> qa = Vectorize<Real>(str.c_str(), " ,");
@@ -350,7 +352,8 @@ void ProfileInversion::ConvectiveAdjustment(Hydro *phydro, int k,
     int err = root(0.5, 8., 1.E-4, &rdlnTdlnP, solve_thetav, &solver_data);
     if (err) {
       char buf[80];
-      snprintf(buf, 80, "root solver does not converge: %12.3g - %12.3g",
+      snprintf(buf, sizeof(buf),
+               "root solver does not converge: %12.3g - %12.3g",
                solve_thetav(0.5, &solver_data), solve_thetav(8., &solver_data));
       Debugger::Fatal("UpdateProfiles", "root solver does not converge");
     }

@@ -62,8 +62,9 @@ void Decomposition::ChangeToPerturbation(AthenaArray<Real> &w, int kl, int ku,
         psf_(k, j, ie + 1) =
             w(IPR, k, j, ie) * exp(-grav * pco->dx1f(ie) / (2 * RdTv));
       }
-  } else
+  } else {
     RecvBuffer(psf_, kl, ku, jl, ju, ie + 1, ie + NGHOST + 1, tblock);
+  }
   IntegrateDownwards(psf_, w, pco, grav, kl, ku, jl, ju, is, ie);
 
   // populate ghost cells
@@ -75,16 +76,18 @@ void Decomposition::ChangeToPerturbation(AthenaArray<Real> &w, int kl, int ku,
       for (int j = jl; j <= ju; ++j)
         for (int i = 1; i <= NGHOST; ++i)
           psf_(k, j, is - i) = psf_(k, j, is + i);
-  } else if (pmb->pbval->block_bcs[inner_x1] == BoundaryFlag::outflow)
+  } else if (pmb->pbval->block_bcs[inner_x1] == BoundaryFlag::outflow) {
     IntegrateDownwards(psf_, w, pco, 0., kl, ku, jl, ju, is - NGHOST, is - 1);
+  }
 
   if (pmb->pbval->block_bcs[outer_x1] == BoundaryFlag::reflect) {
     for (int k = kl; k <= ku; ++k)
       for (int j = jl; j <= ju; ++j)
         for (int i = 1; i <= NGHOST; ++i)
           psf_(k, j, ie + i + 1) = psf_(k, j, ie + 1 - i);
-  } else if (pmb->pbval->block_bcs[outer_x1] == BoundaryFlag::outflow)
+  } else if (pmb->pbval->block_bcs[outer_x1] == BoundaryFlag::outflow) {
     IntegrateUpwards(psf_, w, pco, 0., kl, ku, jl, ju, ie + 1, ie + NGHOST);
+  }
 
   if (has_bot_neighbor)
     RecvBuffer(psf_, kl, ku, jl, ju, is - NGHOST, is, bblock);

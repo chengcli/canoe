@@ -1,7 +1,8 @@
-#ifndef IMPLICIT_SOLVER_HPP_
-#define IMPLICIT_SOLVER_HPP_
+#ifndef SRC_SNAP_IMPLICIT_IMPLICIT_SOLVER_HPP_
+#define SRC_SNAP_IMPLICIT_IMPLICIT_SOLVER_HPP_
 
 // C/C++
+#include <string>
 #include <vector>
 
 // Eigen
@@ -163,4 +164,4 @@ class ImplicitSolver {
 #endif
 };
 
-#endif
+#endif  //  SRC_SNAP_IMPLICIT_IMPLICIT_SOLVER_HPP_

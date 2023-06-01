@@ -1,6 +1,6 @@
 #! /bin/bash
 
-filters=-legal/copyright,-build/include_subdir,-build/include_order,-runtime/printf
+filters=-legal/copyright,-build/include_subdir,-build/include_order,-runtime/references,
 
 # astro
 cpplint --filter=${filters} --recursive src/astro
@@ -29,9 +29,9 @@ cpplint --filter=${filters} src/snap/*.hpp
 cpplint --filter=${filters} src/snap/*.cpp
 cpplint --filter=${filters} --recursive src/snap/eos
 cpplint --filter=${filters} --recursive src/snap/thermodynamics
-#cpplint --filter=${filters} --recursive src/snap/reconstruct
-#cpplint --filter=${filters} --recursive src/snap/decomposition
-#cpplint --filter=${filters} --recursive src/snap/implicit
+cpplint --filter=${filters} --recursive src/snap/reconstruct
+cpplint --filter=${filters} --recursive src/snap/decomposition
+cpplint --filter=${filters} --recursive src/snap/implicit
 
 # tools
 cpplint --filter=${filters} tools/*.cpp
