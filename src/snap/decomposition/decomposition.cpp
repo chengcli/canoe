@@ -2,6 +2,7 @@
 #include <functional>
 #include <iostream>
 #include <sstream>
+#include <string>
 
 // athena
 #include <athena/bvals/bvals.hpp>

@@ -1,5 +1,5 @@
-#ifndef COMMUNICATION_HPP
-#define COMMUNICATION_HPP
+#ifndef SRC_SNAP_IMPLICIT_COMMUNICATION_HPP_
+#define SRC_SNAP_IMPLICIT_COMMUNICATION_HPP_
 
 // MPI headers
 #ifdef MPI_PARALLEL
@@ -9,6 +9,8 @@
 // C/C++
 #include <cstring>
 #include <functional>
+#include <string>
+#include <vector>
 
 // athena
 #include <athena/globals.hpp>
@@ -333,4 +335,4 @@ void inline ImplicitSolver::LoadForcingJacobian(T &phi, int k, int j ,int i,
       phi(i,j) = tmp(i,j);
 }*/
 
-#endif
+#endif  // SRC_SNAP_IMPLICIT_COMMUNICATION_HPP_

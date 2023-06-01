@@ -22,7 +22,7 @@ FreedmanSimple::FreedmanSimple(MeshBlock *pmb, ParameterInput *pin,
                                std::string bname)
     : Absorber(pmb, pin, bname, "FreedmanSimple") {
   char str[80];
-  snprintf(str, 80, "%s.%s.scale", bname.c_str(), name_.c_str());
+  snprintf(str, sizeof(str), "%s.%s.scale", bname.c_str(), name_.c_str());
   scale_ = pin->GetOrAddReal("radiation", str, 1.);
 }
 

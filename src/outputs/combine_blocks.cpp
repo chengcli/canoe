@@ -56,10 +56,11 @@ void NetcdfOutput::CombineBlocks() {
     // infile.c_str()};
     char **argv = new char *[argc];
     for (int i = 0; i < argc; ++i) argv[i] = new char[2048];
-    strcpy(argv[0], "CombineBlocks");
-    strcpy(argv[1], "-r");
-    strcpy(argv[2], outfile.c_str());
-    for (int i = 3; i < argc; ++i) strcpy(argv[i], glob_result.gl_pathv[i - 3]);
+    snprintf(argv[0], sizeof(argv[0]), "%s", "CombineBlocks");
+    snprintf(argv[1], sizeof(argv[1]), "%s", "-r");
+    snprintf(argv[2], sizeof(argv[2]), "%s", outfile.c_str());
+    for (int i = 3; i < argc; ++i)
+      snprintf(argv[i], sizeof(argv[i]), "%s", glob_result.gl_pathv[i - 3]);
 
     remove(outfile.c_str());
     err = mppnccombine(argc, argv);

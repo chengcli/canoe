@@ -11,7 +11,7 @@ template <typename A>
 std::vector<A> Vectorize(const char* cstr, const char* delimiter = " ") {
   std::vector<A> arr;
   char str[1028], *p;
-  strcpy(str, cstr);
+  snprintf(str, sizeof(str), "%s", cstr);
   p = std::strtok(str, delimiter);
   while (p != NULL) {
     arr.push_back(static_cast<A>(std::stof(p)));

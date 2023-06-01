@@ -39,7 +39,8 @@ ConcentrationInversion::ConcentrationInversion(MeshBlock *pmb,
       Xstd_[m] = pin->GetReal("inversion", name + ".qvapor" +
                                                std::to_string(m) + ".std.gkg") /
                  1.E3;
-      snprintf(buf, 80, "%s::vapor %d standard deviation", name.c_str(), m);
+      snprintf(buf, sizeof(buf), "%s::vapor %d standard deviation",
+               name.c_str(), m);
       pdebug->Message(buf, Xstd_[m]);
     }
   }
