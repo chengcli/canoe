@@ -1,6 +1,10 @@
 # How to use git for this repo 📌
 
-We adopt the idea of **linear history** and a **squash merging** approach in this repository, meaning there is only one permanent branch (`main`), and the only way to push changes to main is by submitting a Pull Request (PR). The main branch is protected to prevent direct pushes. **A linear history ensures that the main branch remains clean and organized**. Squash merging means that **the smallest unit of change is a PR, rather than a commit**.
+First and foremost, **stop using `git merge`**!
+
+When you search online, the recommended approach is to use `git merge` for merging changes. But this is wrong. It will lead to an unmaintainable codebase. In this repository, we adopt the idea of **linear history** and a **squash merging** approach , meaning there is only one permanent branch (`main`), and the only way to push changes to main is by submitting a Pull Request (PR). 
+
+The `main` branch is protected to prevent direct pushes. **A linear history ensures that the main branch remains clean and organized**. Squash merging means that **the smallest unit of change is a PR, rather than a commit**.
 
 This workflow differs from some individual workflows where the smallest unit is usually a commit. For collaborative projects, commits can be too fine-grained and don't track issues effectively. Our aim is to ensure that each stage in the history solves a problem that can be traced back, providing context for that problem. In other words, development is **_issue-driven_**. The git workflow recommended for this repository goes as follows:
 
