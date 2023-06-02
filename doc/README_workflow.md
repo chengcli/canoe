@@ -19,7 +19,7 @@ Once you have identified an issue or task, create a new branch locally using the
 git checkout -b <username/issue_description>
 ```
 
-The branch name should start with your username, followed by a slash `/` and then a brief description of the nature of the issue or task you're working on (for example, `zyhu/add_cpptest_case`). This naming convention helps keep the branch names consistent and makes it easier to identify the purpose of each branch, as well as who is working on it.
+The branch name should start with your username, followed by a slash `/` and then a brief description of the nature of the issue or task you're working on (for example, `/add_cpptest_case`). This naming convention helps keep the branch names consistent and makes it easier to identify the purpose of each branch, as well as who is working on it.
 
 📍 Step 3. Use the .gitignore file
 
