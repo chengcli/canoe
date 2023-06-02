@@ -2,13 +2,18 @@
 #include <glob.h>
 #include <stdio.h>
 
-#include <athena/globals.hpp>
-#include <configure.hpp>
 #include <cstring>
 #include <iostream>
 #include <sstream>  // stringstream
 #include <stdexcept>
 
+// athena
+#include <athena/globals.hpp>
+
+// canoe
+#include <configure.hpp>
+
+// outputs
 #include "user_outputs.hpp"
 
 int mppnccombine(int argc, char *argv[]);

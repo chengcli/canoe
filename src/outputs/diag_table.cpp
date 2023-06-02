@@ -1,8 +1,8 @@
-// C/C++ headers
+// C/C++
 #include <string>
 #include <vector>
 
-// canoe headers
+// outputs
 #include "user_outputs.hpp"
 
 DiagnosticTable diag_table = {

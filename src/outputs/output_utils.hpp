@@ -1,10 +1,10 @@
 #ifndef SRC_OUTPUTS_OUTPUT_UTILS_HPP_
 #define SRC_OUTPUTS_OUTPUT_UTILS_HPP_
 
-// C/C++ headers
+// C/C++
 #include <string>
 
-// Athena++ headers
+// Athena++
 #include <athena/athena.hpp>
 
 int get_num_variables(std::string grid, AthenaArray<Real> const& data);

@@ -1,7 +1,6 @@
 // C/C++
-#include <stdio.h>
-#include <stdlib.h>
-
+#include <cstdio>
+#include <cstdlib>
 #include <iomanip>
 #include <iostream>
 #include <sstream>
@@ -23,6 +22,7 @@
 #include <harp/radiation.hpp>
 #include <harp/radiation_band.hpp>
 
+// outputs
 #include "user_outputs.hpp"
 
 // Only proceed if NETCDF output enabled

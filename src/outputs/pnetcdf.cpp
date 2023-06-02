@@ -23,10 +23,11 @@
 // snap
 #include <snap/meshblock_impl.hpp>
 
-// hap
+// harp
 #include <harp/radiation.hpp>
 #include <harp/radiation_band.hpp>
 
+// outputs
 #include "user_outputs.hpp"
 
 // Only proceed if PNETCDF output enabled
