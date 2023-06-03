@@ -1,12 +1,13 @@
 #ifndef IMPLICIT_HYDRO_TASKS_HPP
 #define IMPLICIT_HYDRO_TASKS_HPP
 
-// Athena++ headers
-#include <task_list/task_list.hpp>
-
 // canoe headers
 #include <configure.hpp>
 
+// athena
+#include <task_list/task_list.hpp>
+
+// snap
 #include "../constants.hpp"
 
 class ParameterInput;
