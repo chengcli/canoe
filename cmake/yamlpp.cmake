@@ -15,5 +15,4 @@ if(NOT yamlpp_POPULATED)
   add_subdirectory(${yamlpp_SOURCE_DIR} ${yamlpp_BINARY_DIR})
 endif()
 
-# set(YAMLPP_INCLUDE_DIR ${yamlpp_SOURCE_DIR} CACHE PATH "yaml-cpp include
-# directory")
+FetchContent_MakeAvailable(yamlpp)
