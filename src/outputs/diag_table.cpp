@@ -38,5 +38,4 @@ DiagnosticTable diag_table = {
     {"b4flxdn", "downward radiative flux", "w/(m^2)", "CCF"},
     {"b5flxup", "upward radiative flux", "w/(m^2)", "CCF"},
     {"b6flxdn", "downward radiative flux", "w/(m^2)", "CCF"},
-    {"radiance", "top-of-atmosphere radiance", "K", "RCC"}
-};
+    {"radiance", "top-of-atmosphere radiance", "K", "RCC"}};

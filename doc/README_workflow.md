@@ -2,7 +2,7 @@
 
 First and foremost, **stop using `git merge`**!
 
-When you search online, the recommended approach is to use `git merge` for merging changes. But this is wrong. It will lead to an unmaintainable codebase. In this repository, we adopt the idea of **linear history** and a **squash merging** approach , meaning there is only one permanent branch (`main`), and the only way to push changes to main is by submitting a Pull Request (PR). 
+When you search online, the recommended approach is to use `git merge` for merging changes. But this is wrong. It will lead to an unmaintainable codebase. In this repository, we adopt the idea of **linear history** and a **squash merging** approach , meaning there is only one permanent branch (`main`), and the only way to push changes to main is by submitting a Pull Request (PR).
 
 The `main` branch is protected to prevent direct pushes. **A linear history ensures that the main branch remains clean and organized**. Squash merging means that **the smallest unit of change is a PR, rather than a commit**.
 
