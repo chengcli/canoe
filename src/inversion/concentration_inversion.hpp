@@ -5,11 +5,11 @@
 #include <string>
 #include <vector>
 
-// athena
-#include <athena/defs.hpp>
-
 // canoe
 #include <configure.hpp>
+
+// athena
+#include <athena/defs.hpp>
 
 // inversion
 #include "inversion.hpp"

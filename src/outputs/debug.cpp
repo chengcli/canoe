@@ -13,15 +13,15 @@
 #include <stdexcept>
 #include <string>
 
+// canoe
+#include <configure.hpp>
+
 // athena
 #include <athena/athena.hpp>
 #include <athena/coordinates/coordinates.hpp>
 #include <athena/globals.hpp>
 #include <athena/hydro/hydro.hpp>
 #include <athena/mesh/mesh.hpp>
-
-// canoe
-#include <configure.hpp>
 
 // outputs
 #include "user_outputs.hpp"

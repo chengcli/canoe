@@ -1,11 +1,11 @@
-// C/C++ headers
+// C/C++
 #include <algorithm>
 #include <cstring>
 #include <iomanip>
 #include <memory>
 #include <sstream>
 
-// debugger headers
+// canoe
 #include <configure.hpp>
 
 #include "debugger.hpp"

@@ -1,3 +1,6 @@
+// cnaoe
+#include <configure.hpp>
+
 // athena
 #include <athena/coordinates/coordinates.hpp>
 #include <athena/hydro/hydro.hpp>
@@ -5,15 +8,13 @@
 #include <athena/scalars/scalars.hpp>
 #include <athena/stride_iterator.hpp>
 
-// cnaoe
-#include <configure.hpp>
-
 // snap
 #include <snap/cell_variables.hpp>
 #include <snap/meshblock_impl.hpp>
 #include <snap/reconstruct/interpolation.hpp>
 #include <snap/thermodynamics/thermodynamics.hpp>
 
+// harp
 #include "absorber.hpp"
 #include "radiation.hpp"
 #include "radiation_band.hpp"

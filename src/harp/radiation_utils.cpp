@@ -6,14 +6,14 @@
 #include <sstream>
 #include <vector>
 
+// canoe
+#include <configure.hpp>
+
 // climath
 #include <climath/core.h>
 
 // utils
 #include <utils/vectorize.hpp>
-
-// canoe
-#include <configure.hpp>
 
 // harp
 #include "radiation_utils.hpp"

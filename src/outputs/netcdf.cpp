@@ -7,13 +7,13 @@
 #include <stdexcept>
 #include <string>
 
+// canoe
+#include <configure.hpp>
+
 // athena
 #include <athena/athena.hpp>
 #include <athena/coordinates/coordinates.hpp>
 #include <athena/mesh/mesh.hpp>
-
-// canoe
-#include <configure.hpp>
 
 // snap
 #include <snap/meshblock_impl.hpp>
@@ -94,9 +94,9 @@ void NetcdfOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) {
     // file_number
     std::string fname;
     char number[6];
-    sprintf(number, "%05d", output_params.file_number);
+    snprintf(number, sizeof(number), "%05d", output_params.file_number);
     char blockid[12];
-    sprintf(blockid, "block%d", pmb->gid);
+    snprintf(blockid, sizeof(blockid), "block%d", pmb->gid);
 
     fname.assign(output_params.file_basename);
     fname.append(".");
@@ -276,7 +276,7 @@ void NetcdfOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) {
           }
         } else {  // VECTORS
           char c[16];
-          sprintf(c, "%d", n + 1);
+          snprintf(c, sizeof(c), "%d", n + 1);
           if (pos < pdata->name.length()) {  // find '?'
             varnames.push_back(pdata->name.substr(0, pos) + c +
                                pdata->name.substr(pos + 1));

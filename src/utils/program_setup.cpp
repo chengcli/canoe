@@ -4,6 +4,9 @@
 #include <memory>
 #include <stdexcept>
 
+// canoe
+#include <configure.hpp>
+
 #ifdef MPI_PARALLEL
 #include <mpi.h>
 #endif
@@ -15,9 +18,6 @@
 
 // debugger
 #include <debugger/debugger.hpp>
-
-// canoe
-#include <configure.hpp>
 
 // utils
 #include "command_line.hpp"

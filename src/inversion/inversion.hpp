@@ -5,14 +5,14 @@
 #include <string>
 #include <vector>
 
+// canone
+#include <configure.hpp>
+
 // Eigen
 #include <Eigen/Core>
 
 // athena
 #include <athena/athena.hpp>
-
-// canone
-#include <configure.hpp>
 
 // inversion
 #include "mcmc.hpp"

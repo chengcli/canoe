@@ -1,10 +1,17 @@
-// C/C++ headers
-#include "command_line.hpp"
-
-#include <athena/globals.hpp>
-#include <configure.hpp>
-#include <debugger/debugger.hpp>
+// C/C++
 #include <iostream>
+
+// canoe
+#include <configure.hpp>
+
+// athena
+#include <athena/globals.hpp>
+
+// debugger
+#include <debugger/debugger.hpp>
+
+// utils
+#include "command_line.hpp"
 
 #ifdef MPI_PARALLEL
 #include <mpi.h>

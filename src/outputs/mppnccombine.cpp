@@ -1,3 +1,5 @@
+// Modified by Cheng Li
+// change sprintf -> snprintf
 /*
   mppnccombine - joins together netCDF data files representing a decomposed
                  domain into a unified netCDF file.  It was originally
@@ -38,6 +40,7 @@
   Last Updated: 05/15/08
 */
 
+// C/C++
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -45,7 +48,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-// canoe headers
+// canoe
 #include <configure.hpp>
 
 // Only proceed if NETCDF output enabled
@@ -167,7 +170,7 @@ int mppnccombine(int argc, char *argv[]) {
     return (1);
   }
   if (argc - 1 > outputarg) inputarg = outputarg + 1;
-  sprintf(outfilename, "%s", argv[outputarg]);
+  snprintf(outfilename, sizeof(outfilename), "%s", argv[outputarg]);
   outlen = strlen(outfilename);
   if (outlen > 4) {
     strptr = outfilename + outlen - 5;
@@ -215,7 +218,7 @@ int mppnccombine(int argc, char *argv[]) {
         if (verbose) printf("record = %d\n", r);
         f = 0;
         for (a = nstart; a <= nend; a++) {
-          sprintf(infilename, "%s.%04d", outfilename, a);
+          snprintf(infilename, sizeof(infilename), "%s.%04d", outfilename, a);
           if (verbose) {
             if (a == nstart && r == 0)
               printf("  n files to go... ");
@@ -244,7 +247,7 @@ int mppnccombine(int argc, char *argv[]) {
         if (verbose) printf("record = %d\n", r);
         f = 0;
         for (a = nstart; a < nend; a++) {
-          sprintf(infilename, "%s.%04d", outfilename, a);
+          snprintf(infilename, sizeof(infilename), "%s.%04d", outfilename, a);
           if (verbose) {
             if (a == nstart && r == 0)
               printf("  n files to go... ");
@@ -312,7 +315,7 @@ int mppnccombine(int argc, char *argv[]) {
         f = 0;
         for (a = nstart; a <= nend; a++) {
           if (++f > nfiles) break;
-          sprintf(infilename, "%s.%04d", outfilename, a);
+          snprintf(infilename, sizeof(infilename), "%s.%04d", outfilename, a);
           if (verbose) printf("Removing \"%s\"\n", infilename);
           unlink(infilename);
         }

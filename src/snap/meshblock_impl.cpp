@@ -1,9 +1,9 @@
+// canoe
+#include <configure.hpp>
+
 // athena
 #include <athena/athena.hpp>
 #include <athena/parameter_input.hpp>
-
-// canoe
-#include <configure.hpp>
 
 // harp
 #include <harp/radiation.hpp>
