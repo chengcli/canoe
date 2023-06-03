@@ -1,12 +1,14 @@
 #ifndef SRC_OUTPUTS_USER_OUTPUTS_HPP_
 #define SRC_OUTPUTS_USER_OUTPUTS_HPP_
 
-// C/C++ headers
-#include <athena/outputs/outputs.hpp>
+// C/C++
 #include <string>
 #include <vector>
 
-// canoe headers
+// athena
+#include <athena/outputs/outputs.hpp>
+
+// outputs
 #include "output_utils.hpp"
 
 using DiagnosticTable = std::vector<std::vector<std::string>>;

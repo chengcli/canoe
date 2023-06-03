@@ -3,25 +3,27 @@
 //  that are output
 //         frequently in time to trace extreme values.
 
-// C/C++ headers
-#include <stdio.h>
-#include <stdlib.h>
-
-#include <athena/athena.hpp>
-#include <athena/coordinates/coordinates.hpp>
-#include <athena/globals.hpp>
-#include <athena/hydro/hydro.hpp>
-#include <athena/mesh/mesh.hpp>
+// C/C++
 #include <cfloat>
+#include <cstdio>
+#include <cstdlib>
 #include <iomanip>
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
 #include <string>
 
-// canoe headers
+// athena
+#include <athena/athena.hpp>
+#include <athena/coordinates/coordinates.hpp>
+#include <athena/globals.hpp>
+#include <athena/hydro/hydro.hpp>
+#include <athena/mesh/mesh.hpp>
+
+// canoe
 #include <configure.hpp>
 
+// outputs
 #include "user_outputs.hpp"
 
 //----------------------------------------------------------------------------------------
