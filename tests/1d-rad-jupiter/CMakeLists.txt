@@ -33,6 +33,7 @@ target_link_libraries(${namel}.${buildl}
     ${SNAP_LIBRARY_${buildu}}
     ${HARP_LIBRARY_${buildu}}
     ${INVERSION_LIBRARY_${buildu}}
+    ${NETCDF_LIBRARIES}
     ${CPPDISORT_LIBRARY_${buildu}}
     )
 
