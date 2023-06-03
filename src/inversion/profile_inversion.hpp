@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-// canon
+// canoe
 #include <configure.hpp>
 
 // inversion

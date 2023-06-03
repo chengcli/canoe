@@ -1,11 +1,11 @@
+// canoe
+#include <configure.hpp>
+
 // athena
 #include <athena/athena.hpp>
 #include <athena/mesh/mesh.hpp>
 // #include "interp_weno5.hpp"
 // #include "interp_weno3.hpp"
-
-// canoe
-#include <configure.hpp>
 
 // snap
 #include "face_reconstruct.hpp"

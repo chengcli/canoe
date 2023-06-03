@@ -1,12 +1,18 @@
+// canoe
+#include <configure.hpp>
+
+// athena
 #include <athena/athena.hpp>
 #include <athena/coordinates/coordinates.hpp>
 #include <athena/hydro/hydro.hpp>
 #include <athena/hydro/srcterms/hydro_srcterms.hpp>
 #include <athena/mesh/mesh.hpp>
 #include <athena/stride_iterator.hpp>
-#include <configure.hpp>
+
+// debugger
 #include <debugger/debugger.hpp>
 
+// snap
 #include "../meshblock_impl.hpp"
 #include "../thermodynamics/thermodynamics.hpp"
 
@@ -20,11 +26,11 @@ void check_hydro_variables(MeshBlock *pmb, AthenaArray<Real> const &w) {
           }
         }
 
-#if NON_BAROTROPIC_EOS == 1
-        if (w(IPR, k, j, i) < 0.) {
-          Debugger::Fatal("check_hydro_variables", "pressure", "negative");
+        if (NON_BAROTROPIC_EOS) {
+          if (w(IPR, k, j, i) < 0.) {
+            Debugger::Fatal("check_hydro_variables", "pressure", "negative");
+          }
         }
-#endif
 
         Thermodynamics *pthermo = pmb->pimpl->pthermo;
         Real temp = pthermo->GetTemp(w.at(k, j, i));

@@ -5,11 +5,13 @@
 #include <cfloat>
 #include <iosfwd>
 
+// canoe
+#include <configure.hpp>
+
 // athena
 #include <athena/athena.hpp>
 #include <athena/eos/eos.hpp>
 #include <athena/mesh/mesh.hpp>
-#include <configure.hpp>
 
 class MeshBlock;
 class ParameterInput;

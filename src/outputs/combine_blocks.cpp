@@ -1,17 +1,17 @@
 // C/C++ headers
 #include <glob.h>
-#include <stdio.h>
 
+#include <cstdio>
 #include <cstring>
 #include <iostream>
 #include <sstream>  // stringstream
 #include <stdexcept>
 
-// athena
-#include <athena/globals.hpp>
-
 // canoe
 #include <configure.hpp>
+
+// athena
+#include <athena/globals.hpp>
 
 // outputs
 #include "user_outputs.hpp"

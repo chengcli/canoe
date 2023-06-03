@@ -5,10 +5,13 @@
 #include <sstream>
 #include <string>
 
+// canoe
+#include <configure.hpp>
+
 // climath
 #include <climath/root.h>
 
-// athena++
+// athena
 #include <athena/athena.hpp>
 #include <athena/coordinates/coordinates.hpp>
 #include <athena/globals.hpp>
@@ -25,7 +28,6 @@
 #include <snap/thermodynamics/thermodynamics_helper.hpp>
 
 // utils
-#include <configure.hpp>
 #include <utils/ndarrays.hpp>
 #include <utils/vectorize.hpp>
 

@@ -2,10 +2,14 @@
 #define SRC_UTILS_FILEIO_HPP_
 
 // C/C++
-#include <athena/athena.hpp>
-#include <configure.hpp>
 #include <iostream>
 #include <string>
+
+// canoe
+#include <configure.hpp>
+
+// athena
+#include <athena/athena.hpp>
 
 //! test file existance
 bool FileExists(std::string fname);

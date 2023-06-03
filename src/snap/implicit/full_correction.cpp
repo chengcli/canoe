@@ -2,6 +2,9 @@
 #include <iostream>
 #include <vector>
 
+// canoe
+#include <configure.hpp>
+
 // Eigen
 #include <Eigen/Core>
 #include <Eigen/Dense>
@@ -16,9 +19,6 @@
 
 // debugger
 #include <debugger/debugger.hpp>
-
-// canoe
-#include <configure.hpp>
 
 // snap
 #include "../meshblock_impl.hpp"

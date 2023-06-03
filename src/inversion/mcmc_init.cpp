@@ -1,17 +1,24 @@
 // C/C++ headers
-
-#include <climath/core.h>
-
-#include <athena/hydro/hydro.hpp>
-#include <athena/mesh/mesh.hpp>
 #include <cassert>
 #include <cmath>
-#include <configure.hpp>
 #include <cstdio>
 #include <cstdlib>
-#include <debugger/debugger.hpp>
 #include <iostream>
 
+// canoe
+#include <configure.hpp>
+
+// climath
+#include <climath/core.h>
+
+// athena
+#include <athena/hydro/hydro.hpp>
+#include <athena/mesh/mesh.hpp>
+
+// debugger
+#include <debugger/debugger.hpp>
+
+// inversion
 #include "inversion.hpp"
 #include "mcmc.hpp"
 

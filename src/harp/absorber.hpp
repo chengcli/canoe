@@ -1,12 +1,3 @@
-#ifndef SRC_HARP_ABSORBER_HPP_
-#define SRC_HARP_ABSORBER_HPP_
-
-// C++ headers
-#include <athena/athena.hpp>
-#include <configure.hpp>
-#include <string>
-#include <vector>
-
 /**@file
  * @brief This file contains declaration of Absorber
  *
@@ -19,6 +10,19 @@
  * - April 03 2019, merge to snap
  * - July 27 2019, add multiple dependent molecules
  */
+
+#ifndef SRC_HARP_ABSORBER_HPP_
+#define SRC_HARP_ABSORBER_HPP_
+
+// C/C++
+#include <string>
+#include <vector>
+
+// canoe
+#include <configure.hpp>
+
+// athena
+#include <athena/athena.hpp>
 
 class MeshBlock;
 class ParameterInput;

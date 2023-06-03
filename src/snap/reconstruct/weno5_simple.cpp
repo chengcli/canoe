@@ -1,9 +1,9 @@
+// canoe
+#include <configure.hpp>
+
 // athena
 #include <athena/athena.hpp>
 #include <athena/mesh/mesh.hpp>
-
-// canoe
-#include <configure.hpp>
 
 // snap
 #include "face_reconstruct.hpp"
