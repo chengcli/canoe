@@ -7,7 +7,7 @@
 namespace Weno5Coeff {
 double a1[3] = {
     -RAT1 * RAT1 * RAT1 * RAT1 * RAT1 / ((1 + RAT1) * (1 + RAT1 + RAT1 * RAT1)),
-    RAT1* RAT1*(1 + 2 * RAT1 + 2 * RAT1 * RAT1) /
+    RAT1* RAT1 * (1 + 2 * RAT1 + 2 * RAT1 * RAT1) /
         ((1 + RAT1) * (1 + RAT1 + RAT1 * RAT1)),
     1 / (1 + RAT1 + RAT1 * RAT1)};
 

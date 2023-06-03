@@ -1,12 +1,14 @@
 // C/C++
-#include <stdio.h>
-#include <stdlib.h>
-
+#include <cstdio>
+#include <cstdlib>
 #include <iomanip>
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
 #include <string>
+
+// canoe
+#include <configure.hpp>
 
 // athena
 #include <athena/athena.hpp>
@@ -16,9 +18,6 @@
 
 // math
 #include <climath/core.h>
-
-// canoe
-#include <configure.hpp>
 
 // snap
 #include <snap/meshblock_impl.hpp>
@@ -62,7 +61,7 @@ void PnetcdfOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) {
   std::string fname;
   char number[6];
   int err;
-  sprintf(number, "%05d", output_params.file_number);
+  snprintf(number, sizeof(number), "%05d", output_params.file_number);
 
   fname.assign(output_params.file_basename);
   fname.append(".");
@@ -273,7 +272,7 @@ void PnetcdfOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) {
         }
       } else {  // VECTORS
         char c[16];
-        sprintf(c, "%d", n + 1);
+        snprintf(c, sizeof(c), "%d", n + 1);
         if (pos < pdata->name.length()) {  // find '?'
           varnames.push_back(pdata->name.substr(0, pos) + c +
                              pdata->name.substr(pos + 1));

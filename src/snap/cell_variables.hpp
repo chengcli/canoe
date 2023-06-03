@@ -1,12 +1,14 @@
 #ifndef SRC_SNAP_CELL_VARIABLES_HPP_
 #define SRC_SNAP_CELL_VARIABLES_HPP_
 
-// C/C++ header
+// C/C++
 #include <array>
 
-// canoe header
-#include <athena/athena.hpp>
+// canoe
 #include <configure.hpp>
+
+// athena
+#include <athena/athena.hpp>
 
 //! \class CellVariables
 //  \brief a collection of all physical data in a computational cell

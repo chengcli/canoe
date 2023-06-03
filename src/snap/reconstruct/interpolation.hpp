@@ -4,11 +4,11 @@
 // C/C++
 #include <algorithm>
 
-// climath
-#include <climath/core.h>
-
 // canoe
 #include <configure.hpp>
+
+// climath
+#include <climath/core.h>
 
 /* 2-nd order plm for non-uniform grid
 template<typename T>

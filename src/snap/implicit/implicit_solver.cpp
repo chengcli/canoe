@@ -3,6 +3,9 @@
 #include <functional>
 #include <string>
 
+// canoe
+#include <configure.hpp>
+
 // athena
 #include <athena/bvals/bvals.hpp>
 #include <athena/bvals/bvals_interfaces.hpp>
@@ -16,9 +19,6 @@
 // utils
 #include <utils/ndarrays.hpp>
 #include <utils/program_setup.hpp>
-
-// canoe
-#include <configure.hpp>
 
 // snap
 #include "../constants.hpp"

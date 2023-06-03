@@ -6,6 +6,9 @@
 #include <cstring>
 #include <iostream>
 
+// canoe
+#include <configure.hpp>
+
 #if FITSOUTPUT
 extern "C" {
 #include <fitsio.h>
@@ -17,9 +20,6 @@ extern "C" {
 
 // utils
 #include <utils/ndarrays.hpp>
-
-// canoe
-#include <configure.hpp>
 
 // inversion
 #include "mcmc.hpp"

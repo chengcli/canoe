@@ -1,13 +1,13 @@
 #ifndef SRC_TRANSPORT_STREAM_TRANSPORT_HPP_
 #define SRC_TRANSPORT_STREAM_TRANSPORT_HPP_
 
+// canoe
+#include <configure.hpp>
+
 // dealii headers
 #include <deal.II/lac/solver_gmres.h>
 #include <deal.II/lac/sparse_matrix.h>
 #include <deal.II/lac/vector.h>
-
-// IceChem headers
-#include <configure.hpp>
 
 // forward declaration
 template <typename>

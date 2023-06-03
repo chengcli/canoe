@@ -6,12 +6,12 @@
 #include <stdexcept>
 #include <vector>
 
+// canoe
+#include <configure.hpp>
+
 // utils
 #include <utils/fileio.hpp>
 #include <utils/vectorize.hpp>
-
-// canoe
-#include <configure.hpp>
 
 // thermodynamics
 #include "thermodynamics_helper.hpp"
