@@ -20,10 +20,5 @@ if(RFM)
     URL https://${ACCOUNT}:${TOKEN}@github.com/luminoctum/rfm/archive/refs/tags/v4.33.tar.gz
   )
 
-  FetchContent_GetProperties(rfm)
-
-  if(NOT rfm_POPULATED)
-    FetchContent_Populate(rfm)
-    add_subdirectory(${rfm_SOURCE_DIR} ${rfm_BINARY_DIR})
-  endif()
+  FetchContent_MakeAvailable(rfm)
 endif()

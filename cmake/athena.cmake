@@ -8,9 +8,6 @@ FetchContent_Declare(
   URL https://github.com/chengcli/athenapp/archive/refs/tags/v0.3.1-alpha.tar.gz
 )
 
-FetchContent_GetProperties(athenapp)
+FetchContent_MakeAvailable(athenapp)
 
-if(NOT athenapp_POPULATED)
-  FetchContent_Populate(athenapp)
-  add_subdirectory(${athenapp_SOURCE_DIR} ${athenapp_BINARY_DIR})
-endif()
+include_directories(${athenapp_SOURCE_DIR})

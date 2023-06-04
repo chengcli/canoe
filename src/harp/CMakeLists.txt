@@ -35,13 +35,9 @@ set_target_properties(${namel}_${buildl}
     )
 
 target_include_directories(${namel}_${buildl}
-	PRIVATE
-    ${ATHENAPP_INCLUDE_DIR}
-    ${MODULES_INCLUDE_DIR}
-    ${EIGEN_INCLUDE_DIR}
+    PRIVATE
     ${NETCDF_INCLUDES}
-    ${CMAKE_BINARY_DIR}
-	)
+    )
 
 set(${nameu}_LIBRARY_${buildu} ${namel}_${buildl}
     CACHE STRING
