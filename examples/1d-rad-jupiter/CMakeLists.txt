@@ -16,13 +16,7 @@ set_target_properties(
 
 target_link_libraries(${namel}.${buildl}
     ${ATHENAPP_LIBRARY_${buildu}}
-    ${CLIMATH_LIBRARY_${buildu}}
-    ${DEBUGGER_LIBRARY_${buildu}}
-    ${UTILS_LIBRARY_${buildu}}
-    ${ASTRO_LIBRARY_${buildu}}
-    ${SNAP_LIBRARY_${buildu}}
-    ${HARP_LIBRARY_${buildu}}
-    ${INVERSION_LIBRARY_${buildu}}
+    ${CANOE_LIBRARY_${buildu}}
     ${NETCDF_LIBRARIES}
     ${CPPDISORT_LIBRARY_${buildu}}
     )

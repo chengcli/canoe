@@ -13,6 +13,11 @@ include_directories(
   ${CMAKE_BINARY_DIR}
   )
 
+string(TOUPPER ${CMAKE_BUILD_TYPE} buildu)
+
+#set(CANOE_LIBRARY_${buildu} "" CACHE "CANOE LIBRARIES")
+set(CANOE_LIBRARY_${buildu} "item1" "item2" "item3" CACHE INTERNAL "A list")
+
 add_subdirectory(climath)
 add_subdirectory(debugger)
 add_subdirectory(astro)

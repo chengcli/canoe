@@ -34,7 +34,9 @@ set_target_properties(${namel}_${buildl}
     COMPILE_FLAGS ${CMAKE_CXX_FLAGS_${buildu}}
     )
 
-set(${nameu}_LIBRARY_${buildu} ${namel}_${buildl}
-    CACHE STRING
-    "${namel} library ${buildl}")
-mark_as_advanced(${nameu}_LIBRARY_${buildu})
+list(APPEND CANOE_LIBRARY_${buildu} ${namel}_${buildl})
+message(STATUS "LIBRARY = ${CANOE_LIBRARY_${buildu}}")
+#set(${nameu}_LIBRARY_${buildu} ${namel}_${buildl}
+#    CACHE STRING
+#    "${namel} library ${buildl}")
+#mark_as_advanced(${nameu}_LIBRARY_${buildu})
