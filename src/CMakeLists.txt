@@ -8,9 +8,13 @@
 # inversion: spectral inversion library
 # outputs: write netcdf/pnetcdf outputs
 
-set(MODULES_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}
-	CACHE PATH
-	"canoe module include directory")
+include_directories(
+  ${CMAKE_CURRENT_SOURCE_DIR}
+  ${CMAKE_BINARY_DIR}
+  )
+
+string(TOLOWER ${CMAKE_BUILD_TYPE} buildl)
+string(TOUPPER ${CMAKE_BUILD_TYPE} buildu)
 
 add_subdirectory(climath)
 add_subdirectory(debugger)
@@ -20,3 +24,14 @@ add_subdirectory(snap)
 add_subdirectory(harp)
 add_subdirectory(inversion)
 add_subdirectory(outputs)
+
+set(CANOE_LIBRARY_${buildu}
+  "climath_${buildl}"
+  "debugger_${buildl}"
+  "astro_${buildl}"
+  "utils_${buildl}"
+  "snap_${buildl}"
+  "harp_${buildl}"
+  "inversion_${buildl}"
+  "outputs_${buildl}"
+  CACHE INTERNAL "canoe library")

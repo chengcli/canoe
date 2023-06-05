@@ -54,8 +54,9 @@ message(STATUS "Include ${CMAKE_SOURCE_DIR}/cmake/pybind11.cmake")
 include(${CMAKE_SOURCE_DIR}/cmake/pybind11.cmake)
 #add_subdirectory(python)
 
-## 6. set up unit tests
+## 6. set up unit tests and examples
 message(STATUS "6. Set up unit tests")
+add_subdirectory(examples)
 add_subdirectory(tests)
 
 ## 7. install library and executables ##
