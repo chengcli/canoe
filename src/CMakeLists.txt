@@ -24,6 +24,7 @@ add_subdirectory(snap)
 add_subdirectory(harp)
 add_subdirectory(inversion)
 add_subdirectory(outputs)
+add_subdirectory(opacity)
 
 set(CANOE_LIBRARY_${buildu}
   "climath_${buildl}"
@@ -34,4 +35,5 @@ set(CANOE_LIBRARY_${buildu}
   "harp_${buildl}"
   "inversion_${buildl}"
   "outputs_${buildl}"
+  "opacity_${buildl}"
   CACHE INTERNAL "canoe library")

@@ -1,0 +1,18 @@
+The following opaicty files are copied from Juno code: jamrt_v1.0.1812131228
+jamrt_v1.0.1812131228/src/Absorption_CIA.h -> mwr_absorber_cia.hpp
+jamrt_v1.0.1812131228/src/Absorption_NH3.h -> mwr_absorber_nh3.hpp
+jamrt_v1.0.1812131228/src/Absorption_H2S.h -> mwr_absorber_h2s.hpp
+jamrt_v1.0.1812131228/src/Absorption_PH3.h -> mwr_absorber_ph3.hpp
+
+The original absorption header file is slightly modified:
+jamrt_v1.0.1812131228/src/Absorbers.h -> absorption_functions.hpp
+
+The original absorption source file is splitted into seven files:
+jamrt_v1.0.1812131228/src/Absorbers.C -> absorption_function_cia.cpp
+                                         absorption_function_nh3.cpp
+                                         absorption_function_h2o.cpp
+                                         absorption_function_h2s.cpp
+                                         absorption_function_ph3.cpp
+                                         absorption_function_cloud.cpp
+                                         absorption_function_freefree.cpp
+The files are adapted to SNAP structure when necessary
