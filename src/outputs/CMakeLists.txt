@@ -38,8 +38,3 @@ target_include_directories(${namel}_${buildl}
     PRIVATE
     ${NETCDF_INCLUDES}
     )
-
-set(${nameu}_LIBRARY_${buildu} ${nameu}_${buildl}
-    CACHE STRING
-    "${namel} library ${buildl}")
-mark_as_advanced(${nameu}_LIBRARY_${buildu})
