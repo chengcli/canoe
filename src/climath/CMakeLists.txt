@@ -33,8 +33,3 @@ set_target_properties(${namel}_${buildl}
     PROPERTIES
     COMPILE_FLAGS ${CMAKE_C_FLAGS_${buildu}}
     )
-
-set(${nameu}_LIBRARY_${buildu} ${namel}_${buildl}
-    CACHE STRING
-    "${namel} library ${buildl}")
-mark_as_advanced(${nameu}_LIBRARY_${buildu})
