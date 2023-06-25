@@ -1,6 +1,6 @@
 #! /bin/bash
 
-filters=-legal/copyright,-build/include_subdir,-build/include_order,-runtime/references,
+filters=-legal/copyright,-build/include_subdir,-build/include_order,-runtime/references
 
 # astro
 cpplint --filter=${filters} --recursive src/astro
@@ -41,3 +41,6 @@ cpplint --filter=${filters} --recursive src/transport
 
 # examples
 cpplint --filter=${filters},-runtime/references --recursive examples/1d-rad-jupiter/*.cpp
+
+# tests
+cpplint --filter=${filters} tests/test_yaml_read.cpp
