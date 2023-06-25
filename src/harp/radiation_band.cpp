@@ -33,6 +33,10 @@ RadiationBand::RadiationBand(MeshBlock *pmb, ParameterInput *pin,
   Application::Logger app("harp");
   app->Log("Initialize RadiationBand " + name_);
 
+  if (!node[name].IsDefined()) {
+    app->Error("RadiationBand " + name_ + " is not defined");
+  }
+
   auto my = node[name];
 
   // number of Legendre moments

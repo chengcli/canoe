@@ -8,7 +8,7 @@
 
 class YamlReadTests : public ::testing::Test {
  protected:
-  std::string filename = "example_opacity.yaml";  // The name of your YAML file
+  std::string filename = "example_bands.yaml";  // The name of your YAML file
   YAML::Node node;
 
   virtual void SetUp() {

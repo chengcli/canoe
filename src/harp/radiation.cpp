@@ -77,10 +77,13 @@ void Radiation::PopulateRadiationBands(ParameterInput *pin) {
 
   std::string filename = pin->GetString("radiation", "bandsfile");
   std::ifstream stream(filename);
+  if (stream.good() == false) {
+    app->Error("Cannot open radiation bands file: " + filename);
+  }
   YAML::Node node = YAML::Load(stream);
 
-  if (node["opacity-source"].IsDefined()) {
-    app->Error("opacity-source is not defined");
+  if (!node["opacity-sources"].IsDefined()) {
+    app->Error("opacity-sources are not defined");
   }
 
   for (auto bname : node["bands"]) {

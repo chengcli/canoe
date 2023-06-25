@@ -42,10 +42,15 @@ MeshBlock::Impl::Impl(MeshBlock *pmb, ParameterInput *pin) : pmy_block_(pmb) {
   fitq = create_inversion_queue(pmb, pin);
 
   // reference pressure
+#ifdef HYDROSTATIC
   reference_pressure_ = pin->GetReal("mesh", "ReferencePressure");
 
   // pressure scale height
   pressure_scale_height_ = pin->GetReal("mesh", "PressureScaleHeight");
+#else
+  reference_pressure_ = 1.0;
+  pressure_scale_height_ = 1.0;
+#endif  // HYDROSTATIC
 }
 
 // Athena++ demands destruct pbval AFTER all boundary values

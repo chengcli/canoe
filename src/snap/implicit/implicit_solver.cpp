@@ -41,7 +41,7 @@ ImplicitSolver::ImplicitSolver(MeshBlock *pmb, ParameterInput *pin)
       pole_at_top(false),
       pmy_block_(pmb) {
   Application::Logger app("snap");
-  app->Log("Initializing ImplicitSolver");
+  app->Log("Initialize ImplicitSolver");
 
   implicit_flag = pin->GetOrAddInteger("hydro", "implicit_flag", 0);
   int nc1 = pmb->ncells1, nc2 = pmb->ncells2, nc3 = pmb->ncells3;

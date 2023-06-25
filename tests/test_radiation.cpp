@@ -50,7 +50,7 @@ class TestRadiation : public testing::Test {
   }
 };
 
-TEST(TestRadiation, Construct) {
+TEST_F(TestRadiation, Construct) {
   MeshBlock *pmb = nullptr;
 
   Absorber ab("dummy");
@@ -62,7 +62,10 @@ int main(int argc, char **argv) {
   testing::InitGoogleTest(&argc, argv);
   auto app = Application::GetInstance();
 
-  app->InstallMonitor("harp", "harp.out", "harp.err");
+  app->InstallMonitor("inversion", "main.out", "main.err");
+  app->InstallMonitor("astro", "main.out", "main.err");
+  app->InstallMonitor("snap", "main.out", "main.err");
+  app->InstallMonitor("harp", "main.out", "main.err");
 
   int result = RUN_ALL_TESTS();
 
