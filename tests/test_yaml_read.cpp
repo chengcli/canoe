@@ -24,12 +24,12 @@ class YamlReadTests : public ::testing::Test {
 
 TEST_F(YamlReadTests, OpacitySource) {
   // Checking 'opacity-source'
-  ASSERT_TRUE(node["opacity-source"])
-      << "'opacity-source' not found in YAML file";
+  ASSERT_TRUE(node["opacity-sources"])
+      << "'opacity-sources' not found in YAML file";
 
-  auto sources = node["opacity-source"].as<std::vector<YAML::Node>>();
+  auto sources = node["opacity-sources"].as<std::vector<YAML::Node>>();
   ASSERT_EQ(2, sources.size())
-      << "Unexpected number of sources in 'opacity-source'";
+      << "Unexpected number of sources in 'opacity-sources'";
 
   // Check first source
   EXPECT_EQ("H2-H2-CIA", sources[0]["name"].as<std::string>());

@@ -51,6 +51,8 @@ class Radiation {
 
   ~Radiation();
 
+  void PopulateRadiationBands(ParameterInput *pin);
+
   void calculateRadiativeFlux(AthenaArray<Real> *rup, AthenaArray<Real> *rdown,
                               Real time, int k, int j, int il, int iu);
 
@@ -58,8 +60,6 @@ class Radiation {
                          int iu);
 
   void addRadiativeFlux(Hydro *phydro, int k, int j, int il, int iu) const;
-
-  void readRadiationBands(MeshBlock *pmb, ParameterInput *pin, int *b);
 
   size_t getNumOutgoingRays() const;
 
@@ -85,7 +85,7 @@ class Radiation {
   Real stellarDistance_au_;
 
   // connections
-  Coordinates const *pcoord_;
+  MeshBlock *pmy_block_;
   CelestrialBody *planet_;
 };
 

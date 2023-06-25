@@ -28,108 +28,66 @@
 #include "radiation_utils.hpp"  // readRadiationDirections
 
 RadiationBand::RadiationBand(MeshBlock *pmb, ParameterInput *pin,
-                             std::string name)
+                             YAML::Node const &node, std::string name)
     : name_(name), bflags_(0LL), pmy_block_(pmb) {
   Application::Logger app("harp");
-  app->Log("Initializing RadiationBand " + name_);
-  std::stringstream msg;
+  app->Log("Initialize RadiationBand " + name_);
 
-  // parent radiation flags
-  uint64_t rflags;
-  set_radiation_flags(&rflags, pin->GetOrAddString("radiation", "flags", ""));
-
-  // band flags
-  if (pin->DoesParameterExist("radiation", name_ + ".flags")) {
-    set_radiation_flags(&bflags_,
-                        pin->GetString("radiation", name_ + ".flags"));
-  }
-  bflags_ |= rflags;
+  auto my = node[name];
 
   // number of Legendre moments
-  int npmom = pin->GetOrAddInteger("radiation", "npmom", 0);
-
-  // name radiation band in the format of "min_wave max_wave nbins"
-  std::string str = pin->GetString("radiation", name_);
-  char default_file[80];
-  snprintf(default_file, sizeof(default_file), "kcoeff.%s.nc", str.c_str());
-  replaceChar(default_file, ' ', '-');
-
-  std::vector<Real> val = Vectorize<Real>(str.c_str());
-  if (val.size() != 3) {
-    msg << "### FATAL ERROR in function RadiationBand::RadiationBand"
-        << std::endl
-        << "Length of '" << name_ << "' "
-        << "must be 3.";
-    ATHENA_ERROR(msg);
-  }
+  int npmom = my["moments"].IsDefined() ? my["moments"].as<int>() : 1;
 
   // set wavenumber and weights
-  wmin_ = val[0];
-  wmax_ = val[1];
-  int num_bins = static_cast<int>(val[2]);
-  if (num_bins < 1) {
-    msg << "### FATAL ERROR in function RadiationBand::RadiationBand"
-        << std::endl
-        << "Length of some spectral band is not a positive number";
-    ATHENA_ERROR(msg);
+  wmin_ = my["wavenumber-range"][0].as<Real>();
+  wmax_ = my["wavenumber-range"][1].as<Real>();
+  if (wmin_ >= wmax_) {
+    app->Error("wavenumber range is not valid " + std::to_string(wmin_) + " " +
+               std::to_string(wmax_));
   }
 
-  spec_.resize(num_bins);
-  if (test(RadiationFlags::LineByLine)) {
-    if (num_bins == 1) {
-      if (wmin_ != wmax_) {
-        msg << "### FATAL ERROR in function RadiationBand::RadiationBand"
-            << std::endl
-            << "The first spectrum must equal the last spectrum "
-            << "if the length of the spectral band is 1.";
-        ATHENA_ERROR(msg);
-      }
-      spec_[0].wav1 = spec_[0].wav2 = wmin_;
-      spec_[0].wght = 1.;
-    } else {
-      Real dwave = (val[1] - val[0]) / (num_bins - 1);
-      for (int i = 0; i < num_bins; ++i) {
-        spec_[i].wav1 = spec_[i].wav2 = val[0] + dwave * i;
-        spec_[i].wght = (i == 0) || (i == num_bins - 1) ? 0.5 * dwave : dwave;
-      }
-    }
-  } else if (test(RadiationFlags::CorrelatedK)) {
-    str = pin->GetString("radiation", name_ + ".gpoints");
-    val = Vectorize<Real>(str.c_str(), ",");
-    if (val.size() != num_bins) {
-      msg << "### FATAL ERROR in function RadiationBand::RadiationBand"
-          << std::endl
-          << "Number of gpoints does not equal " << num_bins;
-      ATHENA_ERROR(msg);
-    }
-
-    for (int i = 0; i < num_bins; ++i) spec_[i].wav1 = spec_[i].wav2 = val[i];
-
-    str = pin->GetString("radiation", name_ + ".weights");
-    val = Vectorize<Real>(str.c_str(), ",");
-    if (val.size() != num_bins) {
-      msg << "### FATAL ERROR in function RadiationBand::RadiationBand"
-          << std::endl
-          << "Number of weights does not equal " << num_bins;
-      ATHENA_ERROR(msg);
-    }
-
-    for (int i = 0; i < num_bins; ++i) spec_[i].wght = val[i];
-  } else {  // spectral bins
-    Real dwave = (val[1] - val[0]) / num_bins;
+  int num_bins = 1;
+  if (wmin_ == wmax_) {
+    num_bins = 1;
+    spec_.resize(num_bins);
+    spec_[0].wav1 = spec_[0].wav2 = wmin_;
+    spec_[0].wght = 1.;
+  } else if (my["resolution"].IsDefined()) {
+    Real dwave = my["resolution"].as<Real>();
+    num_bins = static_cast<int>((wmax_ - wmin_) / dwave) + 1;
+    spec_.resize(num_bins);
     for (int i = 0; i < num_bins; ++i) {
-      spec_[i].wav1 = val[0] + dwave * i;
-      spec_[i].wav2 = val[0] + dwave * (i + 1);
+      spec_[i].wav1 = spec_[i].wav2 = wmin_ + dwave * i;
+      spec_[i].wght = (i == 0) || (i == num_bins - 1) ? 0.5 * dwave : dwave;
+    }
+  } else if (my["num-bins"].IsDefined()) {
+    Real dwave = static_cast<Real>(1. * (wmax_ - wmin_) / num_bins);
+    num_bins = my["num-bins"].as<int>();
+    spec_.resize(num_bins);
+    for (int i = 0; i < num_bins; ++i) {
+      spec_[i].wav1 = wmin_ + dwave * i;
+      spec_[i].wav2 = spec_[i].wav1 + dwave;
       spec_[i].wght = 1.;
     }
+  } else if (my["gpoints"].IsDefined()) {
+    num_bins = my["gpoints"].size();
+    spec_.resize(num_bins);
+    for (int i = 0; i < num_bins; ++i) {
+      spec_[i].wav1 = wmin_;
+      spec_[i].wav2 = wmax_;
+      spec_[i].wght = my["gpoints"][i].as<Real>();
+    }
+  } else {
+    app->Error(
+        "either 'resolution' or 'num-bins' or 'gpoints' must be defined");
   }
 
   // outgoing radiation direction (mu,phi) in degree
   if (pin->DoesParameterExist("radiation", name_ + ".outdir")) {
-    str = pin->GetString("radiation", name_ + ".outdir");
+    auto str = pin->GetString("radiation", name_ + ".outdir");
     read_radiation_directions(&rayOutput_, str);
   } else if (pin->DoesParameterExist("radiation", "outdir")) {
-    str = pin->GetString("radiation", "outdir");
+    auto str = pin->GetString("radiation", "outdir");
     read_radiation_directions(&rayOutput_, str);
   }
 
@@ -159,19 +117,32 @@ RadiationBand::RadiationBand(MeshBlock *pmb, ParameterInput *pin,
   bssa.NewAthenaArray(ncells3, ncells2, ncells1);
   bpmom.NewAthenaArray(npmom + 1, ncells3, ncells2, ncells1);
 
-  // absorbers
-  str = pin->GetOrAddString("radiation", name + ".absorbers", "");
-  std::vector<std::string> aname = Vectorize<std::string>(str.c_str());
+  // add absorbers
+  if (my["opacity"].IsDefined()) {
+    for (auto aname : my["opacity"]) {
+      bool found = false;
+      for (auto absorber : node["opacity-sources"]) {
+        if (aname.as<std::string>() == absorber["name"].as<std::string>()) {
+          addAbsorber(pin, name_, absorber);
+          found = true;
+          break;
+        }
+      }
 
-  char astr[1024];
-  for (int i = 0; i < aname.size(); ++i) {
-    snprintf(astr, sizeof(astr), "%s.%s", name.c_str(), aname[i].c_str());
-    std::string afile = pin->GetOrAddString("radiation", astr, default_file);
-    addAbsorber(pin, name_, aname[i], afile);
+      if (!found) {
+        app->Error("Opacity " + aname.as<std::string>() + " is not defined");
+      }
+    }
+  } else {
+    app->Error("Band " + name + " opacity is not defined");
   }
 
-  // band parameters
-  alpha_ = pin->GetOrAddReal("radiation", name + ".alpha", 0.);
+  // set band parameters
+  for (auto const &entry : my["parameters"]) {
+    std::string key = entry.first.as<std::string>();
+    double value = entry.second.as<double>();
+    params_[key] = value;
+  }
 
   char buf[80];
   snprintf(buf, sizeof(buf), "%.2f - %.2f", wmin_, wmax_);
@@ -180,6 +151,9 @@ RadiationBand::RadiationBand(MeshBlock *pmb, ParameterInput *pin,
 }
 
 RadiationBand::~RadiationBand() {
+  Application::Logger app("harp");
+  app->Log("Destroy RadiationBand " + name_);
+
   for (size_t i = 0; i < absorbers.size(); ++i) delete absorbers[i];
 
 #ifdef RT_DISORT
@@ -235,7 +209,7 @@ void RadiationBand::writeBinRadiance(OutputParameters const *pout) const {
 // overide in the pgen file
 void __attribute__((weak))
 RadiationBand::addAbsorber(ParameterInput *pin, std::string bname,
-                           std::string name, std::string file) {}
+                           YAML::Node const &node) {}
 
 // overide in rtsolver folder
 void __attribute__((weak))

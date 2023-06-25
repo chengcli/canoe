@@ -2,13 +2,18 @@
 #define SRC_HARP_RADIATION_BAND_HPP_
 
 // C/C++ headers
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
 
-// Athena++ headers
+// external
+#include <yaml-cpp/yaml.h>
+
+// athena
 #include <athena/athena.hpp>
 
+// harp
 #include "radiation.hpp"
 
 struct Spectrum {
@@ -30,7 +35,8 @@ class RadiationBand {
   AthenaArray<Real> btau, bssa, bpmom;
 
   // functions
-  RadiationBand(MeshBlock *pmb, ParameterInput *pin, std::string name);
+  RadiationBand(MeshBlock *pmb, ParameterInput *pin, YAML::Node const &node,
+                std::string name);
 
   ~RadiationBand();
 
@@ -42,8 +48,8 @@ class RadiationBand {
 
   Real getAzimuthalAngle(int n) const { return rayOutput_[n].phi; }
 
-  void addAbsorber(ParameterInput *pin, std::string bname, std::string name,
-                   std::string file);
+  void addAbsorber(ParameterInput *pin, std::string bname,
+                   YAML::Node const &node);
 
   void setSpectralProperties(int k, int j, int il, int iu);
 
@@ -86,6 +92,7 @@ class RadiationBand {
   AthenaArray<Real> tem_, temf_;
 
   Real alpha_;  // T ~ Ts*(\tau/\tau_s)^\alpha at lower boundary
+  std::map<std::string, Real> params_;
 
   // connection
   MeshBlock *pmy_block_;

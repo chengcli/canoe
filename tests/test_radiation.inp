@@ -25,7 +25,7 @@ ox3_bc      = periodic  # Outer-X3 boundary condition flag
 gamma       = 1.4
 
 <radiation>
-opacity_file = example_opacity.yaml
+bands_file = radiation_bands.yaml
 
 <problem>
 dens  = 1.0

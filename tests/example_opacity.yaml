@@ -1,6 +1,6 @@
 name: example opacity file
 
-opacity-source:
+opacity-sources:
   - name: H2-H2-CIA
     long-name: "Hydrogen-Hydrogen collisional absorption"
     model: xiz
