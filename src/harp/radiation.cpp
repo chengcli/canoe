@@ -5,15 +5,16 @@
 // climath
 #include <climath/core.h>
 
+// athena
 #include <athena/coordinates/coordinates.hpp>
 #include <athena/hydro/hydro.hpp>
 #include <athena/mesh/mesh.hpp>
 #include <athena/parameter_input.hpp>
 
-// #include "../thermodynamics/thermodynamics.hpp"
-// #include "../utils/utils.hpp"
-#include <debugger/debugger.hpp>
+// application
+#include <application/application.hpp>
 
+// harp
 #include "radiation.hpp"
 #include "radiation_band.hpp"
 #include "radiation_utils.hpp"  // setRadiationFlags
@@ -26,14 +27,15 @@ Real const Radiation::stefanBoltzmann = 5.670374419E-8;
 
 Radiation::Radiation(MeshBlock *pmb, ParameterInput *pin)
     : rflags_(0LL), pcoord_(pmb->pcoord) {
-  pdebug->Enter("Radiation");
+  Application::Logger app("harp");
+  app->Log("Initializing Radiation");
 
   // radiation flags
   set_radiation_flags(&rflags_, pin->GetOrAddString("radiation", "flags", ""));
 
   // distance to parent star
   stellarDistance_au_ = pin->GetOrAddReal("radiation", "distance_au", 1.);
-  pdebug->Message("stellar distance", stellarDistance_au_);
+  app->Log("stellar distance = " + std::to_string(stellarDistance_au_) + " au");
 
   // radiation bands
   int bid = 1;
@@ -54,7 +56,6 @@ Radiation::Radiation(MeshBlock *pmb, ParameterInput *pin)
   current_ = 0.;
 
   planet_ = new CelestrialBody(pin);
-  pdebug->Leave();
 }
 
 Radiation::~Radiation() {
@@ -67,7 +68,8 @@ Radiation::~Radiation() {
 void Radiation::calculateRadiativeFlux(AthenaArray<Real> *flxup,
                                        AthenaArray<Real> *flxdn, Real time,
                                        int k, int j, int il, int iu) {
-  pdebug->Call("Radiation::calculateRadiativeFlux");
+  Application::Logger app("harp");
+  app->Log("CalculateRadiativeFlux");
   Real dist = stellarDistance_au_;
 
   int idx = 0;
@@ -90,13 +92,12 @@ void Radiation::calculateRadiativeFlux(AthenaArray<Real> *flxup,
     p->calculateBandFlux(&bflxup, &bflxdn, ray, dist, k, j, il, iu);
     idx++;
   }
-
-  pdebug->Leave();
 }
 
 void Radiation::calculateRadiance(AthenaArray<Real> *radiance, Real time, int k,
                                   int j, int il, int iu) {
-  pdebug->Call("Radiation::calculateRadiance");
+  Application::Logger app("harp");
+  app->Log("CalculateRadiance");
   Real dist = stellarDistance_au_;
 
   Direction ray;
@@ -118,13 +119,12 @@ void Radiation::calculateRadiance(AthenaArray<Real> *radiance, Real time, int k,
     p->calculateBandRadiance(&brad, ray, dist, k, j, il, iu);
     idx += p->getNumOutgoingRays();
   }
-
-  pdebug->Leave();
 }
 
 void Radiation::addRadiativeFlux(Hydro *phydro, int k, int j, int il,
                                  int iu) const {
-  pdebug->Call("Radiation::addRadiativeFlux");
+  Application::Logger app("harp");
+  app->Log("AddRadiativeFlux");
 
   // x1-flux divergence
   for (size_t b = 0; b < bands.size(); ++b) {
@@ -133,8 +133,6 @@ void Radiation::addRadiativeFlux(Hydro *phydro, int k, int j, int il,
       phydro->flux[X1DIR](IEN, k, j, i) +=
           flxup(b, k, j, i) - flxdn(b, k, j, i);
   }
-
-  pdebug->Leave();
 }
 
 void Radiation::readRadiationBands(MeshBlock *pmb, ParameterInput *pin,

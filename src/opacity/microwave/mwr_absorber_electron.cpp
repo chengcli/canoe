@@ -16,13 +16,13 @@
 
 MwrAbsorberElectron::MwrAbsorberElectron(
   MeshBlock *pmb, ParameterInput *pin, int ion):
-    Absorber(pmb, pin, "", "mw_electron")
+    Absorber("mw_electron")
 {
   imols_ = {ion};
   mixrs_ = {1.};
 }
 
-Real MwrAbsorberElectron::getAttenuation(Real wave1, Real wave2,
+Real MwrAbsorberElectron::GetAttenuation(Real wave1, Real wave2,
     CellVariables const& var) const
 {
   Real P = var.w[IPR]/1.E5; // pa -> bar

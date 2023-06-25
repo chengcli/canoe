@@ -2,35 +2,36 @@
 #include <athena/athena.hpp>
 #include <athena/mesh/mesh.hpp>
 
-// debugger
-#include <debugger/debugger.hpp>
-
 // snap
 #include <snap/cell_variables.hpp>
+
+// application
+#include <application/application.hpp>
 
 // harp
 #include "absorber.hpp"
 
-Absorber::Absorber(MeshBlock* pmb, ParameterInput* pin, std::string bname,
-                   std::string name)
-    : name_(name) {
-  pdebug->Enter("Absorber " + name);
-  pdebug->Leave();
+Absorber::Absorber(std::string name) : name_(name) {
+  Application::Logger app("harp");
+  app->Log("Absorber " + name_ + " is created");
 }
 
-Absorber::~Absorber() {}
+Absorber::~Absorber() {
+  Application::Logger app("harp");
+  app->Log("Absorber " + name_ + " is destroyed");
+}
 
-void Absorber::loadCoefficient(std::string fname, size_t bid) {}
+void Absorber::LoadCoefficient(std::string fname, size_t bid) {}
 
-Real Absorber::getAttenuation(Real wave1, Real wave2,
+Real Absorber::GetAttenuation(Real wave1, Real wave2,
                               CellVariables const& var) const {
   return 0.;
 }
 
-Real Absorber::getSingleScatteringAlbedo(Real wave1, Real wave2,
+Real Absorber::GetSingleScatteringAlbedo(Real wave1, Real wave2,
                                          CellVariables const& var) const {
   return 0.;
 }
 
-void Absorber::getPhaseMomentum(Real* pp, Real wave1, Real wave2,
+void Absorber::GetPhaseMomentum(Real* pp, Real wave1, Real wave2,
                                 CellVariables const& var, int np) const {}

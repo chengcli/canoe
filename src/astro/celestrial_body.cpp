@@ -10,8 +10,8 @@
 #include <athena/athena.hpp>
 #include <athena/parameter_input.hpp>
 
-// debugger
-#include <debugger/debugger.hpp>
+// application
+#include <application/application.hpp>
 
 // utils
 #include <utils/fileio.hpp>
@@ -58,6 +58,7 @@ CelestrialBody::CelestrialBody(ParameterInput *pin)
   std::stringstream msg;
   name = pin->GetOrAddString("astronomy", "planet", "unknown");
   readCelestrialData(pin, name);
+  Application::Logger app("astro");
 
   if (pin->DoesParameterExist("astronomy", name + ".parent")) {
     std::string parent_name = pin->GetString("astronomy", name + ".parent");
@@ -69,7 +70,7 @@ CelestrialBody::CelestrialBody(ParameterInput *pin)
   if (pin->DoesParameterExist("astronomy", name + ".spec_file")) {
     std::string sfile = pin->GetString("astronomy", name + ".spec_file");
     if (!FileExists(sfile)) {
-      Debugger::Fatal("CelestrialBody", "Cannot open spectral file", sfile);
+      app->Error("Cannot open spectral file " + sfile);
     } else {
       ReadSpectraFile(sfile);
     }
@@ -83,6 +84,7 @@ CelestrialBody::CelestrialBody(ParameterInput *pin, std::string myname)
     : parent(nullptr), name(myname), spec_(nullptr), il_(-1) {
   std::stringstream msg;
   readCelestrialData(pin, name);
+  Application::Logger app("astro");
 
   if (pin->DoesParameterExist("astronomy", name + ".parent")) {
     std::string parent_name = pin->GetString("astronomy", name + ".parent");
@@ -94,7 +96,7 @@ CelestrialBody::CelestrialBody(ParameterInput *pin, std::string myname)
   if (pin->DoesParameterExist("astronomy", name + ".spec_file")) {
     std::string sfile = pin->GetString("astronomy", name + ".spec_file");
     if (!FileExists(sfile)) {
-      Debugger::Fatal("CelestrialBody", "Cannot open spectral file", sfile);
+      app->Error("Cannot open spectral file " + sfile);
     } else {
       ReadSpectraFile(sfile);
     }

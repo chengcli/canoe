@@ -1,5 +1,6 @@
 // C/C++
 #include <ctime>
+#include <sstream>
 
 // athena
 #include <athena/athena.hpp>
@@ -13,6 +14,9 @@
 #include <athena/parameter_input.hpp>
 #include <athena/stride_iterator.hpp>
 
+// application
+#include <application/application.hpp>
+
 // canoe
 #include <configure.hpp>
 
@@ -21,9 +25,6 @@
 
 // utils
 #include <utils/ndarrays.hpp>
-
-// debugger
-#include <debugger/debugger.hpp>
 
 // thermodynamics
 #include <snap/meshblock_impl.hpp>
@@ -124,7 +125,9 @@ void Mesh::InitUserMeshData(ParameterInput *pin) {
 }
 
 void MeshBlock::ProblemGenerator(ParameterInput *pin) {
-  pdebug->Enter("ProblemGenerator: dry_rce");
+  Application::Logger app("main");
+
+  app->Log("ProblemGenerator: test_jupiter_re");
   Real gamma = pin->GetReal("hydro", "gamma");
 
   // construct a 1D adiabat with given relative humidity
@@ -232,7 +235,6 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
   delete[] z1;
   delete[] p1;
   delete[] t1;
-  pdebug->Leave();
 }
 
 int main(int argc, char **argv) {
@@ -256,7 +258,9 @@ int main(int argc, char **argv) {
   int restart = false;
   int mesh_only = false;
 
-  pdebug = std::make_unique<Debugger>(1);
+  auto app = Application::GetInstance();
+
+  auto logger = app->GetMonitor("main");
 
   Mesh *pmesh = new Mesh(pinput, mesh_only);
 
@@ -276,8 +280,8 @@ int main(int argc, char **argv) {
   Real H0 = psnap->GetPressureScaleHeight();
 
   // request temperature and pressure
-  pdebug->Message("request T", T0);
-  pdebug->Message("request P", P0);
+  logger->Log("request T = " + std::to_string(T0));
+  logger->Log("request P = " + std::to_string(P0));
 
   // thermodynamic constants
   Real gamma = pinput->GetReal("hydro", "gamma");
@@ -340,8 +344,8 @@ int main(int argc, char **argv) {
       Ts += T0 - t0;
       if (fabs(T0 - t0) < 0.01) break;
 
-      pdebug->Message("iteration #", iter);
-      pdebug->Message("T", t0);
+      logger->Log("Iteration # = " + std::to_string(iter));
+      logger->Log("T = " + std::to_string(t0));
     }
 
     if (iter > max_iter) {

@@ -21,7 +21,7 @@
 
 MwrAbsorberPH3::MwrAbsorberPH3(MeshBlock *pmb, ParameterInput *pin,
     int imol, Real xHe):
-  Absorber(pmb, pin, "", "mw_PH3"), xHe_(xHe), method_(1)
+  Absorber("mw_PH3"), xHe_(xHe), method_(1)
 {
   imols_ = {imol};
   mixrs_ = {1.};
@@ -36,7 +36,7 @@ MwrAbsorberPH3::MwrAbsorberPH3(MeshBlock *pmb, ParameterInput *pin,
 
 MwrAbsorberPH3::MwrAbsorberPH3(MeshBlock *pmb, ParameterInput *pin,
     Real xHe, Real *xPH3, Real *pres, int np):
-  Absorber(pmb, pin, "", "mw_PH3"), xHe_(xHe), method_(2)
+  Absorber("mw_PH3"), xHe_(xHe), method_(2)
 {
   std::stringstream msg;
   for (int i = 0; i < np; ++i) {
@@ -50,7 +50,7 @@ MwrAbsorberPH3::MwrAbsorberPH3(MeshBlock *pmb, ParameterInput *pin,
   }
 }
 
-Real MwrAbsorberPH3::getAttenuation(Real wave1, Real wave2,
+Real MwrAbsorberPH3::GetAttenuation(Real wave1, Real wave2,
     CellVariables const& var) const
 {
   Real P = var.w[IPR]/1.E5; // pa -> bar

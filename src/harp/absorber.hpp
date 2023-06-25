@@ -24,46 +24,36 @@
 // athena
 #include <athena/athena.hpp>
 
-class MeshBlock;
-class ParameterInput;
-class Thermodynamics;
 class CellVariables;
 
 class Absorber {
  public:
-  Absorber(MeshBlock* pmb, ParameterInput* pin, std::string bname,
-           std::string name);
+  Absorber(std::string name);
+
+  std::string GetName() const { return name_; }
 
   virtual ~Absorber();
 
-  virtual void loadCoefficient(std::string fname, size_t bid);
+  virtual void LoadCoefficient(std::string fname, size_t bid);
 
-  virtual Real getAttenuation(Real wave1, Real wave2,
+  virtual Real GetAttenuation(Real wave1, Real wave2,
                               CellVariables const& var) const;
 
-  virtual Real getSingleScatteringAlbedo(Real wave1, Real wave2,
+  virtual Real GetSingleScatteringAlbedo(Real wave1, Real wave2,
                                          CellVariables const& var) const;
 
-  virtual void getPhaseMomentum(Real* pp, Real wave1, Real wave2,
+  virtual void GetPhaseMomentum(Real* pp, Real wave1, Real wave2,
                                 CellVariables const& var, int np) const;
-
-  Absorber* use(Thermodynamics const* p) {
-    pthermo_ = p;
-    return this;
-  }
 
  protected:
   // data
   std::string name_;
 
-  /**< id of dependent molecules */
+  //! id of dependent molecules
   std::vector<int> imols_;
 
-  /**< mixr of dependent molecules */
+  //! mixr of dependent molecules
   std::vector<Real> mixrs_;
-
-  // connections
-  Thermodynamics const* pthermo_;
 };
 
 #endif  // SRC_HARP_ABSORBER_HPP_

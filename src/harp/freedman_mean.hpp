@@ -7,13 +7,17 @@
 // harp
 #include "absorber.hpp"
 
+class MeshBlock;
 // Richard S. Freedman 2011. APJS
 class FreedmanMean : public Absorber {
  public:
   FreedmanMean(MeshBlock *pmb, ParameterInput *pin, std::string bname)
-      : Absorber(pmb, pin, bname, "FreedmanMean") {}
+      : Absorber("FreedmanMean") {}
   virtual ~FreedmanMean() {}
-  Real getAttenuation(Real wave1, Real wave2, CellVariables const &var) const;
+  Real GetAttenuation(Real wave1, Real wave2, CellVariables const &var) const;
+
+ protected:
+  MeshBlock *pmy_block_;
 };
 
 #endif  // SRC_HARP_FREEDMAN_MEAN_HPP_

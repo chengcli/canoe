@@ -7,21 +7,29 @@
  */
 
 // C/C++ header
-#include <athena/mesh/mesh.hpp>
-#include <debugger/debugger.hpp>
-#include <harp/radiation.hpp>
 #include <iostream>
 #include <memory>
 #include <sstream>
+
+// athena
+#include <athena/mesh/mesh.hpp>
+
+// harp
+#include <harp/radiation.hpp>
+
+// application
+#include <application/application.hpp>
+
+// utils
 #include <utils/ndarrays.hpp>
 
+// inversion
 #include "profile_inversion.hpp"
-
-extern std::unique_ptr<Debugger> pdebug;
 
 Real ProfileInversion::LogPosteriorProbability(Radiation *prad, Hydro *phydro,
                                                Real const *par, Real *val,
                                                int k) const {
+  Application::Logger app("inversion");
   int is = pmy_block_->is, ie = pmy_block_->ie;
   int ks = pmy_block_->ks;
 
@@ -29,15 +37,15 @@ Real ProfileInversion::LogPosteriorProbability(Radiation *prad, Hydro *phydro,
   int nvalue = GetValues();
 
   // logging
-  pdebug->Call("LogPosteriorProbability");
-  pdebug->Message("I am walker", k - ks);
+  app->Log("Calculate LogPosteriorProbability");
+  app->Log("I am walker = " + std::to_string(k - ks));
 
   Real **XpSample;
   NewCArray(XpSample, 1 + NVAPOR, plevel_.size());
   std::fill(*XpSample, *XpSample + (1 + NVAPOR) * plevel_.size(), 0.);
 
   // sample temperature, sample composition #1, sample composition #2, ...
-  pdebug->Message("parameters", par, ndim);
+  // app->Log("parameters = ", par, ndim);
 
   int ip = 0;
   for (auto m : idx_) {
@@ -53,7 +61,7 @@ Real ProfileInversion::LogPosteriorProbability(Radiation *prad, Hydro *phydro,
 
   // calculate radiation for updated profiles located at j = jl_ ... ju_
   for (int j = jl_; j <= ju_; ++j) {
-    pdebug->Message("run RT for model", j);
+    app->Log("run RT for model = " + std::to_string(j));
     prad->calculateRadiance(&prad->radiance, 0., k, j, is, ie + 1);
   }
 
@@ -74,8 +82,7 @@ Real ProfileInversion::LogPosteriorProbability(Radiation *prad, Hydro *phydro,
 
   // posterior probability
   // Real lnprior = 0., lnpost = 0.;
-  pdebug->Message("log posterir probability", lnpost);
-  pdebug->Leave();
+  app->Log("log posterir probability = " + std::to_string(lnpost));
 
   FreeCArray(XpSample);
 

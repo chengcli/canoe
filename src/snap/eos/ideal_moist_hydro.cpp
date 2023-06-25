@@ -12,7 +12,6 @@
 #include <athena/hydro/hydro.hpp>
 #include <athena/mesh/mesh.hpp>
 #include <athena/parameter_input.hpp>
-#include <debugger/debugger.hpp>
 
 #include "../meshblock_impl.hpp"
 #include "../thermodynamics/thermodynamics.hpp"

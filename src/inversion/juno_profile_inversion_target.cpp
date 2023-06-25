@@ -7,26 +7,34 @@
  */
 
 // C/C++ headers
-#include <climath/interpolation.h>
-#include <climath/linalg.h>
-
-#include <athena/athena.hpp>
-#include <athena/mesh/mesh.hpp>
-#include <debugger/debugger.hpp>
-#include <harp/radiation.hpp>
-#include <harp/radiation_band.hpp>
 #include <iomanip>
 #include <iostream>
 
-#include "profile_inversion.hpp"
+// climath
+#include <climath/interpolation.h>
+#include <climath/linalg.h>
 
-extern std::unique_ptr<Debugger> pdebug;
+// athena
+#include <athena/athena.hpp>
+#include <athena/mesh/mesh.hpp>
+
+// application
+#include <application/application.hpp>
+
+// harp
+#include <harp/radiation.hpp>
+#include <harp/radiation_band.hpp>
+
+// inversion
+#include "profile_inversion.hpp"
 
 void JunoProfileInversion::CalculateFitTarget(Radiation const *prad, Real *val,
                                               int nvalue, int k, int j) const {
   std::stringstream msg;
-  pdebug->Call("JunoProfileInversion::CalculateFitTarget");
-  pdebug->Message("model", j);
+  Application::Logger app("inversioon");
+
+  app->Log("JunoProfileInversion::CalculateFitTarget");
+  app->Log("model = " + std::to_string(j));
 
   // 11. log likelihood
   std::vector<Real> mus, tbs;
@@ -65,7 +73,5 @@ void JunoProfileInversion::CalculateFitTarget(Radiation const *prad, Real *val,
     b++;
   }
 
-  pdebug->Message("foward model results", val, nvalue);
-
-  pdebug->Leave();
+  // app->Log("foward model results = ", val, nvalue);
 }

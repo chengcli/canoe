@@ -17,8 +17,8 @@
 #include <athena/hydro/hydro.hpp>
 #include <athena/mesh/mesh.hpp>
 
-// debugger
-#include <debugger/debugger.hpp>
+// application
+#include <application/application.hpp>
 
 // snap
 #include "../meshblock_impl.hpp"
@@ -31,7 +31,8 @@
 
 void ImplicitSolver::FullCorrection(AthenaArray<Real>& du,
                                     AthenaArray<Real> const& w, Real dt) {
-  // pdebug->Call("ImplicitSolver::FullCorrectin-X" + std::to_string(mydir_+1));
+  Application::Logger app("snap");
+  app->Log("ImplicitSolver::FullCorrectin-X" + std::to_string(mydir_ + 1));
 
   MeshBlock const* pmb = pmy_block_;
   int is, ie, js, je, ks, ke;

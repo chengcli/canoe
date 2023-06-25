@@ -1,16 +1,22 @@
 // C/C++ headers
-#include "freedman_mean.hpp"
-
 #include <algorithm>
-#include <athena/athena_arrays.hpp>
-#include <athena/mesh/mesh.hpp>
 #include <cassert>  // assert
 #include <cmath>
 #include <cstring>
 #include <iostream>
-#include <snap/cell_variables.hpp>
-#include <snap/thermodynamics/thermodynamics.hpp>
 #include <stdexcept>
+
+// athena
+#include <athena/athena_arrays.hpp>
+#include <athena/mesh/mesh.hpp>
+
+// snap
+#include <snap/cell_variables.hpp>
+#include <snap/meshblock_impl.hpp>
+#include <snap/thermodynamics/thermodynamics.hpp>
+
+// harp
+#include "freedman_mean.hpp"
 
 // coefficient from Richard S. Freedman 2014. APJS
 
@@ -18,7 +24,7 @@ Real c1 = 10.602, c2 = 2.882, c3 = 6.09e-15, c4 = 2.954, c5 = -2.526,
      c6 = 0.843, c7 = -5.490;
 Real c8, c9, c10, c11, c12;
 
-Real FreedmanMean::getAttenuation(Real wave1, Real wave2,
+Real FreedmanMean::GetAttenuation(Real wave1, Real wave2,
                                   CellVariables const& var) const {
   Real p = var.q[IPR];
   Real T = var.q[IDN];
@@ -46,7 +52,7 @@ Real FreedmanMean::getAttenuation(Real wave1, Real wave2,
 
   Real result = pow(10.0, klowp) + pow(10.0, khigp);  // cm^2/g
 
-  Real dens = p / (pthermo_->GetRd() * T);  // kg/m^3
+  Real dens = p / (pmy_block_->pimpl->pthermo->GetRd() * T);  // kg/m^3
 
   if (p > 5e1)
     return 0.1 * dens * result;  // -> 1/m

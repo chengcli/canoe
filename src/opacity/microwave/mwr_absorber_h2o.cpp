@@ -18,7 +18,7 @@
 
 MwrAbsorberH2O::MwrAbsorberH2O(MeshBlock *pmb, ParameterInput *pin,
     int imol, Real xHe, Real scale):
-  Absorber(pmb, pin, "", "mw_H2O"), xHe_(xHe), scale_(scale)
+  Absorber("mw_H2O"), xHe_(xHe), scale_(scale)
 {
   imols_ = {imol};
   mixrs_ = {1.};
@@ -31,7 +31,7 @@ MwrAbsorberH2O::MwrAbsorberH2O(MeshBlock *pmb, ParameterInput *pin,
   }
 }
 
-Real MwrAbsorberH2O::getAttenuation(Real wave1, Real wave2,
+Real MwrAbsorberH2O::GetAttenuation(Real wave1, Real wave2,
     CellVariables const& var) const
 {
   Real P = var.w[IPR]/1.E5; // pa -> bar

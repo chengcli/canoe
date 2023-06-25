@@ -15,8 +15,8 @@
 #include <athena/hydro/hydro.hpp>
 #include <athena/mesh/mesh.hpp>
 
-// debugger
-#include <debugger/debugger.hpp>
+// application
+#include <application/application.hpp>
 
 // inversion
 #include "inversion.hpp"
@@ -26,6 +26,8 @@ void Inversion::MCMCInit(Radiation *prad, Hydro *phydro) {
   int nwalker = recs_.nwalker;
   int ndim = recs_.ndim;
   int nval = recs_.nvalue;
+
+  Application::Logger app("inversion");
 
   Real **par = init_pos_;
 
@@ -48,7 +50,7 @@ void Inversion::MCMCInit(Radiation *prad, Hydro *phydro) {
     }
 
     if (niter >= 10) {
-      Debugger::Fatal("MCMCInit", "Starting point iteration > 10 times");
+      app->Error("Starting point iteration > 10 times");
     }
 
     // transfer input parameters to records

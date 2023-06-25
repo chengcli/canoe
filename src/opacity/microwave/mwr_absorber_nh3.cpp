@@ -21,7 +21,7 @@
 
 MwrAbsorberNH3::MwrAbsorberNH3(MeshBlock *pmb, ParameterInput *pin,
     int imol, Real xHe, Real xH2O):
-  Absorber(pmb, pin, "", "mw_NH3"), method_(1), xHe_(xHe), xH2O_(xH2O)
+  Absorber("mw_NH3"), method_(1), xHe_(xHe), xH2O_(xH2O)
 {
   imols_ = {imol};
   mixrs_ = {1.};
@@ -36,7 +36,7 @@ MwrAbsorberNH3::MwrAbsorberNH3(MeshBlock *pmb, ParameterInput *pin,
 
 MwrAbsorberNH3::MwrAbsorberNH3(MeshBlock *pmb, ParameterInput *pin,
     int imol, Real xHe, Real *xH2O, Real *pres, int np):
-  Absorber(pmb, pin, "", "mw_NH3"), method_(2), xHe_(xHe)
+  Absorber("mw_NH3"), method_(2), xHe_(xHe)
 {
   imols_ = {imol};
   mixrs_ = {1.};
@@ -55,7 +55,7 @@ MwrAbsorberNH3::MwrAbsorberNH3(MeshBlock *pmb, ParameterInput *pin,
 
 MwrAbsorberNH3::MwrAbsorberNH3(MeshBlock *pmb, ParameterInput *pin,
     std::vector<int> imols, Real xHe, Real power):
-  Absorber(pmb, pin, "", "mw_NH3"), method_(3), xHe_(xHe), power_(power)
+  Absorber("mw_NH3"), method_(3), xHe_(xHe), power_(power)
 {
   imols_ = imols;
   mixrs_ = {1., 1.};
@@ -75,7 +75,7 @@ MwrAbsorberNH3::MwrAbsorberNH3(MeshBlock *pmb, ParameterInput *pin,
   }
 }
 
-Real MwrAbsorberNH3::getAttenuation(Real wave1, Real wave2,
+Real MwrAbsorberNH3::GetAttenuation(Real wave1, Real wave2,
     CellVariables const& var) const
 {
   Real P = var.w[IPR]/1.E5; // pa -> bar

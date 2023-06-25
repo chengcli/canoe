@@ -61,16 +61,16 @@ void RadiationBand::setSpectralProperties(int k, int j, int il, int iu) {
       // std::cout << i << " " << tem_(i] << std::endl;
       for (int m = 0; m < nspec; ++m) {
         Real kcoeff =
-            a->getAttenuation(spec_[m].wav1, spec_[m].wav2, var);  // 1/m
+            a->GetAttenuation(spec_[m].wav1, spec_[m].wav2, var);  // 1/m
         Real dssalb =
-            a->getSingleScatteringAlbedo(spec_[m].wav1, spec_[m].wav2, var) *
+            a->GetSingleScatteringAlbedo(spec_[m].wav1, spec_[m].wav2, var) *
             kcoeff;
         // tau
         tau_(m, i) += kcoeff;
         // ssalb
         ssa_(m, i) += dssalb;
         // pmom
-        a->getPhaseMomentum(mypmom.data(), spec_[m].wav1, spec_[m].wav2, var,
+        a->GetPhaseMomentum(mypmom.data(), spec_[m].wav1, spec_[m].wav2, var,
                             npmom);
         for (int p = 0; p <= npmom; ++p) pmom_(m, i, p) += mypmom[p] * dssalb;
       }

@@ -22,7 +22,7 @@ class YamlReadTests : public ::testing::Test {
   }
 };
 
-TEST_F(YamlReadTests, OpacitySouce) {
+TEST_F(YamlReadTests, OpacitySource) {
   // Checking 'opacity-source'
   ASSERT_TRUE(node["opacity-source"])
       << "'opacity-source' not found in YAML file";

@@ -61,7 +61,7 @@ std::ostream &operator<<(std::ostream &os, HitranAbsorber const &ab) {
 HitranAbsorber::HitranAbsorber(MeshBlock *pmb, ParameterInput *pin,
                                std::string bname, std::string name, int imol,
                                Real mixr = 1.)
-    : Absorber(pmb, pin, bname, name) {
+    : Absorber(name) {
   imols_ = {imol};
   mixrs_ = {mixr};
 }
@@ -90,7 +90,7 @@ Real HitranAbsorber::RefTemp_(Real pres) const {
   return result;
 }
 
-void HitranAbsorber::loadCoefficient(std::string fname, int bid) {
+void HitranAbsorber::LoadCoefficient(std::string fname, int bid) {
 #ifdef NETCDFOUTPUT
   int fileid, dimid, varid, err;
   char tname[80];
@@ -134,7 +134,7 @@ void HitranAbsorber::loadCoefficient(std::string fname, int bid) {
 #endif
 }
 
-Real HitranAbsorber::getAttenuation(Real wave1, Real wave2,
+Real HitranAbsorber::GetAttenuation(Real wave1, Real wave2,
                                     CellVariables const &var) const {
   // first axis is wavenumber, second is pressure, third is temperature anomaly
   Real val, coord[3] = {wave1, var.q[IPR], var.q[IDN] - RefTemp_(var.q[IPR])};

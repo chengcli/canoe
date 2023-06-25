@@ -1,4 +1,5 @@
 // C/C++
+#include <sstream>
 #include <stdexcept>
 #include <type_traits>
 #include <vector>
@@ -12,8 +13,8 @@
 // climath
 #include <climath/core.h>
 
-// debugger
-#include <debugger/debugger.hpp>
+// application
+#include <application/application.hpp>
 
 // utils
 #include <utils/fileio.hpp>
@@ -29,7 +30,8 @@
 RadiationBand::RadiationBand(MeshBlock *pmb, ParameterInput *pin,
                              std::string name)
     : name_(name), bflags_(0LL), pmy_block_(pmb) {
-  pdebug->Enter("RadiationBand " + name_);
+  Application::Logger app("harp");
+  app->Log("Initializeing RadiationBand " + name_);
   std::stringstream msg;
 
   // parent radiation flags
@@ -173,10 +175,8 @@ RadiationBand::RadiationBand(MeshBlock *pmb, ParameterInput *pin,
 
   char buf[80];
   snprintf(buf, sizeof(buf), "%.2f - %.2f", wmin_, wmax_);
-  pdebug->Message("spectral range", buf);
-  pdebug->Message("number of spectral bins", num_bins);
-
-  pdebug->Leave();
+  app->Log("spectral range = " + std::string(buf));
+  app->Log("number of spectral bins = " + std::to_string(num_bins));
 }
 
 RadiationBand::~RadiationBand() {

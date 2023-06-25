@@ -18,7 +18,7 @@
 
 MwrAbsorberCIA::MwrAbsorberCIA(MeshBlock *pmb, ParameterInput *pin,
   Real xHe, Real xCH4, Real fequal):
-    Absorber(pmb, pin, "", "mw_CIA"), xHe_(xHe), xCH4_(xCH4), fequal_(fequal)
+    Absorber("mw_CIA"), xHe_(xHe), xCH4_(xCH4), fequal_(fequal)
 {
   std::stringstream msg;
 
@@ -29,7 +29,7 @@ MwrAbsorberCIA::MwrAbsorberCIA(MeshBlock *pmb, ParameterInput *pin,
   }
 }
 
-Real MwrAbsorberCIA::getAttenuation(Real wave1, Real wave2,
+Real MwrAbsorberCIA::GetAttenuation(Real wave1, Real wave2,
     CellVariables const& var) const
 {
   Real P = var.w[IPR]/1.E5;  // pa -> bar

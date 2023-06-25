@@ -13,8 +13,8 @@
 #include <athena/mesh/mesh.hpp>
 #include <athena/parameter_input.hpp>
 
-// debugger
-#include <debugger/debugger.hpp>
+// application
+#include <application/application.hpp>
 
 // utils
 #include <utils/ndarrays.hpp>
@@ -40,7 +40,8 @@ ImplicitSolver::ImplicitSolver(MeshBlock *pmb, ParameterInput *pin)
       pole_at_bot(false),
       pole_at_top(false),
       pmy_block_(pmb) {
-  pdebug->Enter("ImplicitSolver");
+  Application::Logger app("snap");
+  app->Log("Initializing ImplicitSolver");
 
   implicit_flag = pin->GetOrAddInteger("hydro", "implicit_flag", 0);
   int nc1 = pmb->ncells1, nc2 = pmb->ncells2, nc3 = pmb->ncells3;
@@ -79,8 +80,6 @@ ImplicitSolver::ImplicitSolver(MeshBlock *pmb, ParameterInput *pin)
   p3_(ivy, ivx) = 1.;
   p3_(ivz, ivy) = 1.;
   p3_(ien, ien) = 1.;
-
-  pdebug->Leave();
 }
 
 ImplicitSolver::~ImplicitSolver() {

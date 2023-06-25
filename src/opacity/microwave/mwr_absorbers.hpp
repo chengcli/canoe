@@ -33,7 +33,7 @@ public:
   MwrAbsorberCIA(MeshBlock *pmb, ParameterInput *pin,
     Real xHe, Real xCH4, Real fequal = 0.);
 
-  Real getAttenuation(Real wave1, Real wave2,
+  Real GetAttenuation(Real wave1, Real wave2,
       CellVariables const& var) const;
 
 private:
@@ -87,7 +87,7 @@ public:
     return *this;
   }
 
-  Real getAttenuation(Real wave1, Real wave2,
+  Real GetAttenuation(Real wave1, Real wave2,
       CellVariables const& var) const;
 
 private:
@@ -125,7 +125,7 @@ public:
     return *this;
   }
 
-  Real getAttenuation(Real wave1, Real wave2,
+  Real GetAttenuation(Real wave1, Real wave2,
       CellVariables const& var) const;
 private:
   std::string model_name_;
@@ -160,7 +160,7 @@ public:
     return *this;
   }
 
-  Real getAttenuation(Real wave1, Real wave2,
+  Real GetAttenuation(Real wave1, Real wave2,
       CellVariables const& var) const;
 private:
   std::string model_name_;
@@ -185,7 +185,7 @@ public:
   MwrAbsorberH2S(MeshBlock *pmb, ParameterInput *pin,
     Real xHe, Real *xH2S, Real *pres, int np);
 
-  Real getAttenuation(Real wave1, Real wave2,
+  Real GetAttenuation(Real wave1, Real wave2,
       CellVariables const& var) const;
 
 private:
@@ -212,7 +212,7 @@ public:
     return *this;
   }
 
-  Real getAttenuation(Real wave1, Real wave2,
+  Real GetAttenuation(Real wave1, Real wave2,
       CellVariables const& var) const;
 
 private:

@@ -21,7 +21,7 @@
 
 MwrAbsorberH2S::MwrAbsorberH2S(MeshBlock *pmb, ParameterInput *pin,
     int imol, Real xHe):
-  Absorber(pmb, pin, "", "mw_H2S"), xHe_(xHe)
+  Absorber("mw_H2S"), xHe_(xHe)
 {
   imols_ = {imol};
   mixrs_ = {1.};
@@ -36,7 +36,7 @@ MwrAbsorberH2S::MwrAbsorberH2S(MeshBlock *pmb, ParameterInput *pin,
 
 MwrAbsorberH2S::MwrAbsorberH2S(MeshBlock *pmb, ParameterInput *pin,
     Real xHe, Real *xH2S, Real *pres, int np):
-  Absorber(pmb, pin, "", "mw_H2S"), xHe_(xHe)
+  Absorber("mw_H2S"), xHe_(xHe)
 {
   std::stringstream msg;
   for (int i = 0; i < np; ++i) {
@@ -50,7 +50,7 @@ MwrAbsorberH2S::MwrAbsorberH2S(MeshBlock *pmb, ParameterInput *pin,
   }
 }
 
-Real MwrAbsorberH2S::getAttenuation(Real wave1, Real wave2,
+Real MwrAbsorberH2S::GetAttenuation(Real wave1, Real wave2,
     CellVariables const& var) const
 {
   // adapted by cli (Cheng Li), Aug 30
