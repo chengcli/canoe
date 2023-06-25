@@ -1,6 +1,8 @@
 // external
 #include <gtest/gtest.h>
-#include <yaml-cpp/yaml.h>
+
+// application
+#include <application/application.hpp>
 
 // harp
 #include <harp/absorber.hpp>
@@ -15,7 +17,7 @@ int main(int argc, char **argv) {
   testing::InitGoogleTest(&argc, argv);
   auto app = Application::GetInstance();
 
-  // app->InstallMonitor("harp", "harp.out", "harp.err");
+  app->InstallMonitor("harp", "harp.out", "harp.err");
 
   int result = RUN_ALL_TESTS();
 

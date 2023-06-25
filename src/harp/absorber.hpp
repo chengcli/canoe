@@ -18,9 +18,6 @@
 #include <string>
 #include <vector>
 
-// canoe
-#include <configure.hpp>
-
 // athena
 #include <athena/athena.hpp>
 

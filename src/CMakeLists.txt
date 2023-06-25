@@ -26,6 +26,7 @@ add_subdirectory(outputs)
 add_subdirectory(opacity)
 
 set(CANOE_LIBRARY_${buildu}
+  "athenapp_${buildl}"
   "application_${buildl}"
   "climath_${buildl}"
   "astro_${buildl}"
@@ -35,4 +36,9 @@ set(CANOE_LIBRARY_${buildu}
   "inversion_${buildl}"
   "outputs_${buildl}"
   "opacity_${buildl}"
+  "yaml-cpp"
   CACHE INTERNAL "canoe library")
+
+set(CANOE_INCLUDE_DIR
+  "${CMAKE_CURRENT_SOURCE_DIR}"
+  CACHE INTERNAL "canoe include directory")

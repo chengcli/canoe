@@ -31,7 +31,7 @@ RadiationBand::RadiationBand(MeshBlock *pmb, ParameterInput *pin,
                              std::string name)
     : name_(name), bflags_(0LL), pmy_block_(pmb) {
   Application::Logger app("harp");
-  app->Log("Initializeing RadiationBand " + name_);
+  app->Log("Initializing RadiationBand " + name_);
   std::stringstream msg;
 
   // parent radiation flags
