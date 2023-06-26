@@ -2,19 +2,21 @@
 #define SRC_HARP_RADIATION_HPP_
 
 // C/C++ headers
-#include <astro/celestrial_body.hpp>
-#include <athena/athena.hpp>
 #include <string>
 #include <vector>
 
-struct Direction {
-  Real mu, phi;
-};
+// astro
+#include <astro/celestrial_body.hpp>
+
+// athena
+#include <athena/athena.hpp>
+
+// harp
+#include "radiation_band.hpp"
 
 class MeshBlock;
 class ParameterInput;
 class Hydro;
-class RadiationBand;
 
 namespace RadiationFlags {
 const uint64_t None = 0LL;
@@ -42,7 +44,7 @@ class Radiation {
   AthenaArray<Real> radiance;
 
   // radiation bands
-  std::vector<RadiationBand *> bands;
+  std::vector<RadiationBandPtr> bands;
 
   AthenaArray<Real> flxup, flxdn;
 
@@ -50,6 +52,10 @@ class Radiation {
   Radiation(MeshBlock *pmb, ParameterInput *pin);
 
   ~Radiation();
+
+  size_t GetNumBands() { return bands.size(); }
+
+  RadiationBand *GetBand(int i) { return bands[i].get(); }
 
   void PopulateRadiationBands(ParameterInput *pin);
 
@@ -86,7 +92,7 @@ class Radiation {
 
   // connections
   MeshBlock *pmy_block_;
-  CelestrialBody *planet_;
+  CelestrialBodyPtr planet_;
 };
 
 #endif  //  SRC_HARP_RADIATION_HPP_

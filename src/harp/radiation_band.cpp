@@ -159,8 +159,6 @@ RadiationBand::~RadiationBand() {
   Application::Logger app("harp");
   app->Log("Destroy RadiationBand " + name_);
 
-  for (size_t i = 0; i < absorbers.size(); ++i) delete absorbers[i];
-
 #ifdef RT_DISORT
   free_disort();
 #endif
@@ -216,8 +214,9 @@ void __attribute__((weak))
 RadiationBand::AddAbsorber(ParameterInput *pin, std::string bname,
                            YAML::Node &node) {
   std::string aname = node["name"].as<std::string>();
-  Application::Logger app("harp");
-  app->Log("Add absorber " + aname + " in band " + bname);
+
+  auto ab = std::make_unique<Absorber>(aname);
+  absorbers.push_back(std::move(ab));
 }
 
 // overide in rtsolver folder

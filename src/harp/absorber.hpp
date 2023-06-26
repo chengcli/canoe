@@ -15,6 +15,7 @@
 #define SRC_HARP_ABSORBER_HPP_
 
 // C/C++
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -52,5 +53,7 @@ class Absorber {
   //! mixr of dependent molecules
   std::vector<Real> mixrs_;
 };
+
+using AbsorberPtr = std::unique_ptr<Absorber>;
 
 #endif  // SRC_HARP_ABSORBER_HPP_

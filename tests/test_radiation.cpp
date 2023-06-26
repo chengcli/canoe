@@ -12,6 +12,8 @@
 
 // harp
 #include <harp/absorber.hpp>
+#include <harp/radiation.hpp>
+#include <harp/radiation_band.hpp>
 
 class TestRadiation : public testing::Test {
  protected:
@@ -51,11 +53,12 @@ class TestRadiation : public testing::Test {
 };
 
 TEST_F(TestRadiation, Construct) {
-  MeshBlock *pmb = nullptr;
+  Radiation *prad = pmesh->my_blocks(0)->pimpl->prad;
 
-  Absorber ab("dummy");
-
-  EXPECT_EQ(ab.GetName(), "dummy");
+  EXPECT_EQ(prad->GetNumBands(), 3);
+  EXPECT_EQ(prad->GetBand(0)->GetNumAbsorbers(), 6);
+  EXPECT_EQ(prad->GetBand(0)->GetAbsorber(0)->GetName(), "H2-H2-CIA");
+  EXPECT_EQ(prad->GetBand(0)->GetAbsorber(1)->GetName(), "H2-He-CIA");
 };
 
 int main(int argc, char **argv) {

@@ -14,23 +14,23 @@
 #include <athena/athena.hpp>
 
 // harp
-#include "radiation.hpp"
+#include "absorber.hpp"
 
 struct Spectrum {
   Real rad, wav1, wav2, wght;
 };
 
-class Absorber;
-class Coordinates;
-class Thermodynamics;
-class PassiveScalars;
+struct Direction {
+  Real mu, phi;
+};
+
 class OutputParameters;
 
 class RadiationBand {
  public:
   // access data
   // absorbers
-  std::vector<Absorber *> absorbers;
+  std::vector<AbsorberPtr> absorbers;
 
   AthenaArray<Real> btau, bssa, bpmom;
 
@@ -39,6 +39,10 @@ class RadiationBand {
                 std::string name);
 
   ~RadiationBand();
+
+  size_t GetNumAbsorbers() { return absorbers.size(); }
+
+  Absorber *GetAbsorber(int i) { return absorbers[i].get(); }
 
   size_t getNumOutgoingRays() { return rayOutput_.size(); }
 
@@ -96,5 +100,7 @@ class RadiationBand {
   // connection
   MeshBlock *pmy_block_;
 };
+
+using RadiationBandPtr = std::shared_ptr<RadiationBand>;
 
 #endif  // SRC_HARP_RADIATION_BAND_HPP_

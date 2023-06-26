@@ -1,10 +1,22 @@
 // external
 #include <gtest/gtest.h>
 
+// application
+#include <application/application.hpp>
+
+// athena
+#include <athena/mesh/mesh.hpp>
+
+// snap
+#include <snap/meshblock_impl.hpp>
+
+// harp
+#include <harp/absorber.hpp>
+
 // opacity
 #include <opacity/microwave/mwr_absorbers.hpp>
 
-class MicrowaveOpacityCIA : public ::testing::Test {
+class MicrowaveOpacityCIA : public testing::Test {
  protected:
   MwrAbsorberCIA* mwr_cia_;
   /*MwrAbsorberNH3 mwr_nh3_;

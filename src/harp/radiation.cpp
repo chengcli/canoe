@@ -60,17 +60,12 @@ Radiation::Radiation(MeshBlock *pmb, ParameterInput *pin)
   cooldown_ = pin->GetOrAddReal("radiation", "dt", 0.);
   current_ = 0.;
 
-  planet_ = new CelestrialBody(pin);
+  planet_ = std::make_unique<CelestrialBody>(pin);
 }
 
 Radiation::~Radiation() {
   Application::Logger app("harp");
   app->Log("Destroy Radiation");
-
-  for (size_t i = 0; i < bands.size(); ++i) {
-    delete bands[i];
-  }
-  delete planet_;
 }
 
 void Radiation::PopulateRadiationBands(ParameterInput *pin) {
@@ -89,9 +84,9 @@ void Radiation::PopulateRadiationBands(ParameterInput *pin) {
   }
 
   for (auto bname : node["bands"]) {
-    RadiationBand *p =
-        new RadiationBand(pmy_block_, pin, node, bname.as<std::string>());
-    bands.push_back(p);
+    auto p = std::make_unique<RadiationBand>(pmy_block_, pin, node,
+                                             bname.as<std::string>());
+    bands.push_back(std::move(p));
   }
 }
 

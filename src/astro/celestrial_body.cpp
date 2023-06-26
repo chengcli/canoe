@@ -55,10 +55,12 @@ void CelestrialBody::readCelestrialData(ParameterInput *pin,
 
 CelestrialBody::CelestrialBody(ParameterInput *pin)
     : parent(nullptr), spec_(nullptr), il_(-1) {
+  Application::Logger app("astro");
+  app->Log("Initialize CelestrialBody");
+
   std::stringstream msg;
   name = pin->GetOrAddString("astronomy", "planet", "unknown");
   readCelestrialData(pin, name);
-  Application::Logger app("astro");
 
   if (pin->DoesParameterExist("astronomy", name + ".parent")) {
     std::string parent_name = pin->GetString("astronomy", name + ".parent");
@@ -82,9 +84,11 @@ CelestrialBody::CelestrialBody(ParameterInput *pin)
 
 CelestrialBody::CelestrialBody(ParameterInput *pin, std::string myname)
     : parent(nullptr), name(myname), spec_(nullptr), il_(-1) {
+  Application::Logger app("astro");
+  app->Log("Initialize CelestrialBody");
+
   std::stringstream msg;
   readCelestrialData(pin, name);
-  Application::Logger app("astro");
 
   if (pin->DoesParameterExist("astronomy", name + ".parent")) {
     std::string parent_name = pin->GetString("astronomy", name + ".parent");
@@ -107,6 +111,9 @@ CelestrialBody::CelestrialBody(ParameterInput *pin, std::string myname)
 }
 
 CelestrialBody::~CelestrialBody() {
+  Application::Logger app("astro");
+  app->Log("Destroy CelestrialBody");
+
   if (parent != nullptr) delete parent;
   delete[] spec_;
 }
