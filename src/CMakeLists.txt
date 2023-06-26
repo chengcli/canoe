@@ -37,6 +37,7 @@ set(CANOE_LIBRARY_${buildu}
   "outputs_${buildl}"
   "opacity_${buildl}"
   "yaml-cpp"
+  ${NETCDF_LIBRARIES}
   CACHE INTERNAL "canoe library")
 
 set(CANOE_INCLUDE_DIR
