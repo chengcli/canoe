@@ -83,6 +83,7 @@ std::vector<Inversion *> create_inversion_queue(MeshBlock *pmb,
 
   std::vector<Inversion *> fitq;
   Application::Logger app("inversion");
+  app->Log("Create inversion queue");
 
   Inversion *pfit;
   for (auto p : task_names) {
@@ -104,6 +105,8 @@ std::vector<Inversion *> create_inversion_queue(MeshBlock *pmb,
     q->setX2Indices(jl);
     jl += q->getX2Span();
   }
+
+  app->Log("Number of inversions = " + std::to_string(fitq.size()));
 
   return fitq;
 }

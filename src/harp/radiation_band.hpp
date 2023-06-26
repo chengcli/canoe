@@ -35,7 +35,7 @@ class RadiationBand {
   AthenaArray<Real> btau, bssa, bpmom;
 
   // functions
-  RadiationBand(MeshBlock *pmb, ParameterInput *pin, YAML::Node const &node,
+  RadiationBand(MeshBlock *pmb, ParameterInput *pin, YAML::Node &node,
                 std::string name);
 
   ~RadiationBand();
@@ -48,8 +48,7 @@ class RadiationBand {
 
   Real getAzimuthalAngle(int n) const { return rayOutput_[n].phi; }
 
-  void addAbsorber(ParameterInput *pin, std::string bname,
-                   YAML::Node const &node);
+  void AddAbsorber(ParameterInput *pin, std::string bname, YAML::Node &node);
 
   void setSpectralProperties(int k, int j, int il, int iu);
 

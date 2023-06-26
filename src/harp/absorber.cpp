@@ -13,12 +13,12 @@
 
 Absorber::Absorber(std::string name) : name_(name) {
   Application::Logger app("harp");
-  app->Log("Absorber " + name_ + " is created");
+  app->Log("Create Absorber " + name_);
 }
 
 Absorber::~Absorber() {
   Application::Logger app("harp");
-  app->Log("Absorber " + name_ + " is destroyed");
+  app->Log("Destroy Absorber " + name_);
 }
 
 void Absorber::LoadCoefficient(std::string fname, size_t bid) {}

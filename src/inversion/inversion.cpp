@@ -25,8 +25,7 @@ Inversion::Inversion(MeshBlock *pmb, ParameterInput *pin, std::string name)
       init_pos_(nullptr),
       pmy_block_(pmb) {
   Application::Logger app("inversion");
-
-  app->Log("Initializing Inversion");
+  app->Log("Initialize Inversion");
   std::stringstream msg;
 
   opts_.a = pin->GetOrAddReal("inversion", "stretch", 2.);
@@ -77,6 +76,8 @@ void Inversion::InitializeChain(int nstep, int nwalker, int ndim, int nvalue) {
 
 void Inversion::MakeMCMCOutputs(std::string fname) {
   Application::Logger app("inversion");
+  app->Log("Make MCMC Outputs");
+
   std::stringstream msg;
   if (!mcmc_initialized_) {
     app->Error("mcmc chain uninitialized");
@@ -87,6 +88,8 @@ void Inversion::MakeMCMCOutputs(std::string fname) {
 void Inversion::ResetChain() {
   std::stringstream msg;
   Application::Logger app("inversion");
+  app->Log("Reset MCMC Chain");
+
   if (!mcmc_initialized_) {
     app->Error("mcmc chain uninitialized");
   }

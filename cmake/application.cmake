@@ -4,8 +4,10 @@ set(FETCHCONTENT_QUIET FALSE)
 
 FetchContent_Declare(
   application
-  DOWNLOAD_EXTRACT_TIMESTAMP TRUE
-  URL https://github.com/chengcli/application/archive/refs/tags/v0.1.2.tar.gz)
+  GIT_REPOSITORY https://github.com/chengcli/application/
+  GIT_TAG cli/more_log)
+# DOWNLOAD_EXTRACT_TIMESTAMP TRUE URL
+# https://github.com/chengcli/application/archive/refs/tags/v0.1.2.tar.gz)
 
 FetchContent_MakeAvailable(application)
 

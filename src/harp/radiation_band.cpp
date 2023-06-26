@@ -15,6 +15,7 @@
 
 // application
 #include <application/application.hpp>
+#include <application/exceptions.hpp>
 
 // utils
 #include <utils/fileio.hpp>
@@ -28,25 +29,25 @@
 #include "radiation_utils.hpp"  // readRadiationDirections
 
 RadiationBand::RadiationBand(MeshBlock *pmb, ParameterInput *pin,
-                             YAML::Node const &node, std::string name)
-    : name_(name), bflags_(0LL), pmy_block_(pmb) {
+                             YAML::Node &node, std::string myname)
+    : name_(myname), bflags_(0LL), pmy_block_(pmb) {
   Application::Logger app("harp");
   app->Log("Initialize RadiationBand " + name_);
 
-  if (!node[name].IsDefined()) {
-    app->Error("RadiationBand " + name_ + " is not defined");
+  if (!node[name_]) {
+    throw NotFoundError("RadiationBand " + name_);
   }
 
-  auto my = node[name];
+  auto my = node[name_];
 
   // number of Legendre moments
-  int npmom = my["moments"].IsDefined() ? my["moments"].as<int>() : 1;
+  int npmom = my["moments"] ? my["moments"].as<int>() : 1;
 
   // set wavenumber and weights
   wmin_ = my["wavenumber-range"][0].as<Real>();
   wmax_ = my["wavenumber-range"][1].as<Real>();
   if (wmin_ >= wmax_) {
-    app->Error("wavenumber range is not valid " + std::to_string(wmin_) + " " +
+    app->Error("Wavenumber range is not valid " + std::to_string(wmin_) + " " +
                std::to_string(wmax_));
   }
 
@@ -56,7 +57,7 @@ RadiationBand::RadiationBand(MeshBlock *pmb, ParameterInput *pin,
     spec_.resize(num_bins);
     spec_[0].wav1 = spec_[0].wav2 = wmin_;
     spec_[0].wght = 1.;
-  } else if (my["resolution"].IsDefined()) {
+  } else if (my["resolution"]) {
     Real dwave = my["resolution"].as<Real>();
     num_bins = static_cast<int>((wmax_ - wmin_) / dwave) + 1;
     spec_.resize(num_bins);
@@ -64,7 +65,7 @@ RadiationBand::RadiationBand(MeshBlock *pmb, ParameterInput *pin,
       spec_[i].wav1 = spec_[i].wav2 = wmin_ + dwave * i;
       spec_[i].wght = (i == 0) || (i == num_bins - 1) ? 0.5 * dwave : dwave;
     }
-  } else if (my["num-bins"].IsDefined()) {
+  } else if (my["num-bins"]) {
     Real dwave = static_cast<Real>(1. * (wmax_ - wmin_) / num_bins);
     num_bins = my["num-bins"].as<int>();
     spec_.resize(num_bins);
@@ -73,7 +74,7 @@ RadiationBand::RadiationBand(MeshBlock *pmb, ParameterInput *pin,
       spec_[i].wav2 = spec_[i].wav1 + dwave;
       spec_[i].wght = 1.;
     }
-  } else if (my["gpoints"].IsDefined()) {
+  } else if (my["gpoints"]) {
     num_bins = my["gpoints"].size();
     spec_.resize(num_bins);
     for (int i = 0; i < num_bins; ++i) {
@@ -82,7 +83,7 @@ RadiationBand::RadiationBand(MeshBlock *pmb, ParameterInput *pin,
       spec_[i].wght = my["gpoints"][i].as<Real>();
     }
   } else {
-    app->Error(
+    throw NotFoundError(
         "either 'resolution' or 'num-bins' or 'gpoints' must be defined");
   }
 
@@ -122,23 +123,23 @@ RadiationBand::RadiationBand(MeshBlock *pmb, ParameterInput *pin,
   bpmom.NewAthenaArray(npmom + 1, ncells3, ncells2, ncells1);
 
   // add absorbers
-  if (my["opacity"].IsDefined()) {
+  if (my["opacity"]) {
     for (auto aname : my["opacity"]) {
       bool found = false;
       for (auto absorber : node["opacity-sources"]) {
         if (aname.as<std::string>() == absorber["name"].as<std::string>()) {
-          addAbsorber(pin, name_, absorber);
+          AddAbsorber(pin, name_, absorber);
           found = true;
           break;
         }
       }
 
       if (!found) {
-        app->Error("Opacity " + aname.as<std::string>() + " is not defined");
+        throw NotFoundError("Opacity " + aname.as<std::string>());
       }
     }
   } else {
-    app->Error("Band " + name + " opacity is not defined");
+    throw NotFoundError("Band " + name_ + " opacity");
   }
 
   // set band parameters
@@ -150,8 +151,8 @@ RadiationBand::RadiationBand(MeshBlock *pmb, ParameterInput *pin,
 
   char buf[80];
   snprintf(buf, sizeof(buf), "%.2f - %.2f", wmin_, wmax_);
-  app->Log("spectral range = " + std::string(buf));
-  app->Log("number of spectral bins = " + std::to_string(num_bins));
+  app->Log("Spectral range = " + std::string(buf));
+  app->Log("Number of spectral bins = " + std::to_string(num_bins));
 }
 
 RadiationBand::~RadiationBand() {
@@ -212,8 +213,12 @@ void RadiationBand::writeBinRadiance(OutputParameters const *pout) const {
 
 // overide in the pgen file
 void __attribute__((weak))
-RadiationBand::addAbsorber(ParameterInput *pin, std::string bname,
-                           YAML::Node const &node) {}
+RadiationBand::AddAbsorber(ParameterInput *pin, std::string bname,
+                           YAML::Node &node) {
+  std::string aname = node["name"].as<std::string>();
+  Application::Logger app("harp");
+  app->Log("Add absorber " + aname + " in band " + bname);
+}
 
 // overide in rtsolver folder
 void __attribute__((weak))

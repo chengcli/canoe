@@ -9,8 +9,37 @@ opacity-sources:
     mixing-ratio: [0.2]
     variable-category: hydro
 
+  - name: H2-He-CIA
+    long-name: "Hydrogen-Helium collisional absorption"
+    model: xiz
+    type: lbl
+    dependent-variable-id: [0]
+    mixing-ratio: [0.2]
+    variable-category: hydro
+
   - name: CH4
     long-name: "Methane line absorption"
+    model: Voigt
+    type: lbl
+    data: 'kcoeff.<min>-<max>-<res>.nc'
+    variable-category: scalar
+
+  - name: C2H2
+    long-name: "Acetylene line absorption"
+    model: Voigt
+    type: lbl
+    data: 'kcoeff.<min>-<max>-<res>.nc'
+    variable-category: scalar
+
+  - name: C2H4
+    long-name: "Ethylene line absorption"
+    model: Voigt
+    type: lbl
+    data: 'kcoeff.<min>-<max>-<res>.nc'
+    variable-category: scalar
+
+  - name: C2H6
+    long-name: "Ethane line absorption"
     model: Voigt
     type: lbl
     data: 'kcoeff.<min>-<max>-<res>.nc'

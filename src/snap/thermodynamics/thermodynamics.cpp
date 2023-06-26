@@ -6,11 +6,15 @@
 #include <string>
 #include <vector>  // fill
 
-// athena header
+// athena
 #include <athena/hydro/hydro.hpp>
 #include <athena/mesh/mesh.hpp>
 #include <athena/parameter_input.hpp>
 
+// application
+#include <application/application.hpp>
+
+// snap
 #include "thermodynamics.hpp"
 
 Real const Thermodynamics::Rgas = 8.314462;
@@ -72,8 +76,11 @@ void ReadThermoProperty(Real var[], char const name[], int len, Real v0,
   }
 }
 
-Thermodynamics::Thermodynamics(MeshBlock* pmb, ParameterInput* pin) {
-  pmy_block = pmb;
+Thermodynamics::Thermodynamics(MeshBlock* pmb, ParameterInput* pin)
+    : pmy_block(pmb) {
+  Application::Logger app("snap");
+  app->Log("Initialize Thermodynamics");
+
   Rd_ = pin->GetOrAddReal("thermodynamics", "Rd", 1.);
 
   Real gamma = pin->GetReal("hydro", "gamma");
@@ -116,6 +123,11 @@ Thermodynamics::Thermodynamics(MeshBlock* pmb, ParameterInput* pin) {
 
   ftol_ = pin->GetOrAddReal("thermodynamics", "ftol", 1.0E-4);
   max_iter_ = pin->GetOrAddInteger("thermodynamics", "max_iter", 10);
+}
+
+Thermodynamics::~Thermodynamics() {
+  Application::Logger app("snap");
+  app->Log("Destroy Thermodynamics");
 }
 
 /*void Thermodynamics::UpdateTPConservingU(Real q[], Real rho, Real uhat) const

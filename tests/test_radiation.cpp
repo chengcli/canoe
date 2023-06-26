@@ -67,6 +67,8 @@ int main(int argc, char **argv) {
   app->InstallMonitor("snap", "main.out", "main.err");
   app->InstallMonitor("harp", "main.out", "main.err");
 
+  Application::Start();
+
   int result = RUN_ALL_TESTS();
 
   Application::Destroy();

@@ -17,6 +17,7 @@
 
 // application
 #include <application/application.hpp>
+#include <application/exceptions.hpp>
 
 // harp
 #include "radiation.hpp"
@@ -39,7 +40,7 @@ Radiation::Radiation(MeshBlock *pmb, ParameterInput *pin)
 
   // distance to parent star
   stellarDistance_au_ = pin->GetOrAddReal("radiation", "distance_au", 1.);
-  app->Log("stellar distance = " + std::to_string(stellarDistance_au_) + " au");
+  app->Log("Stellar distance = " + std::to_string(stellarDistance_au_) + " au");
 
   // radiation bands
   if (pin->DoesParameterExist("radiation", "bandsfile"))
@@ -74,6 +75,7 @@ Radiation::~Radiation() {
 
 void Radiation::PopulateRadiationBands(ParameterInput *pin) {
   Application::Logger app("harp");
+  app->Log("Populate Radiation bands");
 
   std::string filename = pin->GetString("radiation", "bandsfile");
   std::ifstream stream(filename);
@@ -82,8 +84,8 @@ void Radiation::PopulateRadiationBands(ParameterInput *pin) {
   }
   YAML::Node node = YAML::Load(stream);
 
-  if (!node["opacity-sources"].IsDefined()) {
-    app->Error("opacity-sources are not defined");
+  if (!node["opacity-sources"]) {
+    throw NotFoundError("opacity-sources");
   }
 
   for (auto bname : node["bands"]) {
