@@ -2,7 +2,7 @@ set(namel opacity)
 string(TOUPPER ${namel} nameu)
 
 file(GLOB src_files
-    microwave/*.cpp
+    Giants/microwave/*.cpp
     )
 
 string(TOLOWER ${CMAKE_BUILD_TYPE} buildl)

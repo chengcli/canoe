@@ -1,6 +1,9 @@
 #ifndef CONFIGURE_HPP
 #define CONFIGURE_HPP
 
+// C/C++
+#include <string>
+
 enum {
   NCLOUDS = @NCLOUDS@
 };
@@ -11,6 +14,8 @@ enum {
 };
 
 enum class VariableType {prim, cons, chem};
+
+#define PLANET  "@PLANET@"
 
 // NetCDF output (NETCDFOUTPUT or NO_NETCDFOUTPUT)
 #define @NETCDF_OPTION@

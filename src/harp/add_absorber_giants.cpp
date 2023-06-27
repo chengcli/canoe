@@ -10,7 +10,7 @@
 #include <application/exceptions.hpp>
 
 // opacity
-#include <opacity/microwave/mwr_absorbers.hpp>
+#include <opacity/Giants/microwave/mwr_absorbers.hpp>
 
 // utils
 #include <utils/parameter_map.hpp>
@@ -19,45 +19,47 @@
 #include "absorber.hpp"
 #include "radiation_band.hpp"
 
-void RadiationBand::AddAbsorber(ParameterInput *pin, std::string bname,
-                                YAML::Node &node) {
+namespace gp = GiantPlanets;
+
+void RadiationBand::addAbsorberGiants(ParameterInput *pin, std::string bname,
+                                      YAML::Node &node) {
   std::string aname = node["name"].as<std::string>();
 
   if (bname == "radio") {
     if (aname == "NH3" || aname == "radio-NH3") {
       auto species = node["dependent-species"].as<std::vector<std::string>>();
-      auto ab = std::make_unique<MwrAbsorberNH3>(
+      auto ab = std::make_unique<gp::MwrAbsorberNH3>(
           pmy_block_, species, ToParameterMap(node["parameters"]));
       ab->SetModel(node["model"].as<std::string>());
 
       absorbers.push_back(std::move(ab));
     } else if (aname == "H2O" || aname == "radio-H2O") {
       auto species = node["dependent-species"].as<std::vector<std::string>>();
-      auto ab = std::make_unique<MwrAbsorberH2O>(
+      auto ab = std::make_unique<gp::MwrAbsorberH2O>(
           pmy_block_, species, ToParameterMap(node["parameters"]));
 
       absorbers.push_back(std::move(ab));
     } else if (aname == "H2S" || aname == "radio-H2S") {
       auto species = node["dependent-species"].as<std::vector<std::string>>();
-      auto ab = std::make_unique<MwrAbsorberH2S>(
+      auto ab = std::make_unique<gp::MwrAbsorberH2S>(
           pmy_block_, species, ToParameterMap(node["parameters"]));
 
       absorbers.push_back(std::move(ab));
     } else if (aname == "PH3" || aname == "radio-PH3") {
       auto species = node["dependent-species"].as<std::vector<std::string>>();
-      auto ab = std::make_unique<MwrAbsorberPH3>(
+      auto ab = std::make_unique<gp::MwrAbsorberPH3>(
           pmy_block_, species, ToParameterMap(node["parameters"]));
 
       absorbers.push_back(std::move(ab));
     } else if (aname == "CIA" || aname == "radio-CIA") {
       auto species = node["dependent-species"].as<std::vector<std::string>>();
-      auto ab = std::make_unique<MwrAbsorberCIA>(
+      auto ab = std::make_unique<gp::MwrAbsorberCIA>(
           pmy_block_, species, ToParameterMap(node["parameters"]));
 
       absorbers.push_back(std::move(ab));
     } else if (aname == "Electron" || aname == "radio-Electron") {
       auto species = node["dependent-species"].as<std::vector<std::string>>();
-      auto ab = std::make_unique<MwrAbsorberElectron>(
+      auto ab = std::make_unique<gp::MwrAbsorberElectron>(
           pmy_block_, species, ToParameterMap(node["parameters"]));
 
       absorbers.push_back(std::move(ab));

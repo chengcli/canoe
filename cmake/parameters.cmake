@@ -16,6 +16,8 @@ set_if_empty(WATER_VAPOR_ID -1)
 
 set_if_empty(EQUATION_OF_STATE "ideal_moist")
 
+set_if_empty(PLANET "Jupiter")
+
 if(NOT NETCDF OR NOT DEFINED NETCDF)
   set(NETCDF_OPTION "NO_NETCDFOUTPUT")
 else()

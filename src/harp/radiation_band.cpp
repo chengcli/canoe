@@ -10,6 +10,9 @@
 #include <athena/parameter_input.hpp>
 #include <athena/utils/utils.hpp>
 
+// canoe
+#include <configure.hpp>
+
 // climath
 #include <climath/core.h>
 
@@ -204,6 +207,23 @@ void RadiationBand::writeBinRadiance(OutputParameters const *pout) const {
   }
 
   fclose(pfile);
+}
+
+void RadiationBand::AddAbsorber(ParameterInput *pin, std::string bname,
+                                YAML::Node &node) {
+  if (PLANET == "Jupiter" || PLANET == "Saturn") {
+    addAbsorberGiants(pin, bname, node);
+  } else if (PLANET == "Uranus" || PLANET == "Neptune") {
+    addAbsorberGiants(pin, bname, node);
+  } else if (PLANET == "Earth") {
+    addAbsorberEarth(pin, bname, node);
+  } else if (PLANET == "Mars") {
+    addAbsorberMars(pin, bname, node);
+  } else if (PLANET == "Venus") {
+    addAbsorberVenus(pin, bname, node);
+  } else {
+    throw NotFoundError(PLANET);
+  }
 }
 
 // overide in rtsolver folder

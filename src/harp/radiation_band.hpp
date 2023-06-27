@@ -75,6 +75,15 @@ class RadiationBand {
   std::shared_ptr<Impl> pimpl;
 
  protected:
+  void addAbsorberGiants(ParameterInput *pin, std::string bname,
+                         YAML::Node &node);
+  void addAbsorberEarth(ParameterInput *pin, std::string bname,
+                        YAML::Node &node);
+  void addAbsorberVenus(ParameterInput *pin, std::string bname,
+                        YAML::Node &node);
+  void addAbsorberMars(ParameterInput *pin, std::string bname,
+                       YAML::Node &node);
+
   // data
   std::string name_;
   uint64_t bflags_;
