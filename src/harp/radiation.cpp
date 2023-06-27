@@ -114,7 +114,7 @@ void Radiation::calculateRadiativeFlux(AthenaArray<Real> *flxup,
     bflxup.InitWithShallowSlice(*flxup, 3, idx, p->getNumOutgoingRays());
     bflxdn.InitWithShallowSlice(*flxdn, 3, idx, p->getNumOutgoingRays());
 
-    p->setSpectralProperties(k, j, il - NGHOST, iu + NGHOST - 1);
+    p->SetSpectralProperties(k, j, il - NGHOST, iu + NGHOST - 1);
     p->calculateBandFlux(&bflxup, &bflxdn, ray, dist, k, j, il, iu);
     idx++;
   }
@@ -142,7 +142,7 @@ void Radiation::calculateRadiance(AthenaArray<Real> *radiance, Real time, int k,
     AthenaArray<Real> brad;
     brad.InitWithShallowSlice(*radiance, 3, idx, p->getNumOutgoingRays());
 
-    p->setSpectralProperties(k, j, il - NGHOST, iu + NGHOST - 1);
+    p->SetSpectralProperties(k, j, il - NGHOST, iu + NGHOST - 1);
     p->calculateBandRadiance(&brad, ray, dist, k, j, il, iu);
     idx += p->getNumOutgoingRays();
   }

@@ -1,26 +1,12 @@
-// C/C++
-#include <stdexcept>
-
-// Canoe
+// canoe
 #include <configure.hpp>
-
-// athena
-#include <athena/mesh/mesh.hpp>
-#include <athena/parameter_input.hpp>
 
 // snap
 #include <snap/cell_variables.hpp>
 
+// opacity
 #include "mwr_absorbers.hpp"
 #include "absorption_functions.hpp"
-
-MwrAbsorberElectron::MwrAbsorberElectron(
-  MeshBlock *pmb, ParameterInput *pin, int ion):
-    Absorber("mw_electron")
-{
-  imols_ = {ion};
-  mixrs_ = {1.};
-}
 
 Real MwrAbsorberElectron::GetAttenuation(Real wave1, Real wave2,
     CellVariables const& var) const
@@ -29,13 +15,15 @@ Real MwrAbsorberElectron::GetAttenuation(Real wave1, Real wave2,
   Real T = var.w[IDN];
 
   Real abs;
+  Real wave = (wave1 + wave2)/2.;
 
-  if (model_name_ == "Reference")
-    abs = attenuation_freefree_Reference(wave1, P, T);
-  else if (model_name_ == "ChengLi")
-    abs = attenuation_freefree_Chengli(wave1, P, T);
-  else // AppletonHartree
-    abs = attenuation_appleton_hartree_nomag(wave1, P, T, var.s[imols_[0]]);
+  if (model_name_ == "Reference") {
+    abs = attenuation_freefree_Reference(wave, P, T);
+  } else if (model_name_ == "ChengLi") {
+    abs = attenuation_freefree_Chengli(wave, P, T);
+  } else { // AppletonHartree
+    abs = attenuation_appleton_hartree_nomag(wave, P, T, var.s[imols_[0]]);
+  }
 
   return 100.*abs;  // 1/cm -> 1/m
 }

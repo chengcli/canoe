@@ -59,11 +59,9 @@ std::ostream &operator<<(std::ostream &os, HitranAbsorber const &ab) {
 }
 
 HitranAbsorber::HitranAbsorber(MeshBlock *pmb, ParameterInput *pin,
-                               std::string bname, std::string name, int imol,
-                               Real mixr = 1.)
+                               std::string bname, std::string name, int imol)
     : Absorber(name) {
   imols_ = {imol};
-  mixrs_ = {mixr};
 }
 
 Real HitranAbsorber::RefTemp_(Real pres) const {
@@ -147,5 +145,5 @@ Real HitranAbsorber::GetAttenuation(Real wave1, Real wave2,
   } else {
     x0 = var.q[imols_[0]];
   }
-  return 1.E-3 * exp(val) * dens * x0 * mixrs_[0];  // ln(m*2/kmol) -> 1/m
+  return 1.E-3 * exp(val) * dens * x0;  // ln(m*2/kmol) -> 1/m
 }

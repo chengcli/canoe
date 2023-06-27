@@ -4,6 +4,7 @@
 
 // snap
 #include <snap/cell_variables.hpp>
+#include <snap/meshblock_impl.hpp>
 
 // application
 #include <application/application.hpp>
@@ -14,6 +15,20 @@
 Absorber::Absorber(std::string name) : name_(name) {
   Application::Logger app("harp");
   app->Log("Create Absorber " + name_);
+}
+
+Absorber::Absorber(MeshBlock* pmb, std::string name,
+                   std::vector<std::string> species,
+                   std::map<std::string, Real> params)
+    : name_(name), params_(params) {
+  Application::Logger app("harp");
+  app->Log("Create Absorber " + name_);
+
+  for (auto s : species) {
+    imols_.push_back(pmb->pimpl->GetSpeciesId(s));
+  }
+
+  app->Log("Dependent species ids = ", imols_);
 }
 
 Absorber::~Absorber() {

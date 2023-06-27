@@ -54,7 +54,7 @@ class RadiationBand {
 
   void AddAbsorber(ParameterInput *pin, std::string bname, YAML::Node &node);
 
-  void setSpectralProperties(int k, int j, int il, int iu);
+  void SetSpectralProperties(int k, int j, int il, int iu);
 
   void calculateBandFlux(AthenaArray<Real> *flxup, AthenaArray<Real> *flxdn,
                          Direction const &rayInput, Real dist_au, int k, int j,
@@ -95,7 +95,7 @@ class RadiationBand {
   AthenaArray<Real> tem_, temf_;
 
   Real alpha_;  // T ~ Ts*(\tau/\tau_s)^\alpha at lower boundary
-  std::map<std::string, Real> params_;
+  ParameterMap params_;
 
   // connection
   MeshBlock *pmy_block_;

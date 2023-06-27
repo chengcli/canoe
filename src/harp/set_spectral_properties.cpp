@@ -21,7 +21,7 @@
 // #include "../particles/particles.hpp"
 
 // setting optical properties
-void RadiationBand::setSpectralProperties(int k, int j, int il, int iu) {
+void RadiationBand::SetSpectralProperties(int k, int j, int il, int iu) {
   int nspec = spec_.size();
   int npmom = bpmom.GetDim4() - 1;
 

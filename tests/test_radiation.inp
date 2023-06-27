@@ -27,6 +27,10 @@ PressureScaleHeight = 30.E5
 <hydro>
 gamma       = 1.4
 
+<species>
+vapor = H2O, NH3
+tracer = elec
+
 <radiation>
 bandsfile = example_bands.yaml
 

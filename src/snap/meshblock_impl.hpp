@@ -41,15 +41,20 @@ class MeshBlock::Impl {
   Real GetReferencePressure() const { return reference_pressure_; }
   Real GetPressureScaleHeight() const { return pressure_scale_height_; }
 
-  size_t GetVaporIndex(std::string name) const {
+  size_t GetVaporId(std::string name) const {
     return vapor_index_map_.at(name);
   }
-  size_t GetTracerIndex(std::string name) const {
+  size_t GetTracerId(std::string name) const {
     return tracer_index_map_.at(name);
   }
-  size_t GetCloudIndex(std::string name) const {
+  size_t GetCloudId(std::string name) const {
     return cloud_index_map_.at(name);
   }
+  size_t GetChemistryId(std::string name) const {
+    return chemistry_index_map_.at(name);
+  }
+
+  size_t GetSpeciesId(std::string category_name) const;
 
  private:
   MeshBlock *pmy_block_;
@@ -57,6 +62,9 @@ class MeshBlock::Impl {
   std::map<std::string, size_t> vapor_index_map_;
   std::map<std::string, size_t> tracer_index_map_;
   std::map<std::string, size_t> cloud_index_map_;
+  std::map<std::string, size_t> chemistry_index_map_;
+  std::map<std::string, size_t> particle_index_map_;
+  std::map<std::string, size_t> static_index_map_;
 
   Real reference_pressure_;
   Real pressure_scale_height_;

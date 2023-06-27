@@ -15,6 +15,7 @@
 #define SRC_HARP_ABSORBER_HPP_
 
 // C/C++
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -23,12 +24,20 @@
 #include <athena/athena.hpp>
 
 class CellVariables;
+class MeshBlock;
+
+using ParameterMap = std::map<std::string, Real>;
 
 class Absorber {
  public:
   Absorber(std::string name);
 
+  Absorber(MeshBlock* pmb, std::string name, std::vector<std::string> species,
+           ParameterMap params);
+
   std::string GetName() const { return name_; }
+
+  void SetModel(std::string name) { model_name_ = name; }
 
   virtual ~Absorber();
 
@@ -44,14 +53,17 @@ class Absorber {
                                 CellVariables const& var, int np) const;
 
  protected:
-  // data
+  //! absorber name
   std::string name_;
+
+  //! absorption model model
+  std::string model_name_;
 
   //! id of dependent molecules
   std::vector<int> imols_;
 
-  //! mixr of dependent molecules
-  std::vector<Real> mixrs_;
+  //! parameters
+  ParameterMap params_;
 };
 
 using AbsorberPtr = std::unique_ptr<Absorber>;

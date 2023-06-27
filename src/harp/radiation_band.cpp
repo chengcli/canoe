@@ -20,6 +20,7 @@
 // utils
 #include <utils/fileio.hpp>
 #include <utils/ndarrays.hpp>
+#include <utils/parameter_map.hpp>
 #include <utils/vectorize.hpp>
 
 // harp
@@ -30,7 +31,10 @@
 
 RadiationBand::RadiationBand(MeshBlock *pmb, ParameterInput *pin,
                              YAML::Node &node, std::string myname)
-    : name_(myname), bflags_(0LL), pmy_block_(pmb) {
+    : name_(myname),
+      bflags_(0LL),
+      pmy_block_(pmb),
+      params_(ToParameterMap(node["parameters"])) {
   Application::Logger app("harp");
   app->Log("Initialize RadiationBand " + name_);
 
@@ -142,13 +146,6 @@ RadiationBand::RadiationBand(MeshBlock *pmb, ParameterInput *pin,
     throw NotFoundError("Band " + name_ + " opacity");
   }
 
-  // set band parameters
-  for (auto const &entry : my["parameters"]) {
-    std::string key = entry.first.as<std::string>();
-    double value = entry.second.as<double>();
-    params_[key] = value;
-  }
-
   char buf[80];
   snprintf(buf, sizeof(buf), "%.2f - %.2f", wmin_, wmax_);
   app->Log("Spectral range = " + std::string(buf));
@@ -207,16 +204,6 @@ void RadiationBand::writeBinRadiance(OutputParameters const *pout) const {
   }
 
   fclose(pfile);
-}
-
-// overide in the pgen file
-void __attribute__((weak))
-RadiationBand::AddAbsorber(ParameterInput *pin, std::string bname,
-                           YAML::Node &node) {
-  std::string aname = node["name"].as<std::string>();
-
-  auto ab = std::make_unique<Absorber>(aname);
-  absorbers.push_back(std::move(ab));
 }
 
 // overide in rtsolver folder
