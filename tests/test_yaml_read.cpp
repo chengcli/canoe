@@ -1,12 +1,14 @@
-#include <gtest/gtest.h>
-#include <yaml-cpp/yaml.h>
-
+// C/C++
 #include <fstream>
 #include <vector>
 
+// external
+#include <gtest/gtest.h>
+#include <yaml-cpp/yaml.h>
+
 class YamlReadTests : public ::testing::Test {
  protected:
-  std::string filename = "example_opacity.yaml";  // The name of your YAML file
+  std::string filename = "example_bands.yaml";  // The name of your YAML file
   YAML::Node node;
 
   virtual void SetUp() {
@@ -20,14 +22,14 @@ class YamlReadTests : public ::testing::Test {
   }
 };
 
-TEST_F(YamlReadTests, OpacitySouce) {
+TEST_F(YamlReadTests, OpacitySource) {
   // Checking 'opacity-source'
-  ASSERT_TRUE(node["opacity-source"])
-      << "'opacity-source' not found in YAML file";
+  ASSERT_TRUE(node["opacity-sources"])
+      << "'opacity-sources' not found in YAML file";
 
-  auto sources = node["opacity-source"].as<std::vector<YAML::Node>>();
-  ASSERT_EQ(2, sources.size())
-      << "Unexpected number of sources in 'opacity-source'";
+  auto sources = node["opacity-sources"].as<std::vector<YAML::Node>>();
+  ASSERT_EQ(9, sources.size())
+      << "Unexpected number of sources in 'opacity-sources'";
 
   // Check first source
   EXPECT_EQ("H2-H2-CIA", sources[0]["name"].as<std::string>());
@@ -35,21 +37,15 @@ TEST_F(YamlReadTests, OpacitySouce) {
             sources[0]["long-name"].as<std::string>());
   EXPECT_EQ("xiz", sources[0]["model"].as<std::string>());
   EXPECT_EQ("lbl", sources[0]["type"].as<std::string>());
-  EXPECT_EQ(std::vector<int>{0},
-            sources[0]["dependent-variable-id"].as<std::vector<int>>());
-  EXPECT_EQ(std::vector<double>{0.2},
-            sources[0]["mixing-ratio"].as<std::vector<double>>());
-  EXPECT_EQ("hydro", sources[0]["variable-category"].as<std::string>());
 
-  // Check second source
-  EXPECT_EQ("CH4", sources[1]["name"].as<std::string>());
+  // Check third source
+  EXPECT_EQ("CH4", sources[2]["name"].as<std::string>());
   EXPECT_EQ("Methane line absorption",
-            sources[1]["long-name"].as<std::string>());
-  EXPECT_EQ("Voigt", sources[1]["model"].as<std::string>());
-  EXPECT_EQ("lbl", sources[1]["type"].as<std::string>());
+            sources[2]["long-name"].as<std::string>());
+  EXPECT_EQ("Voigt", sources[2]["model"].as<std::string>());
+  EXPECT_EQ("lbl", sources[2]["type"].as<std::string>());
   EXPECT_EQ("kcoeff.<min>-<max>-<res>.nc",
-            sources[1]["data"].as<std::string>());
-  EXPECT_EQ("scalar", sources[1]["variable-category"].as<std::string>());
+            sources[2]["data"].as<std::string>());
 }
 
 TEST_F(YamlReadTests, BandsList) {

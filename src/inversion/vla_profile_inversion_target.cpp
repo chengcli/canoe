@@ -10,25 +10,31 @@
 #include <iomanip>
 #include <iostream>
 
-// Athena++ headers
+// climath
 #include <climath/interpolation.h>
 #include <climath/linalg.h>
 
+// athena
 #include <athena/athena.hpp>
 #include <athena/mesh/mesh.hpp>
-#include <debugger/debugger.hpp>
+
+// inversion
+#include <application/application.hpp>
+
+// harp
 #include <harp/radiation.hpp>
 #include <harp/radiation_band.hpp>
 
+// inversion
 #include "profile_inversion.hpp"
-
-extern std::unique_ptr<Debugger> pdebug;
 
 void VLAProfileInversion::CalculateFitTarget(Radiation const *prad, Real *val,
                                              int nvalue, int k, int j) const {
   std::stringstream msg;
-  pdebug->Call("VLAProfileInversion::CalculateFitTarget");
-  pdebug->Message("model", j);
+  Application::Logger app("inversion");
+
+  app->Log("VLAProfileInversion::CalculateFitTarget");
+  app->Log("model = " + std::to_string(j));
 
   // 11. log likelihood
   std::vector<Real> mus, tbs;
@@ -55,7 +61,5 @@ void VLAProfileInversion::CalculateFitTarget(Radiation const *prad, Real *val,
     if (b >= nvalue) break;
   }
 
-  pdebug->Message("foward model results", val, nvalue);
-
-  pdebug->Leave();
+  // app->Log("foward model results", val, nvalue);
 }

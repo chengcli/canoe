@@ -23,8 +23,8 @@ extern "C" {
 #include <athena/athena.hpp>
 
 // snap
-#include <snap/cell_variables.hpp>
 #include <snap/constants.hpp>
+#include <snap/variable.hpp>
 
 // harp
 #include "hitran_absorber.hpp"
@@ -59,11 +59,9 @@ std::ostream &operator<<(std::ostream &os, HitranAbsorber const &ab) {
 }
 
 HitranAbsorber::HitranAbsorber(MeshBlock *pmb, ParameterInput *pin,
-                               std::string bname, std::string name, int imol,
-                               Real mixr = 1.)
-    : Absorber(pmb, pin, bname, name) {
+                               std::string bname, std::string name, int imol)
+    : Absorber(name) {
   imols_ = {imol};
-  mixrs_ = {mixr};
 }
 
 Real HitranAbsorber::RefTemp_(Real pres) const {
@@ -90,7 +88,7 @@ Real HitranAbsorber::RefTemp_(Real pres) const {
   return result;
 }
 
-void HitranAbsorber::loadCoefficient(std::string fname, int bid) {
+void HitranAbsorber::LoadCoefficient(std::string fname, int bid) {
 #ifdef NETCDFOUTPUT
   int fileid, dimid, varid, err;
   char tname[80];
@@ -134,8 +132,8 @@ void HitranAbsorber::loadCoefficient(std::string fname, int bid) {
 #endif
 }
 
-Real HitranAbsorber::getAttenuation(Real wave1, Real wave2,
-                                    CellVariables const &var) const {
+Real HitranAbsorber::GetAttenuation(Real wave1, Real wave2,
+                                    Variable const &var) const {
   // first axis is wavenumber, second is pressure, third is temperature anomaly
   Real val, coord[3] = {wave1, var.q[IPR], var.q[IDN] - RefTemp_(var.q[IPR])};
   interpn(&val, coord, kcoeff_.data(), axis_.data(), len_, 3, 1);
@@ -147,5 +145,5 @@ Real HitranAbsorber::getAttenuation(Real wave1, Real wave2,
   } else {
     x0 = var.q[imols_[0]];
   }
-  return 1.E-3 * exp(val) * dens * x0 * mixrs_[0];  // ln(m*2/kmol) -> 1/m
+  return 1.E-3 * exp(val) * dens * x0;  // ln(m*2/kmol) -> 1/m
 }

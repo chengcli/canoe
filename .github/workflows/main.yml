@@ -6,6 +6,7 @@ on:
   pull_request:
     branches:
       - main
+    types: [opened, synchronize, reopened, ready_for_review]
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Release
@@ -13,6 +14,7 @@ env:
 
 jobs:
   style-checker:
+    if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     steps:
       - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
@@ -32,6 +34,7 @@ jobs:
     # The CMake configure and build commands are platform agnostic and should work equally well on Windows or Mac.
     # You can convert this to a matrix build if you need cross-platform coverage.
     # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
+    if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     needs: style-checker
 
@@ -54,6 +57,7 @@ jobs:
         run: ctest -C ${{env.BUILD_TYPE}}
 
   build-hydrostatic:
+    if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     needs: style-checker
     steps:
@@ -81,6 +85,7 @@ jobs:
         run: ctest -C ${{env.BUILD_TYPE}}
 
   generate-ktable-with-netcdf:
+    if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     needs: style-checker
 

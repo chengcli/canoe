@@ -14,10 +14,10 @@ class HitranAbsorber : public Absorber {
   //   int const *ck_axis, Real const *ck_wave, int nbins);
  public:
   HitranAbsorber(MeshBlock* pmb, ParameterInput* pin, std::string bname,
-                 std::string name, int imol, Real mixr);
+                 std::string name, int imol);
   virtual ~HitranAbsorber() {}
-  void loadCoefficient(std::string fname, int bid);
-  Real getAttenuation(Real wave1, Real wave2, CellVariables const& var) const;
+  void LoadCoefficient(std::string fname, int bid);
+  Real GetAttenuation(Real wave1, Real wave2, Variable const& var) const;
 
  protected:
   size_t len_[3];            /**< length of interpolation axis */

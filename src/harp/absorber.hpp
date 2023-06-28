@@ -15,55 +15,57 @@
 #define SRC_HARP_ABSORBER_HPP_
 
 // C/C++
+#include <map>
+#include <memory>
 #include <string>
 #include <vector>
-
-// canoe
-#include <configure.hpp>
 
 // athena
 #include <athena/athena.hpp>
 
+class Variable;
 class MeshBlock;
-class ParameterInput;
-class Thermodynamics;
-class CellVariables;
+
+using ParameterMap = std::map<std::string, Real>;
 
 class Absorber {
  public:
-  Absorber(MeshBlock* pmb, ParameterInput* pin, std::string bname,
-           std::string name);
+  Absorber(std::string name);
+
+  Absorber(MeshBlock* pmb, std::string name, std::vector<std::string> species,
+           ParameterMap params);
+
+  std::string GetName() const { return name_; }
+
+  void SetModel(std::string name) { model_name_ = name; }
 
   virtual ~Absorber();
 
-  virtual void loadCoefficient(std::string fname, size_t bid);
+  virtual void LoadCoefficient(std::string fname, size_t bid);
 
-  virtual Real getAttenuation(Real wave1, Real wave2,
-                              CellVariables const& var) const;
+  virtual Real GetAttenuation(Real wave1, Real wave2,
+                              Variable const& var) const;
 
-  virtual Real getSingleScatteringAlbedo(Real wave1, Real wave2,
-                                         CellVariables const& var) const;
+  virtual Real GetSingleScatteringAlbedo(Real wave1, Real wave2,
+                                         Variable const& var) const;
 
-  virtual void getPhaseMomentum(Real* pp, Real wave1, Real wave2,
-                                CellVariables const& var, int np) const;
-
-  Absorber* use(Thermodynamics const* p) {
-    pthermo_ = p;
-    return this;
-  }
+  virtual void GetPhaseMomentum(Real* pp, Real wave1, Real wave2,
+                                Variable const& var, int np) const;
 
  protected:
-  // data
+  //! absorber name
   std::string name_;
 
-  /**< id of dependent molecules */
+  //! absorption model model
+  std::string model_name_;
+
+  //! id of dependent molecules
   std::vector<int> imols_;
 
-  /**< mixr of dependent molecules */
-  std::vector<Real> mixrs_;
-
-  // connections
-  Thermodynamics const* pthermo_;
+  //! parameters
+  ParameterMap params_;
 };
+
+using AbsorberPtr = std::unique_ptr<Absorber>;
 
 #endif  // SRC_HARP_ABSORBER_HPP_

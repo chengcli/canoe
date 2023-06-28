@@ -9,10 +9,10 @@
 #include <athena/stride_iterator.hpp>
 
 // snap
-#include <snap/cell_variables.hpp>
 #include <snap/meshblock_impl.hpp>
 #include <snap/reconstruct/interpolation.hpp>
 #include <snap/thermodynamics/thermodynamics.hpp>
+#include <snap/variable.hpp>
 
 // harp
 #include "absorber.hpp"
@@ -21,7 +21,7 @@
 // #include "../particles/particles.hpp"
 
 // setting optical properties
-void RadiationBand::setSpectralProperties(int k, int j, int il, int iu) {
+void RadiationBand::SetSpectralProperties(int k, int j, int il, int iu) {
   int nspec = spec_.size();
   int npmom = bpmom.GetDim4() - 1;
 
@@ -32,13 +32,13 @@ void RadiationBand::setSpectralProperties(int k, int j, int il, int iu) {
 
   std::vector<Real> mypmom(1 + npmom);
 
-  CellVariables var;
+  Variable var;
   // Particles *ppart;
 
   MeshBlock* pmb = pmy_block_;
   AthenaArray<Real> const& w = pmb->phydro->w;
 
-  for (auto a : absorbers) {
+  for (auto& a : absorbers_) {
     for (int i = il; i <= iu; ++i) {
       for (int n = 0; n < NSCALARS; ++n)
         var.s[n] = pmb->pscalars->s(n, k, j, i);
@@ -61,16 +61,16 @@ void RadiationBand::setSpectralProperties(int k, int j, int il, int iu) {
       // std::cout << i << " " << tem_(i] << std::endl;
       for (int m = 0; m < nspec; ++m) {
         Real kcoeff =
-            a->getAttenuation(spec_[m].wav1, spec_[m].wav2, var);  // 1/m
+            a->GetAttenuation(spec_[m].wav1, spec_[m].wav2, var);  // 1/m
         Real dssalb =
-            a->getSingleScatteringAlbedo(spec_[m].wav1, spec_[m].wav2, var) *
+            a->GetSingleScatteringAlbedo(spec_[m].wav1, spec_[m].wav2, var) *
             kcoeff;
         // tau
         tau_(m, i) += kcoeff;
         // ssalb
         ssa_(m, i) += dssalb;
         // pmom
-        a->getPhaseMomentum(mypmom.data(), spec_[m].wav1, spec_[m].wav2, var,
+        a->GetPhaseMomentum(mypmom.data(), spec_[m].wav1, spec_[m].wav2, var,
                             npmom);
         for (int p = 0; p <= npmom; ++p) pmom_(m, i, p) += mypmom[p] * dssalb;
       }

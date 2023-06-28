@@ -16,9 +16,6 @@
 #include <athena/mesh/mesh.hpp>
 #include <athena/utils/utils.hpp>
 
-// debugger
-#include <debugger/debugger.hpp>
-
 // utils
 #include "command_line.hpp"
 #include "program_setup.hpp"
@@ -75,9 +72,7 @@ void program_start(int argc, char **argv) {
               << std::endl;
   }
 
-  pdebug = std::make_unique<Debugger>(1);
   Globals::mbcnt = 0;
-  pdebug->Enter("Main");
 }
 
 void program_end() {
@@ -145,6 +140,4 @@ void program_end(Mesh *pmesh) {
 
   if (Globals::my_rank == 0 && CommandLine::wtlim > 0)
     SignalHandler::CancelWallTimeAlarm();
-
-  pdebug->Leave();
 }

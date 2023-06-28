@@ -20,13 +20,13 @@ extern "C" {
 #include <climath/interpolation.h>
 
 // snap
-#include <snap/cell_variables.hpp>
 #include <snap/constants.hpp>
+#include <snap/variable.hpp>
 
 // harp
 #include "correlatedk_absorber.hpp"
 
-void CorrelatedKAbsorber::loadCoefficient(std::string fname, size_t bid) {
+void CorrelatedKAbsorber::LoadCoefficient(std::string fname, size_t bid) {
 #ifdef NETCDFOUTPUT
   int fileid, dimid, varid, err;
   len_[0] = 22;  // number of pressure
@@ -54,8 +54,8 @@ void CorrelatedKAbsorber::loadCoefficient(std::string fname, size_t bid) {
 #endif
 }
 
-Real CorrelatedKAbsorber::getAttenuation(Real g1, Real g2,
-                                         CellVariables const& var) const {
+Real CorrelatedKAbsorber::GetAttenuation(Real g1, Real g2,
+                                         Variable const& var) const {
   // first axis is wavenumber, second is pressure, third is temperature anomaly
   Real val, coord[3] = {log(var.q[IPR]), var.q[IDN], g1};
   interpn(&val, coord, kcoeff_.data(), axis_.data(), len_, 3, 1);

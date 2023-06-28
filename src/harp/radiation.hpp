@@ -2,19 +2,21 @@
 #define SRC_HARP_RADIATION_HPP_
 
 // C/C++ headers
-#include <astro/celestrial_body.hpp>
-#include <athena/athena.hpp>
 #include <string>
 #include <vector>
 
-struct Direction {
-  Real mu, phi;
-};
+// astro
+#include <astro/celestrial_body.hpp>
+
+// athena
+#include <athena/athena.hpp>
+
+// harp
+#include "radiation_band.hpp"
 
 class MeshBlock;
 class ParameterInput;
 class Hydro;
-class RadiationBand;
 
 namespace RadiationFlags {
 const uint64_t None = 0LL;
@@ -42,7 +44,7 @@ class Radiation {
   AthenaArray<Real> radiance;
 
   // radiation bands
-  std::vector<RadiationBand *> bands;
+  std::vector<RadiationBandPtr> bands;
 
   AthenaArray<Real> flxup, flxdn;
 
@@ -51,6 +53,14 @@ class Radiation {
 
   ~Radiation();
 
+  size_t GetNumBands() { return bands.size(); }
+
+  RadiationBand *GetBand(int i) { return bands[i].get(); }
+
+  RadiationBand *GetBand(std::string const &name);
+
+  void PopulateRadiationBands(ParameterInput *pin);
+
   void calculateRadiativeFlux(AthenaArray<Real> *rup, AthenaArray<Real> *rdown,
                               Real time, int k, int j, int il, int iu);
 
@@ -58,8 +68,6 @@ class Radiation {
                          int iu);
 
   void addRadiativeFlux(Hydro *phydro, int k, int j, int il, int iu) const;
-
-  void readRadiationBands(MeshBlock *pmb, ParameterInput *pin, int *b);
 
   size_t getNumOutgoingRays() const;
 
@@ -85,8 +93,8 @@ class Radiation {
   Real stellarDistance_au_;
 
   // connections
-  Coordinates const *pcoord_;
-  CelestrialBody *planet_;
+  MeshBlock *pmy_block_;
+  CelestrialBodyPtr planet_;
 };
 
 #endif  //  SRC_HARP_RADIATION_HPP_

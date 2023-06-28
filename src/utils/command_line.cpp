@@ -7,8 +7,8 @@
 // athena
 #include <athena/globals.hpp>
 
-// debugger
-#include <debugger/debugger.hpp>
+// application
+#include <application/application.hpp>
 
 // utils
 #include "command_line.hpp"
@@ -31,6 +31,7 @@ char** CommandLine::argv = nullptr;
 CommandLine::CommandLine(int argc, char** argv) {
   CommandLine::argc = argc;
   CommandLine::argv = argv;
+  Application::Logger app("utils");
 
   for (int i = 1; i < argc; i++) {
     // If argv[i] is a 2 character string of the form "-?" then:
@@ -48,9 +49,8 @@ CommandLine::CommandLine(int argc, char** argv) {
           if ((i + 1 >= argc)  // flag is at the end of the command line options
               || (*argv[i + 1] == '-')) {  // flag is followed by another flag
             if (Globals::my_rank == 0) {
-              Debugger::Fatal("main",
-                              "-" + std::to_string(opt_letter) +
-                                  " must be followed by a valid argument");
+              app->Error("-" + std::to_string(opt_letter) +
+                         " must be followed by a valid argument");
             }
           }
       }

@@ -8,12 +8,12 @@
 #include <athena/mesh/mesh.hpp>
 #include <athena/parameter_input.hpp>
 
-// debugger
-#include <debugger/debugger.hpp>
-
 // utils
 #include <utils/fileio.hpp>
 #include <utils/vectorize.hpp>
+
+// application
+#include <application/application.hpp>
 
 // inversion
 #include "inversion.hpp"
@@ -82,6 +82,8 @@ std::vector<Inversion *> create_inversion_queue(MeshBlock *pmb,
       Vectorize<std::string>(str.c_str(), " ,");
 
   std::vector<Inversion *> fitq;
+  Application::Logger app("inversion");
+  app->Log("Create inversion queue");
 
   Inversion *pfit;
   for (auto p : task_names) {
@@ -92,7 +94,7 @@ std::vector<Inversion *> create_inversion_queue(MeshBlock *pmb,
     } else if (p == "VLACompositionInversion") {
     } else if (p == "JunoCompositionInversion") {
     } else {
-      Debugger::Fatal("new_inversion_queue", "task::" + p, "unrecognized");
+      app->Error("new_inversion_queue's task::" + p + " unrecognized");
     }
     fitq.push_back(pfit);
   }
@@ -103,6 +105,8 @@ std::vector<Inversion *> create_inversion_queue(MeshBlock *pmb,
     q->setX2Indices(jl);
     jl += q->getX2Span();
   }
+
+  app->Log("Number of inversions = " + std::to_string(fitq.size()));
 
   return fitq;
 }

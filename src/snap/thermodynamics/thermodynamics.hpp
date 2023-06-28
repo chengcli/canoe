@@ -53,7 +53,7 @@ class Thermodynamics {
 
   // member functions
   Thermodynamics(MeshBlock *pmb, ParameterInput *pin);
-  ~Thermodynamics() {}
+  ~Thermodynamics();
 
   /*! Ideal gas constant of dry air in [J/(kg K)]
    * @return $R_d=\hat{R}/m_d$
