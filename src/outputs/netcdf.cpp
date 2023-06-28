@@ -9,14 +9,12 @@
 
 // canoe
 #include <configure.hpp>
+#include <impl.hpp>
 
 // athena
 #include <athena/athena.hpp>
 #include <athena/coordinates/coordinates.hpp>
 #include <athena/mesh/mesh.hpp>
-
-// snap
-#include <snap/meshblock_impl.hpp>
 
 // harp
 #include <harp/radiation.hpp>

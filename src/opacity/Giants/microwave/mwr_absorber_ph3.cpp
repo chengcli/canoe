@@ -1,11 +1,9 @@
 // canoe
 #include <configure.hpp>
+#include <variable.hpp>
 
 // climath
 #include <climath/interpolation.h>
-
-// snap
-#include <snap/variable.hpp>
 
 // opacity
 #include "absorption_functions.hpp"

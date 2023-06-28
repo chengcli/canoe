@@ -11,8 +11,8 @@
 // utils
 #include <utils/vectorize.hpp>
 
-// snap
-#include "meshblock_index_map.hpp"
+// canoe
+#include "index_map.hpp"
 
 MeshBlock::IndexMap::IndexMap(MeshBlock *pmb, ParameterInput *pin)
     : pmy_block_(pmb) {

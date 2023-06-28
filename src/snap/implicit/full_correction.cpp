@@ -4,6 +4,7 @@
 
 // canoe
 #include <configure.hpp>
+#include <impl.hpp>
 
 // Eigen
 #include <Eigen/Core>
@@ -21,7 +22,6 @@
 #include <application/application.hpp>
 
 // snap
-#include "../meshblock_impl.hpp"
 #include "../thermodynamics/thermodynamics.hpp"
 #include "flux_decomposition.hpp"
 #include "forward_backward.hpp"

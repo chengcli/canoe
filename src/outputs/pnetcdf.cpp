@@ -9,6 +9,7 @@
 
 // canoe
 #include <configure.hpp>
+#include <impl.hpp>
 
 // athena
 #include <athena/athena.hpp>
@@ -18,9 +19,6 @@
 
 // math
 #include <climath/core.h>
-
-// snap
-#include <snap/meshblock_impl.hpp>
 
 // harp
 #include <harp/radiation.hpp>

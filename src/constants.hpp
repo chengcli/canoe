@@ -1,5 +1,5 @@
-#ifndef SRC_SNAP_CONSTANTS_HPP_
-#define SRC_SNAP_CONSTANTS_HPP_
+#ifndef SRC_CONSTANTS_HPP_
+#define SRC_CONSTANTS_HPP_
 
 namespace Constants {
 double const Rgas = 8.314462;

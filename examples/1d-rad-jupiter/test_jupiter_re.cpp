@@ -19,6 +19,8 @@
 
 // canoe
 #include <configure.hpp>
+#include <impl.hpp>
+#include <index_map.hpp>
 
 // math
 #include <climath/interpolation.h>
@@ -27,7 +29,6 @@
 #include <utils/ndarrays.hpp>
 
 // thermodynamics
-#include <snap/meshblock_impl.hpp>
 #include <snap/thermodynamics/thermodynamics.hpp>
 #include <snap/thermodynamics/thermodynamics_helper.hpp>
 
@@ -53,7 +54,7 @@ void MeshBlock::UserWorkBeforeOutput(ParameterInput *pin) {
         user_out_var(0, k, j, i) =
             pimpl->pthermo->GetTemp(phydro->w.at(k, j, i));
         user_out_var(1, k, j, i) =
-            PotentialTemp(phydro->w.at(k, j, i), P0, pimpl->pthermo);
+            PotentialTemp(phydro->w.at(k, j, i), P0, pimpl->pthermo.get());
       }
 }
 
@@ -143,7 +144,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
   t1 = new Real[nx1];
 
   // estimate surface temperature and pressure
-  Thermodynamics *pthermo = pimpl->pthermo;
+  auto pthermo = pimpl->pthermo;
   Real Rd = pthermo->GetRd();
   Real cp = gamma / (gamma - 1.) * Rd;
   Real Ts = T0 - grav / cp * (x1min - Z0);

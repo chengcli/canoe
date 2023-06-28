@@ -5,23 +5,25 @@
 #include <athena/athena.hpp>
 #include <athena/parameter_input.hpp>
 
-// harp
-#include <harp/radiation.hpp>
-#include <harp/radiation_band.hpp>
-
 // application
 #include <application/exceptions.hpp>
 
+// harp
+#include "harp/radiation.hpp"
+#include "harp/radiation_band.hpp"
+
 // inversion
-#include <inversion/inversion.hpp>
-#include <inversion/inversion_helper.hpp>
+#include "inversion/inversion.hpp"
+#include "inversion/inversion_helper.hpp"
 
 // snap
-#include "decomposition/decomposition.hpp"
-#include "implicit/implicit_solver.hpp"
-#include "meshblock_impl.hpp"
-#include "reconstruct/face_reconstruct.hpp"
-#include "thermodynamics/thermodynamics.hpp"
+#include "snap/decomposition/decomposition.hpp"
+#include "snap/implicit/implicit_solver.hpp"
+#include "snap/reconstruct/face_reconstruct.hpp"
+#include "snap/thermodynamics/thermodynamics.hpp"
+
+// canoe
+#include "impl.hpp"
 
 MeshBlock::Impl::Impl(MeshBlock *pmb, ParameterInput *pin) : pmy_block_(pmb) {
   du.NewAthenaArray(NHYDRO, pmb->ncells3, pmb->ncells2, pmb->ncells1);

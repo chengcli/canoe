@@ -14,7 +14,7 @@
 //  \brief a collection of all physical data in a computational cell
 class Variable {
  public:
-  enum { Size = NHYDRO + NSCALARS + NCLOUDS };
+  enum { Size = NHYDRO + NSCALARS + NCLOUDS + NCHEMISTRY + NSTATIC };
 
   //! data pointers
   //! hydro data
@@ -24,10 +24,13 @@ class Variable {
   Real *s;
 
   //! cloud data
-  Real *q;
+  Real *c;
 
   //! chemistry data
-  Real *c;
+  Real *q;
+
+  //! static data
+  Real *x;
 
   //! particle data
   Real *p;
@@ -36,8 +39,9 @@ class Variable {
   Variable() {
     w = data_.data();
     s = w + NHYDRO;
-    q = s + NSCALARS;
-    c = q + NCLOUDS;
+    c = s + NSCALARS;
+    q = c + NCLOUDS;
+    x = q + NCHEMISTRY;
   }
 
  private:

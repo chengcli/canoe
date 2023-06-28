@@ -5,6 +5,7 @@
 
 // canoe
 #include <configure.hpp>
+#include <constants.hpp>
 
 // athena
 #include <athena/bvals/bvals.hpp>
@@ -21,7 +22,6 @@
 #include <utils/program_setup.hpp>
 
 // snap
-#include "../constants.hpp"
 #include "implicit_solver.hpp"
 
 // MPI headers

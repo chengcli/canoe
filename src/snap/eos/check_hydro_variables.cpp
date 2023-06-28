@@ -1,5 +1,6 @@
 // canoe
 #include <configure.hpp>
+#include <impl.hpp>
 
 // athena
 #include <athena/athena.hpp>
@@ -13,7 +14,6 @@
 #include <application/application.hpp>
 
 // snap
-#include "../meshblock_impl.hpp"
 #include "../thermodynamics/thermodynamics.hpp"
 
 void check_hydro_variables(MeshBlock *pmb, AthenaArray<Real> const &w) {

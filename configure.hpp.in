@@ -5,7 +5,9 @@
 #include <string>
 
 enum {
-  NCLOUDS = @NCLOUDS@
+  NCLOUDS = @NCLOUDS@,
+  NCHEMISTRY = @NCHEMISTRY@,
+  NSTATIC = @NSTATIC@
 };
 
 enum {

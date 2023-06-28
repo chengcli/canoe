@@ -1,7 +1,7 @@
-#ifndef SRC_SNAP_MESHBLOCK_INDEX_MAP_HPP_
-#define SRC_SNAP_MESHBLOCK_INDEX_MAP_HPP_
+#ifndef SRC_INDEX_MAP_HPP_
+#define SRC_INDEX_MAP_HPP_
 
-// C/C++ header
+// C/C++
 #include <map>
 #include <string>
 
@@ -41,4 +41,4 @@ class MeshBlock::IndexMap {
   std::map<std::string, size_t> static_index_map_;
 };
 
-#endif  // SRC_SNAP_MESHBLOCK_INDEX_MAP_HPP_
+#endif  // SRC_INDEX_MAP_HPP_

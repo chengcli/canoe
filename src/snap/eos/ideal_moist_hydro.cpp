@@ -1,9 +1,9 @@
-// C++ headers
+// C/C++
 #include <cmath>  // sqrt()
 #include <sstream>
 #include <stdexcept>
 
-// Athena++ headers
+// athena
 #include <athena/athena.hpp>
 #include <athena/athena_arrays.hpp>
 #include <athena/eos/eos.hpp>
@@ -13,7 +13,10 @@
 #include <athena/mesh/mesh.hpp>
 #include <athena/parameter_input.hpp>
 
-#include "../meshblock_impl.hpp"
+// canoe
+#include <impl.hpp>
+
+// snap
 #include "../thermodynamics/thermodynamics.hpp"
 #include "eos_helper.hpp"
 

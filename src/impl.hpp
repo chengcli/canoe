@@ -1,5 +1,5 @@
-#ifndef SRC_SNAP_MESHBLOCK_IMPL_HPP_
-#define SRC_SNAP_MESHBLOCK_IMPL_HPP_
+#ifndef SRC_IMPL_HPP_
+#define SRC_IMPL_HPP_
 
 // C/C++
 #include <memory>
@@ -10,9 +10,9 @@
 #include <athena/mesh/mesh.hpp>
 
 // snap
-#include "decomposition/decomposition.hpp"
-#include "implicit/implicit_solver.hpp"
-#include "thermodynamics/thermodynamics.hpp"
+#include "snap/decomposition/decomposition.hpp"
+#include "snap/implicit/implicit_solver.hpp"
+#include "snap/thermodynamics/thermodynamics.hpp"
 
 class ParameterInput;
 class FaceReconstruct;
@@ -50,4 +50,4 @@ class MeshBlock::Impl {
   Real pressure_scale_height_;
 };
 
-#endif  // SRC_SNAP_MESHBLOCK_IMPL_HPP_
+#endif  // SRC_IMPL_HPP_

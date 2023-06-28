@@ -10,6 +10,10 @@ endmacro()
 
 set_if_empty(NCLOUDS 0)
 
+set_if_empty(NCHEMISTRY 0)
+
+set_if_empty(NSTATIC 0)
+
 set_if_empty(AMMONIA_VAPOR_ID -1)
 
 set_if_empty(WATER_VAPOR_ID -1)

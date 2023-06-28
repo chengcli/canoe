@@ -7,9 +7,9 @@
 // athena
 #include <athena/mesh/mesh.hpp>
 
-// snap
-#include <snap/meshblock_impl.hpp>
-#include <snap/meshblock_index_map.hpp>
+// canoe
+#include <impl.hpp>
+#include <index_map.hpp>
 
 // harp
 #include <harp/absorber.hpp>

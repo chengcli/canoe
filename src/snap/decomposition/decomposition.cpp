@@ -13,12 +13,11 @@
 // application
 #include <application/application.hpp>
 
-// utils
-// #include <utils/program_setup.hpp>
-// #include <utils/stride_iterator.hpp>
+// canoe
+#include <constants.hpp>
+#include <impl.hpp>
 
-#include "../constants.hpp"
-#include "../meshblock_impl.hpp"
+// snap
 #include "../thermodynamics/thermodynamics.hpp"
 #include "decomposition.hpp"
 

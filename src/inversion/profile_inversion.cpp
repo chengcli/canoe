@@ -7,6 +7,7 @@
 
 // canoe
 #include <configure.hpp>
+#include <impl.hpp>
 
 // climath
 #include <climath/root.h>
@@ -23,7 +24,6 @@
 #include <application/application.hpp>
 
 // snap
-#include <snap/meshblock_impl.hpp>
 #include <snap/thermodynamics/thermodynamics.hpp>
 #include <snap/thermodynamics/thermodynamics_helper.hpp>
 

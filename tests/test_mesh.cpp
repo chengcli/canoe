@@ -4,12 +4,12 @@
 // application
 #include <application/application.hpp>
 
-// snap
-#include <snap/meshblock_impl.hpp>
-#include <snap/meshblock_index_map.hpp>
-
 // athena
 #include <athena/mesh/mesh.hpp>
+
+// canoe
+#include <impl.hpp>
+#include <index_map.hpp>
 
 class TestMesh : public testing::Test {
  protected:

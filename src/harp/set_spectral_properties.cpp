@@ -8,11 +8,13 @@
 #include <athena/scalars/scalars.hpp>
 #include <athena/stride_iterator.hpp>
 
+// canoe
+#include <impl.hpp>
+#include <variable.hpp>
+
 // snap
-#include <snap/meshblock_impl.hpp>
 #include <snap/reconstruct/interpolation.hpp>
 #include <snap/thermodynamics/thermodynamics.hpp>
-#include <snap/variable.hpp>
 
 // harp
 #include "absorber.hpp"

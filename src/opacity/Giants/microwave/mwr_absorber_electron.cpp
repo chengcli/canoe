@@ -1,8 +1,6 @@
 // canoe
 #include <configure.hpp>
-
-// snap
-#include <snap/variable.hpp>
+#include <variable.hpp>
 
 // opacity
 #include "absorption_functions.hpp"

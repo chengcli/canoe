@@ -11,7 +11,9 @@
 #include <utils/ndarrays.hpp>
 
 // canoe
-#include "../meshblock_impl.hpp"
+#include <impl.hpp>
+
+// snap
 #include "../thermodynamics/thermodynamics.hpp"
 #include "decomposition.hpp"
 

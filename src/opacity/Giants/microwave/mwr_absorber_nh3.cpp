@@ -4,6 +4,7 @@
 
 // canoe
 #include <configure.hpp>
+#include <variable.hpp>
 
 // athena
 #include <athena/mesh/mesh.hpp>
@@ -14,9 +15,6 @@
 
 // application
 #include <application/exceptions.hpp>
-
-// snap
-#include <snap/variable.hpp>
 
 // opacity
 #include "absorption_functions.hpp"

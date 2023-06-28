@@ -10,10 +10,12 @@
 #include <athena/athena_arrays.hpp>
 #include <athena/mesh/mesh.hpp>
 
+// canoe
+#include <impl.hpp>
+#include <variable.hpp>
+
 // snap
-#include <snap/meshblock_impl.hpp>
 #include <snap/thermodynamics/thermodynamics.hpp>
-#include <snap/variable.hpp>
 
 // harp
 #include "freedman_mean.hpp"

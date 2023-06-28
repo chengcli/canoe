@@ -8,9 +8,9 @@
 #include <athena/mesh/mesh.hpp>
 
 // snap
-#include <snap/meshblock_impl.hpp>
-#include <snap/meshblock_index_map.hpp>
-#include <snap/variable.hpp>
+#include <impl.hpp>
+#include <index_map.hpp>
+#include <variable.hpp>
 
 // harp
 #include <harp/absorber.hpp>

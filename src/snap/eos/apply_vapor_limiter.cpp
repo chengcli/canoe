@@ -1,7 +1,11 @@
+// athena
 #include <athena/athena.hpp>
 #include <athena/mesh/mesh.hpp>
 
-#include "../meshblock_impl.hpp"
+// canoe
+#include <impl.hpp>
+
+// snap
 #include "../thermodynamics/thermodynamics.hpp"
 
 void apply_vapor_limiter(AthenaArray<Real> *pu, MeshBlock *pmb) {
