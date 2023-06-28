@@ -68,6 +68,16 @@ Radiation::~Radiation() {
   app->Log("Destroy Radiation");
 }
 
+RadiationBand *Radiation::GetBand(std::string const &name) {
+  for (auto &band : bands) {
+    if (band->GetName() == name) {
+      return band.get();
+    }
+  }
+
+  throw NotFoundError("GetBand", "Band " + name);
+}
+
 void Radiation::PopulateRadiationBands(ParameterInput *pin) {
   Application::Logger app("harp");
   app->Log("Populate Radiation bands");

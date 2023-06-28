@@ -57,6 +57,8 @@ class Radiation {
 
   RadiationBand *GetBand(int i) { return bands[i].get(); }
 
+  RadiationBand *GetBand(std::string const &name);
+
   void PopulateRadiationBands(ParameterInput *pin);
 
   void calculateRadiativeFlux(AthenaArray<Real> *rup, AthenaArray<Real> *rdown,

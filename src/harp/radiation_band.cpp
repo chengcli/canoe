@@ -166,6 +166,18 @@ RadiationBand::~RadiationBand() {
 #endif
 }
 
+Absorber *RadiationBand::GetAbsorber(std::string const &name) {
+  for (auto &absorber : absorbers_) {
+    if (absorber->GetName() == name) {
+      return absorber.get();
+    }
+  }
+
+  throw NotFoundError("RadiationBand", "Absorber " + name);
+
+  return nullptr;
+}
+
 void RadiationBand::writeBinRadiance(OutputParameters const *pout) const {
   if (!test(RadiationFlags::WriteBinRadiance)) return;
 

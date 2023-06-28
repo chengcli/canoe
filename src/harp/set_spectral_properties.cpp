@@ -38,7 +38,7 @@ void RadiationBand::SetSpectralProperties(int k, int j, int il, int iu) {
   MeshBlock* pmb = pmy_block_;
   AthenaArray<Real> const& w = pmb->phydro->w;
 
-  for (auto& a : absorbers) {
+  for (auto& a : absorbers_) {
     for (int i = il; i <= iu; ++i) {
       for (int n = 0; n < NSCALARS; ++n)
         var.s[n] = pmb->pscalars->s(n, k, j, i);

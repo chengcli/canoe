@@ -29,9 +29,6 @@ class OutputParameters;
 class RadiationBand {
  public:
   // access data
-  // absorbers
-  std::vector<AbsorberPtr> absorbers;
-
   AthenaArray<Real> btau, bssa, bpmom;
 
   // functions
@@ -40,13 +37,15 @@ class RadiationBand {
 
   ~RadiationBand();
 
-  size_t GetNumAbsorbers() { return absorbers.size(); }
+  size_t GetNumAbsorbers() { return absorbers_.size(); }
 
-  Absorber *GetAbsorber(int i) { return absorbers[i].get(); }
+  Absorber *GetAbsorber(int i) { return absorbers_[i].get(); }
+
+  Absorber *GetAbsorber(std::string const &name);
 
   size_t getNumOutgoingRays() { return rayOutput_.size(); }
 
-  std::string getName() { return name_; }
+  std::string GetName() { return name_; }
 
   Real getCosinePolarAngle(int n) const { return rayOutput_[n].mu; }
 
@@ -83,6 +82,9 @@ class RadiationBand {
                         YAML::Node &node);
   void addAbsorberMars(ParameterInput *pin, std::string bname,
                        YAML::Node &node);
+
+  // absorbers
+  std::vector<AbsorberPtr> absorbers_;
 
   // data
   std::string name_;

@@ -69,8 +69,5 @@ vis:
   spectrum: false
 
 radio:
-  wavenumber-range: [10., 200.]
-  resolution: 0.01
-  opacity: [radio-NH3]
-  heating-flux: false
-  spectrum: false
+  frequencies: [0.6, 1.25]
+  opacity: [radio-NH3, radio-H2O, radio-Electron]

@@ -56,13 +56,20 @@ class TestMicrowaveOpacity : public testing::Test {
   }
 };
 
-TEST_F(TestMicrowaveOpacity, Construct) {
+TEST_F(TestMicrowaveOpacity, Absorbers) {
   Radiation *prad = pmesh->my_blocks(0)->pimpl->prad;
 
   EXPECT_EQ(prad->GetNumBands(), 3);
-  EXPECT_EQ(prad->GetBand(0)->GetNumAbsorbers(), 6);
-  EXPECT_EQ(prad->GetBand(0)->GetAbsorber(0)->GetName(), "H2-H2-CIA");
-  EXPECT_EQ(prad->GetBand(0)->GetAbsorber(1)->GetName(), "H2-He-CIA");
+  EXPECT_EQ(prad->GetBand("radio")->GetNumAbsorbers(), 3);
+
+  // NH3 absorption
+  auto ab = prad->GetBand("radio")->GetAbsorber("radio-NH3");
+
+  // H2O absorption
+  ab = prad->GetBand("radio")->GetAbsorber("radio-H2O");
+
+  // electron absorption
+  ab = prad->GetBand("radio")->GetAbsorber("radio-Electron");
 };
 
 int main(int argc, char *argv[]) {
