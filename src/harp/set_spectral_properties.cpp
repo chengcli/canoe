@@ -9,10 +9,10 @@
 #include <athena/stride_iterator.hpp>
 
 // snap
-#include <snap/cell_variables.hpp>
 #include <snap/meshblock_impl.hpp>
 #include <snap/reconstruct/interpolation.hpp>
 #include <snap/thermodynamics/thermodynamics.hpp>
+#include <snap/variable.hpp>
 
 // harp
 #include "absorber.hpp"
@@ -32,7 +32,7 @@ void RadiationBand::SetSpectralProperties(int k, int j, int il, int iu) {
 
   std::vector<Real> mypmom(1 + npmom);
 
-  CellVariables var;
+  Variable var;
   // Particles *ppart;
 
   MeshBlock* pmb = pmy_block_;

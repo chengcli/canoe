@@ -6,7 +6,7 @@
 #include <configure.hpp>
 
 // snap
-#include <snap/cell_variables.hpp>
+#include <snap/variable.hpp>
 
 // opacity
 #include "absorption_functions.hpp"
@@ -15,7 +15,7 @@
 namespace GiantPlanets {
 
 Real MwrAbsorberCIA::GetAttenuation(Real wave1, Real wave2,
-                                    CellVariables const& var) const {
+                                    Variable const& var) const {
   Real P = var.w[IPR] / 1.E5;  // pa -> bar
   Real T = var.w[IDN];
   Real xdry = 1.;

@@ -23,8 +23,8 @@ extern "C" {
 #include <athena/athena.hpp>
 
 // snap
-#include <snap/cell_variables.hpp>
 #include <snap/constants.hpp>
+#include <snap/variable.hpp>
 
 // harp
 #include "hitran_absorber.hpp"
@@ -133,7 +133,7 @@ void HitranAbsorber::LoadCoefficient(std::string fname, int bid) {
 }
 
 Real HitranAbsorber::GetAttenuation(Real wave1, Real wave2,
-                                    CellVariables const &var) const {
+                                    Variable const &var) const {
   // first axis is wavenumber, second is pressure, third is temperature anomaly
   Real val, coord[3] = {wave1, var.q[IPR], var.q[IDN] - RefTemp_(var.q[IPR])};
   interpn(&val, coord, kcoeff_.data(), axis_.data(), len_, 3, 1);

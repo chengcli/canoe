@@ -14,7 +14,7 @@ class FreedmanMean : public Absorber {
   FreedmanMean(MeshBlock *pmb, ParameterInput *pin, std::string bname)
       : Absorber("FreedmanMean") {}
   virtual ~FreedmanMean() {}
-  Real GetAttenuation(Real wave1, Real wave2, CellVariables const &var) const;
+  Real GetAttenuation(Real wave1, Real wave2, Variable const &var) const;
 
  protected:
   MeshBlock *pmy_block_;

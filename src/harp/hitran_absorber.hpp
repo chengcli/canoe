@@ -17,7 +17,7 @@ class HitranAbsorber : public Absorber {
                  std::string name, int imol);
   virtual ~HitranAbsorber() {}
   void LoadCoefficient(std::string fname, int bid);
-  Real GetAttenuation(Real wave1, Real wave2, CellVariables const& var) const;
+  Real GetAttenuation(Real wave1, Real wave2, Variable const& var) const;
 
  protected:
   size_t len_[3];            /**< length of interpolation axis */

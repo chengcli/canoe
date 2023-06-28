@@ -11,9 +11,9 @@
 #include <athena/mesh/mesh.hpp>
 
 // snap
-#include <snap/cell_variables.hpp>
 #include <snap/meshblock_impl.hpp>
 #include <snap/thermodynamics/thermodynamics.hpp>
+#include <snap/variable.hpp>
 
 // harp
 #include "freedman_mean.hpp"
@@ -25,7 +25,7 @@ Real c1 = 10.602, c2 = 2.882, c3 = 6.09e-15, c4 = 2.954, c5 = -2.526,
 Real c8, c9, c10, c11, c12;
 
 Real FreedmanMean::GetAttenuation(Real wave1, Real wave2,
-                                  CellVariables const& var) const {
+                                  Variable const& var) const {
   Real p = var.q[IPR];
   Real T = var.q[IDN];
   if (T < 800.) {

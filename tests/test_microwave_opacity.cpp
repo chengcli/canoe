@@ -8,8 +8,8 @@
 #include <athena/mesh/mesh.hpp>
 
 // snap
-#include <snap/cell_variables.hpp>
 #include <snap/meshblock_impl.hpp>
+#include <snap/variable.hpp>
 
 // harp
 #include <harp/absorber.hpp>
@@ -63,7 +63,7 @@ TEST_F(TestMicrowaveOpacity, Absorbers) {
   EXPECT_EQ(prad->GetNumBands(), 3);
   EXPECT_EQ(prad->GetBand("radio")->GetNumAbsorbers(), 3);
 
-  CellVariables var;
+  Variable var;
   var.w[IDN] = 300.;
   var.w[IPR] = 1.E5;
   var.w[1] = 1.E-2;

@@ -23,7 +23,7 @@
 // athena
 #include <athena/athena.hpp>
 
-class CellVariables;
+class Variable;
 class MeshBlock;
 
 using ParameterMap = std::map<std::string, Real>;
@@ -44,13 +44,13 @@ class Absorber {
   virtual void LoadCoefficient(std::string fname, size_t bid);
 
   virtual Real GetAttenuation(Real wave1, Real wave2,
-                              CellVariables const& var) const;
+                              Variable const& var) const;
 
   virtual Real GetSingleScatteringAlbedo(Real wave1, Real wave2,
-                                         CellVariables const& var) const;
+                                         Variable const& var) const;
 
   virtual void GetPhaseMomentum(Real* pp, Real wave1, Real wave2,
-                                CellVariables const& var, int np) const;
+                                Variable const& var, int np) const;
 
  protected:
   //! absorber name

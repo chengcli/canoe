@@ -12,9 +12,9 @@
 #include <athena/mesh/mesh.hpp>
 
 // snap
-#include <snap/cell_variables.hpp>
 #include <snap/meshblock_impl.hpp>
 #include <snap/thermodynamics/thermodynamics.hpp>
+#include <snap/variable.hpp>
 
 // harp
 #include "freedman_simple.hpp"
@@ -29,7 +29,7 @@ FreedmanSimple::FreedmanSimple(MeshBlock *pmb, ParameterInput *pin,
 
 // xiz semigrey
 Real FreedmanSimple::GetAttenuation(Real wave1, Real wave2,
-                                    CellVariables const &var) const {
+                                    Variable const &var) const {
   static const Real Rgas = 8.314462;
   const Absorber *pabs = this;
   Real mu = Rgas / pmy_block_->pimpl->pthermo->GetRd();

@@ -3,8 +3,8 @@
 #include <athena/mesh/mesh.hpp>
 
 // snap
-#include <snap/cell_variables.hpp>
 #include <snap/meshblock_impl.hpp>
+#include <snap/variable.hpp>
 
 // application
 #include <application/application.hpp>
@@ -39,14 +39,14 @@ Absorber::~Absorber() {
 void Absorber::LoadCoefficient(std::string fname, size_t bid) {}
 
 Real Absorber::GetAttenuation(Real wave1, Real wave2,
-                              CellVariables const& var) const {
+                              Variable const& var) const {
   return 0.;
 }
 
 Real Absorber::GetSingleScatteringAlbedo(Real wave1, Real wave2,
-                                         CellVariables const& var) const {
+                                         Variable const& var) const {
   return 0.;
 }
 
 void Absorber::GetPhaseMomentum(Real* pp, Real wave1, Real wave2,
-                                CellVariables const& var, int np) const {}
+                                Variable const& var, int np) const {}
