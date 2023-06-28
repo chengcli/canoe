@@ -5,15 +5,11 @@ opacity-sources:
     long-name: "Hydrogen-Hydrogen collisional absorption"
     model: xiz
     type: lbl
-    dependent-species: [0]
-    mixing-ratio: [0.2]
 
   - name: H2-He-CIA
     long-name: "Hydrogen-Helium collisional absorption"
     model: xiz
     type: lbl
-    dependent-species: [0]
-    mixing-ratio: [0.2]
 
   - name: CH4
     long-name: "Methane line absorption"
@@ -42,19 +38,19 @@ opacity-sources:
   - name: radio-NH3
     long-name: "Ammonia line absorption"
     model: Hanley09
-    dependent-species: [Vapor.NH3, Vapor.H2O]
+    dependent-species: [vapor.NH3, vapor.H2O]
     parameters: {xHe: 0.2}
 
   - name: radio-H2O
     long-name: "H2O line absorption"
     model: Hanley
-    dependent-species: [Vapor.H2O]
+    dependent-species: [vapor.H2O]
     parameters: {xHe: 0.2}
 
   - name: radio-Electron
     long-name: "Electron absorption"
     model: Hanley
-    dependent-species: [Tracer.elec]
+    dependent-species: [tracer.elec]
 
 bands: [vis, ir, radio]
 

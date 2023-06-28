@@ -42,7 +42,7 @@ RadiationBand::RadiationBand(MeshBlock *pmb, ParameterInput *pin,
   app->Log("Initialize RadiationBand " + name_);
 
   if (!node[name_]) {
-    throw NotFoundError("RadiationBand " + name_);
+    throw NotFoundError("RadiationBand", name_);
   }
 
   auto my = node[name_];
@@ -91,6 +91,7 @@ RadiationBand::RadiationBand(MeshBlock *pmb, ParameterInput *pin,
     }
   } else {
     throw NotFoundError(
+        "RadiationBand",
         "either 'resolution' or 'num-bins' or 'gpoints' must be defined");
   }
 
@@ -142,11 +143,12 @@ RadiationBand::RadiationBand(MeshBlock *pmb, ParameterInput *pin,
       }
 
       if (!found) {
-        throw NotFoundError("Opacity " + aname.as<std::string>());
+        throw NotFoundError("RadiationBand",
+                            "Opacity " + aname.as<std::string>());
       }
     }
   } else {
-    throw NotFoundError("Band " + name_ + " opacity");
+    throw NotFoundError("RadiationBand", "Band " + name_ + " opacity");
   }
 
   char buf[80];

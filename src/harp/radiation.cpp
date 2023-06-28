@@ -80,7 +80,7 @@ void Radiation::PopulateRadiationBands(ParameterInput *pin) {
   YAML::Node node = YAML::Load(stream);
 
   if (!node["opacity-sources"]) {
-    throw NotFoundError("opacity-sources");
+    throw NotFoundError("PopulateRadiationBand", "opacity-sources");
   }
 
   for (auto bname : node["bands"]) {

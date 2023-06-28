@@ -40,6 +40,7 @@ class TestMicrowaveOpacity : public testing::Test {
     // set up components
     for (int b = 0; b < pmesh->nblocal; ++b) {
       MeshBlock *pmb = pmesh->my_blocks(b);
+      pmb->pindex = std::make_shared<MeshBlock::IndexMap>(pmb, pinput);
       pmb->pimpl = std::make_shared<MeshBlock::Impl>(pmb, pinput);
     }
 
@@ -79,5 +80,5 @@ int main(int argc, char *argv[]) {
 
   Application::Destroy();
 
-  return RUN_ALL_TESTS();
+  return result;
 }

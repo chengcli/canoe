@@ -64,7 +64,7 @@ void RadiationBand::addAbsorberGiants(ParameterInput *pin, std::string bname,
 
       absorbers.push_back(std::move(ab));
     } else {
-      throw NotFoundError("Absorber " + aname);
+      throw NotFoundError("addAbsorberGiants", "Absorber " + aname);
     }
   } else if (bname == "ir") {
     auto ab = std::make_unique<Absorber>(aname);
@@ -76,6 +76,6 @@ void RadiationBand::addAbsorberGiants(ParameterInput *pin, std::string bname,
     auto ab = std::make_unique<Absorber>(aname);
     absorbers.push_back(std::move(ab));
   } else {
-    throw NotFoundError("Band " + bname);
+    throw NotFoundError("addAbsorberGiants", "Band " + bname);
   }
 }

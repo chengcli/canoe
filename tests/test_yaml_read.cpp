@@ -28,7 +28,7 @@ TEST_F(YamlReadTests, OpacitySource) {
       << "'opacity-sources' not found in YAML file";
 
   auto sources = node["opacity-sources"].as<std::vector<YAML::Node>>();
-  ASSERT_EQ(6, sources.size())
+  ASSERT_EQ(9, sources.size())
       << "Unexpected number of sources in 'opacity-sources'";
 
   // Check first source
@@ -37,11 +37,6 @@ TEST_F(YamlReadTests, OpacitySource) {
             sources[0]["long-name"].as<std::string>());
   EXPECT_EQ("xiz", sources[0]["model"].as<std::string>());
   EXPECT_EQ("lbl", sources[0]["type"].as<std::string>());
-  EXPECT_EQ(std::vector<int>{0},
-            sources[0]["dependent-variable-id"].as<std::vector<int>>());
-  EXPECT_EQ(std::vector<double>{0.2},
-            sources[0]["mixing-ratio"].as<std::vector<double>>());
-  EXPECT_EQ("hydro", sources[0]["variable-category"].as<std::string>());
 
   // Check third source
   EXPECT_EQ("CH4", sources[2]["name"].as<std::string>());
@@ -51,7 +46,6 @@ TEST_F(YamlReadTests, OpacitySource) {
   EXPECT_EQ("lbl", sources[2]["type"].as<std::string>());
   EXPECT_EQ("kcoeff.<min>-<max>-<res>.nc",
             sources[2]["data"].as<std::string>());
-  EXPECT_EQ("scalar", sources[2]["variable-category"].as<std::string>());
 }
 
 TEST_F(YamlReadTests, BandsList) {

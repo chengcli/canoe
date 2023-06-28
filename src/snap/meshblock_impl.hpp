@@ -19,27 +19,10 @@ class Forcing;
 class Radiation;
 class Inversion;
 
-//! \class MeshBlock::Impl
-//  \brief opaque pointer class implements additional functionality of Athena
-//  MeshBlock
-class MeshBlock::Impl {
+class MeshBlock::IndexMap {
  public:
-  Impl(MeshBlock *pmb, ParameterInput *pin);
-  ~Impl();
-
-  AthenaArray<Real> du;  // stores tendency
-
-  Thermodynamics *pthermo;
-  Decomposition *pdec;
-  ImplicitSolver *phevi;
-  FaceReconstruct *precon;
-  Forcing *pforce;
-
-  Radiation *prad;
-  std::vector<Inversion *> fitq;
-
-  Real GetReferencePressure() const { return reference_pressure_; }
-  Real GetPressureScaleHeight() const { return pressure_scale_height_; }
+  IndexMap(MeshBlock *pmb, ParameterInput *pin);
+  ~IndexMap() {}
 
   size_t GetVaporId(std::string name) const {
     return vapor_index_map_.at(name);
@@ -65,6 +48,32 @@ class MeshBlock::Impl {
   std::map<std::string, size_t> chemistry_index_map_;
   std::map<std::string, size_t> particle_index_map_;
   std::map<std::string, size_t> static_index_map_;
+};
+
+//! \class MeshBlock::Impl
+//  \brief opaque pointer class implements additional functionality of Athena
+//  MeshBlock
+class MeshBlock::Impl {
+ public:
+  Impl(MeshBlock *pmb, ParameterInput *pin);
+  ~Impl();
+
+  AthenaArray<Real> du;  // stores tendency
+
+  Thermodynamics *pthermo;
+  Decomposition *pdec;
+  ImplicitSolver *phevi;
+  FaceReconstruct *precon;
+  Forcing *pforce;
+
+  Radiation *prad;
+  std::vector<Inversion *> fitq;
+
+  Real GetReferencePressure() const { return reference_pressure_; }
+  Real GetPressureScaleHeight() const { return pressure_scale_height_; }
+
+ private:
+  MeshBlock *pmy_block_;
 
   Real reference_pressure_;
   Real pressure_scale_height_;

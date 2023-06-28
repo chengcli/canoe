@@ -25,10 +25,10 @@ Absorber::Absorber(MeshBlock* pmb, std::string name,
   app->Log("Create Absorber " + name_);
 
   for (auto s : species) {
-    imols_.push_back(pmb->pimpl->GetSpeciesId(s));
+    imols_.push_back(pmb->pindex->GetSpeciesId(s));
   }
 
-  app->Log("Dependent species ids = ", imols_);
+  app->Log("Dependent species ids", imols_);
 }
 
 Absorber::~Absorber() {
