@@ -39,13 +39,13 @@ opacity-sources:
     long-name: "Ammonia line absorption"
     model: Hanley09
     dependent-species: [vapor.NH3, vapor.H2O]
-    parameters: {xHe: 0.2}
+    parameters: {xHe: 0.2, power: 0.}
 
   - name: radio-H2O
     long-name: "H2O line absorption"
     model: Hanley
     dependent-species: [vapor.H2O]
-    parameters: {xHe: 0.2}
+    parameters: {xHe: 0.2, scale: 0.}
 
   - name: radio-Electron
     long-name: "Electron absorption"
@@ -69,5 +69,6 @@ vis:
   spectrum: false
 
 radio:
-  frequencies: [0.6, 1.25]
+  unit: GHz
+  frequencies: [0.6, 1.25, 2.6, 5.2, 10., 22.]
   opacity: [radio-NH3, radio-H2O, radio-Electron]

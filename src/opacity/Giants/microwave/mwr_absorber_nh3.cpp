@@ -38,21 +38,22 @@ Real MwrAbsorberNH3::GetAttenuation(Real wave1, Real wave2,
   Real XH2O = var.w[imols_[1]];
 
   Real abs;
+  Real wave = (wave1 + wave2) / 2.;
 
   if (model_name_ == "Bellotti16") {
-    abs = attenuation_NH3_Bellotti(wave1, P, P_idl, T, XH2, XHe, XNH3, XH2O);
+    abs = attenuation_NH3_Bellotti(wave, P, P_idl, T, XH2, XHe, XNH3, XH2O);
   } else if (model_name_ == "BellottiSwitch16") {
-    abs = attenuation_NH3_Bellotti_switch(wave1, P, P_idl, T, XH2, XHe, XNH3,
+    abs = attenuation_NH3_Bellotti_switch(wave, P, P_idl, T, XH2, XHe, XNH3,
                                           XH2O);
   } else if (model_name_ == "Devaraj") {
-    abs = attenuation_NH3_Devaraj(wave1, P, P_idl, T, XH2, XHe, XNH3, XH2O);
+    abs = attenuation_NH3_Devaraj(wave, P, P_idl, T, XH2, XHe, XNH3, XH2O);
   } else if (model_name_ == "Radtran") {
-    abs = attenuation_NH3_radtran(wave1, P, T, XH2, XHe, XNH3);
+    abs = attenuation_NH3_radtran(wave, P, T, XH2, XHe, XNH3);
   } else if (model_name_ == "Hanley09") {
-    abs = attenuation_NH3_Hanley(wave1, P, P_idl, T, XH2, XHe, XNH3, XH2O,
+    abs = attenuation_NH3_Hanley(wave, P, P_idl, T, XH2, XHe, XNH3, XH2O,
                                  params_.at("power"));
   } else {
-    throw NotFoundError("MwrAbsorberNH3::GetAttenuation: " + model_name_);
+    throw NotFoundError("MwrAbsorberNH3::GetAttenuation: ", model_name_);
   }
 
   return 100. * abs;  // 1/cm -> 1/m

@@ -51,11 +51,98 @@ RadiationBand::RadiationBand(MeshBlock *pmb, ParameterInput *pin,
   int npmom = my["moments"] ? my["moments"].as<int>() : 1;
 
   // set wavenumber and weights
+  if (my["wavenumber-range"]) {
+    setWavenumberRange(my);
+  } else if (my["wavenumbers"]) {
+    setWavenumberGrid(my);
+  } else if (my["wavelength-range"]) {
+    setWavelengthRange(my);
+  } else if (my["wavelengths"]) {
+    setWavelengthGrid(my);
+  } else if (my["frequency-Range"]) {
+    setFrequencyRange(my);
+  } else if (my["frequencies"]) {
+    setFrequencyGrid(my);
+  } else {
+    throw NotFoundError("RadiationBand", "Spectral range");
+  }
+
+  // outgoing radiation direction (mu,phi) in degree
+  if (pin->DoesParameterExist("radiation", name_ + ".outdir")) {
+    auto str = pin->GetString("radiation", name_ + ".outdir");
+    read_radiation_directions(&rayOutput_, str);
+  } else if (pin->DoesParameterExist("radiation", "outdir")) {
+    auto str = pin->GetString("radiation", "outdir");
+    read_radiation_directions(&rayOutput_, str);
+  }
+
+  // allocate memory
+  int ncells1 = pmb->ncells1;
+  int ncells2 = pmb->ncells2;
+  int ncells3 = pmb->ncells3;
+
+  // spectral properties
+  tem_.NewAthenaArray(ncells1);
+  temf_.NewAthenaArray(ncells1 + 1);
+
+  tau_.NewAthenaArray(spec_.size(), ncells1);
+  tau_.ZeroClear();
+
+  ssa_.NewAthenaArray(spec_.size(), ncells1);
+  ssa_.ZeroClear();
+
+  toa_.NewAthenaArray(spec_.size(), rayOutput_.size());
+  toa_.ZeroClear();
+
+  pmom_.NewAthenaArray(spec_.size(), ncells1, npmom + 1);
+  pmom_.ZeroClear();
+
+  // band properties
+  btau.NewAthenaArray(ncells3, ncells2, ncells1);
+  bssa.NewAthenaArray(ncells3, ncells2, ncells1);
+  bpmom.NewAthenaArray(npmom + 1, ncells3, ncells2, ncells1);
+
+  // add absorbers
+  if (my["opacity"]) {
+    for (auto aname : my["opacity"]) {
+      bool found = false;
+      for (auto absorber : node["opacity-sources"]) {
+        if (aname.as<std::string>() == absorber["name"].as<std::string>()) {
+          AddAbsorber(pin, name_, absorber);
+          found = true;
+          break;
+        }
+      }
+
+      if (!found) {
+        throw NotFoundError("RadiationBand",
+                            "Opacity " + aname.as<std::string>());
+      }
+    }
+  } else {
+    throw NotFoundError("RadiationBand", "Band " + name_ + " opacity");
+  }
+
+  char buf[80];
+  snprintf(buf, sizeof(buf), "%.2f - %.2f", wmin_, wmax_);
+  app->Log("Spectral range = " + std::string(buf));
+  app->Log("Number of spectral bins = " + std::to_string(spec_.size()));
+}
+
+RadiationBand::~RadiationBand() {
+  Application::Logger app("harp");
+  app->Log("Destroy RadiationBand " + name_);
+
+#ifdef RT_DISORT
+  free_disort();
+#endif
+}
+
+void RadiationBand::setWavenumberRange(YAML::Node &my) {
   wmin_ = my["wavenumber-range"][0].as<Real>();
   wmax_ = my["wavenumber-range"][1].as<Real>();
-  if (wmin_ >= wmax_) {
-    app->Error("Wavenumber range is not valid " + std::to_string(wmin_) + " " +
-               std::to_string(wmax_));
+  if (wmin_ > wmax_) {
+    throw InvalidValueError("setWavenumberRange", "wmin > wmax");
   }
 
   int num_bins = 1;
@@ -94,76 +181,41 @@ RadiationBand::RadiationBand(MeshBlock *pmb, ParameterInput *pin,
         "RadiationBand",
         "either 'resolution' or 'num-bins' or 'gpoints' must be defined");
   }
-
-  // outgoing radiation direction (mu,phi) in degree
-  if (pin->DoesParameterExist("radiation", name_ + ".outdir")) {
-    auto str = pin->GetString("radiation", name_ + ".outdir");
-    read_radiation_directions(&rayOutput_, str);
-  } else if (pin->DoesParameterExist("radiation", "outdir")) {
-    auto str = pin->GetString("radiation", "outdir");
-    read_radiation_directions(&rayOutput_, str);
-  }
-
-  // allocate memory
-  int ncells1 = pmb->ncells1;
-  int ncells2 = pmb->ncells2;
-  int ncells3 = pmb->ncells3;
-
-  // spectral properties
-  tem_.NewAthenaArray(ncells1);
-  temf_.NewAthenaArray(ncells1 + 1);
-
-  tau_.NewAthenaArray(num_bins, ncells1);
-  tau_.ZeroClear();
-
-  ssa_.NewAthenaArray(num_bins, ncells1);
-  ssa_.ZeroClear();
-
-  toa_.NewAthenaArray(num_bins, rayOutput_.size());
-  toa_.ZeroClear();
-
-  pmom_.NewAthenaArray(num_bins, ncells1, npmom + 1);
-  pmom_.ZeroClear();
-
-  // band properties
-  btau.NewAthenaArray(ncells3, ncells2, ncells1);
-  bssa.NewAthenaArray(ncells3, ncells2, ncells1);
-  bpmom.NewAthenaArray(npmom + 1, ncells3, ncells2, ncells1);
-
-  // add absorbers
-  if (my["opacity"]) {
-    for (auto aname : my["opacity"]) {
-      bool found = false;
-      for (auto absorber : node["opacity-sources"]) {
-        if (aname.as<std::string>() == absorber["name"].as<std::string>()) {
-          AddAbsorber(pin, name_, absorber);
-          found = true;
-          break;
-        }
-      }
-
-      if (!found) {
-        throw NotFoundError("RadiationBand",
-                            "Opacity " + aname.as<std::string>());
-      }
-    }
-  } else {
-    throw NotFoundError("RadiationBand", "Band " + name_ + " opacity");
-  }
-
-  char buf[80];
-  snprintf(buf, sizeof(buf), "%.2f - %.2f", wmin_, wmax_);
-  app->Log("Spectral range = " + std::string(buf));
-  app->Log("Number of spectral bins = " + std::to_string(num_bins));
 }
 
-RadiationBand::~RadiationBand() {
-  Application::Logger app("harp");
-  app->Log("Destroy RadiationBand " + name_);
+void RadiationBand::setWavenumberGrid(YAML::Node &my) {
+  throw NotImplementedError("setWavenumberGrid");
+}
 
-#ifdef RT_DISORT
-  free_disort();
-#endif
+void RadiationBand::setFrequencyRange(YAML::Node &my) {
+  throw NotImplementedError("setFrequencyRange");
+}
+
+void RadiationBand::setFrequencyGrid(YAML::Node &my) {
+  std::vector<Real> freqs = my["frequencies"].as<std::vector<Real>>();
+
+  wmin_ = freqs.front();
+  wmax_ = freqs.back();
+
+  if (wmin_ > wmax_) {
+    throw InvalidValueError("setWavenumberRange", "wmin > wmax");
+  }
+
+  spec_.resize(freqs.size());
+
+  for (int i = 0; i < spec_.size(); ++i) {
+    spec_[i].wav1 = freqs[i];
+    spec_[i].wav2 = freqs[i];
+    spec_[i].wght = 1.;
+  }
+}
+
+void RadiationBand::setWavelengthRange(YAML::Node &my) {
+  throw NotImplementedError("setWavelengthRange");
+}
+
+void RadiationBand::setWavelengthGrid(YAML::Node &my) {
+  throw NotImplementedError("setWavelengthGrid");
 }
 
 Absorber *RadiationBand::GetAbsorber(std::string const &name) {

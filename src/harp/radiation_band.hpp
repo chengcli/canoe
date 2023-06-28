@@ -74,6 +74,13 @@ class RadiationBand {
   std::shared_ptr<Impl> pimpl;
 
  protected:
+  void setWavenumberRange(YAML::Node &my);
+  void setWavenumberGrid(YAML::Node &my);
+  void setFrequencyRange(YAML::Node &my);
+  void setFrequencyGrid(YAML::Node &my);
+  void setWavelengthRange(YAML::Node &my);
+  void setWavelengthGrid(YAML::Node &my);
+
   void addAbsorberGiants(ParameterInput *pin, std::string bname,
                          YAML::Node &node);
   void addAbsorberEarth(ParameterInput *pin, std::string bname,

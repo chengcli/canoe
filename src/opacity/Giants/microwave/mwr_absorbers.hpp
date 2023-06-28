@@ -20,6 +20,9 @@
 // athena
 #include <athena/mesh/mesh.hpp>
 
+// applciation
+#include <application/exceptions.hpp>
+
 // harp
 #include <harp/absorber.hpp>
 
@@ -31,7 +34,19 @@ class MwrAbsorberCIA : public Absorber {
  public:
   MwrAbsorberCIA(MeshBlock* pmb, std::vector<std::string> species,
                  ParameterMap params)
-      : Absorber(pmb, "mw_CIA", species, params) {}
+      : Absorber(pmb, "radio-CIA", species, params) {
+    if (!params_.count("xHe")) {
+      throw NotFoundError("MwrAbsorberCIA", "parameter 'xHe'");
+    }
+
+    if (!params_.count("xCH4")) {
+      throw NotFoundError("MwrAbsorberCIA", "parameter 'xCH4'");
+    }
+
+    if (!params_.count("fequal")) {
+      throw NotFoundError("MwrAbsorberCIA", "parameter 'fequal'");
+    }
+  }
 
   Real GetAttenuation(Real wave1, Real wave2, CellVariables const& var) const;
 
@@ -43,7 +58,15 @@ class MwrAbsorberNH3 : public Absorber {
  public:
   MwrAbsorberNH3(MeshBlock* pmb, std::vector<std::string> species,
                  ParameterMap params)
-      : Absorber(pmb, "mw_NH3", species, params) {}
+      : Absorber(pmb, "radio-NH3", species, params) {
+    if (!params_.count("xHe")) {
+      throw NotFoundError("MwrAbsorberNH3", "parameter 'xHe'");
+    }
+
+    if (!params_.count("power")) {
+      throw NotFoundError("MwrAbsorberNH3", "parameter 'power'");
+    }
+  }
 
   MwrAbsorberNH3& SetModelHanley() {
     model_name_ = "Hanley09";
@@ -73,7 +96,7 @@ class MwrAbsorberPH3 : public Absorber {
  public:
   MwrAbsorberPH3(MeshBlock* pmb, std::vector<std::string> species,
                  ParameterMap params)
-      : Absorber(pmb, "mw_PH3", species, params) {}
+      : Absorber(pmb, "radio-PH3", species, params) {}
 
   MwrAbsorberPH3& SetModelRadtran() {
     model_name_ = "Radtran";
@@ -92,7 +115,15 @@ class MwrAbsorberH2O : public Absorber {
   // TODO(cli) check Karpowics model
   MwrAbsorberH2O(MeshBlock* pmb, std::vector<std::string> species,
                  ParameterMap params)
-      : Absorber(pmb, "mw_H2O", species, params) {}
+      : Absorber(pmb, "radio-H2O", species, params) {
+    if (!params_.count("xHe")) {
+      throw NotFoundError("MwrAbsorberH2O", "parameter 'xHe'");
+    }
+
+    if (!params_.count("scale")) {
+      throw NotFoundError("MwrAbsorberH2O", "parameter 'scale'");
+    }
+  }
 
   MwrAbsorberH2O& SetModeldeBoer() {
     model_name_ = "deBoer";
@@ -118,7 +149,7 @@ class MwrAbsorberH2S : public Absorber {
  public:
   MwrAbsorberH2S(MeshBlock* pmb, std::vector<std::string> species,
                  ParameterMap params)
-      : Absorber(pmb, "mw_H2S", species, params) {}
+      : Absorber(pmb, "radio-H2S", species, params) {}
 
   Real GetAttenuation(Real wave1, Real wave2, CellVariables const& var) const;
 };
@@ -127,7 +158,7 @@ class MwrAbsorberElectron : public Absorber {
  public:
   MwrAbsorberElectron(MeshBlock* pmb, std::vector<std::string> species,
                       ParameterMap params)
-      : Absorber(pmb, "mw_elec", species, params) {}
+      : Absorber(pmb, "radio-Electron", species, params) {}
 
   MwrAbsorberElectron& SetModelAppletonHartree() {
     model_name_ = "AppletonHartree";

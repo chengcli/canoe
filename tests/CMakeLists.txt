@@ -31,7 +31,10 @@ foreach(test ${src_files})
     )
 
   target_include_directories(${name}.${buildl}
-    PRIVATE ${CANOE_INCLUDE_DIR})
+    PRIVATE
+    ${CMAKE_BINARY_DIR}
+    ${CANOE_INCLUDE_DIR}
+    )
 
   target_link_libraries(${name}.${buildl} gtest_main
     ${CANOE_LIBRARY_${buildu}})
