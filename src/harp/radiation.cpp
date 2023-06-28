@@ -24,12 +24,6 @@
 #include "radiation_band.hpp"
 #include "radiation_utils.hpp"  // setRadiationFlags
 
-Real const Radiation::hPlanck = 6.63E-34;
-Real const Radiation::hPlanck_cgs = 6.63E-27;
-Real const Radiation::cLight = 3.E8;
-Real const Radiation::cLight_cgs = 3.E10;
-Real const Radiation::stefanBoltzmann = 5.670374419E-8;
-
 Radiation::Radiation(MeshBlock *pmb, ParameterInput *pin)
     : rflags_(0LL), pmy_block_(pmb) {
   Application::Logger app("harp");

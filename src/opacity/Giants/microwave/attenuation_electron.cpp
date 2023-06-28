@@ -1,8 +1,8 @@
 // C/C++
 #include <cmath>
 
-// snap
-#include <snap/thermodynamics/thermodynamics.hpp>
+// canoe
+#include <constants.hpp>
 
 // harp
 #include <harp/radiation.hpp>
@@ -66,15 +66,15 @@ double attenuation_appleton_hartree_nomag(double freq_GHz, double P_bar,
   double e_cgs = 4.8E-10;         // esu
   double me_cgs = 9.11E-28;       // g
 
-  double num = P / (Thermodynamics::kBoltz_cgs * T);  // cm^{-3}
-  double colli_radius = 1.2E-8;                       // cm
-  double lambda = Radiation::cLight_cgs / freq;       // wavelength (cm)
-  double omega = 2. * M_PI * freq;  // angular frequency (rad/s)
+  double num = P / (Constants::kBoltz_cgs * T);  // cm^{-3}
+  double colli_radius = 1.2E-8;                  // cm
+  double lambda = Constants::cLight_cgs / freq;  // wavelength (cm)
+  double omega = 2. * M_PI * freq;               // angular frequency (rad/s)
   // electron plasma frequency (rad/s)
   double omega_pe = sqrt(4. * M_PI * ne * e_cgs * e_cgs / me_cgs);
   // electron collision frequency (?)
   double nu_e = 5. / 3. * (M_PI * colli_radius * colli_radius * num) *
-                sqrt(3. * Thermodynamics::kBoltz_cgs * T / me_cgs);
+                sqrt(3. * Constants::kBoltz_cgs * T / me_cgs);
   double X = omega_pe * omega_pe / (omega * omega);
   double Z = nu_e / omega;
   double n2real = 1. - X / (1. + Z * Z);

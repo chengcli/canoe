@@ -33,13 +33,6 @@ const uint64_t WriteBinRadiance = 1LL << 8;
 
 class Radiation {
  public:
-  // constants
-  static Real const hPlanck;
-  static Real const hPlanck_cgs;
-  static Real const cLight;
-  static Real const cLight_cgs;
-  static Real const stefanBoltzmann;
-
   // access data
   AthenaArray<Real> radiance;
 

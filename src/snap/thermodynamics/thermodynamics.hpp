@@ -8,6 +8,7 @@
 
 // canoe
 #include <configure.hpp>
+#include <constants.hpp>
 
 // athena
 #include <athena/athena.hpp>
@@ -46,10 +47,6 @@ class Thermodynamics {
   friend std::ostream &operator<<(std::ostream &os, Thermodynamics const &my);
 
  public:
-  // members
-  static Real const Rgas;
-  static Real const kBoltz;
-  static Real const kBoltz_cgs;
   MeshBlock *pmy_block; /**< pointer to MeshBlock */
 
   // member functions
@@ -163,7 +160,7 @@ class Thermodynamics {
     c[IVY] = w[IVY];
     c[IVZ] = w[IVZ];
 
-    Real mols = c[IPR] / (c[IDN] * Rgas);
+    Real mols = c[IPR] / (c[IDN] * Constants::Rgas);
 #pragma omp simd
     for (int n = 1; n <= NVAPOR; ++n) {
       c[n] *= mols / sum;
@@ -174,7 +171,7 @@ class Thermodynamics {
   template <typename T1, typename T2>
   void ChemicalToPrimitive(T1 w, T2 const c) const {
     // set mass mixing ratio
-    Real sum = 1., mols = c[IPR] / (c[IDN] * Rgas);
+    Real sum = 1., mols = c[IPR] / (c[IDN] * Constants::Rgas);
     for (int n = 1; n <= NVAPOR; ++n) {
       w[n] = c[n] / mols * mu_ratios_[n];
       sum += c[n] / mols * (mu_ratios_[n] - 1.);
@@ -208,7 +205,7 @@ class Thermodynamics {
     c[IVY] = u[IVY] / rho;
     c[IVZ] = u[IVZ] / rho;
 
-    Real mols = c[IPR] / (Rgas * c[IDN]);
+    Real mols = c[IPR] / (Constants::Rgas * c[IDN]);
 #pragma omp simd
     for (int n = 1; n <= NVAPOR; ++n) c[n] *= mols / feps;
   }
@@ -216,7 +213,7 @@ class Thermodynamics {
   //! Change molar mixing ratio to density
   template <typename T1, typename T2>
   void ChemicalToConserved(T1 u, T2 const c) const {
-    Real sum = 1., mols = c[IPR] / (Rgas * c[IDN]);
+    Real sum = 1., mols = c[IPR] / (Constants::Rgas * c[IDN]);
     for (int n = 1; n <= NVAPOR; ++n) sum += c[n] / mols * (mu_ratios_[n] - 1.);
     Real rho = c[IPR] * sum / (Rd_ * c[IDN]);
     Real cvd = Rd_ / (pmy_block->peos->GetGamma() - 1.);
@@ -325,7 +322,7 @@ class Thermodynamics {
   Real GetMeanMolecularWeight(T w) const {
     Real feps = 1.;
     for (int n = 1; n <= NVAPOR; ++n) feps += w[n] * (mu_ratios_[n] - 1.);
-    return Rgas / Rd_ * feps;
+    return Constants::Rgas / Rd_ * feps;
   }
 
   /*! Saturation surplus for vapors can be both positive and negative
@@ -344,7 +341,7 @@ class Thermodynamics {
       for (int n = 0; n < NHYDRO; ++n) q1[n] = v[n];
     }
     // change molar density to molar mixing ratio
-    Real mols = q1[IPR] / (q1[IDN] * Rgas);
+    Real mols = q1[IPR] / (q1[IDN] * Constants::Rgas);
     for (int n = 1; n <= NVAPOR; ++n) q1[n] /= mols;
 
     for (int iv = 1; iv <= NVAPOR; ++iv) {
