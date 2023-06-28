@@ -10,8 +10,8 @@
 #include <athena/athena.hpp>
 #include <athena/parameter_input.hpp>
 
-// debugger
-#include <debugger/debugger.hpp>
+// application
+#include <application/application.hpp>
 
 // utils
 #include <utils/fileio.hpp>
@@ -55,6 +55,9 @@ void CelestrialBody::readCelestrialData(ParameterInput *pin,
 
 CelestrialBody::CelestrialBody(ParameterInput *pin)
     : parent(nullptr), spec_(nullptr), il_(-1) {
+  Application::Logger app("astro");
+  app->Log("Initialize CelestrialBody");
+
   std::stringstream msg;
   name = pin->GetOrAddString("astronomy", "planet", "unknown");
   readCelestrialData(pin, name);
@@ -69,7 +72,7 @@ CelestrialBody::CelestrialBody(ParameterInput *pin)
   if (pin->DoesParameterExist("astronomy", name + ".spec_file")) {
     std::string sfile = pin->GetString("astronomy", name + ".spec_file");
     if (!FileExists(sfile)) {
-      Debugger::Fatal("CelestrialBody", "Cannot open spectral file", sfile);
+      app->Error("Cannot open spectral file " + sfile);
     } else {
       ReadSpectraFile(sfile);
     }
@@ -81,6 +84,9 @@ CelestrialBody::CelestrialBody(ParameterInput *pin)
 
 CelestrialBody::CelestrialBody(ParameterInput *pin, std::string myname)
     : parent(nullptr), name(myname), spec_(nullptr), il_(-1) {
+  Application::Logger app("astro");
+  app->Log("Initialize CelestrialBody");
+
   std::stringstream msg;
   readCelestrialData(pin, name);
 
@@ -94,7 +100,7 @@ CelestrialBody::CelestrialBody(ParameterInput *pin, std::string myname)
   if (pin->DoesParameterExist("astronomy", name + ".spec_file")) {
     std::string sfile = pin->GetString("astronomy", name + ".spec_file");
     if (!FileExists(sfile)) {
-      Debugger::Fatal("CelestrialBody", "Cannot open spectral file", sfile);
+      app->Error("Cannot open spectral file " + sfile);
     } else {
       ReadSpectraFile(sfile);
     }
@@ -105,6 +111,9 @@ CelestrialBody::CelestrialBody(ParameterInput *pin, std::string myname)
 }
 
 CelestrialBody::~CelestrialBody() {
+  Application::Logger app("astro");
+  app->Log("Destroy CelestrialBody");
+
   if (parent != nullptr) delete parent;
   delete[] spec_;
 }

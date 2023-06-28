@@ -9,8 +9,8 @@
 #include <athena/mesh/mesh.hpp>
 #include <athena/parameter_input.hpp>
 
-// debugger
-#include <debugger/debugger.hpp>
+// application
+#include <application/application.hpp>
 
 // utils
 #include <utils/ndarrays.hpp>
@@ -24,7 +24,8 @@ Inversion::Inversion(MeshBlock *pmb, ParameterInput *pin, std::string name)
       mcmc_initialized_(false),
       init_pos_(nullptr),
       pmy_block_(pmb) {
-  pdebug->Enter("Inversion");
+  Application::Logger app("inversion");
+  app->Log("Initialize Inversion");
   std::stringstream msg;
 
   opts_.a = pin->GetOrAddReal("inversion", "stretch", 2.);
@@ -43,8 +44,8 @@ Inversion::Inversion(MeshBlock *pmb, ParameterInput *pin, std::string name)
   std::string obsfile = pin->GetOrAddString("inversion", "obsfile", "none");
   if (obsfile != "none") {
     read_observation_file(&target_, &icov_, obsfile.c_str());
-    pdebug->Message("target", target_.transpose());
-    pdebug->Message("inverse covariance matrx", icov_);
+    // app->Log("target = ", target_.transpose());
+    // app->Log("inverse covariance matrx = ", icov_);
   } else {
     target_.resize(1);
     icov_.resize(1, 1);
@@ -52,9 +53,7 @@ Inversion::Inversion(MeshBlock *pmb, ParameterInput *pin, std::string name)
 
   // fit differential
   fit_differential_ = pin->GetOrAddBoolean("inversion", "differential", false);
-  pdebug->Message("fit differential", fit_differential_);
-
-  pdebug->Leave();
+  // app->Log("fit differential = ", fit_differential_);
 }
 
 Inversion::~Inversion() {
@@ -76,17 +75,23 @@ void Inversion::InitializeChain(int nstep, int nwalker, int ndim, int nvalue) {
 }
 
 void Inversion::MakeMCMCOutputs(std::string fname) {
+  Application::Logger app("inversion");
+  app->Log("Make MCMC Outputs");
+
   std::stringstream msg;
   if (!mcmc_initialized_) {
-    Debugger::Fatal("MakeMCMCOutputs", "mcmc chain uninitialized");
+    app->Error("mcmc chain uninitialized");
   }
   mcmc_save_fits(fname.c_str(), &opts_, &recs_);
 }
 
 void Inversion::ResetChain() {
   std::stringstream msg;
+  Application::Logger app("inversion");
+  app->Log("Reset MCMC Chain");
+
   if (!mcmc_initialized_) {
-    Debugger::Fatal("ResetChain", "mcmc chain uninitialized");
+    app->Error("mcmc chain uninitialized");
   }
 
   int cur = recs_.cur;

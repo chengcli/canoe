@@ -6,8 +6,8 @@
 #include <Eigen/Core>
 #include <Eigen/Dense>
 
-// debugger
-#include <debugger/debugger.hpp>
+// application
+#include <application/application.hpp>
 
 // athena
 #include <athena/eos/eos.hpp>
@@ -23,8 +23,8 @@
 
 void ImplicitSolver::PartialCorrection(AthenaArray<Real>& du,
                                        AthenaArray<Real> const& w, Real dt) {
-  // pdebug->Call("ImplicitSolver::PartialCorrection-X" +
-  // std::to_string(mydir_+1));
+  Application::Logger app("snap");
+  app->Log("ImplicitSolver::PartialCorrection-X" + std::to_string(mydir_ + 1));
 
   int is, ie, js, je, ks, ke;
   int idn = 0, ivx = 1, ivy = 2, ivz = 3, ien = 4;
@@ -225,5 +225,4 @@ void ImplicitSolver::PartialCorrection(AthenaArray<Real>& du,
   // pdebug->CheckConservation("du", du, is, ie, js, je, ks, ke);
 
   delete[] gamma_m1;
-  // pdebug->Leave();
 }

@@ -10,8 +10,8 @@
 #include <athena/mesh/mesh.hpp>
 #include <athena/stride_iterator.hpp>
 
-// debugger
-#include <debugger/debugger.hpp>
+// application
+#include <application/application.hpp>
 
 // utils
 // #include <utils/program_setup.hpp>
@@ -24,7 +24,8 @@
 
 Decomposition::Decomposition(MeshBlock *pmb)
     : pmy_block_(pmb), has_top_neighbor(false), has_bot_neighbor(false) {
-  pdebug->Enter("Decomposition");
+  Application::Logger app("snap");
+  app->Log("Initialize Decomposition");
   int nc1 = pmb->ncells1, nc2 = pmb->ncells2, nc3 = pmb->ncells3;
   // allocate hydrostatic and nonhydrostatic pressure
   psf_.NewAthenaArray(nc3, nc2, nc1 + 1);
@@ -42,7 +43,6 @@ Decomposition::Decomposition(MeshBlock *pmb)
 
   // allocate polytropic index and pseudo entropy
   entropy_.NewAthenaArray(2, nc3, nc2);
-  pdebug->Leave();
 }
 
 Decomposition::~Decomposition() {

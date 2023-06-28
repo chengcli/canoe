@@ -1,5 +1,5 @@
-#ifndef SRC_SNAP_CELL_VARIABLES_HPP_
-#define SRC_SNAP_CELL_VARIABLES_HPP_
+#ifndef SRC_SNAP_VARIABLE_HPP_
+#define SRC_SNAP_VARIABLE_HPP_
 
 // C/C++
 #include <array>
@@ -10,9 +10,9 @@
 // athena
 #include <athena/athena.hpp>
 
-//! \class CellVariables
+//! \class Variable
 //  \brief a collection of all physical data in a computational cell
-class CellVariables {
+class Variable {
  public:
   enum { Size = NHYDRO + NSCALARS + NCLOUDS };
 
@@ -33,7 +33,7 @@ class CellVariables {
   Real *p;
 
   // constructor
-  CellVariables() {
+  Variable() {
     w = data_.data();
     s = w + NHYDRO;
     q = s + NSCALARS;
@@ -45,4 +45,4 @@ class CellVariables {
   std::array<Real, Size> data_;
 };
 
-#endif  // SRC_SNAP_CELL_VARIABLES_HPP_
+#endif  // SRC_SNAP_VARIABLE_HPP_

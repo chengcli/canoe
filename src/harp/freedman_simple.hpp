@@ -5,13 +5,16 @@
 
 #include "absorber.hpp"
 
+class MeshBlock;
+
 class FreedmanSimple : public Absorber {
  public:
   FreedmanSimple(MeshBlock *pmb, ParameterInput *pin, std::string bname);
   virtual ~FreedmanSimple() {}
-  Real getAttenuation(Real wave1, Real wave2, CellVariables const &var) const;
+  Real GetAttenuation(Real wave1, Real wave2, Variable const &var) const;
 
- private:
+ protected:
+  MeshBlock *pmy_block_;
   Real scale_;
 };
 

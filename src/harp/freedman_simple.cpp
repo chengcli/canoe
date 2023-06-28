@@ -12,26 +12,27 @@
 #include <athena/mesh/mesh.hpp>
 
 // snap
-#include <snap/cell_variables.hpp>
+#include <snap/meshblock_impl.hpp>
 #include <snap/thermodynamics/thermodynamics.hpp>
+#include <snap/variable.hpp>
 
 // harp
 #include "freedman_simple.hpp"
 
 FreedmanSimple::FreedmanSimple(MeshBlock *pmb, ParameterInput *pin,
                                std::string bname)
-    : Absorber(pmb, pin, bname, "FreedmanSimple") {
+    : Absorber("FreedmanSimple") {
   char str[80];
   snprintf(str, sizeof(str), "%s.%s.scale", bname.c_str(), name_.c_str());
   scale_ = pin->GetOrAddReal("radiation", str, 1.);
 }
 
 // xiz semigrey
-Real FreedmanSimple::getAttenuation(Real wave1, Real wave2,
-                                    CellVariables const &var) const {
+Real FreedmanSimple::GetAttenuation(Real wave1, Real wave2,
+                                    Variable const &var) const {
   static const Real Rgas = 8.314462;
   const Absorber *pabs = this;
-  Real mu = Rgas / pthermo_->GetRd();
+  Real mu = Rgas / pmy_block_->pimpl->pthermo->GetRd();
   Real result;
   Real p = var.q[IPR];
   Real T = var.q[IDN];

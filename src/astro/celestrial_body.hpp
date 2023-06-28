@@ -1,8 +1,12 @@
 #ifndef SRC_ASTRO_CELESTRIAL_BODY_HPP_
 #define SRC_ASTRO_CELESTRIAL_BODY_HPP_
 
-#include <athena/athena.hpp>
+// C/C++
+#include <memory>
 #include <string>
+
+// athena
+#include <athena/athena.hpp>
 
 class ParameterInput;
 struct float_triplet;
@@ -42,6 +46,8 @@ class CelestrialBody {
   int nspec_;
   int il_;  // search pointer
 };
+
+using CelestrialBodyPtr = std::shared_ptr<CelestrialBody>;
 
 Real GetGravity(char const *name, Real pclat);
 

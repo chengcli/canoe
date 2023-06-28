@@ -19,8 +19,8 @@
 #include <athena/mesh/mesh.hpp>
 #include <athena/stride_iterator.hpp>
 
-// debugger
-#include <debugger/debugger.hpp>
+// application
+#include <application/application.hpp>
 
 // snap
 #include <snap/meshblock_impl.hpp>
@@ -40,7 +40,8 @@ ProfileInversion::~ProfileInversion() {}
 ProfileInversion::ProfileInversion(MeshBlock *pmb, ParameterInput *pin,
                                    std::string name)
     : Inversion(pmb, pin, name) {
-  pdebug->Enter("ProfileInversion");
+  Application::Logger app("inversion");
+  app->Log("Initializing ProfileInversion");
   char buf[80];
 
   // species id
@@ -53,8 +54,9 @@ ProfileInversion::ProfileInversion(MeshBlock *pmb, ParameterInput *pin,
       Xstd_[IDN] = pin->GetReal("inversion", name + ".tem.std");
       Xlen_[IDN] =
           pin->GetReal("inversion", name + ".tem.corr.km") * 1.E3;  // km -> m
-      pdebug->Message(name + "::temperature std", Xstd_[IDN]);
-      pdebug->Message(name + "::temperature correlation length", Xlen_[0]);
+      app->Log(name + "::temperature std" + std::to_string(Xstd_[IDN]));
+      app->Log(name + "::temperature correlation length" +
+               std::to_string(Xlen_[0]));
     } else {
       Xstd_[m] = pin->GetReal("inversion", name + ".qvapor" +
                                                std::to_string(m) + ".std.gkg") /
@@ -63,12 +65,12 @@ ProfileInversion::ProfileInversion(MeshBlock *pmb, ParameterInput *pin,
       Xlen_[m] = pin->GetReal("inversion", name + ".qvapor" +
                                                std::to_string(m) + ".corr.km") *
                  1.E3;
-      snprintf(buf, sizeof(buf), "%s::vapor %d standard deviation",
-               name.c_str(), m);
-      pdebug->Message(buf, Xstd_[m]);
-      snprintf(buf, sizeof(buf), "%s::vapor %d correlation length",
-               name.c_str(), m);
-      pdebug->Message(buf, Xlen_[m]);
+      snprintf(buf, sizeof(buf),
+               "%s::vapor %d standard deviation = ", name.c_str(), m);
+      app->Log(buf + std::to_string(Xstd_[m]));
+      snprintf(buf, sizeof(buf),
+               "%s::vapor %d correlation length = ", name.c_str(), m);
+      app->Log(buf + std::to_string(Xlen_[m]));
     }
   }
 
@@ -80,44 +82,40 @@ ProfileInversion::ProfileInversion(MeshBlock *pmb, ParameterInput *pin,
       Vectorize<Real>(pin->GetString("inversion", name + ".PrSample").c_str());
   int ndim = idx_.size() * plevel_.size();
 
-  pdebug->Message(name + "::number of input dimension", ndim);
-  pdebug->Message(name + "::inversion pressure levels (bars)", plevel_);
+  app->Log(name + "::number of input dimension = " + std::to_string(ndim));
+  // app->Log(name + "::inversion pressure levels (bars) = ", plevel_);
 
   // add boundaries
   Real pmax = pin->GetReal("inversion", name + ".Pmax");
   Real pmin = pin->GetReal("inversion", name + ".Pmin");
   if (pmax < (plevel_.front() + 1.E-6))
-    Debugger::Fatal("ProfileInversion",
-                    "Pmax < " + std::to_string(plevel_.front()));
+    app->Error("Pmax < " + std::to_string(plevel_.front()));
 
   if (pmin > (plevel_.back() - 1.E-6))
-    Debugger::Fatal("ProfileInversion",
-                    "Pmin > " + std::to_string(plevel_.back()));
+    app->Error("Pmin > " + std::to_string(plevel_.back()));
 
   plevel_.insert(plevel_.begin(), pmax);
   plevel_.push_back(pmin);
-  pdebug->Message(name + "::top boundary", pmin);
-  pdebug->Message(name + "::bottom boundary", pmax);
+  // app->Log(name + "::top boundary = ", pmin);
+  // app->Log(name + "::bottom boundary =", pmax);
 
   // bar -> pa
   for (size_t n = 0; n < plevel_.size(); ++n) plevel_[n] *= 1.E5;
 
   // output dimension
   int nvalue = target_.size();
-  pdebug->Message("number of output dimension", nvalue);
+  // app->Log("number of output dimension = ", nvalue);
 
   // number of walkers
   int nwalker = pmb->block_size.nx3;
-  pdebug->Message("walkers per block", nwalker);
-  pdebug->Message("total number of walkers", pmb->pmy_mesh->mesh_size.nx3);
+  // app->Log("walkers per block =", nwalker);
+  // app->Log("total number of walkers = ", pmb->pmy_mesh->mesh_size.nx3);
   if ((nwalker < 2) && pmb->pmy_mesh->nlim > 0) {
-    Debugger::Fatal("ProfileInversion", "nwalker (nx3) must be at least 2");
+    app->Error("nwalker (nx3) must be at least 2");
   }
 
   // initialize mcmc chain
   InitializeChain(pmb->pmy_mesh->nlim + 1, nwalker, ndim, nvalue);
-
-  pdebug->Leave();
 }
 
 void ProfileInversion::InitializePositions() {
@@ -125,8 +123,10 @@ void ProfileInversion::InitializePositions() {
   int ndim = GetDims();
   int nsample = samples();  // excluding boundaries
 
+  Application::Logger app("inversion");
+
   // initialize random positions
-  pdebug->Message("initialize random positions for walkers");
+  app->Log("Initializing random positions for walkers");
 
   unsigned int seed = time(NULL) + Globals::my_rank;
   NewCArray(init_pos_, nwalker, ndim);
@@ -148,6 +148,7 @@ void ProfileInversion::UpdateHydro(Hydro *phydro, ParameterInput *pin) const {
   // read profile updates from input
   char buf[80];
   int nsample = samples();  // excluding boundaries
+  Application::Logger app("inversion");
 
   // prepare inversion model
   Real **XpSample;
@@ -167,8 +168,8 @@ void ProfileInversion::UpdateHydro(Hydro *phydro, ParameterInput *pin) const {
     std::vector<Real> qa = Vectorize<Real>(str.c_str(), " ,");
 
     if (qa.size() != nsample) {
-      Debugger::Fatal("UpdateHydro", "size of " + (std::string)buf + " != ",
-                      std::to_string(nsample));
+      app->Error("size of " + (std::string)buf +
+                 " != " + std::to_string(nsample));
     }
 
     // g/kg -> kg/kg
@@ -213,11 +214,11 @@ Real solve_thetav(Real rdlnTdlnP, void *aux) {
 
 void ProfileInversion::UpdateProfiles(Hydro *phydro, Real **XpSample, int k,
                                       int jl, int ju) const {
-  pdebug->Call("UpdateProfiles");
+  Application::Logger app("inversion");
 
   if (ju - jl != idx_.size()) {
-    Debugger::Fatal("UpdateProfiles", "Number of allocations in x2 should be",
-                    std::to_string(idx_.size() + 1));
+    app->Error("Number of allocations in x2 should be " +
+               std::to_string(idx_.size() + 1));
   }
 
   int is = pmy_block_->is, ie = pmy_block_->ie;
@@ -232,7 +233,7 @@ void ProfileInversion::UpdateProfiles(Hydro *phydro, Real **XpSample, int k,
   for (int i = 0; i < nsample; ++i) {
     zlev[i] = -H0 * log(plevel_[i] / P0);
   }
-  pdebug->Message("sample levels in height", zlev);
+  // app->Log("sample levels in height = ", zlev);
 
   // calculate the covariance matrix of T
   std::vector<Real> stdAll(nlayer);
@@ -250,7 +251,7 @@ void ProfileInversion::UpdateProfiles(Hydro *phydro, Real **XpSample, int k,
   Real Rd = pthermo->GetRd();
 
   // calculate perturbed profiles
-  pdebug->Message("update profiles");
+  app->Log("Update profiles");
   auto pcoord = pmy_block_->pcoord;
   for (size_t n = 0; n < idx_.size(); ++n) {
     int jn = jl + n;
@@ -320,13 +321,13 @@ void ProfileInversion::UpdateProfiles(Hydro *phydro, Real **XpSample, int k,
   FreeCArray(Xp);
 
   ConvectiveAdjustment(phydro, k, ju);
-  pdebug->Leave();
 }
 
 void ProfileInversion::ConvectiveAdjustment(Hydro *phydro, int k,
                                             int ju) const {
   std::stringstream msg;
-  pdebug->Call("doing convective adjustment");
+  Application::Logger app("inversion");
+  app->Log("doing convective adjustment");
 
   Real **w2;
   NewCArray(w2, 2, NHYDRO + 2 * NVAPOR);
@@ -357,7 +358,7 @@ void ProfileInversion::ConvectiveAdjustment(Hydro *phydro, int k,
       snprintf(buf, sizeof(buf),
                "root solver does not converge: %12.3g - %12.3g",
                solve_thetav(0.5, &solver_data), solve_thetav(8., &solver_data));
-      Debugger::Fatal("UpdateProfiles", "root solver does not converge");
+      app->Error("root solver does not converge");
     }
     // msg << "- rdlnTdlnP = " << rdlnTdlnP << std::endl;
 
@@ -372,8 +373,6 @@ void ProfileInversion::ConvectiveAdjustment(Hydro *phydro, int k,
     for (int n = 1; n <= NVAPOR; ++n)
       if (dw[n] > 0.) phydro->w(n, k, ju, i) -= dw[n];
   }
-
-  pdebug->Leave();
 
   FreeCArray(w2);
 }

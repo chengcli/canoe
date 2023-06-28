@@ -74,7 +74,7 @@ void PnetcdfOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) {
   float radius;
   if (strcmp(COORDINATE_SYSTEM, "spherical_polar") == 0) {
     try {
-      radius = (float)pin->GetReal("problem", "radius");
+      radius = pin->GetReal("problem", "radius");
     } catch (std::runtime_error &e) {
       std::stringstream msg;
       msg << "### FATAL ERROR in PnetcdfOutput::WriteOutputFile" << std::endl
@@ -150,8 +150,9 @@ void PnetcdfOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) {
   ncmpi_put_att_text(ifile, ivt, "long_name", 4, "time");
   if (strcmp(COORDINATE_SYSTEM, "spherical_polar") == 0) {
     ncmpi_put_att_text(ifile, ivt, "units", 25, "seconds since 1-1-1 0:0:0");
-  } else
+  } else {
     ncmpi_put_att_text(ifile, ivt, "units", 7, "seconds");
+  }
 
   ncmpi_def_var(ifile, "x1", NC_FLOAT, 1, &idx1, &ivx1);
   ncmpi_put_att_text(ifile, ivx1, "axis", 1, "Z");

@@ -8,19 +8,19 @@
 #include <athena/hydro/hydro.hpp>
 #include <athena/mesh/mesh.hpp>
 
+// application
+#include <application/application.hpp>
+
 // snap
 #include <snap/meshblock_impl.hpp>
-
-// debugger
-#include <debugger/debugger.hpp>
 
 // inversion
 #include "gaussian_process.hpp"
 #include "profile_inversion.hpp"
 
-extern std::unique_ptr<Debugger> pdebug;
-
 Real ProfileInversion::LogPriorProbability(Real **XpSample) const {
+  Application::Logger app("inversion");
+
   int nsample = plevel_.size();
   std::vector<Real> zlev(nsample);
   std::vector<Real> zstd(nsample);
@@ -38,7 +38,7 @@ Real ProfileInversion::LogPriorProbability(Real **XpSample) const {
                           zstd.data(), nsample, Xlen_[m]);
   }
 
-  pdebug->Message("Log prior probability", lnprior);
+  app->Log("Log prior probability = " + std::to_string(lnprior));
 
   return lnprior;
 }

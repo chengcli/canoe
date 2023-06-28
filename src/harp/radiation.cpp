@@ -1,19 +1,25 @@
 // C/C++ headers
+#include <fstream>
 #include <sstream>
 #include <stdexcept>
+
+// external
+#include <yaml-cpp/yaml.h>
 
 // climath
 #include <climath/core.h>
 
+// athena
 #include <athena/coordinates/coordinates.hpp>
 #include <athena/hydro/hydro.hpp>
 #include <athena/mesh/mesh.hpp>
 #include <athena/parameter_input.hpp>
 
-// #include "../thermodynamics/thermodynamics.hpp"
-// #include "../utils/utils.hpp"
-#include <debugger/debugger.hpp>
+// application
+#include <application/application.hpp>
+#include <application/exceptions.hpp>
 
+// harp
 #include "radiation.hpp"
 #include "radiation_band.hpp"
 #include "radiation_utils.hpp"  // setRadiationFlags
@@ -25,19 +31,20 @@ Real const Radiation::cLight_cgs = 3.E10;
 Real const Radiation::stefanBoltzmann = 5.670374419E-8;
 
 Radiation::Radiation(MeshBlock *pmb, ParameterInput *pin)
-    : rflags_(0LL), pcoord_(pmb->pcoord) {
-  pdebug->Enter("Radiation");
+    : rflags_(0LL), pmy_block_(pmb) {
+  Application::Logger app("harp");
+  app->Log("Initialize Radiation");
 
   // radiation flags
   set_radiation_flags(&rflags_, pin->GetOrAddString("radiation", "flags", ""));
 
   // distance to parent star
   stellarDistance_au_ = pin->GetOrAddReal("radiation", "distance_au", 1.);
-  pdebug->Message("stellar distance", stellarDistance_au_);
+  app->Log("Stellar distance = " + std::to_string(stellarDistance_au_) + " au");
 
   // radiation bands
-  int bid = 1;
-  readRadiationBands(pmb, pin, &bid);
+  if (pin->DoesParameterExist("radiation", "bandsfile"))
+    PopulateRadiationBands(pin);
 
   // incoming radiation direction (mu,phi) in degree
   std::string str = pin->GetOrAddString("radiation", "indir", "(0.,0.)");
@@ -53,29 +60,60 @@ Radiation::Radiation(MeshBlock *pmb, ParameterInput *pin)
   cooldown_ = pin->GetOrAddReal("radiation", "dt", 0.);
   current_ = 0.;
 
-  planet_ = new CelestrialBody(pin);
-  pdebug->Leave();
+  planet_ = std::make_unique<CelestrialBody>(pin);
 }
 
 Radiation::~Radiation() {
-  for (size_t i = 0; i < bands.size(); ++i) {
-    delete bands[i];
+  Application::Logger app("harp");
+  app->Log("Destroy Radiation");
+}
+
+RadiationBand *Radiation::GetBand(std::string const &name) {
+  for (auto &band : bands) {
+    if (band->GetName() == name) {
+      return band.get();
+    }
   }
-  delete planet_;
+
+  throw NotFoundError("GetBand", "Band " + name);
+}
+
+void Radiation::PopulateRadiationBands(ParameterInput *pin) {
+  Application::Logger app("harp");
+  app->Log("Populate Radiation bands");
+
+  std::string filename = pin->GetString("radiation", "bandsfile");
+  std::ifstream stream(filename);
+  if (stream.good() == false) {
+    app->Error("Cannot open radiation bands file: " + filename);
+  }
+  YAML::Node node = YAML::Load(stream);
+
+  if (!node["opacity-sources"]) {
+    throw NotFoundError("PopulateRadiationBand", "opacity-sources");
+  }
+
+  for (auto bname : node["bands"]) {
+    auto p = std::make_unique<RadiationBand>(pmy_block_, pin, node,
+                                             bname.as<std::string>());
+    bands.push_back(std::move(p));
+  }
 }
 
 void Radiation::calculateRadiativeFlux(AthenaArray<Real> *flxup,
                                        AthenaArray<Real> *flxdn, Real time,
                                        int k, int j, int il, int iu) {
-  pdebug->Call("Radiation::calculateRadiativeFlux");
+  Application::Logger app("harp");
+  app->Log("CalculateRadiativeFlux");
   Real dist = stellarDistance_au_;
 
   int idx = 0;
+  Coordinates *pcoord = pmy_block_->pcoord;
   for (auto p : bands) {
     Direction ray;
     if (p->test(RadiationFlags::Dynamic)) {
-      planet_->ParentZenithAngle(&ray.mu, &ray.phi, time, pcoord_->x2v(j),
-                                 pcoord_->x3v(k));
+      planet_->ParentZenithAngle(&ray.mu, &ray.phi, time, pcoord->x2v(j),
+                                 pcoord->x3v(k));
       dist = planet_->ParentDistanceInAu(time);
     } else {
       ray = rayInput_[0];
@@ -86,23 +124,23 @@ void Radiation::calculateRadiativeFlux(AthenaArray<Real> *flxup,
     bflxup.InitWithShallowSlice(*flxup, 3, idx, p->getNumOutgoingRays());
     bflxdn.InitWithShallowSlice(*flxdn, 3, idx, p->getNumOutgoingRays());
 
-    p->setSpectralProperties(k, j, il - NGHOST, iu + NGHOST - 1);
+    p->SetSpectralProperties(k, j, il - NGHOST, iu + NGHOST - 1);
     p->calculateBandFlux(&bflxup, &bflxdn, ray, dist, k, j, il, iu);
     idx++;
   }
-
-  pdebug->Leave();
 }
 
 void Radiation::calculateRadiance(AthenaArray<Real> *radiance, Real time, int k,
                                   int j, int il, int iu) {
-  pdebug->Call("Radiation::calculateRadiance");
+  Application::Logger app("harp");
+  app->Log("CalculateRadiance");
   Real dist = stellarDistance_au_;
+  Coordinates *pcoord = pmy_block_->pcoord;
 
   Direction ray;
   if (test(RadiationFlags::Dynamic)) {
-    planet_->ParentZenithAngle(&ray.mu, &ray.phi, time, pcoord_->x2v(j),
-                               pcoord_->x3v(k));
+    planet_->ParentZenithAngle(&ray.mu, &ray.phi, time, pcoord->x2v(j),
+                               pcoord->x3v(k));
     dist = planet_->ParentDistanceInAu(time);
   }
 
@@ -114,17 +152,16 @@ void Radiation::calculateRadiance(AthenaArray<Real> *radiance, Real time, int k,
     AthenaArray<Real> brad;
     brad.InitWithShallowSlice(*radiance, 3, idx, p->getNumOutgoingRays());
 
-    p->setSpectralProperties(k, j, il - NGHOST, iu + NGHOST - 1);
+    p->SetSpectralProperties(k, j, il - NGHOST, iu + NGHOST - 1);
     p->calculateBandRadiance(&brad, ray, dist, k, j, il, iu);
     idx += p->getNumOutgoingRays();
   }
-
-  pdebug->Leave();
 }
 
 void Radiation::addRadiativeFlux(Hydro *phydro, int k, int j, int il,
                                  int iu) const {
-  pdebug->Call("Radiation::addRadiativeFlux");
+  Application::Logger app("harp");
+  app->Log("AddRadiativeFlux");
 
   // x1-flux divergence
   for (size_t b = 0; b < bands.size(); ++b) {
@@ -132,54 +169,6 @@ void Radiation::addRadiativeFlux(Hydro *phydro, int k, int j, int il,
     for (int i = il; i <= iu; ++i)
       phydro->flux[X1DIR](IEN, k, j, i) +=
           flxup(b, k, j, i) - flxdn(b, k, j, i);
-  }
-
-  pdebug->Leave();
-}
-
-void Radiation::readRadiationBands(MeshBlock *pmb, ParameterInput *pin,
-                                   int *bid) {
-  char name[80];
-  while (true) {
-    snprintf(name, sizeof(name), "b%d", *bid);
-    if (!pin->DoesParameterExist("radiation", name)) break;
-    RadiationBand *p = new RadiationBand(pmb, pin, name);
-    bands.push_back(p);
-    (*bid)++;
-  }
-
-  if (pin->DoesParameterExist("radiation", "bandsfile")) {
-    ParameterInput *pin_next = new ParameterInput;
-    IOWrapper infile;
-    infile.Open(pin->GetString("radiation", "bandsfile").c_str(),
-                IOWrapper::FileMode::read);
-    pin_next->LoadFromFile(infile);
-    infile.Close();
-    InputBlock *pblock = pin->GetPtrToBlock("radiation");
-    InputLine *pline = pblock->pline;
-
-    // remove the bandsfile line
-    while (pline->pnext != nullptr) {
-      if (pline->pnext->param_name == "bandsfile") {
-        InputLine *pnext = pline->pnext->pnext;
-        delete pline->pnext;
-        pline->pnext = pnext;
-        continue;
-      }
-      pline = pline->pnext;
-    }
-
-    // get the first line of the current input in block radiation
-    pline = pin_next->GetPtrToBlock("radiation")->pline;
-
-    // copy the current lines into the main input
-    while (pline != nullptr) {
-      pin->AddParameter(pblock, pline->param_name, pline->param_value,
-                        pline->param_comment);
-      pline = pline->pnext;
-    }
-    readRadiationBands(pmb, pin, bid);
-    delete pin_next;
   }
 }
 

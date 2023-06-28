@@ -15,14 +15,16 @@
 #include <athena/hydro/hydro.hpp>
 #include <athena/mesh/mesh.hpp>
 
-// debugger
-#include <debugger/debugger.hpp>
+// application
+#include <application/application.hpp>
 
 // inversion
 #include "inversion.hpp"
 #include "mcmc.hpp"
 
 void Inversion::MCMCMove(Radiation *prad, Hydro *phydro) {
+  Application::Logger app("inversion");
+
   // initialize model
   if (recs_.cur == 0) {
     MCMCInit(prad, phydro);
@@ -30,7 +32,7 @@ void Inversion::MCMCMove(Radiation *prad, Hydro *phydro) {
 
   std::stringstream msg;
   if (!mcmc_initialized_) {
-    Debugger::Fatal("MCMCStep", "mcmc chain uninitialized");
+    app->Error("mcmc chain uninitialized");
   }
 
   int cur = recs_.cur;
