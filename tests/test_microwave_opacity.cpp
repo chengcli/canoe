@@ -59,7 +59,7 @@ class TestMicrowaveOpacity : public testing::Test {
 };
 
 TEST_F(TestMicrowaveOpacity, Absorbers) {
-  Radiation *prad = pmesh->my_blocks(0)->pimpl->prad;
+  auto prad = pmesh->my_blocks(0)->pimpl->prad;
 
   EXPECT_EQ(prad->GetNumBands(), 3);
   EXPECT_EQ(prad->GetBand("radio")->GetNumAbsorbers(), 3);

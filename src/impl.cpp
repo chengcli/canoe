@@ -1,9 +1,9 @@
-// canoe
-#include <configure.hpp>
-
 // athena
 #include <athena/athena.hpp>
 #include <athena/parameter_input.hpp>
+
+// canoe
+#include <configure.hpp>
 
 // application
 #include <application/exceptions.hpp>
@@ -38,13 +38,13 @@ MeshBlock::Impl::Impl(MeshBlock *pmb, ParameterInput *pin) : pmy_block_(pmb) {
   phevi = std::make_shared<ImplicitSolver>(pmb, pin);
 
   // reconstruction
-  precon = new FaceReconstruct(pmb, pin);
+  // precon = new FaceReconstruct(pmb, pin);
 
   // radiation
-  prad = new Radiation(pmb, pin);
+  prad = std::make_shared<Radiation>(pmb, pin);
 
   // inversion queue
-  fitq = create_inversion_queue(pmb, pin);
+  fitq = Inversion::NewInversionQueue(pmb, pin);
 
   // reference pressure
 #ifdef HYDROSTATIC
@@ -56,20 +56,4 @@ MeshBlock::Impl::Impl(MeshBlock *pmb, ParameterInput *pin) : pmy_block_(pmb) {
   reference_pressure_ = 1.0;
   pressure_scale_height_ = 1.0;
 #endif  // HYDROSTATIC
-}
-
-// Athena++ demands destruct pbval AFTER all boundary values
-// But in this mod, boundary values are destructed BEFORE pbval
-// TODO(cli) check if this is OK
-MeshBlock::Impl::~Impl() {
-  // std::cout << "Impl desctructor" << std::endl;
-  // delete pthermo;
-  // delete pdec;
-  // delete phevi;
-  delete precon;
-
-  delete prad;
-  for (auto q : fitq) {
-    delete q;
-  }
 }

@@ -62,7 +62,7 @@ TEST_F(TestRadiation, Species) {
 }
 
 TEST_F(TestRadiation, Radiation) {
-  Radiation *prad = pmesh->my_blocks(0)->pimpl->prad;
+  auto prad = pmesh->my_blocks(0)->pimpl->prad;
 
   EXPECT_EQ(prad->GetNumBands(), 3);
   EXPECT_EQ(prad->GetBand(0)->GetNumAbsorbers(), 6);

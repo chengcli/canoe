@@ -14,11 +14,15 @@
 #include "snap/implicit/implicit_solver.hpp"
 #include "snap/thermodynamics/thermodynamics.hpp"
 
+// harp
+#include "harp/radiation.hpp"
+
+// inversion
+#include "inversion/inversion.hpp"
+
 class ParameterInput;
 class FaceReconstruct;
 class Forcing;
-class Radiation;
-class Inversion;
 
 //! \class MeshBlock::Impl
 //  \brief opaque pointer class implements additional functionality of Athena
@@ -26,7 +30,7 @@ class Inversion;
 class MeshBlock::Impl {
  public:
   Impl(MeshBlock *pmb, ParameterInput *pin);
-  ~Impl();
+  ~Impl() {}
 
   AthenaArray<Real> du;  // stores tendency
 
@@ -34,11 +38,11 @@ class MeshBlock::Impl {
   DecompositionPtr pdec;
   ImplicitSolverPtr phevi;
 
-  FaceReconstruct *precon;
-  Forcing *pforce;
+  // FaceReconstruct *precon;
+  // Forcing *pforce;
 
-  Radiation *prad;
-  std::vector<Inversion *> fitq;
+  RadiationPtr prad;
+  InversionQueue fitq;
 
   Real GetReferencePressure() const { return reference_pressure_; }
   Real GetPressureScaleHeight() const { return pressure_scale_height_; }

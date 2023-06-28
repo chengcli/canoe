@@ -2,6 +2,7 @@
 #define SRC_HARP_RADIATION_HPP_
 
 // C/C++ headers
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -89,5 +90,7 @@ class Radiation {
   MeshBlock *pmy_block_;
   CelestrialBodyPtr planet_;
 };
+
+using RadiationPtr = std::shared_ptr<Radiation>;
 
 #endif  //  SRC_HARP_RADIATION_HPP_
