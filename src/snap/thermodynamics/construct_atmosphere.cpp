@@ -16,7 +16,7 @@
 void Thermodynamics::ConstructAtmosphere(Real **w, Real Ts, Real Ps, Real grav,
                                          Real dzORdlnp, int len, Adiabat method,
                                          Real userp) const {
-  Real gamma = pmy_block->peos->GetGamma();
+  Real gamma = pmy_block_->peos->GetGamma();
 
   // hydro + vapor + condensate
   Real q1[NHYDRO + 2 * NVAPOR];

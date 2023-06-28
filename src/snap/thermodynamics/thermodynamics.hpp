@@ -47,8 +47,6 @@ class Thermodynamics {
   friend std::ostream &operator<<(std::ostream &os, Thermodynamics const &my);
 
  public:
-  MeshBlock *pmy_block; /**< pointer to MeshBlock */
-
   // member functions
   Thermodynamics(MeshBlock *pmb, ParameterInput *pin);
   ~Thermodynamics();
@@ -72,7 +70,7 @@ class Thermodynamics {
    * @return $c_v$ [J/(kg K)]
    */
   Real GetCv(int i) const {
-    Real cvd = Rd_ / (pmy_block->peos->GetGamma() - 1.);
+    Real cvd = Rd_ / (pmy_block_->peos->GetGamma() - 1.);
     return cv_ratios_[i] * cvd;
   }
 
@@ -90,7 +88,7 @@ class Thermodynamics {
    * @return $c_p$ [J/(kg K)]
    * */
   Real GetCp(int i) const {
-    Real gamma = pmy_block->peos->GetGamma();
+    Real gamma = pmy_block_->peos->GetGamma();
     Real cpd = Rd_ * gamma / (gamma - 1.);
     return cp_ratios_[i] * cpd;
   }
@@ -198,7 +196,7 @@ class Thermodynamics {
       fsig += u[n] * cv_ratios_[n];
     }
     Real KE = 0.5 * (u[IM1] * u[IM1] + u[IM2] * u[IM2] + u[IM3] * u[IM3]) / rho;
-    Real gm1 = pmy_block->peos->GetGamma() - 1.;
+    Real gm1 = pmy_block_->peos->GetGamma() - 1.;
     c[IPR] = gm1 * (u[IEN] - KE) * feps / fsig;
     c[IDN] = c[IPR] / (feps * Rd_);
     c[IVX] = u[IVX] / rho;
@@ -216,7 +214,7 @@ class Thermodynamics {
     Real sum = 1., mols = c[IPR] / (Constants::Rgas * c[IDN]);
     for (int n = 1; n <= NVAPOR; ++n) sum += c[n] / mols * (mu_ratios_[n] - 1.);
     Real rho = c[IPR] * sum / (Rd_ * c[IDN]);
-    Real cvd = Rd_ / (pmy_block->peos->GetGamma() - 1.);
+    Real cvd = Rd_ / (pmy_block_->peos->GetGamma() - 1.);
     u[IDN] = rho;
     u[IEN] = 0.5 * rho * (c[IVX] * c[IVX] + c[IVY] * c[IVY] + c[IVZ] * c[IVZ]);
     for (int n = 1; n <= NVAPOR; ++n) {
@@ -234,7 +232,7 @@ class Thermodynamics {
   //! polytropic index $\gamma=c_p/c_v$
   template <typename T>
   Real GetGamma(T w) const {
-    Real gamma = pmy_block->peos->GetGamma();
+    Real gamma = pmy_block_->peos->GetGamma();
     Real fsig = 1., feps = 1.;
     for (int n = 1; n <= NVAPOR; ++n) {
       fsig += w[n] * (cv_ratios_[n] - 1.);
@@ -258,7 +256,7 @@ class Thermodynamics {
 
   template <typename T>
   Real GetPres(T u) const {
-    Real gm1 = pmy_block->peos->GetGamma() - 1;
+    Real gm1 = pmy_block_->peos->GetGamma() - 1;
     Real rho = 0., fsig = 0., feps = 0.;
     for (int n = 0; n <= NVAPOR; ++n) {
       rho += u[n];
@@ -271,7 +269,7 @@ class Thermodynamics {
 
   template <typename T>
   Real GetChi(T w) const {
-    Real gamma = pmy_block->peos->GetGamma();
+    Real gamma = pmy_block_->peos->GetGamma();
     Real tem[1] = {GetTemp(w)};
     update_gamma(&gamma, tem);
     Real qsig = 1., feps = 1.;
@@ -286,7 +284,7 @@ class Thermodynamics {
   //!   = \gamma_d/(\gamma_d - 1.)*R_d*T*(1 + \sum_i (q_i*(\hat{c}_{pi} - 1.)))
   template <typename T>
   Real getSpecificCp(T w) const {
-    Real gamma = pmy_block->peos->GetGamma();
+    Real gamma = pmy_block_->peos->GetGamma();
     Real tem[1] = {GetTemp(w)};
     update_gamma(&gamma, tem);
     Real qsig = 1.;
@@ -298,7 +296,7 @@ class Thermodynamics {
   //!   = \gamma_d/(\gamma_d - 1.)*R_d*T*(1 + \sum_i (q_i*(\hat{c}_{vi} - 1.)))
   template <typename T>
   Real getSpecificCv(T w) const {
-    Real gamma = pmy_block->peos->GetGamma();
+    Real gamma = pmy_block_->peos->GetGamma();
     Real tem[1] = {GetTemp(w)};
     update_gamma(&gamma, tem);
     Real qsig = 1.;
@@ -310,7 +308,7 @@ class Thermodynamics {
   //!   = \gamma_d/(\gamma_d - 1.)*R_d*T*(1 + \sum_i (q_i*(\hat{c}_{pi} - 1.)))
   template <typename T>
   Real getSpecificEnthalpy(T w) const {
-    Real gamma = pmy_block->peos->GetGamma();
+    Real gamma = pmy_block_->peos->GetGamma();
     Real tem[1] = {GetTemp(w)};
     update_gamma(&gamma, tem);
     Real qsig = 1.;
@@ -354,6 +352,8 @@ class Thermodynamics {
   }
 
  private:
+  MeshBlock *pmy_block_;
+
   Real ftol_;
   int max_iter_;
 

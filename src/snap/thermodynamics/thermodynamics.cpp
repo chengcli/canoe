@@ -73,7 +73,7 @@ void ReadThermoProperty(Real var[], char const name[], int len, Real v0,
 }
 
 Thermodynamics::Thermodynamics(MeshBlock* pmb, ParameterInput* pin)
-    : pmy_block(pmb) {
+    : pmy_block_(pmb) {
   Application::Logger app("snap");
   app->Log("Initialize Thermodynamics");
 
