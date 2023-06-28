@@ -42,7 +42,7 @@ void EquationOfState::ConservedToPrimitive(
     Coordinates* pco, int il, int iu, int jl, int ju, int kl, int ku) {
   Real gm1 = GetGamma() - 1.0;
   std::stringstream msg;
-  Thermodynamics* pthermo = pmy_block_->pimpl->pthermo;
+  auto pthermo = pmy_block_->pimpl->pthermo;
 
   apply_vapor_limiter(&cons, pmy_block_);
 
@@ -147,7 +147,7 @@ void EquationOfState::PrimitiveToConserved(const AthenaArray<Real>& prim,
                                            Coordinates* pco, int il, int iu,
                                            int jl, int ju, int kl, int ku) {
   Real igm1 = 1.0 / (GetGamma() - 1.0);
-  Thermodynamics* pthermo = pmy_block_->pimpl->pthermo;
+  auto pthermo = pmy_block_->pimpl->pthermo;
 
   // Force outer-loop vectorization
 #pragma omp simd
@@ -200,7 +200,7 @@ void EquationOfState::PrimitiveToConserved(const AthenaArray<Real>& prim,
 // \!fn Real EquationOfState::SoundSpeed(Real prim[NHYDRO])
 // \brief returns adiabatic sound speed given vector of primitive variables
 Real EquationOfState::SoundSpeed(const Real prim[NHYDRO]) {
-  Thermodynamics* pthermo = pmy_block_->pimpl->pthermo;
+  auto pthermo = pmy_block_->pimpl->pthermo;
 
   Real fsig = 1., feps = 1.;
   for (int n = 1; n <= NVAPOR; ++n) {

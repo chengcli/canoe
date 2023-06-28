@@ -94,7 +94,7 @@ void ImplicitSolver::PartialCorrection(AthenaArray<Real>& du,
   Bnd << 1., 0., 0., 0., -1., 0., 0., 0., 1.;
 
   Real wl[NHYDRO], wr[NHYDRO];
-  Thermodynamics* pthermo = pmy_block_->pimpl->pthermo;
+  auto pthermo = pmy_block_->pimpl->pthermo;
   for (int k = ks; k <= ke; ++k)
     for (int j = js; j <= je; ++j) {
       // calculate and save flux Jacobian matrix

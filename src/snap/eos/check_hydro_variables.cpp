@@ -36,7 +36,7 @@ void check_hydro_variables(MeshBlock *pmb, AthenaArray<Real> const &w) {
           }
         }
 
-        Thermodynamics *pthermo = pmb->pimpl->pthermo;
+        auto pthermo = pmb->pimpl->pthermo;
         Real temp = pthermo->GetTemp(w.at(k, j, i));
         Real grav = -pmb->phydro->hsrc.GetG1();
         if (grav != 0) {

@@ -4,6 +4,7 @@
 // C/C++
 #include <cfloat>
 #include <iosfwd>
+#include <memory>
 
 // canoe
 #include <configure.hpp>
@@ -395,5 +396,7 @@ class Thermodynamics {
   //! ratio of specific heat capacities at constant volume
   Real cv_ratios_[1 + 3 * NVAPOR];
 };
+
+using ThermodynamicsPtr = std::shared_ptr<Thermodynamics>;
 
 #endif  // SRC_SNAP_THERMODYNAMICS_THERMODYNAMICS_HPP_

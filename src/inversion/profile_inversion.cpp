@@ -335,7 +335,7 @@ void ProfileInversion::ConvectiveAdjustment(Hydro *phydro, int k,
   Real dw[1 + NVAPOR];
   int is = pmy_block_->is, ie = pmy_block_->ie;
 
-  auto const pthermo = pmy_block_->pimpl->pthermo;
+  auto pthermo = pmy_block_->pimpl->pthermo;
   for (int i = is + 1; i <= ie; ++i) {
     // if (pcoord_->x1v(i) < zlev[0]) continue;
     //  copy unadjusted temperature and composition profile to ju
@@ -346,7 +346,7 @@ void ProfileInversion::ConvectiveAdjustment(Hydro *phydro, int k,
 
     SolverData solver_data;
     solver_data.w2 = w2;
-    solver_data.pthermo = pthermo;
+    solver_data.pthermo = pthermo.get();
     solver_data.dlnp =
         log(phydro->w(IPR, k, ju, i) / phydro->w(IPR, k, ju, i - 1));
 

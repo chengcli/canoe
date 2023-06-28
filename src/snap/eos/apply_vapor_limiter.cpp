@@ -5,7 +5,7 @@
 #include "../thermodynamics/thermodynamics.hpp"
 
 void apply_vapor_limiter(AthenaArray<Real> *pu, MeshBlock *pmb) {
-  Thermodynamics *pthermo = pmb->pimpl->pthermo;
+  auto pthermo = pmb->pimpl->pthermo;
   if (NVAPOR == 0) return;
 
   int is = pmb->is;

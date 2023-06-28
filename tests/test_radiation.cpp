@@ -9,6 +9,7 @@
 
 // snap
 #include <snap/meshblock_impl.hpp>
+#include <snap/meshblock_index_map.hpp>
 
 // harp
 #include <harp/absorber.hpp>

@@ -95,7 +95,7 @@ void ImplicitSolver::FullCorrection(AthenaArray<Real>& du,
   Real* gamma_m1 = new Real[nc];
 
   Real wl[NHYDRO], wr[NHYDRO];
-  Thermodynamics* pthermo = pmy_block_->pimpl->pthermo;
+  auto pthermo = pmy_block_->pimpl->pthermo;
 
   for (int k = ks; k <= ke; ++k)
     for (int j = js; j <= je; ++j) {
