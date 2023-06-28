@@ -225,7 +225,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
   // set spectral properties
   for (auto p : pimpl->prad->bands) {
     for (int k = kl; k <= ku; ++k)
-      for (int j = jl; j <= ju; ++j) p->setSpectralProperties(k, j, is, ie);
+      for (int j = jl; j <= ju; ++j) p->SetSpectralProperties(k, j, is, ie);
   }
 
   peos->PrimitiveToConserved(phydro->w, pfield->bcc, phydro->u, pcoord, is, ie,
@@ -272,6 +272,7 @@ int main(int argc, char **argv) {
 
   // initialize mesh
   pmesh->Initialize(restart, pinput);
+  auto pindex = pmesh->my_blocks(0)->pindex;
   auto psnap = pmesh->my_blocks(0)->pimpl;
 
   // mesh limits
@@ -300,8 +301,8 @@ int main(int argc, char **argv) {
   t1 = new Real[nx1];
 
   // read in vapors
-  size_t iH2O = psnap->GetVaporIndex("H2O");
-  size_t iNH3 = psnap->GetVaporIndex("NH3");
+  size_t iH2O = pindex->GetVaporId("H2O");
+  size_t iNH3 = pindex->GetVaporId("NH3");
 
   w1[0][iH2O] = pinput->GetReal("problem", "qH2O");
   w1[0][iNH3] = pinput->GetReal("problem", "qNH3");
