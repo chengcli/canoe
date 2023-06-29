@@ -18,12 +18,15 @@ class MeshBlock::IndexMap {
   size_t GetVaporId(std::string name) const {
     return vapor_index_map_.at(name);
   }
-  size_t GetTracerId(std::string name) const {
-    return tracer_index_map_.at(name);
-  }
+
   size_t GetCloudId(std::string name) const {
     return cloud_index_map_.at(name);
   }
+
+  size_t GetTracerId(std::string name) const {
+    return tracer_index_map_.at(name);
+  }
+
   size_t GetChemistryId(std::string name) const {
     return chemistry_index_map_.at(name);
   }

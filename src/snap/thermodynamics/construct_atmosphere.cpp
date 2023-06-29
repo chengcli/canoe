@@ -7,6 +7,7 @@
 #include <athena/hydro/hydro.hpp>
 
 // canoe
+#include <configure.hpp>
 #include <constants.hpp>
 
 // thermodynamics

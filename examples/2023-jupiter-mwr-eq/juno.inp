@@ -1,6 +1,6 @@
 <comment>
 problem   = Juno mwr observation simulator and inversion package
-configure = -DTASK=Juno
+configure = mkdir build-juno && cmake .. -DTASK=Juno
 
 <job>
 problem_id  = juno_mwr    # problem ID: basename of output filenames
@@ -70,7 +70,7 @@ sfloor      = 0.
 <species>
 vapor = H2O, NH3, H2O
 cloud = H2O(S), H2O(L), NH3(S), NH3(L), NH4SH(S)
-tracer = elec, K+, Na+
+tracer = e-, K, Na
 
 vapor = nasa_gas.yaml
 

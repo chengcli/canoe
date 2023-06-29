@@ -206,9 +206,9 @@ Real solve_thetav(Real rdlnTdlnP, void *aux) {
   pthermo->ConstructAtmosphere(w2, pthermo->GetTemp(w2[0]), w2[0][IPR], 0.,
                                pdata->dlnp, 2, Adiabat::dry, rdlnTdlnP);
   Real thetav0 =
-      PotentialTemp(w2[0], w2[0][IPR], pthermo) * pthermo->RovRd(w2[0]);
+      pthermo->PotentialTemp(w2[0], w2[0][IPR]) * pthermo->RovRd(w2[0]);
   Real thetav1 =
-      PotentialTemp(w2[1], w2[0][IPR], pthermo) * pthermo->RovRd(w2[1]);
+      pthermo->PotentialTemp(w2[1], w2[0][IPR]) * pthermo->RovRd(w2[1]);
   return thetav1 - thetav0;
 }
 

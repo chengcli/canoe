@@ -1,9 +1,9 @@
 string(TOLOWER ${CMAKE_BUILD_TYPE} buildl)
 string(TOUPPER ${CMAKE_BUILD_TYPE} buildu)
 
-# 1. Compile test_jupiter_re.cpp
+# 1. Compile juno.cpp
 
-set(namel test_jupiter_re)
+set(namel juno)
 
 add_executable(${namel}.${buildl} ${namel}.cpp)
 
@@ -29,7 +29,7 @@ target_include_directories(${namel}.${buildl}
 
 # 1. Copy input file to run directory
 
-file(GLOB inputs *.inp *.toml)
+file(GLOB inputs *.inp *.yaml)
 foreach(input ${inputs})
     file(COPY ${input} DESTINATION ${CMAKE_BINARY_DIR}/bin)
 endforeach()

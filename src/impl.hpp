@@ -17,6 +17,15 @@
 // harp
 #include "harp/radiation.hpp"
 
+// cloud
+#include "clouds/cloud.hpp"
+
+// tracer
+#include "tracer/tracer.hpp"
+
+// tracer
+#include "c3m/chemistry.hpp"
+
 // inversion
 #include "inversion/inversion.hpp"
 
@@ -37,6 +46,12 @@ class MeshBlock::Impl {
   ThermodynamicsPtr pthermo;
   DecompositionPtr pdec;
   ImplicitSolverPtr phevi;
+
+  TracerPtr ptracer;
+  ChemistryPtr pchem;
+  // StaticVariablePtr pstatic;
+
+  CloudQueue cloudq;
 
   // FaceReconstruct *precon;
   // Forcing *pforce;
