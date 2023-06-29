@@ -32,7 +32,7 @@ vapor = H2O, NH3
 tracer = elec
 
 <radiation>
-bandsfile = example_bands.yaml
+control_file = example_control.yaml
 
 <problem>
 dens  = 1.0

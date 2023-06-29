@@ -28,7 +28,7 @@
 // utils
 #include <utils/ndarrays.hpp>
 
-// thermodynamics
+// snap
 #include <snap/thermodynamics/thermodynamics.hpp>
 #include <snap/thermodynamics/thermodynamics_helper.hpp>
 

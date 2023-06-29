@@ -1,0 +1,32 @@
+name: Jupiter atmosphere properties
+
+references:
+  - Atreya's contribution to the MWR manuscript, 2012
+  - Juno JAMRT model
+  - Li et al., 2017
+  - Li et al., 2020
+
+stellar-composition:
+  comment: relative to H2
+  He: 0.1941
+  CH4: 6.04e-04
+  H2O: 1.10e-03
+  NH3: 1.52e-04
+  H2S: 2.96e-05
+  Ar:  5.64e-06
+  PH3: 5.76e-07
+  Ne:  1.91e-04
+  Na: 3.97E-6
+  K: 0.
+
+enrichment:
+  He: 0.808
+  CH4: 3.92
+  H2S: 3.01
+  Ar:  3.23
+  PH3: 3.75
+  Ne:  0.13
+  H2O: 2.
+  NH3: 2.5
+  Na: 0.01
+  K: 0.01

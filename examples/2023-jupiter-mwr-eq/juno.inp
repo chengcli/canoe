@@ -1,0 +1,94 @@
+<comment>
+problem   = Juno mwr observation simulator and inversion package
+configure = --task=InversionTaskList --prob=juno_mwr --rt=lambert --nscalars=2 --nvapor=2 --h2o=1 --nh3=2 -hydrostatic -cp_real -netcdf -fits --fits_path=${HOME}/opt -mpi
+
+<job>
+problem_id  = juno_mwr    # problem ID: basename of output filenames
+
+#<output1>
+#file_type   = fits        # Binary data dump
+#variable    = mcmc        # variables to be output
+#dt          = 1.E-9       # time increment between outputs
+
+<output2>
+file_type   = netcdf      # NetCDF data dump
+variable    = prim        # variables to be output
+dt          = 1.E-9       # time increment between outputs
+
+<output3>
+file_type   = netcdf
+variable    = uov
+dt          = 1.E-9
+
+<output4>
+file_type   = netcdf
+variable    = radtoa
+dt          = 1.E-9
+
+#<output5>
+#file_type   = netcdf
+#variable    = radtau
+#dt          = 1.E-9
+
+<time>
+cfl_number  = 1.
+nlim        = 0      # cycle limit
+tlim        = 1.E9        # time limit
+
+<mesh>
+nx1         = 1600        # Number of zones in X1-direction
+x1min       = -270.E3     # minimum value of X1
+x1max       = 200.E3      # maximum value of X1
+ix1_bc      = reflecting  # Inner-X1 boundary condition flag
+ox1_bc      = reflecting  # Outer-X1 boundary condition flag
+
+nx2         = 5           # Number of zones in X2-direction
+x2min       = 0.          # minimum value of X2
+x2max       = 1.          # maximum value of X2
+ix2_bc      = reflecting  # Inner-X2 boundary condition flag
+ox2_bc      = reflecting  # Outer-X2 boundary condition flag
+
+nx3         = 58          # Number of zones in X3-direction
+x3min       = 0.          # minimum value of X3
+x3max       = 1.          # maximum value of X3
+ix3_bc      = periodic    # Inner-X3 boundary condition flag
+ox3_bc      = periodic    # Outer-X3 boundary condition flag
+
+#<meshblock>
+#nx1         = 1600
+#nx2         = 5
+#nx3         = 1
+
+<hydro>
+gamma       = 1.42     # gamma = C_p/C_v
+grav_acc1   = -23.3
+sfloor      = 0.
+
+<thermodynamics>
+#Rd          = 3615.   # mu = 2.3 g/mol
+Rd          = 3587.   # mu = 2.3175 g/mol
+eps1        = 8.18    8.18    8.18
+beta1       = 0.      24.845  24.845
+rcp1        = 0.15    0.33    0.33
+Ttriple1    = 273.16
+Ptriple1    = 611.7
+
+eps2        = 7.72    7.72    7.72
+rcp2        = 0.078   0.16    0.16
+beta2       = 0.      23.67   23.67
+Ttriple2    = 195.4
+Ptriple2    = 6060.
+
+<radiation>
+control_file = mwr_channels.yaml
+outdir       = (0,) (15,) (30,) (45,)
+
+<inversion>
+control_file = mwr_inversion.yaml
+
+<problem>
+use_fletcher16_cirs = false
+atm_file    = jupiter_atm.yaml
+clat        = 0.
+T0          = 169
+Tmin        = 110.

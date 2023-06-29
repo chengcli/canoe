@@ -17,12 +17,6 @@
 #include <string>
 #include <vector>
 
-// athena
-#include <athena/mesh/mesh.hpp>
-
-// applciation
-#include <application/exceptions.hpp>
-
 // harp
 #include <harp/absorber.hpp>
 
@@ -33,40 +27,18 @@ namespace GiantPlanets {
 class MwrAbsorberCIA : public Absorber {
  public:
   MwrAbsorberCIA(MeshBlock* pmb, std::vector<std::string> species,
-                 ParameterMap params)
-      : Absorber(pmb, "radio-CIA", species, params) {
-    if (!params_.count("xHe")) {
-      throw NotFoundError("MwrAbsorberCIA", "parameter 'xHe'");
-    }
-
-    if (!params_.count("xCH4")) {
-      throw NotFoundError("MwrAbsorberCIA", "parameter 'xCH4'");
-    }
-
-    if (!params_.count("fequal")) {
-      throw NotFoundError("MwrAbsorberCIA", "parameter 'fequal'");
-    }
-  }
+                 ParameterMap params);
 
   Real GetAttenuation(Real wave1, Real wave2, Variable const& var) const;
 
  private:
-  Real xHe_, xCH4_, fequal_;
+  Real xHe_, xCH4_, mix_;
 };
 
 class MwrAbsorberNH3 : public Absorber {
  public:
   MwrAbsorberNH3(MeshBlock* pmb, std::vector<std::string> species,
-                 ParameterMap params)
-      : Absorber(pmb, "radio-NH3", species, params) {
-    if (!params_.count("xHe")) {
-      throw NotFoundError("MwrAbsorberNH3", "parameter 'xHe'");
-    }
-
-    if (!params_.count("power")) {
-      throw NotFoundError("MwrAbsorberNH3", "parameter 'power'");
-    }
-  }
+                 ParameterMap params);
 
   MwrAbsorberNH3& SetModelHanley() {
     model_name_ = "Hanley09";
@@ -114,16 +86,7 @@ class MwrAbsorberH2O : public Absorber {
  public:
   // TODO(cli) check Karpowics model
   MwrAbsorberH2O(MeshBlock* pmb, std::vector<std::string> species,
-                 ParameterMap params)
-      : Absorber(pmb, "radio-H2O", species, params) {
-    if (!params_.count("xHe")) {
-      throw NotFoundError("MwrAbsorberH2O", "parameter 'xHe'");
-    }
-
-    if (!params_.count("scale")) {
-      throw NotFoundError("MwrAbsorberH2O", "parameter 'scale'");
-    }
-  }
+                 ParameterMap params);
 
   MwrAbsorberH2O& SetModeldeBoer() {
     model_name_ = "deBoer";

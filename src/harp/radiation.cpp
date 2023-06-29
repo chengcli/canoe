@@ -37,7 +37,7 @@ Radiation::Radiation(MeshBlock *pmb, ParameterInput *pin)
   app->Log("Stellar distance = " + std::to_string(stellarDistance_au_) + " au");
 
   // radiation bands
-  if (pin->DoesParameterExist("radiation", "bandsfile"))
+  if (pin->DoesParameterExist("radiation", "control_file"))
     PopulateRadiationBands(pin);
 
   // incoming radiation direction (mu,phi) in degree
@@ -76,7 +76,8 @@ void Radiation::PopulateRadiationBands(ParameterInput *pin) {
   Application::Logger app("harp");
   app->Log("Populate Radiation bands");
 
-  std::string filename = pin->GetString("radiation", "bandsfile");
+  std::string filename = pin->GetString("radiation", "control_file");
+
   std::ifstream stream(filename);
   if (stream.good() == false) {
     app->Error("Cannot open radiation bands file: " + filename);

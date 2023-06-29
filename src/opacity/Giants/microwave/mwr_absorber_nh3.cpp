@@ -1,14 +1,9 @@
-// C/C++
-#include <sstream>
-#include <stdexcept>
-
 // canoe
 #include <configure.hpp>
 #include <variable.hpp>
 
 // athena
 #include <athena/mesh/mesh.hpp>
-#include <athena/parameter_input.hpp>
 
 // climath
 #include <climath/interpolation.h>
@@ -21,6 +16,18 @@
 #include "mwr_absorbers.hpp"
 
 namespace GiantPlanets {
+
+MwrAbsorberNH3::MwrAbsorberNH3(MeshBlock* pmb, std::vector<std::string> species,
+                               ParameterMap params)
+    : Absorber(pmb, "radio-NH3", species, params) {
+  if (!params_.count("xHe")) {
+    throw NotFoundError("MwrAbsorberNH3", "parameter 'xHe'");
+  }
+
+  if (!params_.count("power")) {
+    throw NotFoundError("MwrAbsorberNH3", "parameter 'power'");
+  }
+}
 
 Real MwrAbsorberNH3::GetAttenuation(Real wave1, Real wave2,
                                     Variable const& var) const {

@@ -6,7 +6,7 @@
    All rights reserved.
 
    Written by Fabiano Oyafuso (fabiano@jpl.nasa.gov)
-   Adapted by Cheng Li (cli@gps.caltech.edu) to SNAP structure
+   Adapted by Cheng Li (cli@gps.caltech.edu) to canoe structure
 
 **************************************************************************/
 
