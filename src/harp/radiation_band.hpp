@@ -47,11 +47,13 @@ class RadiationBand {
 
   std::string GetName() { return name_; }
 
+  std::string GetType() { return type_; }
+
   Real getCosinePolarAngle(int n) const { return rayOutput_[n].mu; }
 
   Real getAzimuthalAngle(int n) const { return rayOutput_[n].phi; }
 
-  void AddAbsorber(ParameterInput *pin, std::string bname, YAML::Node &node);
+  void AddAbsorber(ParameterInput *pin, YAML::Node &node);
 
   void SetSpectralProperties(int k, int j, int il, int iu);
 
@@ -81,20 +83,17 @@ class RadiationBand {
   void setWavelengthRange(YAML::Node &my);
   void setWavelengthGrid(YAML::Node &my);
 
-  void addAbsorberGiants(ParameterInput *pin, std::string bname,
-                         YAML::Node &node);
-  void addAbsorberEarth(ParameterInput *pin, std::string bname,
-                        YAML::Node &node);
-  void addAbsorberVenus(ParameterInput *pin, std::string bname,
-                        YAML::Node &node);
-  void addAbsorberMars(ParameterInput *pin, std::string bname,
-                       YAML::Node &node);
+  void addAbsorberGiants(ParameterInput *pin, YAML::Node &node);
+  void addAbsorberEarth(ParameterInput *pin, YAML::Node &node);
+  void addAbsorberVenus(ParameterInput *pin, YAML::Node &node);
+  void addAbsorberMars(ParameterInput *pin, YAML::Node &node);
 
   // absorbers
   std::vector<AbsorberPtr> absorbers_;
 
   // data
   std::string name_;
+  std::string type_;
   uint64_t bflags_;
 
   // spectra

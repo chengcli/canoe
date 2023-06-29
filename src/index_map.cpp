@@ -20,9 +20,8 @@ MeshBlock::IndexMap::IndexMap(MeshBlock *pmb, ParameterInput *pin)
   std::string str = pin->GetOrAddString("species", "vapor", "");
   std::vector<std::string> names = Vectorize<std::string>(str.c_str(), " ,");
 
-  if (names.size() != NVAPOR) {
-    throw InvalidValueError("IndexMap",
-                            "Number of vapors != " + std::to_string(NVAPOR));
+  if (names.size() > NVAPOR) {
+    throw RuntimeError("IndexMap", "Number of vapors", NVAPOR, names.size());
   }
 
   for (size_t i = 0; i < names.size(); ++i) {
@@ -33,9 +32,8 @@ MeshBlock::IndexMap::IndexMap(MeshBlock *pmb, ParameterInput *pin)
   str = pin->GetOrAddString("species", "cloud", "");
   names = Vectorize<std::string>(str.c_str(), " ,");
 
-  if (names.size() != NCLOUDS) {
-    throw InvalidValueError("IndexMap",
-                            "Number of clouds != " + std::to_string(NCLOUDS));
+  if (names.size() > NCLOUDS) {
+    throw RuntimeError("IndexMap", "Number of clouds", NCLOUDS, names.size());
   }
 
   for (size_t i = 0; i < names.size(); ++i) {
@@ -46,9 +44,8 @@ MeshBlock::IndexMap::IndexMap(MeshBlock *pmb, ParameterInput *pin)
   str = pin->GetOrAddString("species", "tracer", "");
   names = Vectorize<std::string>(str.c_str(), " ,");
 
-  if (names.size() != NTRACER) {
-    throw InvalidValueError("IndexMap",
-                            "Number of tracers != " + std::to_string(NTRACER));
+  if (names.size() > NTRACER) {
+    throw RuntimeError("IndexMap", "Number of tracers", NTRACER, names.size());
   }
 
   for (size_t i = 0; i < names.size(); ++i) {
@@ -59,9 +56,9 @@ MeshBlock::IndexMap::IndexMap(MeshBlock *pmb, ParameterInput *pin)
   str = pin->GetOrAddString("species", "chemistry", "");
   names = Vectorize<std::string>(str.c_str(), " ,");
 
-  if (names.size() != NCHEMISTRY) {
-    throw InvalidValueError(
-        "IndexMap", "Number of chemistry != " + std::to_string(NCHEMISTRY));
+  if (names.size() > NCHEMISTRY) {
+    throw RuntimeError("IndexMap", "Number of chemistry", NCHEMISTRY,
+                       names.size());
   }
 
   for (size_t i = 0; i < names.size(); ++i) {
@@ -72,9 +69,9 @@ MeshBlock::IndexMap::IndexMap(MeshBlock *pmb, ParameterInput *pin)
   str = pin->GetOrAddString("species", "static", "");
   names = Vectorize<std::string>(str.c_str(), " ,");
 
-  if (names.size() != NSTATIC) {
-    throw InvalidValueError(
-        "IndexMap", "Number of static variables != " + std::to_string(NSTATIC));
+  if (names.size() > NSTATIC) {
+    throw RuntimeError("IndexMap", "Number of static variables", NSTATIC,
+                       names.size());
   }
 
   for (size_t i = 0; i < names.size(); ++i) {

@@ -47,6 +47,8 @@ RadiationBand::RadiationBand(MeshBlock *pmb, ParameterInput *pin,
 
   auto my = node[name_];
 
+  type_ = my["type"] ? my["type"].as<std::string>() : "unknown";
+
   // number of Legendre moments
   int npmom = my["moments"] ? my["moments"].as<int>() : 1;
 
@@ -107,8 +109,9 @@ RadiationBand::RadiationBand(MeshBlock *pmb, ParameterInput *pin,
     for (auto aname : my["opacity"]) {
       bool found = false;
       for (auto absorber : node["opacity-sources"]) {
-        if (aname.as<std::string>() == absorber["name"].as<std::string>()) {
-          AddAbsorber(pin, name_, absorber);
+        if (type_ + "-" + aname.as<std::string>() ==
+            absorber["name"].as<std::string>()) {
+          AddAbsorber(pin, absorber);
           found = true;
           break;
         }
@@ -275,18 +278,17 @@ void RadiationBand::writeBinRadiance(OutputParameters const *pout) const {
   fclose(pfile);
 }
 
-void RadiationBand::AddAbsorber(ParameterInput *pin, std::string bname,
-                                YAML::Node &node) {
-  if (PLANET == "Jupiter" || PLANET == "Saturn") {
-    addAbsorberGiants(pin, bname, node);
-  } else if (PLANET == "Uranus" || PLANET == "Neptune") {
-    addAbsorberGiants(pin, bname, node);
-  } else if (PLANET == "Earth") {
-    addAbsorberEarth(pin, bname, node);
-  } else if (PLANET == "Mars") {
-    addAbsorberMars(pin, bname, node);
-  } else if (PLANET == "Venus") {
-    addAbsorberVenus(pin, bname, node);
+void RadiationBand::AddAbsorber(ParameterInput *pin, YAML::Node &node) {
+  if (strcmp(PLANET, "Jupiter") == 0 || strcmp(PLANET, "Saturn") == 0) {
+    addAbsorberGiants(pin, node);
+  } else if (strcmp(PLANET, "Uranus") == 0 || strcmp(PLANET, "Neptune") == 0) {
+    addAbsorberGiants(pin, node);
+  } else if (strcmp(PLANET, "Earth") == 0) {
+    addAbsorberEarth(pin, node);
+  } else if (strcmp(PLANET, "Mars") == 0) {
+    addAbsorberMars(pin, node);
+  } else if (strcmp(PLANET, "Venus") == 0) {
+    addAbsorberVenus(pin, node);
   } else {
     throw NotFoundError(PLANET);
   }

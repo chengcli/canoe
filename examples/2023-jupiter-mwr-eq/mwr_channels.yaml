@@ -20,36 +20,42 @@ opacity-sources:
   - name: radio-Electron
     long-name: "Electron absorption"
     model: AppletonHartree
-    dependent-species: [tracer.elec]
+    dependent-species: [tracer.e-]
 
 bands: [CH1, CH2, CH3, CH4, CH5, CH6]
 
 CH1:
+  type: radio
   unit: GHz
   wavenumber-range: [0.6, 0.6]
-  opacity: [radio-CIA, radio-NH3, radio-H2O, radio-Electron]
+  opacity: [CIA, NH3, H2O, Electron]
 
 CH2:
+  type: radio
   unit: GHz
   wavenumber-range: [1.25, 1.25]
-  opacity: [radio-CIA, radio-NH3, radio-H2O]
+  opacity: [CIA, NH3, H2O]
 
 CH3:
+  type: radio
   unit: GHz
   wavenumber-range: [2.6, 2.6]
-  opacity: [radio-CIA, radio-NH3, radio-H2O]
+  opacity: [CIA, NH3, H2O]
 
 CH4:
+  type: radio
   unit: GHz
   wavenumber-range: [5.2, 5.2]
-  opacity: [radio-CIA, radio-NH3, radio-H2O]
+  opacity: [CIA, NH3, H2O]
 
 CH5:
+  type: radio
   unit: GHz
   wavenumber-range: [10., 10.]
-  opacity: [radio-CIA, radio-NH3, radio-H2O]
+  opacity: [CIA, NH3, H2O]
 
 CH6:
+  type: radio
   unit: GHz
   wavenumber-range: [22., 22.]
-  opacity: [radio-CIA, radio-NH3, radio-H2O]
+  opacity: [CIA, NH3, H2O]

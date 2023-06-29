@@ -92,7 +92,7 @@ void Mesh::InitUserMeshData(ParameterInput *pin)
 {
   grav = - pin->GetReal("hydro", "grav_acc1");
   P0 = pin->GetReal("mesh", "ReferencePressure");
-  T0 = pin->GetReal("problem", "T0");
+  T0 = pin->GetReal("problem", "T1bar");
 
   Tmin = pin->GetReal("problem", "Tmin");
   clat = pin->GetOrAddReal("problem", "clat", 0.);
@@ -268,6 +268,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin)
 int main(int argc, char **argv)  {
   auto app = Application::GetInstance();
 
+  app->InstallMonitor("main", "main.out", "main.err");
   app->InstallMonitor("inversion", "main.out", "main.err");
   app->InstallMonitor("astro", "main.out", "main.err");
   app->InstallMonitor("snap", "main.out", "main.err");

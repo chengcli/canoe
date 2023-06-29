@@ -68,19 +68,18 @@ grav_acc1   = -23.3
 sfloor      = 0.
 
 <species>
-vapor = H2O, NH3, H2O
+vapor = H2O, NH3
 cloud = H2O(S), H2O(L), NH3(S), NH3(L), NH4SH(S)
 tracer = e-, K, Na
 
+<thermodynamics>
 vapor = nasa_gas.yaml
-
 cloud.H2O(S) = water.yaml
 cloud.H2O(L) = water.yaml
 cloud.NH3(S) = ammonia.yaml
 cloud.NH3(L) = ammonia.yaml
 cloud.NH4SH(S) = ammonium_hydrosulfide.yaml
 
-<thermodynamics>
 #Rd          = 3615.   # mu = 2.3 g/mol
 Rd          = 3587.   # mu = 2.3175 g/mol
 eps1        = 8.18    8.18    8.18
@@ -109,3 +108,4 @@ use_fletcher16_cirs = false
 atm_file    = jupiter.yaml
 clat        = 0.
 Tmin        = 110.
+T1bar       = 169.
