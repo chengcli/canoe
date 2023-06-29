@@ -20,38 +20,67 @@ MeshBlock::IndexMap::IndexMap(MeshBlock *pmb, ParameterInput *pin)
   std::string str = pin->GetOrAddString("species", "vapor", "");
   std::vector<std::string> names = Vectorize<std::string>(str.c_str(), " ,");
 
+  if (names.size() != NVAPOR) {
+    throw InvalidValueError("IndexMap",
+                            "Number of vapors != " + std::to_string(NVAPOR));
+  }
+
   for (size_t i = 0; i < names.size(); ++i) {
     vapor_index_map_[names[i]] = 1 + i;
   }
 
   str = pin->GetOrAddString("species", "tracer", "");
   names = Vectorize<std::string>(str.c_str(), " ,");
+
+  if (names.size() != NTRACER) {
+    throw InvalidValueError("IndexMap",
+                            "Number of tracers != " + std::to_string(NTRACER));
+  }
+
   for (size_t i = 0; i < names.size(); ++i) {
     tracer_index_map_[names[i]] = i;
   }
 
   str = pin->GetOrAddString("species", "cloud", "");
   names = Vectorize<std::string>(str.c_str(), " ,");
+
+  if (names.size() != NCLOUDS) {
+    throw InvalidValueError("IndexMap",
+                            "Number of clouds != " + std::to_string(NCLOUDS));
+  }
+
   for (size_t i = 0; i < names.size(); ++i) {
     cloud_index_map_[names[i]] = i;
   }
 
   str = pin->GetOrAddString("species", "chemistry", "");
   names = Vectorize<std::string>(str.c_str(), " ,");
+
+  if (names.size() != NCHEMISTRY) {
+    throw InvalidValueError(
+        "IndexMap", "Number of chemistry != " + std::to_string(NCHEMISTRY));
+  }
+
   for (size_t i = 0; i < names.size(); ++i) {
     chemistry_index_map_[names[i]] = i;
+  }
+
+  str = pin->GetOrAddString("species", "static", "");
+  names = Vectorize<std::string>(str.c_str(), " ,");
+
+  if (names.size() != NSTATIC) {
+    throw InvalidValueError(
+        "IndexMap", "Number of static variables != " + std::to_string(NSTATIC));
+  }
+
+  for (size_t i = 0; i < names.size(); ++i) {
+    static_index_map_[names[i]] = i;
   }
 
   str = pin->GetOrAddString("species", "particle", "");
   names = Vectorize<std::string>(str.c_str(), " ,");
   for (size_t i = 0; i < names.size(); ++i) {
     particle_index_map_[names[i]] = i;
-  }
-
-  str = pin->GetOrAddString("species", "static", "");
-  names = Vectorize<std::string>(str.c_str(), " ,");
-  for (size_t i = 0; i < names.size(); ++i) {
-    static_index_map_[names[i]] = i;
   }
 }
 

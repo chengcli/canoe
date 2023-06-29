@@ -1,6 +1,6 @@
 <comment>
 problem   = Juno mwr observation simulator and inversion package
-configure = --task=InversionTaskList --prob=juno_mwr --rt=lambert --nscalars=2 --nvapor=2 --h2o=1 --nh3=2 -hydrostatic -cp_real -netcdf -fits --fits_path=${HOME}/opt -mpi
+configure = -DTASK=Juno
 
 <job>
 problem_id  = juno_mwr    # problem ID: basename of output filenames
@@ -54,6 +54,9 @@ x3max       = 1.          # maximum value of X3
 ix3_bc      = periodic    # Inner-X3 boundary condition flag
 ox3_bc      = periodic    # Outer-X3 boundary condition flag
 
+ReferencePressure = 1.E5
+PressureScaleHeight = 30.E5
+
 #<meshblock>
 #nx1         = 1600
 #nx2         = 5
@@ -63,6 +66,19 @@ ox3_bc      = periodic    # Outer-X3 boundary condition flag
 gamma       = 1.42     # gamma = C_p/C_v
 grav_acc1   = -23.3
 sfloor      = 0.
+
+<species>
+vapor = H2O, NH3, H2O
+cloud = H2O(S), H2O(L), NH3(S), NH3(L), NH4SH(S)
+tracer = elec, K+, Na+
+
+vapor = nasa_gas.yaml
+
+cloud.H2O(S) = water.yaml
+cloud.H2O(L) = water.yaml
+cloud.NH3(S) = ammonia.yaml
+cloud.NH3(L) = ammonia.yaml
+cloud.NH4SH(S) = ammonium_hydrosulfide.yaml
 
 <thermodynamics>
 #Rd          = 3615.   # mu = 2.3 g/mol
@@ -87,8 +103,9 @@ outdir       = (0,) (15,) (30,) (45,)
 control_file = mwr_inversion.yaml
 
 <problem>
+use_temperature_dependent_cp = true
 use_fletcher16_cirs = false
-atm_file    = jupiter_atm.yaml
+
+atm_file    = jupiter.yaml
 clat        = 0.
-T0          = 169
 Tmin        = 110.

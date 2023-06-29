@@ -29,6 +29,22 @@ include(${CMAKE_SOURCE_DIR}/cmake/compilers.cmake)
 
 ## 2. set up project specific configuration ##
 message(STATUS "2. Set up project parameters ...")
+
+# load custom task
+message(STATUS "Load custom task = ${TASK}")
+if (NOT ${TASK} STREQUAL "")
+  if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/cmake/${TASK}.cmake)
+    message(STATUS "Load custom setting - ${TASK} -")
+    message(STATUS "Include ${CMAKE_CURRENT_SOURCE_DIR}/cmake/${TASK}.cmake")
+    include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/${TASK}.cmake)
+  else()
+    message(FATAL_ERROR "Cannot find custom file cmake/${TASK}.cmake")
+  endif()
+  set(TASK ${TASK} CACHE STRING "Custom task to be performed")
+else()
+  set(TASK "default" CACHE STRING "Custom task to be performed")
+endif()
+
 message(STATUS "Include ${CMAKE_CURRENT_SOURCE_DIR}/cmake/parameters.cmake")
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/parameters.cmake)
 

@@ -10,6 +10,8 @@ endmacro()
 
 set_if_empty(NCLOUDS 0)
 
+set_if_empty(NTRACER 0)
+
 set_if_empty(NCHEMISTRY 0)
 
 set_if_empty(NSTATIC 0)
