@@ -45,6 +45,9 @@ Decomposition::Decomposition(MeshBlock *pmb)
 }
 
 Decomposition::~Decomposition() {
+  Application::Logger app("snap");
+  app->Log("Destroy Decomposition");
+
   delete[] buffer_;
   delete[] send_buffer_;
   delete[] wsend_top_;

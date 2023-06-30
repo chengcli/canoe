@@ -83,6 +83,9 @@ ImplicitSolver::ImplicitSolver(MeshBlock *pmb, ParameterInput *pin)
 }
 
 ImplicitSolver::~ImplicitSolver() {
+  Application::Logger app("snap");
+  app->Log("Destroy ImplicitSolver");
+
   // delete[] usend_top_;
   // delete[] urecv_bot_;
   // delete[] usend_bot_;
