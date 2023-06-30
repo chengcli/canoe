@@ -21,6 +21,9 @@
 #include <harp/radiation.hpp>
 #include <harp/radiation_band.hpp>
 
+// output
+#include "output_utils.hpp"
+
 // Only proceed if NETCDF output enabled
 #ifdef NETCDFOUTPUT
 
@@ -359,15 +362,15 @@ void NetcdfOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) {
 
     if (nrays > 0) {
       int m = 0;
-      for (auto p : pmb->pimpl->prad->bands) {
-        for (int n = 0; n < p->getNumOutgoingRays(); ++n)
+      for (auto &p : pmb->pimpl->prad->bands) {
+        for (int n = 0; n < p->GetNumOutgoingRays(); ++n)
           data[m++] = (float)(p->getCosinePolarAngle(n));
       }
       nc_put_var_float(ifile, imu, data);
 
       m = 0;
-      for (auto p : pmb->pimpl->prad->bands) {
-        for (int n = 0; n < p->getNumOutgoingRays(); ++n)
+      for (auto &p : pmb->pimpl->prad->bands) {
+        for (int n = 0; n < p->GetNumOutgoingRays(); ++n)
           data[m++] = (float)(p->getAzimuthalAngle(n));
       }
       nc_put_var_float(ifile, iphi, data);

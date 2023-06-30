@@ -16,6 +16,7 @@
 #include <athena/coordinates/coordinates.hpp>
 #include <athena/globals.hpp>
 #include <athena/mesh/mesh.hpp>
+#include <athena/outputs/user_outputs.hpp>
 
 // math
 #include <climath/core.h>
@@ -25,7 +26,7 @@
 #include <harp/radiation_band.hpp>
 
 // outputs
-#include "user_outputs.hpp"
+#include "output_utils.hpp"
 
 // Only proceed if PNETCDF output enabled
 #ifdef PNETCDFOUTPUT
