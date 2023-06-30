@@ -7,7 +7,7 @@ FetchContent_Declare(
   # GIT_REPOSITORY https://github.com/chengcli/application/ GIT_TAG
   # cli/more_log)
   DOWNLOAD_EXTRACT_TIMESTAMP TRUE
-  URL https://github.com/chengcli/application/archive/refs/tags/v0.4.tar.gz)
+  URL https://github.com/chengcli/application/archive/refs/tags/v0.4.1.tar.gz)
 
 FetchContent_MakeAvailable(application)
 

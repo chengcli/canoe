@@ -3,12 +3,12 @@
 
 // C/C++
 #include <memory>
-#include <vector>
 
 // athenapp
 #include <athena/athena.hpp>
 
 class MeshBlock;
+class ParameterInput;
 
 class Tracer {
  public:
@@ -17,6 +17,7 @@ class Tracer {
   Tracer(MeshBlock *pmb, ParameterInput *pin);
 
  protected:
+  MeshBlock *pmy_block_;
 };
 
 using TracerPtr = std::shared_ptr<Tracer>;

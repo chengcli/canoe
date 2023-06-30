@@ -72,7 +72,6 @@ void RadiationBand::addAbsorberGiants(ParameterInput *pin, YAML::Node &node) {
       auto ab = std::make_unique<gp::MwrAbsorberElectron>(
           pmy_block_, species, ToParameterMap(node["parameters"]));
 
-      ab->SetModel(node["model"].as<std::string>());
       absorbers_.push_back(std::move(ab));
     } else {
       throw NotFoundError("addAbsorberGiants", "Absorber " + aname);
@@ -89,4 +88,6 @@ void RadiationBand::addAbsorberGiants(ParameterInput *pin, YAML::Node &node) {
   } else {
     throw NotFoundError("addAbsorberGiants", "Band " + type_);
   }
+
+  absorbers_.back()->SetModel(node["model"].as<std::string>());
 }

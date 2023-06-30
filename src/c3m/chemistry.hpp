@@ -12,12 +12,14 @@ class ParameterInput;
 
 class Chemistry {
  public:
+  AthenaArray<Real> r, s;
+
   Chemistry(MeshBlock *pmb, ParameterInput *pin);
 
  protected:
-  AthenaArray<Real> r, s;
+  MeshBlock *pmy_block_;
 };
 
-using ChemistryPtr = std::shared_ptr<Cloud>;
+using ChemistryPtr = std::shared_ptr<Chemistry>;
 
 #endif  // SRC_C3M_CHEMISTRY_HPP_

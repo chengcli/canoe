@@ -58,7 +58,7 @@ Real MwrAbsorberNH3::GetAttenuation(Real wave1, Real wave2,
     abs = attenuation_NH3_Hanley(wave, P, P_idl, T, XH2, XHe, XNH3, XH2O,
                                  params_.at("power"));
   } else {
-    throw NotFoundError("MwrAbsorberNH3::GetAttenuation: ", model_name_);
+    throw NotFoundError("MwrAbsorberNH3::GetAttenuation", model_name_);
   }
 
   return 100. * abs;  // 1/cm -> 1/m

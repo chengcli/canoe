@@ -8,7 +8,7 @@ endmacro()
 
 # populate the default values
 
-set_if_empty(NCLOUDS 0)
+set_if_empty(NCLOUD 0)
 
 set_if_empty(NTRACER 0)
 

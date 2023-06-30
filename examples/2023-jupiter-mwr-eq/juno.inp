@@ -48,7 +48,7 @@ x2max       = 1.          # maximum value of X2
 ix2_bc      = reflecting  # Inner-X2 boundary condition flag
 ox2_bc      = reflecting  # Outer-X2 boundary condition flag
 
-nx3         = 58          # Number of zones in X3-direction
+nx3         = 1          # Number of zones in X3-direction
 x3min       = 0.          # minimum value of X3
 x3max       = 1.          # maximum value of X3
 ix3_bc      = periodic    # Inner-X3 boundary condition flag
@@ -109,3 +109,6 @@ atm_file    = jupiter.yaml
 clat        = 0.
 Tmin        = 110.
 T1bar       = 169.
+
+qH2O.gkg    = 20.   # g/kg
+qNH3.gkg    = 2.38  # g/kg

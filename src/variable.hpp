@@ -39,7 +39,7 @@ class Variable {
   Variable() {
     w = data_.data();
     c = w + NHYDRO;
-    s = c + NCLOUDS;
+    s = c + NCLOUD;
     q = s + NTRACER;
     x = q + NCHEMISTRY;
   }

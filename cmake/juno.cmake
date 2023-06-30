@@ -8,10 +8,10 @@ endmacro()
 
 # athena variables
 set_if_empty(NUMBER_GHOST_CELLS 2)
-set_if_empty(NVAPOR_VARIABLES 3)
+set_if_empty(NVAPOR 3)
 
 # canoe variables
-set_if_empty(NCLOUDS 5)
+set_if_empty(NCLOUD 5)
 set_if_empty(NTRACER 3)
 set_if_empty(NCHEMISTRY 0)
 

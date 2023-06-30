@@ -152,6 +152,9 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin)
   int iH2O = pindex->GetVaporId("H2O");
   int iNH3 = pindex->GetVaporId("NH3");
 
+  app->Log("index of H2O", iH2O);
+  app->Log("index of NH3", iNH3);
+
   // read in vapors
   w1[0][iH2O] = pin->GetReal("problem", "qH2O.gkg")/1.E3;
   w1[0][iNH3] = pin->GetReal("problem", "qNH3.gkg")/1.E3;
@@ -266,17 +269,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin)
 }
 
 int main(int argc, char **argv)  {
-  auto app = Application::GetInstance();
-
-  app->InstallMonitor("main", "main.out", "main.err");
-  app->InstallMonitor("inversion", "main.out", "main.err");
-  app->InstallMonitor("astro", "main.out", "main.err");
-  app->InstallMonitor("snap", "main.out", "main.err");
-  app->InstallMonitor("harp", "main.out", "main.err");
-
-  Application::Start();
-
-  Application::Logger log("main");
+  Application::Logger app("main");
 
   // no MPI
   Globals::my_rank = 0;
@@ -331,7 +324,7 @@ int main(int argc, char **argv)  {
 
     for (int k = ks; k <= ke; ++k) {
       // run RT models
-      log->Log("run microwave radiative transfer");
+      app->Log("run microwave radiative transfer");
       for (int j = js-1; j <= je; ++j)
         prad->calculateRadiance(&prad->radiance, 0., k, j, is, ie+1);
     }

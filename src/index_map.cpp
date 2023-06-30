@@ -32,8 +32,8 @@ MeshBlock::IndexMap::IndexMap(MeshBlock *pmb, ParameterInput *pin)
   str = pin->GetOrAddString("species", "cloud", "");
   names = Vectorize<std::string>(str.c_str(), " ,");
 
-  if (names.size() > NCLOUDS) {
-    throw RuntimeError("IndexMap", "Number of clouds", NCLOUDS, names.size());
+  if (names.size() > NCLOUD) {
+    throw RuntimeError("IndexMap", "Number of clouds", NCLOUD, names.size());
   }
 
   for (size_t i = 0; i < names.size(); ++i) {
@@ -106,9 +106,9 @@ size_t MeshBlock::IndexMap::GetSpeciesId(std::string category_name) const {
   } else if (category == "cloud") {
     return NHYDRO + GetCloudId(name);
   } else if (category == "tracer") {
-    return NHYDRO + NCLOUDS + GetTracerId(name);
+    return NHYDRO + NCLOUD + GetTracerId(name);
   } else if (category == "chemistry") {
-    return NHYDRO + NCLOUDS + NTRACER + GetChemistryId(name);
+    return NHYDRO + NCLOUD + NTRACER + GetChemistryId(name);
   } else {
     throw NotFoundError("GetSpeciesId", "Category " + category);
   }

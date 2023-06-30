@@ -39,6 +39,8 @@ add_subdirectory(harp)
 add_subdirectory(inversion)
 add_subdirectory(outputs)
 add_subdirectory(opacity)
+add_subdirectory(tracer)
+add_subdirectory(c3m)
 
 set(CANOE_LIBRARY_${buildu}
   "canoe_${buildl}"
@@ -52,6 +54,8 @@ set(CANOE_LIBRARY_${buildu}
   "inversion_${buildl}"
   "outputs_${buildl}"
   "opacity_${buildl}"
+  "tracer_${buildl}"
+  "c3m_${buildl}"
   "yaml-cpp"
   ${NETCDF_LIBRARIES}
   CACHE INTERNAL "canoe library")

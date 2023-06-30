@@ -37,6 +37,12 @@ MeshBlock::Impl::Impl(MeshBlock *pmb, ParameterInput *pin) : pmy_block_(pmb) {
   // implicit methodsphydro
   phevi = std::make_shared<ImplicitSolver>(pmb, pin);
 
+  // tracer
+  ptracer = std::make_shared<Tracer>(pmb, pin);
+
+  // chemistry
+  pchem = std::make_shared<Chemistry>(pmb, pin);
+
   // reconstruction
   // precon = new FaceReconstruct(pmb, pin);
 
