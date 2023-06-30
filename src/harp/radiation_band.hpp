@@ -30,6 +30,10 @@ class RadiationBand {
  public:
   // access data
   AthenaArray<Real> btau, bssa, bpmom;
+  AthenaArray<Real> bflxup, bflxdn;
+
+  // btoa is a reference to radiance in Radiation
+  AthenaArray<Real> btoa;
 
   // functions
   RadiationBand(MeshBlock *pmb, ParameterInput *pin, YAML::Node &node,
@@ -37,13 +41,17 @@ class RadiationBand {
 
   ~RadiationBand();
 
+  size_t GetNumBins() { return spec_.size(); }
+
+  Real GetParameter(std::string const &name) { return params_.at(name); }
+
   size_t GetNumAbsorbers() { return absorbers_.size(); }
 
   Absorber *GetAbsorber(int i) { return absorbers_[i].get(); }
 
   Absorber *GetAbsorber(std::string const &name);
 
-  size_t getNumOutgoingRays() { return rayOutput_.size(); }
+  size_t GetNumOutgoingRays() { return rayOutput_.size(); }
 
   std::string GetName() { return name_; }
 
@@ -57,23 +65,17 @@ class RadiationBand {
 
   void SetSpectralProperties(int k, int j, int il, int iu);
 
-  void calculateBandFlux(AthenaArray<Real> *flxup, AthenaArray<Real> *flxdn,
-                         Direction const &rayInput, Real dist_au, int k, int j,
-                         int il, int iu);
-
-  void calculateBandRadiance(AthenaArray<Real> *radiance,
-                             Direction const &rayInput, Real dist_au, int k,
-                             int j, int il, int iu);
-
   int test(uint64_t flag) const { return bflags_ & flag; }
 
   void set(uint64_t flag) { bflags_ |= flag; }
 
   void writeBinRadiance(OutputParameters const *) const;
 
-  // user implementation of RT Solver
-  class Impl;
-  std::shared_ptr<Impl> pimpl;
+  // implementation of RT Solver
+  class RTSolver;
+  class RTSolverLambert;
+  class RTSolverDisort;
+  std::shared_ptr<RTSolver> psolver;
 
  protected:
   void setWavenumberRange(YAML::Node &my);

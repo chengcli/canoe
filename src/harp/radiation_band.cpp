@@ -104,6 +104,8 @@ RadiationBand::RadiationBand(MeshBlock *pmb, ParameterInput *pin,
   bssa.NewAthenaArray(ncells3, ncells2, ncells1);
   bpmom.NewAthenaArray(npmom + 1, ncells3, ncells2, ncells1);
 
+  //! \note btoa, bflxup, bflxdn are shallow slices to Radiation variables
+
   // add absorbers
   if (my["opacity"]) {
     for (auto aname : my["opacity"]) {
@@ -293,16 +295,3 @@ void RadiationBand::AddAbsorber(ParameterInput *pin, YAML::Node &node) {
     throw NotFoundError(PLANET);
   }
 }
-
-// overide in rtsolver folder
-void __attribute__((weak))
-RadiationBand::calculateBandFlux(AthenaArray<Real> *flxup,
-                                 AthenaArray<Real> *flxdn,
-                                 Direction const &rayInput, Real dist, int k,
-                                 int j, int il, int iu) {}
-
-// overide in rtsolver folder
-void __attribute__((weak))
-RadiationBand::calculateBandRadiance(AthenaArray<Real> *radiance,
-                                     Direction const &rayInput, Real dist,
-                                     int k, int j, int il, int iu) {}

@@ -23,6 +23,7 @@
 #include "radiation.hpp"
 #include "radiation_band.hpp"
 #include "radiation_utils.hpp"  // setRadiationFlags
+#include "rt_solvers.hpp"
 
 Radiation::Radiation(MeshBlock *pmb, ParameterInput *pin)
     : rflags_(0LL), pmy_block_(pmb) {
@@ -44,10 +45,28 @@ Radiation::Radiation(MeshBlock *pmb, ParameterInput *pin)
   std::string str = pin->GetOrAddString("radiation", "indir", "(0.,0.)");
   read_radiation_directions(&rayInput_, str);
 
+  int ncells1 = pmb->ncells1;
+  int ncells2 = pmb->ncells2;
+  int ncells3 = pmb->ncells3;
+
   // output radiance
-  int nout = getNumOutgoingRays();
+  int nout = GetNumOutgoingRays();
   if (nout > 0) {
-    radiance.NewAthenaArray(nout, pmb->ncells3, pmb->ncells2);
+    radiance.NewAthenaArray(nout, ncells3, ncells2);
+    // set band toa
+    int n = 0;
+    for (auto &p : bands) {
+      p->btoa.InitWithShallowSlice(radiance, 3, n, p->GetNumOutgoingRays());
+      n += p->GetNumOutgoingRays();
+    }
+  }
+
+  // output flux
+  flxup.NewAthenaArray(bands.size(), ncells3, ncells2, ncells1 + 1);
+  flxdn.NewAthenaArray(bands.size(), ncells3, ncells2, ncells1 + 1);
+  for (int n = 0; n < bands.size(); ++n) {
+    bands[n]->bflxup.InitWithShallowSlice(flxup, 4, n, 1);
+    bands[n]->bflxup.InitWithShallowSlice(flxdn, 4, n, 1);
   }
 
   // time control
@@ -95,61 +114,47 @@ void Radiation::PopulateRadiationBands(ParameterInput *pin) {
   }
 }
 
-void Radiation::calculateRadiativeFlux(AthenaArray<Real> *flxup,
-                                       AthenaArray<Real> *flxdn, Real time,
-                                       int k, int j, int il, int iu) {
+void Radiation::CalRadiativeFlux(Real time, int k, int j, int il, int iu) {
   Application::Logger app("harp");
   app->Log("CalculateRadiativeFlux");
   Real dist = stellarDistance_au_;
 
-  int idx = 0;
   Coordinates *pcoord = pmy_block_->pcoord;
-  for (auto p : bands) {
-    Direction ray;
-    if (p->test(RadiationFlags::Dynamic)) {
-      planet_->ParentZenithAngle(&ray.mu, &ray.phi, time, pcoord->x2v(j),
-                                 pcoord->x3v(k));
-      dist = planet_->ParentDistanceInAu(time);
-    } else {
-      ray = rayInput_[0];
-    }
-
-    // iu ~= ie + 1
-    AthenaArray<Real> bflxup, bflxdn;
-    bflxup.InitWithShallowSlice(*flxup, 3, idx, p->getNumOutgoingRays());
-    bflxdn.InitWithShallowSlice(*flxdn, 3, idx, p->getNumOutgoingRays());
-
-    p->SetSpectralProperties(k, j, il - NGHOST, iu + NGHOST - 1);
-    p->calculateBandFlux(&bflxup, &bflxdn, ray, dist, k, j, il, iu);
-    idx++;
-  }
-}
-
-void Radiation::calculateRadiance(AthenaArray<Real> *radiance, Real time, int k,
-                                  int j, int il, int iu) {
-  Application::Logger app("harp");
-  app->Log("CalculateRadiance");
-  Real dist = stellarDistance_au_;
-  Coordinates *pcoord = pmy_block_->pcoord;
-
   Direction ray;
   if (test(RadiationFlags::Dynamic)) {
     planet_->ParentZenithAngle(&ray.mu, &ray.phi, time, pcoord->x2v(j),
                                pcoord->x3v(k));
     dist = planet_->ParentDistanceInAu(time);
+  } else {
+    ray = rayInput_[0];
   }
 
-  int idx = 0;
-  for (auto p : bands) {
-    if (p->getNumOutgoingRays() == 0) continue;
-
+  for (auto &p : bands) {
     // iu ~= ie + 1
-    AthenaArray<Real> brad;
-    brad.InitWithShallowSlice(*radiance, 3, idx, p->getNumOutgoingRays());
-
     p->SetSpectralProperties(k, j, il - NGHOST, iu + NGHOST - 1);
-    p->calculateBandRadiance(&brad, ray, dist, k, j, il, iu);
-    idx += p->getNumOutgoingRays();
+    p->psolver->CalBandFlux(ray, dist, k, j, il, iu);
+  }
+}
+
+void Radiation::CalRadiance(Real time, int k, int j, int il, int iu) {
+  Application::Logger app("harp");
+  app->Log("CalculateRadiance");
+  Real dist = stellarDistance_au_;
+
+  Coordinates *pcoord = pmy_block_->pcoord;
+  Direction ray;
+  if (test(RadiationFlags::Dynamic)) {
+    planet_->ParentZenithAngle(&ray.mu, &ray.phi, time, pcoord->x2v(j),
+                               pcoord->x3v(k));
+    dist = planet_->ParentDistanceInAu(time);
+  } else {
+    ray = rayInput_[0];
+  }
+
+  for (auto &p : bands) {
+    // iu ~= ie + 1
+    p->SetSpectralProperties(k, j, il - NGHOST, iu + NGHOST - 1);
+    p->psolver->CalBandRadiance(ray, dist, k, j, il, iu);
   }
 }
 
@@ -167,10 +172,10 @@ void Radiation::addRadiativeFlux(Hydro *phydro, int k, int j, int il,
   }
 }
 
-size_t Radiation::getNumOutgoingRays() const {
+size_t Radiation::GetNumOutgoingRays() const {
   size_t num = 0;
-  for (auto p : bands) {
-    num += p->getNumOutgoingRays();
+  for (auto &p : bands) {
+    num += p->GetNumOutgoingRays();
   }
   return num;
 }

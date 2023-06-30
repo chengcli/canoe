@@ -42,7 +42,7 @@ void VLAProfileInversion::CalculateFitTarget(Radiation const *prad, Real *val,
   int b = 0, bid = 0;
   for (auto p : prad->bands) {
     // emission angles;
-    int ndir = p->getNumOutgoingRays();
+    int ndir = p->GetNumOutgoingRays();
     mus.resize(ndir);
     tbs.resize(ndir);
 

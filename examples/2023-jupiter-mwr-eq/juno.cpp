@@ -326,7 +326,7 @@ int main(int argc, char **argv)  {
       // run RT models
       app->Log("run microwave radiative transfer");
       for (int j = js-1; j <= je; ++j)
-        prad->calculateRadiance(&prad->radiance, 0., k, j, is, ie+1);
+        prad->CalRadiance(0., k, j, is, ie+1);
     }
 
   }

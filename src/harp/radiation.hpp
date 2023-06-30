@@ -55,15 +55,13 @@ class Radiation {
 
   void PopulateRadiationBands(ParameterInput *pin);
 
-  void calculateRadiativeFlux(AthenaArray<Real> *rup, AthenaArray<Real> *rdown,
-                              Real time, int k, int j, int il, int iu);
+  void CalRadiativeFlux(Real time, int k, int j, int il, int iu);
 
-  void calculateRadiance(AthenaArray<Real> *rr, Real time, int k, int j, int il,
-                         int iu);
+  void CalRadiance(Real time, int k, int j, int il, int iu);
 
   void addRadiativeFlux(Hydro *phydro, int k, int j, int il, int iu) const;
 
-  size_t getNumOutgoingRays() const;
+  size_t GetNumOutgoingRays() const;
 
   int test(uint64_t flag) const { return rflags_ & flag; }
 
