@@ -31,13 +31,11 @@
 #include "radiation.hpp"
 #include "radiation_band.hpp"
 #include "radiation_utils.hpp"  // readRadiationDirections
+#include "rt_solvers.hpp"
 
 RadiationBand::RadiationBand(MeshBlock *pmb, ParameterInput *pin,
                              YAML::Node &node, std::string myname)
-    : name_(myname),
-      bflags_(0LL),
-      pmy_block_(pmb),
-      params_(ToParameterMap(node["parameters"])) {
+    : name_(myname), bflags_(0LL), pmy_block_(pmb) {
   Application::Logger app("harp");
   app->Log("Initialize RadiationBand " + name_);
 
@@ -46,6 +44,8 @@ RadiationBand::RadiationBand(MeshBlock *pmb, ParameterInput *pin,
   }
 
   auto my = node[name_];
+
+  if (my["parameters"]) params_ = ToParameterMap(my["parameters"]);
 
   type_ = my["type"] ? my["type"].as<std::string>() : "unknown";
 
@@ -128,19 +128,27 @@ RadiationBand::RadiationBand(MeshBlock *pmb, ParameterInput *pin,
     throw NotFoundError("RadiationBand", "Band " + name_ + " opacity");
   }
 
+  // set rt solver
+  if (my["rt-solver"]) {
+    if (my["rt-solver"].as<std::string>() == "Lambert") {
+      psolver = std::make_shared<RTSolverLambert>(this);
+    } else {
+      throw InvalidValueError("RadiationBand",
+                              my["rt-solver"].as<std::string>());
+    }
+  } else {
+    psolver = std::make_shared<RTSolver>(this, "Null");
+  }
+
   char buf[80];
   snprintf(buf, sizeof(buf), "%.2f - %.2f", wmin_, wmax_);
-  app->Log("Spectral range = " + std::string(buf));
-  app->Log("Number of spectral bins = " + std::to_string(spec_.size()));
+  app->Log("Spectral range", buf);
+  app->Log("Number of spectral bins", spec_.size());
 }
 
 RadiationBand::~RadiationBand() {
   Application::Logger app("harp");
   app->Log("Destroy RadiationBand " + name_);
-
-#ifdef RT_DISORT
-  free_disort();
-#endif
 }
 
 void RadiationBand::setWavenumberRange(YAML::Node &my) {

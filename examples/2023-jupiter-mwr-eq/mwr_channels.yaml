@@ -26,36 +26,43 @@ bands: [CH1, CH2, CH3, CH4, CH5, CH6]
 
 CH1:
   type: radio
+  rt-solver: Lambert
   unit: GHz
   wavenumber-range: [0.6, 0.6]
   opacity: [CIA, NH3, H2O, Electron]
+  paramters: {alpha: 0.0}
 
 CH2:
   type: radio
+  rt-solver: Lambert
   unit: GHz
   wavenumber-range: [1.25, 1.25]
   opacity: [CIA, NH3, H2O]
 
 CH3:
   type: radio
+  rt-solver: Lambert
   unit: GHz
   wavenumber-range: [2.6, 2.6]
   opacity: [CIA, NH3, H2O]
 
 CH4:
   type: radio
+  rt-solver: Lambert
   unit: GHz
   wavenumber-range: [5.2, 5.2]
   opacity: [CIA, NH3, H2O]
 
 CH5:
   type: radio
+  rt-solver: Lambert
   unit: GHz
   wavenumber-range: [10., 10.]
   opacity: [CIA, NH3, H2O]
 
 CH6:
   type: radio
+  rt-solver: Lambert
   unit: GHz
   wavenumber-range: [22., 22.]
   opacity: [CIA, NH3, H2O]

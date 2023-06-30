@@ -43,6 +43,8 @@ class RadiationBand {
 
   size_t GetNumBins() { return spec_.size(); }
 
+  bool HasParameter(std::string const &name) { return params_.count(name); }
+
   Real GetParameter(std::string const &name) { return params_.at(name); }
 
   size_t GetNumAbsorbers() { return absorbers_.size(); }

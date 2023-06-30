@@ -8,9 +8,19 @@
 // climath
 #include <climath/special.h>
 
+// application
+#include <application/application.hpp>
+#include <application/exceptions.hpp>
+
 // harp
 #include "radiation.hpp"
 #include "rt_solvers.hpp"
+
+void RadiationBand::RTSolverLambert::CalBandFlux(Direction const &rayInput,
+                                                 Real dist, int k, int j,
+                                                 int il, int iu) {
+  throw NotImplementedError("RTSolverLambert::CalBandFlux");
+}
 
 void RadiationBand::RTSolverLambert::CalBandRadiance(Direction const &rayInput,
                                                      Real dist, int k, int j,
@@ -25,7 +35,7 @@ void RadiationBand::RTSolverLambert::CalBandRadiance(Direction const &rayInput,
   auto &spec = pband->spec_;
 
   auto &btoa = pband->btoa;
-  Real alpha = pband->GetParameter("alpha");
+  Real alpha = pband->HasParameter("alpha") ? pband->GetParameter("alpha") : 0.;
 
   // integrate from top to bottom
   for (int m = 0; m < pband->GetNumOutgoingRays(); ++m) {
