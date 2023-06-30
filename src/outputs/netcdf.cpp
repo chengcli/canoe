@@ -15,13 +15,11 @@
 #include <athena/athena.hpp>
 #include <athena/coordinates/coordinates.hpp>
 #include <athena/mesh/mesh.hpp>
+#include <athena/outputs/user_outputs.hpp>
 
 // harp
 #include <harp/radiation.hpp>
 #include <harp/radiation_band.hpp>
-
-// outputs
-#include "user_outputs.hpp"
 
 // Only proceed if NETCDF output enabled
 #ifdef NETCDFOUTPUT
@@ -122,9 +120,7 @@ void NetcdfOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) {
     int nfaces3 = ncells3;
     if (ncells3 > 1) nfaces3++;
 
-#if ENABLE_HARP
     int nrays = pmb->pimpl->prad->radiance.GetDim3();
-#endif
 
     // 2. define coordinate
     int idt, idx1, idx2, idx3, idx1f, idx2f, idx3f, iray;
@@ -140,9 +136,7 @@ void NetcdfOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) {
     nc_def_dim(ifile, "x3", ncells3, &idx3);
     if (ncells3 > 1) nc_def_dim(ifile, "x3f", nfaces3, &idx3f);
 
-#if ENABLE_HARP
     if (nrays > 0) nc_def_dim(ifile, "ray", nrays, &iray);
-#endif
 
     // 3. define variables
     int ivt, ivx1, ivx2, ivx3, ivx1f, ivx2f, ivx3f, imu, iphi;
@@ -218,7 +212,6 @@ void NetcdfOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) {
       nc_put_att_int(ifile, ivx3f, "domain_decomposition", NC_INT, 4, pos);
     }
 
-#if ENABLE_HARP
     if (nrays > 0) {
       nc_def_var(ifile, "mu_out", NC_FLOAT, 1, &iray, &imu);
       nc_put_att_text(ifile, imu, "units", 1, "1");
@@ -227,7 +220,6 @@ void NetcdfOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) {
       nc_put_att_text(ifile, iphi, "units", 3, "rad");
       nc_put_att_text(ifile, iphi, "long_name", 15, "azimuthal angle");
     }
-#endif
 
     nc_put_att_int(ifile, NC_GLOBAL, "NumFilesInSet", NC_INT, 1, &pm->nbtotal);
     if ((output_params.variable.compare("diag") == 0) ||
@@ -330,10 +322,7 @@ void NetcdfOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) {
     size_t count1[4] = {1, (size_t)nfaces1, (size_t)ncells2, (size_t)ncells3};
     size_t count2[4] = {1, (size_t)ncells1, (size_t)nfaces2, (size_t)ncells3};
     size_t count3[4] = {1, (size_t)ncells1, (size_t)ncells2, (size_t)nfaces3};
-
-#if ENABLE_HARP
     size_t countr[4] = {1, (size_t)nrays, (size_t)ncells2, (size_t)ncells3};
-#endif
 
     float time = (float)pm->time;
     nc_put_vara_float(ifile, ivt, start, count, &time);
@@ -368,7 +357,6 @@ void NetcdfOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) {
       nc_put_var_float(ifile, ivx3f, data);
     }
 
-#if ENABLE_HARP
     if (nrays > 0) {
       int m = 0;
       for (auto p : pmb->pimpl->prad->bands) {
@@ -384,7 +372,6 @@ void NetcdfOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) {
       }
       nc_put_var_float(ifile, iphi, data);
     }
-#endif
 
     ivar = var_ids;
     pdata = pfirst_data_;
@@ -393,7 +380,6 @@ void NetcdfOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) {
       int nvar = get_num_variables(grid, pdata->data);
 
       if (grid == "RCC") {  // radiation rays
-#if ENABLE_HARP
         for (int n = 0; n < nvar; n++) {
           float *it = data;
           for (int m = 0; m < nrays; ++m)
@@ -402,7 +388,6 @@ void NetcdfOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) {
                 *it++ = (float)pdata->data(n, m, k, j);
           nc_put_vara_float(ifile, *ivar++, start, countr, data);
         }
-#endif
       } else if (grid == "CCF") {
         for (int n = 0; n < nvar; n++) {
           float *it = data;
