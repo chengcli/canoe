@@ -1,8 +1,14 @@
 // C/C++
-#include <athena/athena_arrays.hpp>
-#include <athena/hydro/hydro.hpp>
 #include <cstdlib>
 #include <iostream>
+
+// athena
+#include <athena/athena_arrays.hpp>
+#include <athena/hydro/hydro.hpp>
+
+// canoe
+#include <configure.hpp>
+#include <constants.hpp>
 
 // thermodynamics
 #include "thermodynamics.hpp"
@@ -11,7 +17,7 @@
 void Thermodynamics::ConstructAtmosphere(Real **w, Real Ts, Real Ps, Real grav,
                                          Real dzORdlnp, int len, Adiabat method,
                                          Real userp) const {
-  Real gamma = pmy_block->peos->GetGamma();
+  Real gamma = pmy_block_->peos->GetGamma();
 
   // hydro + vapor + condensate
   Real q1[NHYDRO + 2 * NVAPOR];
@@ -19,7 +25,7 @@ void Thermodynamics::ConstructAtmosphere(Real **w, Real Ts, Real Ps, Real grav,
   PrimitiveToChemical(q1, w[0]);
   for (int n = NHYDRO; n < NHYDRO + 2 * NVAPOR; ++n) q1[n] = 0.;
   // change molar concentration to mixing ratio
-  Real mols = q1[IPR] / (q1[IDN] * Rgas);
+  Real mols = q1[IPR] / (q1[IDN] * Constants::Rgas);
   for (int n = 1; n <= NVAPOR; ++n) q1[n] /= mols;
   // reset TP
   q1[IDN] = Ts;
@@ -47,14 +53,14 @@ void Thermodynamics::ConstructAtmosphere(Real **w, Real Ts, Real Ps, Real grav,
   // change molar mixing ratio to molar concentration
   Real qv = 1.;
   for (int n = NHYDRO; n < NHYDRO + 2 * NVAPOR; ++n) qv -= q1[n];
-  mols = q1[IPR] / (q1[IDN] * Rgas) / qv;
+  mols = q1[IPR] / (q1[IDN] * Constants::Rgas) / qv;
   for (int n = 1; n <= NVAPOR; ++n) q1[n] *= mols;
   // set vapor
   ChemicalToPrimitive(w[0], q1);
   // change back
   for (int n = 1; n <= NVAPOR; ++n) q1[n] /= mols;
   // set clouds, mass density
-  Real mu_d = Rgas / Rd_;
+  Real mu_d = Constants::Rgas / Rd_;
   for (int n = 0; n < 2 * NVAPOR; ++n)
     w[0][NHYDRO + n] =
         q1[NHYDRO + n] * mols * mu_ratios_[1 + NVAPOR + n] * mu_d;
@@ -76,7 +82,7 @@ void Thermodynamics::ConstructAtmosphere(Real **w, Real Ts, Real Ps, Real grav,
     // reset mols
     qv = 1.;
     for (int n = NHYDRO; n < NHYDRO + 2 * NVAPOR; ++n) qv -= q1[n];
-    mols = q1[IPR] / (q1[IDN] * Rgas) / qv;
+    mols = q1[IPR] / (q1[IDN] * Constants::Rgas) / qv;
     // change molar mixing ratio to molar concentration
     for (int n = 1; n <= NVAPOR; ++n) q1[n] *= mols;
     // set vapor

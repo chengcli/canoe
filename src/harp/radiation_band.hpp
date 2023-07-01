@@ -30,6 +30,10 @@ class RadiationBand {
  public:
   // access data
   AthenaArray<Real> btau, bssa, bpmom;
+  AthenaArray<Real> bflxup, bflxdn;
+
+  // btoa is a reference to radiance in Radiation
+  AthenaArray<Real> btoa;
 
   // functions
   RadiationBand(MeshBlock *pmb, ParameterInput *pin, YAML::Node &node,
@@ -37,41 +41,39 @@ class RadiationBand {
 
   ~RadiationBand();
 
+  size_t GetNumBins() { return spec_.size(); }
+
+  bool HasParameter(std::string const &name) { return params_.count(name); }
+
+  Real GetParameter(std::string const &name) { return params_.at(name); }
+
   size_t GetNumAbsorbers() { return absorbers_.size(); }
 
   Absorber *GetAbsorber(int i) { return absorbers_[i].get(); }
 
   Absorber *GetAbsorber(std::string const &name);
 
-  size_t getNumOutgoingRays() { return rayOutput_.size(); }
+  size_t GetNumOutgoingRays() { return rayOutput_.size(); }
 
   std::string GetName() { return name_; }
 
-  Real getCosinePolarAngle(int n) const { return rayOutput_[n].mu; }
+  std::string GetType() { return type_; }
 
-  Real getAzimuthalAngle(int n) const { return rayOutput_[n].phi; }
+  Real GetCosinePolarAngle(int n) const { return rayOutput_[n].mu; }
 
-  void AddAbsorber(ParameterInput *pin, std::string bname, YAML::Node &node);
+  Real GetAzimuthalAngle(int n) const { return rayOutput_[n].phi; }
+
+  void AddAbsorber(ParameterInput *pin, YAML::Node &node);
 
   void SetSpectralProperties(int k, int j, int il, int iu);
 
-  void calculateBandFlux(AthenaArray<Real> *flxup, AthenaArray<Real> *flxdn,
-                         Direction const &rayInput, Real dist_au, int k, int j,
-                         int il, int iu);
+  void WriteBinRadiance(OutputParameters const *) const;
 
-  void calculateBandRadiance(AthenaArray<Real> *radiance,
-                             Direction const &rayInput, Real dist_au, int k,
-                             int j, int il, int iu);
-
-  int test(uint64_t flag) const { return bflags_ & flag; }
-
-  void set(uint64_t flag) { bflags_ |= flag; }
-
-  void writeBinRadiance(OutputParameters const *) const;
-
-  // user implementation of RT Solver
-  class Impl;
-  std::shared_ptr<Impl> pimpl;
+  // implementation of RT Solver
+  class RTSolver;
+  class RTSolverLambert;
+  class RTSolverDisort;
+  std::shared_ptr<RTSolver> psolver;
 
  protected:
   void setWavenumberRange(YAML::Node &my);
@@ -81,20 +83,20 @@ class RadiationBand {
   void setWavelengthRange(YAML::Node &my);
   void setWavelengthGrid(YAML::Node &my);
 
-  void addAbsorberGiants(ParameterInput *pin, std::string bname,
-                         YAML::Node &node);
-  void addAbsorberEarth(ParameterInput *pin, std::string bname,
-                        YAML::Node &node);
-  void addAbsorberVenus(ParameterInput *pin, std::string bname,
-                        YAML::Node &node);
-  void addAbsorberMars(ParameterInput *pin, std::string bname,
-                       YAML::Node &node);
+  void addAbsorberGiants(ParameterInput *pin, YAML::Node &node);
+  void addAbsorberEarth(ParameterInput *pin, YAML::Node &node);
+  void addAbsorberVenus(ParameterInput *pin, YAML::Node &node);
+  void addAbsorberMars(ParameterInput *pin, YAML::Node &node);
+
+  int test(uint64_t flag) const { return bflags_ & flag; }
+  void set(uint64_t flag) { bflags_ |= flag; }
 
   // absorbers
   std::vector<AbsorberPtr> absorbers_;
 
   // data
   std::string name_;
+  std::string type_;
   uint64_t bflags_;
 
   // spectra

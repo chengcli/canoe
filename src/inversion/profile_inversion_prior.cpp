@@ -3,6 +3,7 @@
 
 // canoe
 #include <configure.hpp>
+#include <impl.hpp>
 
 // athena
 #include <athena/hydro/hydro.hpp>
@@ -10,9 +11,6 @@
 
 // application
 #include <application/application.hpp>
-
-// snap
-#include <snap/meshblock_impl.hpp>
 
 // inversion
 #include "gaussian_process.hpp"

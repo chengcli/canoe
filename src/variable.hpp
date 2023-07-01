@@ -1,5 +1,5 @@
-#ifndef SRC_SNAP_VARIABLE_HPP_
-#define SRC_SNAP_VARIABLE_HPP_
+#ifndef SRC_VARIABLE_HPP_
+#define SRC_VARIABLE_HPP_
 
 // C/C++
 #include <array>
@@ -14,20 +14,23 @@
 //  \brief a collection of all physical data in a computational cell
 class Variable {
  public:
-  enum { Size = NHYDRO + NSCALARS + NCLOUDS };
+  enum { Size = NHYDRO + NSCALARS + NSTATIC };
 
   //! data pointers
   //! hydro data
   Real *w;
 
+  //! cloud data
+  Real *c;
+
   //! tracer data
   Real *s;
 
-  //! cloud data
+  //! chemistry data
   Real *q;
 
-  //! chemistry data
-  Real *c;
+  //! static data
+  Real *x;
 
   //! particle data
   Real *p;
@@ -35,9 +38,10 @@ class Variable {
   // constructor
   Variable() {
     w = data_.data();
-    s = w + NHYDRO;
-    q = s + NSCALARS;
-    c = q + NCLOUDS;
+    c = w + NHYDRO;
+    s = c + NCLOUD;
+    q = s + NTRACER;
+    x = q + NCHEMISTRY;
   }
 
  private:
@@ -45,4 +49,4 @@ class Variable {
   std::array<Real, Size> data_;
 };
 
-#endif  // SRC_SNAP_VARIABLE_HPP_
+#endif  // SRC_VARIABLE_HPP_

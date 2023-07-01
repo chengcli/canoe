@@ -2,6 +2,7 @@
 #define SRC_SNAP_IMPLICIT_IMPLICIT_SOLVER_HPP_
 
 // C/C++
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -163,5 +164,7 @@ class ImplicitSolver {
   // MPI_Request req_recv_sync_bot_;
 #endif
 };
+
+using ImplicitSolverPtr = std::shared_ptr<ImplicitSolver>;
 
 #endif  //  SRC_SNAP_IMPLICIT_IMPLICIT_SOLVER_HPP_

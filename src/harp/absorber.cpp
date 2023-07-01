@@ -2,9 +2,9 @@
 #include <athena/athena.hpp>
 #include <athena/mesh/mesh.hpp>
 
-// snap
-#include <snap/meshblock_impl.hpp>
-#include <snap/variable.hpp>
+// canoe
+#include <index_map.hpp>
+#include <variable.hpp>
 
 // application
 #include <application/application.hpp>

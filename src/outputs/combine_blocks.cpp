@@ -7,14 +7,12 @@
 #include <sstream>  // stringstream
 #include <stdexcept>
 
-// canoe
-#include <configure.hpp>
-
 // athena
 #include <athena/globals.hpp>
+#include <athena/outputs/user_outputs.hpp>
 
-// outputs
-#include "user_outputs.hpp"
+// canoe
+#include <configure.hpp>
 
 int mppnccombine(int argc, char *argv[]);
 

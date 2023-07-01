@@ -3,10 +3,10 @@
 #include <vector>
 
 // outputs
-#include "user_outputs.hpp"
+#include "output_utils.hpp"
 
 DiagnosticTable diag_table = {
-    // short name, long name,                       units,      grid location
+    // short name, long name, units, grid location
     {"x1", "height at cell center", "m", "--C"},
     {"x1f", "height at cell boundary", "m", "--F"},
     {"x2", "distance at cell center", "m", "-C-"},

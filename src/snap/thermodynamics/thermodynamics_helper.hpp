@@ -101,41 +101,6 @@ void rk4_integrate_lnp_adaptive(Real q[], int isat[], Real const rcp[],
                                 Real dlnp, Real ftol, int method,
                                 Real rdlnTdlnP = 1.);
 
-//! Potential temperature
-template <typename T>
-Real PotentialTemp(T w, Real p0, Thermodynamics const *pthermo) {
-  Real chi = pthermo->GetChi(w);
-  Real temp = pthermo->GetTemp(w);
-  return temp * pow(p0 / w[IPR], chi);
-}
-
-//! Moist static energy
-template <typename T>
-Real MoistStaticEnergy(T w, Real gz, Thermodynamics const *pthermo) {
-  Real temp = pthermo->GetTemp(w);
-  Real IE = w[IDN] * pthermo->getSpecificCp(w) * temp;
-  Real rho = w[IDN];
-  /*if (ppart != nullptr) {
-    for (int n = 0; n < NVAPOR; ++n) {
-      for (int t = 0; t < ppart->u.GetDim4(); ++t) {
-        rho += ppart->u(t,k,j,i);
-        IE -= ppart->u(t,k,j,i)*pthermo->GetLatent(1+NVAPOR+n);
-        IE += ppart->u(t,k,j,i)*ppart->GetCv(t)*temp;
-      }
-      ppart = ppart->next;
-    }
-  }*/
-  return IE / rho + gz;
-}
-
-//! Relative humidity
-template <typename T>
-Real RelativeHumidity(T w, int iv, Thermodynamics const *pthermo) {
-  Real dw[1 + NVAPOR];
-  pthermo->SaturationSurplus(dw, w, VariableType::prim);
-  return w[iv] / (w[iv] - dw[iv]);
-}
-
 //! Equivalent potential temperature
 /*Real MoistEntropy(AthenaArray<Real> const& w, Thermodynamics *pthermo,
 Particles *ppart, int k, int j, int i) { #if (NVAPOR > 0) Real gamma =

@@ -2,6 +2,9 @@
 
 filters=-legal/copyright,-build/include_subdir,-build/include_order,-runtime/references
 
+# canoe
+cpplint --filter=${filters} src/*.hpp
+
 # astro
 cpplint --filter=${filters} --recursive src/astro
 
@@ -35,6 +38,12 @@ cpplint --filter=${filters} --recursive src/snap/implicit
 
 # tools
 cpplint --filter=${filters} tools/*.cpp
+
+# tracer
+cpplint --filter=${filters} --recursive tracer
+
+# c3m
+cpplint --filter=${filters} --recursive c3m
 
 # transport
 cpplint --filter=${filters} --recursive src/transport

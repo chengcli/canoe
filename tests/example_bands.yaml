@@ -1,38 +1,32 @@
 name: example bands file
 
 opacity-sources:
-  - name: H2-H2-CIA
+  - name: ir-H2-H2-CIA
     long-name: "Hydrogen-Hydrogen collisional absorption"
     model: xiz
-    type: lbl
 
-  - name: H2-He-CIA
+  - name: ir-H2-He-CIA
     long-name: "Hydrogen-Helium collisional absorption"
     model: xiz
-    type: lbl
 
-  - name: CH4
+  - name: ir-CH4
     long-name: "Methane line absorption"
     model: Voigt
-    type: lbl
     data: 'kcoeff.<min>-<max>-<res>.nc'
 
-  - name: C2H2
+  - name: ir-C2H2
     long-name: "Acetylene line absorption"
     model: Voigt
-    type: lbl
     data: 'kcoeff.<min>-<max>-<res>.nc'
 
-  - name: C2H4
+  - name: ir-C2H4
     long-name: "Ethylene line absorption"
     model: Voigt
-    type: lbl
     data: 'kcoeff.<min>-<max>-<res>.nc'
 
-  - name: C2H6
+  - name: ir-C2H6
     long-name: "Ethane line absorption"
     model: Voigt
-    type: lbl
     data: 'kcoeff.<min>-<max>-<res>.nc'
 
   - name: radio-NH3
@@ -43,18 +37,17 @@ opacity-sources:
 
   - name: radio-H2O
     long-name: "H2O line absorption"
-    model: Hanley
+    model: Karpowicz
     dependent-species: [vapor.H2O]
     parameters: {xHe: 0.2, scale: 0.}
 
   - name: radio-Electron
     long-name: "Electron absorption"
-    model: Hanley
-    dependent-species: [tracer.elec]
 
 bands: [vis, ir, radio]
 
 ir:
+  type: ir
   wavenumber-range: [10., 200.]
   resolution: 0.01
   opacity: [H2-H2-CIA, H2-He-CIA, CH4, C2H2, C2H4, C2H6]
@@ -62,6 +55,7 @@ ir:
   spectrum: false
 
 vis:
+  type: ir
   wavenumber-range: [10., 200.]
   resolution: 0.01
   opacity: [H2-H2-CIA, H2-He-CIA, CH4, C2H2, C2H4, C2H6]
@@ -69,6 +63,7 @@ vis:
   spectrum: false
 
 radio:
+  type: radio
   unit: GHz
   frequencies: [0.6, 1.25, 2.6, 5.2, 10., 22.]
-  opacity: [radio-NH3, radio-H2O, radio-Electron]
+  opacity: [NH3, H2O, Electron]

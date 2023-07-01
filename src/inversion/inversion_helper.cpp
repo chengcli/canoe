@@ -74,39 +74,3 @@ void gather_probability(std::vector<Inversion *> const &fitq) {
     }
   }
 }
-
-std::vector<Inversion *> create_inversion_queue(MeshBlock *pmb,
-                                                ParameterInput *pin) {
-  std::string str = pin->GetOrAddString("inversion", "tasks", "");
-  std::vector<std::string> task_names =
-      Vectorize<std::string>(str.c_str(), " ,");
-
-  std::vector<Inversion *> fitq;
-  Application::Logger app("inversion");
-  app->Log("Create inversion queue");
-
-  Inversion *pfit;
-  for (auto p : task_names) {
-    if (p == "VLAProfileInversion") {
-      pfit = new VLAProfileInversion(pmb, pin);
-    } else if (p == "JunoProfileInversion") {
-      pfit = new JunoProfileInversion(pmb, pin);
-    } else if (p == "VLACompositionInversion") {
-    } else if (p == "JunoCompositionInversion") {
-    } else {
-      app->Error("new_inversion_queue's task::" + p + " unrecognized");
-    }
-    fitq.push_back(pfit);
-  }
-
-  int jl = pmb->js;
-  for (auto q : fitq) {
-    q->InitializePositions();
-    q->setX2Indices(jl);
-    jl += q->getX2Span();
-  }
-
-  app->Log("Number of inversions = " + std::to_string(fitq.size()));
-
-  return fitq;
-}

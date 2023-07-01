@@ -1,14 +1,30 @@
+// athena
+#include <athena/mesh/mesh.hpp>
+
 // canoe
 #include <configure.hpp>
+#include <variable.hpp>
 
-// snap
-#include <snap/variable.hpp>
+// application
+#include <application/exceptions.hpp>
 
 // opacity
 #include "absorption_functions.hpp"
 #include "mwr_absorbers.hpp"
 
 namespace GiantPlanets {
+
+MwrAbsorberH2O::MwrAbsorberH2O(MeshBlock* pmb, std::vector<std::string> species,
+                               ParameterMap params)
+    : Absorber(pmb, "radio-H2O", species, params) {
+  if (!params_.count("xHe")) {
+    throw NotFoundError("MwrAbsorberH2O", "parameter 'xHe'");
+  }
+
+  if (!params_.count("scale")) {
+    throw NotFoundError("MwrAbsorberH2O", "parameter 'scale'");
+  }
+}
 
 Real MwrAbsorberH2O::GetAttenuation(Real wave1, Real wave2,
                                     Variable const& var) const {

@@ -22,9 +22,7 @@
 #include <athena/globals.hpp>
 #include <athena/hydro/hydro.hpp>
 #include <athena/mesh/mesh.hpp>
-
-// outputs
-#include "user_outputs.hpp"
+#include <athena/outputs/user_outputs.hpp>
 
 //----------------------------------------------------------------------------------------
 //! \fn void DebugOutput::WriteOutputFile()

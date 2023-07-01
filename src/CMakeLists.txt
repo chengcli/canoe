@@ -13,8 +13,23 @@ include_directories(
   ${CMAKE_BINARY_DIR}
   )
 
+set(namel canoe)
+string(TOUPPER ${namel} nameu)
+
 string(TOLOWER ${CMAKE_BUILD_TYPE} buildl)
 string(TOUPPER ${CMAKE_BUILD_TYPE} buildu)
+
+file(GLOB src_files *.cpp)
+
+add_library(${namel}_${buildl}
+    OBJECT
+    ${src_files}
+    )
+
+set_target_properties(${namel}_${buildl}
+    PROPERTIES
+    COMPILE_FLAGS ${CMAKE_CXX_FLAGS_${buildu}}
+    )
 
 add_subdirectory(climath)
 add_subdirectory(astro)
@@ -24,8 +39,11 @@ add_subdirectory(harp)
 add_subdirectory(inversion)
 add_subdirectory(outputs)
 add_subdirectory(opacity)
+add_subdirectory(tracer)
+add_subdirectory(c3m)
 
 set(CANOE_LIBRARY_${buildu}
+  "canoe_${buildl}"
   "athenapp_${buildl}"
   "application_${buildl}"
   "climath_${buildl}"
@@ -36,6 +54,8 @@ set(CANOE_LIBRARY_${buildu}
   "inversion_${buildl}"
   "outputs_${buildl}"
   "opacity_${buildl}"
+  "tracer_${buildl}"
+  "c3m_${buildl}"
   "yaml-cpp"
   ${NETCDF_LIBRARIES}
   CACHE INTERNAL "canoe library")

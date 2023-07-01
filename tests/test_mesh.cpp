@@ -1,8 +1,15 @@
 // external
 #include <gtest/gtest.h>
 
+// application
+#include <application/application.hpp>
+
 // athena
 #include <athena/mesh/mesh.hpp>
+
+// canoe
+#include <impl.hpp>
+#include <index_map.hpp>
 
 class TestMesh : public testing::Test {
  protected:
@@ -22,6 +29,13 @@ class TestMesh : public testing::Test {
     int restart = false;
     int mesh_only = false;
     pmesh = new Mesh(pinput, mesh_only);
+
+    // set up components
+    for (int b = 0; b < pmesh->nblocal; ++b) {
+      MeshBlock *pmb = pmesh->my_blocks(b);
+      pmb->pindex = std::make_shared<MeshBlock::IndexMap>(pmb, pinput);
+      pmb->pimpl = std::make_shared<MeshBlock::Impl>(pmb, pinput);
+    }
 
     pmesh->Initialize(restart, pinput);
   }
@@ -65,7 +79,17 @@ TEST_F(TestMesh, Mesh) {
 int main(int argc, char **argv) {
   testing::InitGoogleTest(&argc, argv);
 
+  auto app = Application::GetInstance();
+  Application::Start();
+
+  app->InstallMonitor("inversion", "main.out", "main.err");
+  app->InstallMonitor("astro", "main.out", "main.err");
+  app->InstallMonitor("snap", "main.out", "main.err");
+  app->InstallMonitor("harp", "main.out", "main.err");
+
   int result = RUN_ALL_TESTS();
+
+  Application::Destroy();
 
   return result;
 }

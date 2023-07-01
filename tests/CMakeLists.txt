@@ -5,22 +5,7 @@
 string(TOLOWER ${CMAKE_BUILD_TYPE} buildl)
 string(TOUPPER ${CMAKE_BUILD_TYPE} buildu)
 
-# Enable testing functionality
-enable_testing()
-
-#if (${HYDROSTATIC})
-#  add_subdirectory(1d-rad-jupiter)
-#endif()
-
-# yaml
-#set(namel test_yaml_read)
-#add_executable(${namel}.${buildl} ${namel}.cpp)
-#target_link_libraries(${namel}.${buildl} gtest_main yaml-cpp)
-#add_test(NAME ${namel}.${buildl} COMMAND ${namel}.${buildl})
-
-file(GLOB src_files *.cpp)
-
-foreach(test ${src_files})
+macro(add_test_case test)
   get_filename_component(name ${test} NAME_WE)
 
   add_executable(${name}.${buildl} ${name}.cpp)
@@ -40,8 +25,23 @@ foreach(test ${src_files})
     ${CANOE_LIBRARY_${buildu}})
 
   add_test(NAME ${name}.${buildl} COMMAND ${name}.${buildl})
-endforeach()
+endmacro()
 
+# Enable testing functionality
+enable_testing()
+
+# Add test cases
+add_test_case(test_absorber.cpp)
+add_test_case(test_yaml_read.cpp)
+
+if (${NVAPOR} EQUAL 0)
+  add_test_case(test_mesh.cpp)
+endif()
+
+if (${NVAPOR} EQUAL 2)
+  add_test_case(test_radiation.cpp)
+  add_test_case(test_microwave_opacity.cpp)
+endif()
 
 # copy yaml files
 file(GLOB inputs *.inp *.yaml)

@@ -4,7 +4,6 @@
 // harp
 #include "radiation_band.hpp"
 
-void RadiationBand::addAbsorberVenus(ParameterInput *pin, std::string bname,
-                                     YAML::Node &node) {
+void RadiationBand::addAbsorberVenus(ParameterInput *pin, YAML::Node &node) {
   throw NotImplementedError("addAbsorberVenus");
 }

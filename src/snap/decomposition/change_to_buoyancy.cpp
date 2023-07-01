@@ -11,7 +11,9 @@
 #include <utils/ndarrays.hpp>
 
 // canoe
-#include "../meshblock_impl.hpp"
+#include <impl.hpp>
+
+// snap
 #include "../thermodynamics/thermodynamics.hpp"
 #include "decomposition.hpp"
 
@@ -27,9 +29,9 @@ inline void IntegrateDownwards(AthenaArray<Real> &psf,
 
 void Decomposition::ChangeToBuoyancy(AthenaArray<Real> &w, int kl, int ku,
                                      int jl, int ju) {
-  MeshBlock *pmb = pmy_block_;
-  Coordinates *pco = pmb->pcoord;
-  Thermodynamics *pthermo = pmb->pimpl->pthermo;
+  auto pmb = pmy_block_;
+  auto pco = pmb->pcoord;
+  auto pthermo = pmb->pimpl->pthermo;
 
   Real grav = -pmb->phydro->hsrc.GetG1();  // positive downward pointing
 
@@ -148,9 +150,9 @@ void Decomposition::RestoreFromBuoyancy(AthenaArray<Real> &w,
                                         AthenaArray<Real> &wl,
                                         AthenaArray<Real> &wr, int k, int j,
                                         int il, int iu) {
-  MeshBlock *pmb = pmy_block_;
-  Coordinates *pco = pmb->pcoord;
-  Thermodynamics *pthermo = pmb->pimpl->pthermo;
+  auto pmb = pmy_block_;
+  auto pco = pmb->pcoord;
+  auto pthermo = pmb->pimpl->pthermo;
   Real grav = -pmb->phydro->hsrc.GetG1();  // positive downward pointing
   int is = pmb->is, ie = pmb->ie;
   if (grav == 0.) return;

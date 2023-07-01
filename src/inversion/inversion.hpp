@@ -2,6 +2,7 @@
 #define SRC_INVERSION_INVERSION_HPP_
 
 // C/C++
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -27,8 +28,8 @@ class Radiation;
 
 class Inversion {
  public:
-  // functions
-  Inversion(MeshBlock *pmb, ParameterInput *pin, std::string name);
+  static std::vector<std::unique_ptr<Inversion>> NewInversionQueue(
+      MeshBlock *pmb, ParameterInput *pin);
 
   virtual ~Inversion();
 
@@ -81,6 +82,8 @@ class Inversion {
   }
 
  protected:
+  Inversion(MeshBlock *pmb, ParameterInput *pin, std::string name);
+
   // name of the inversion
   std::string name_;
 
@@ -108,5 +111,8 @@ class Inversion {
   // scratch arrays
   Real *zz_, *par_;
 };
+
+using InversionPtr = std::unique_ptr<Inversion>;
+using InversionQueue = std::vector<std::unique_ptr<Inversion>>;
 
 #endif  //  SRC_INVERSION_INVERSION_HPP_

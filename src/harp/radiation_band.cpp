@@ -31,13 +31,11 @@
 #include "radiation.hpp"
 #include "radiation_band.hpp"
 #include "radiation_utils.hpp"  // readRadiationDirections
+#include "rt_solvers.hpp"
 
 RadiationBand::RadiationBand(MeshBlock *pmb, ParameterInput *pin,
                              YAML::Node &node, std::string myname)
-    : name_(myname),
-      bflags_(0LL),
-      pmy_block_(pmb),
-      params_(ToParameterMap(node["parameters"])) {
+    : name_(myname), bflags_(0LL), pmy_block_(pmb) {
   Application::Logger app("harp");
   app->Log("Initialize RadiationBand " + name_);
 
@@ -46,6 +44,10 @@ RadiationBand::RadiationBand(MeshBlock *pmb, ParameterInput *pin,
   }
 
   auto my = node[name_];
+
+  if (my["parameters"]) params_ = ToParameterMap(my["parameters"]);
+
+  type_ = my["type"] ? my["type"].as<std::string>() : "unknown";
 
   // number of Legendre moments
   int npmom = my["moments"] ? my["moments"].as<int>() : 1;
@@ -102,13 +104,16 @@ RadiationBand::RadiationBand(MeshBlock *pmb, ParameterInput *pin,
   bssa.NewAthenaArray(ncells3, ncells2, ncells1);
   bpmom.NewAthenaArray(npmom + 1, ncells3, ncells2, ncells1);
 
+  //! \note btoa, bflxup, bflxdn are shallow slices to Radiation variables
+
   // add absorbers
   if (my["opacity"]) {
     for (auto aname : my["opacity"]) {
       bool found = false;
       for (auto absorber : node["opacity-sources"]) {
-        if (aname.as<std::string>() == absorber["name"].as<std::string>()) {
-          AddAbsorber(pin, name_, absorber);
+        if (type_ + "-" + aname.as<std::string>() ==
+            absorber["name"].as<std::string>()) {
+          AddAbsorber(pin, absorber);
           found = true;
           break;
         }
@@ -123,19 +128,27 @@ RadiationBand::RadiationBand(MeshBlock *pmb, ParameterInput *pin,
     throw NotFoundError("RadiationBand", "Band " + name_ + " opacity");
   }
 
+  // set rt solver
+  if (my["rt-solver"]) {
+    if (my["rt-solver"].as<std::string>() == "Lambert") {
+      psolver = std::make_shared<RTSolverLambert>(this);
+    } else {
+      throw InvalidValueError("RadiationBand",
+                              my["rt-solver"].as<std::string>());
+    }
+  } else {
+    psolver = std::make_shared<RTSolver>(this, "Null");
+  }
+
   char buf[80];
   snprintf(buf, sizeof(buf), "%.2f - %.2f", wmin_, wmax_);
-  app->Log("Spectral range = " + std::string(buf));
-  app->Log("Number of spectral bins = " + std::to_string(spec_.size()));
+  app->Log("Spectral range", buf);
+  app->Log("Number of spectral bins", spec_.size());
 }
 
 RadiationBand::~RadiationBand() {
   Application::Logger app("harp");
   app->Log("Destroy RadiationBand " + name_);
-
-#ifdef RT_DISORT
-  free_disort();
-#endif
 }
 
 void RadiationBand::setWavenumberRange(YAML::Node &my) {
@@ -230,7 +243,7 @@ Absorber *RadiationBand::GetAbsorber(std::string const &name) {
   return nullptr;
 }
 
-void RadiationBand::writeBinRadiance(OutputParameters const *pout) const {
+void RadiationBand::WriteBinRadiance(OutputParameters const *pout) const {
   if (!test(RadiationFlags::WriteBinRadiance)) return;
 
   char fname[80], number[6];
@@ -275,32 +288,18 @@ void RadiationBand::writeBinRadiance(OutputParameters const *pout) const {
   fclose(pfile);
 }
 
-void RadiationBand::AddAbsorber(ParameterInput *pin, std::string bname,
-                                YAML::Node &node) {
-  if (PLANET == "Jupiter" || PLANET == "Saturn") {
-    addAbsorberGiants(pin, bname, node);
-  } else if (PLANET == "Uranus" || PLANET == "Neptune") {
-    addAbsorberGiants(pin, bname, node);
-  } else if (PLANET == "Earth") {
-    addAbsorberEarth(pin, bname, node);
-  } else if (PLANET == "Mars") {
-    addAbsorberMars(pin, bname, node);
-  } else if (PLANET == "Venus") {
-    addAbsorberVenus(pin, bname, node);
+void RadiationBand::AddAbsorber(ParameterInput *pin, YAML::Node &node) {
+  if (strcmp(PLANET, "Jupiter") == 0 || strcmp(PLANET, "Saturn") == 0) {
+    addAbsorberGiants(pin, node);
+  } else if (strcmp(PLANET, "Uranus") == 0 || strcmp(PLANET, "Neptune") == 0) {
+    addAbsorberGiants(pin, node);
+  } else if (strcmp(PLANET, "Earth") == 0) {
+    addAbsorberEarth(pin, node);
+  } else if (strcmp(PLANET, "Mars") == 0) {
+    addAbsorberMars(pin, node);
+  } else if (strcmp(PLANET, "Venus") == 0) {
+    addAbsorberVenus(pin, node);
   } else {
     throw NotFoundError(PLANET);
   }
 }
-
-// overide in rtsolver folder
-void __attribute__((weak))
-RadiationBand::calculateBandFlux(AthenaArray<Real> *flxup,
-                                 AthenaArray<Real> *flxdn,
-                                 Direction const &rayInput, Real dist, int k,
-                                 int j, int il, int iu) {}
-
-// overide in rtsolver folder
-void __attribute__((weak))
-RadiationBand::calculateBandRadiance(AthenaArray<Real> *radiance,
-                                     Direction const &rayInput, Real dist,
-                                     int k, int j, int il, int iu) {}

@@ -1,0 +1,30 @@
+name: Saturn atmosphere properties
+
+references:
+  - Table 2, Proc.IAU,No269,p134
+  - Juno JAMRT model
+  - Li and Ingersoll, Nature Geo, 2015
+
+star:
+  data-file: Sun.yaml
+  protostar-molecular-composition:
+    unit: H2
+    He: 0.195
+    Ne:  2.10e-04
+    CH4: 5.50e-04
+    H2O: 1.026e-03
+    NH3: 1.352e-04
+    H2S: 3.10e-05
+    PH3: 5.14e-07
+    Ar: 7.24e-6
+
+enrichment-to-protostar:
+  He: 0.695
+  CH4: 9.4
+  PH3: 7.5
+  NH3: 3.0
+  H2O: 10.0
+
+reference-tp:
+  pressure: 1. bar
+  temperature: 166 K
