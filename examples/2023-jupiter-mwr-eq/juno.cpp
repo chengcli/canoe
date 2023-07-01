@@ -264,6 +264,15 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin)
   peos->PrimitiveToConserved(phydro->w, pfield->bcc,
     phydro->u, pcoord, is, ie, js, je, ks, ke);
 
+  // Microwave radiative transfer needs temperatures at cell interfaces, which are
+  // interpolated from cell centered hydrodynamic variables.
+  // Normally, the boundary conditions are taken care of internally.
+  // But, since we call radiative tranfer directly in pgen, we would need to update the
+  // boundary conditions manually. The following lines of code updates the boundary
+  // conditions.
+  phydro->hbvar.SwapHydroQuantity(phydro->w, HydroBoundaryQuantity::prim);
+  pbval->ApplyPhysicalBoundaries(0., 0., pbval->bvars_main_int);
+
   // calculate radiative transfer
   auto prad = pimpl->prad;
 
