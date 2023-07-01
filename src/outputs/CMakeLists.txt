@@ -1,25 +1,17 @@
-# Installs outputs library
-#
-#   library: liboutputs_debug.o
-#   library: liboutputs_release.o
-#
-# Define the following variables
-#
-#   OUTPUTS_INCLUDE_DIR
-#   OUTPUTS_LIBRARY_DEBUG
-#   OUTPUTS_LIBRARY_RELEASE
-#
-# Normal usage would be:
-#
-#   include_directories( ${OUTPUTS_INCLUDE_DIR})
-#   target_link_libraries( ${OUTPUTS_LIBRARY_DEBUG})
-
 set(namel outputs)
 string(TOUPPER ${namel} nameu)
 
 file(GLOB src_files
-    *.cpp
-    )
+  combine_blocks.cpp
+  mppnccombine.cpp
+  load_user_output_data.cpp
+  output_utils.cpp
+  debug.cpp
+  netcdf.cpp
+  pnetcdf.cpp
+  fits.cpp
+  diag_table_${TASK}.cpp
+  )
 
 string(TOLOWER ${CMAKE_BUILD_TYPE} buildl)
 string(TOUPPER ${CMAKE_BUILD_TYPE} buildu)
