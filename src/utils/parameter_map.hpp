@@ -1,4 +1,8 @@
-#ifndef SRC_UTILS_PARAMETER_MAP_HPP
+#ifndef SRC_UTILS_PARAMETER_MAP_HPP_
+#define SRC_UTILS_PARAMETER_MAP_HPP_
+
+// C/C++
+#include <string>
 
 // external
 #include <yaml-cpp/yaml.h>
@@ -17,4 +21,4 @@ inline std::map<std::string, Real> ToParameterMap(const YAML::Node &node) {
   return map;
 }
 
-#endif  // SRC_UTILS_PARAMETER_MAP_HPP
+#endif  // SRC_UTILS_PARAMETER_MAP_HPP_

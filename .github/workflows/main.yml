@@ -48,7 +48,7 @@ jobs:
 
       - name: Build
         # Build your program with the given configuration
-        run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+        run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} -- -j2
 
       - name: Test
         working-directory: ${{github.workspace}}/build/tests
@@ -76,7 +76,7 @@ jobs:
 
       - name: build
         # Build your program with the given configuration
-        run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+        run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} -- -j2
 
       - name: Test
         working-directory: ${{github.workspace}}/build/tests
@@ -99,7 +99,7 @@ jobs:
 
       - name: Build
         # Build your program with the given configuration
-        run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+        run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} -- -j2
 
       - name: Test
         working-directory: ${{github.workspace}}/build/tests
@@ -128,7 +128,7 @@ jobs:
 
       - name: build
         # Build your program with the given configuration
-        run: cmake --build ${{github.workspace}}/build-netcdf --config ${{env.BUILD_TYPE}}
+        run: cmake --build ${{github.workspace}}/build-netcdf --config ${{env.BUILD_TYPE}} -- -j2
 
       - name: test generating ktable
         working-directory: ${{github.workspace}}/build-netcdf

@@ -39,7 +39,8 @@ class RadiationBand::RTSolver {
 
 class RadiationBand::RTSolverLambert : public RadiationBand::RTSolver {
  public:
-  RTSolverLambert(RadiationBand *pmy_band) : RTSolver(pmy_band, "Lambert") {}
+  explicit RTSolverLambert(RadiationBand *pmy_band)
+      : RTSolver(pmy_band, "Lambert") {}
 
   ~RTSolverLambert() {}
 

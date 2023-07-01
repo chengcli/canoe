@@ -1,5 +1,5 @@
-#ifndef SRC_SNAP_VARIABLE_HPP_
-#define SRC_SNAP_VARIABLE_HPP_
+#ifndef SRC_VARIABLE_HPP_
+#define SRC_VARIABLE_HPP_
 
 // C/C++
 #include <array>
@@ -49,4 +49,4 @@ class Variable {
   std::array<Real, Size> data_;
 };
 
-#endif  // SRC_SNAP_VARIABLE_HPP_
+#endif  // SRC_VARIABLE_HPP_

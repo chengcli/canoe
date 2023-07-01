@@ -18,9 +18,6 @@
 #include <athena/athena.hpp>
 #include <athena/mesh/mesh.hpp>
 
-// inversion
-#include <application/application.hpp>
-
 // harp
 #include <harp/radiation.hpp>
 #include <harp/radiation_band.hpp>

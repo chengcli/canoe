@@ -3,6 +3,7 @@
 
 // C/C++
 #include <string>
+#include <vector>
 
 // athena
 #include <athena/athena.hpp>

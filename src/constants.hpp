@@ -14,4 +14,4 @@ double const cLight_cgs = 2.99792458E10;
 double const stefanBoltzmann = 5.670374419E-8;
 }  // namespace Constants
 
-#endif  // SRC_SNAP_CONSTANTS_HPP_
+#endif  // SRC_CONSTANTS_HPP_
