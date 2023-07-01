@@ -69,8 +69,8 @@ sfloor      = 0.
 
 <species>
 vapor = H2O, NH3
-cloud = H2O(S), H2O(L), NH3(S), NH3(L), NH4SH(S)
-tracer = e-, K, Na
+cloud = H2O(S), H2O(L), NH3(S), NH3(L)
+tracer = e-, Na
 
 <thermodynamics>
 vapor = nasa_gas.yaml
@@ -98,17 +98,25 @@ Ptriple2    = 6060.
 control_file = mwr_channels.yaml
 outdir       = (0,) (15,) (30,) (45,)
 
-<inversion>
-control_file = mwr_inversion.yaml
+#<inversion>
+#tasks        = JunoProfileInversion
+#control_file = mwr_inversion.yaml
 
 <problem>
 use_temperature_dependent_cp = true
 use_fletcher16_cirs = false
+
+qH2O.gkg    = 20.   # g/kg
+qNH3.gkg    = 2.38  # g/kg
 
 atm_file    = jupiter.yaml
 clat        = 0.
 Tmin        = 110.
 T1bar       = 169.
 
-qH2O.gkg    = 20.   # g/kg
-qNH3.gkg    = 2.38  # g/kg
+xHe         = 0.135
+xCH4        = 2.04E-3
+xH2S        = 2.96E-5
+xNa         = 3.97E-6
+xKCl        = 0.
+metallicity = -2

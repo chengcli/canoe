@@ -15,16 +15,16 @@
 #include <athena/outputs/outputs.hpp>
 #include <athena/stride_iterator.hpp>
 
+// application
+#include <application/application.hpp>
+#include <application/exceptions.hpp>
+
 // canoe
 #include <configure.hpp>
 #include <impl.hpp>
 #include <constants.hpp>
 #include <variable.hpp>
 #include <index_map.hpp>
-
-// application
-#include <application/application.hpp>
-#include <application/exceptions.hpp>
 
 // climath
 #include <climath/interpolation.h>
@@ -53,9 +53,8 @@
 // inversion
 #include <inversion/profile_inversion.hpp>
 
-
-Real grav, P0, T0, xHe, xCH4, Tmin, clat;
-Real xH2S, xNa, xKCl, metallicity;
+Real grav, P0, T0, Tmin, clat;
+Real xHe, xCH4, xH2S, xNa, xKCl, metallicity;
 
 void MeshBlock::InitUserMeshBlockData(ParameterInput *pin)
 {

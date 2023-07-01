@@ -22,6 +22,7 @@
 
 // application
 #include <application/application.hpp>
+#include <application/exceptions.hpp>
 
 // snap
 #include <snap/thermodynamics/thermodynamics.hpp>
@@ -89,10 +90,12 @@ ProfileInversion::ProfileInversion(MeshBlock *pmb, ParameterInput *pin,
   Real pmax = pin->GetReal("inversion", name + ".Pmax");
   Real pmin = pin->GetReal("inversion", name + ".Pmin");
   if (pmax < (plevel_.front() + 1.E-6))
-    app->Error("Pmax < " + std::to_string(plevel_.front()));
+    throw RuntimeError("ProfileInversion",
+                       "Pmax < " + std::to_string(plevel_.front()));
 
   if (pmin > (plevel_.back() - 1.E-6))
-    app->Error("Pmin > " + std::to_string(plevel_.back()));
+    throw RuntimeError("ProfileInversion",
+                       "Pmin > " + std::to_string(plevel_.back()));
 
   plevel_.insert(plevel_.begin(), pmax);
   plevel_.push_back(pmin);
@@ -111,7 +114,7 @@ ProfileInversion::ProfileInversion(MeshBlock *pmb, ParameterInput *pin,
   // app->Log("walkers per block =", nwalker);
   // app->Log("total number of walkers = ", pmb->pmy_mesh->mesh_size.nx3);
   if ((nwalker < 2) && pmb->pmy_mesh->nlim > 0) {
-    app->Error("nwalker (nx3) must be at least 2");
+    throw RuntimeError("ProfileInversion", "nwalker (nx3) must be at least 2");
   }
 
   // initialize mcmc chain
@@ -149,6 +152,7 @@ void ProfileInversion::UpdateHydro(Hydro *phydro, ParameterInput *pin) const {
   char buf[80];
   int nsample = samples();  // excluding boundaries
   Application::Logger app("inversion");
+  app->Log("UpdateHydro");
 
   // prepare inversion model
   Real **XpSample;
@@ -168,8 +172,7 @@ void ProfileInversion::UpdateHydro(Hydro *phydro, ParameterInput *pin) const {
     std::vector<Real> qa = Vectorize<Real>(str.c_str(), " ,");
 
     if (qa.size() != nsample) {
-      app->Error("size of " + (std::string)buf +
-                 " != " + std::to_string(nsample));
+      throw ValueError("UpdateHydro", buf, qa.size(), nsample);
     }
 
     // g/kg -> kg/kg
@@ -215,10 +218,12 @@ Real solve_thetav(Real rdlnTdlnP, void *aux) {
 void ProfileInversion::UpdateProfiles(Hydro *phydro, Real **XpSample, int k,
                                       int jl, int ju) const {
   Application::Logger app("inversion");
+  app->Log("Updating profiles at k = " + std::to_string(k));
 
   if (ju - jl != idx_.size()) {
-    app->Error("Number of allocations in x2 should be " +
-               std::to_string(idx_.size() + 1));
+    throw RuntimeError("UpdateProfiles",
+                       "Number of allocations in x2 should be " +
+                           std::to_string(idx_.size() + 1));
   }
 
   int is = pmy_block_->is, ie = pmy_block_->ie;
@@ -358,7 +363,8 @@ void ProfileInversion::ConvectiveAdjustment(Hydro *phydro, int k,
       snprintf(buf, sizeof(buf),
                "root solver does not converge: %12.3g - %12.3g",
                solve_thetav(0.5, &solver_data), solve_thetav(8., &solver_data));
-      app->Error("root solver does not converge");
+      throw RuntimeError("ConvectiveAdjustment",
+                         "root solver does not converge");
     }
     // msg << "- rdlnTdlnP = " << rdlnTdlnP << std::endl;
 

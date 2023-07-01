@@ -24,6 +24,7 @@
 
 void Inversion::MCMCMove(Radiation *prad, Hydro *phydro) {
   Application::Logger app("inversion");
+  app->Log("MCMC move");
 
   // initialize model
   if (recs_.cur == 0) {

@@ -1,8 +1,5 @@
-#ifndef CONFIGURE_HPP
-#define CONFIGURE_HPP
-
-// C/C++
-#include <string>
+#ifndef CONFIGURE_HPP_
+#define CONFIGURE_HPP_
 
 enum {
   NCLOUD = @NCLOUD@,
@@ -29,4 +26,4 @@ enum class VariableType {prim, cons, chem};
 // HYDROSTATIC option (HYDROSTATIC or NOT_HYDROSTATIC)
 #define @HYDROSTATIC_OPTION@
 
-#endif
+#endif  // CONFIGURE_HPP_

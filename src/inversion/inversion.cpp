@@ -43,7 +43,7 @@ InversionQueue Inversion::NewInversionQueue(MeshBlock *pmb,
     } else if (p == "VLACompositionInversion") {
     } else if (p == "JunoCompositionInversion") {
     } else {
-      throw RuntimeError("NewInversionQueue", p);
+      throw NotFoundError("NewInversionQueue", p);
     }
     fitq.push_back(std::move(pfit));
   }

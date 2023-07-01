@@ -9,10 +9,13 @@
 #include <stdexcept>
 #include <string>
 
-// Athena++
+// athena
 #include <athena/athena.hpp>
 #include <athena/mesh/mesh.hpp>
 #include <athena/outputs/user_outputs.hpp>
+
+// canoe
+#include <impl.hpp>
 
 // inversion
 #include <inversion/inversion.hpp>
@@ -32,7 +35,7 @@ void FITSOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) {
     std::string fname = "!";  // clobber
     char number[6];
     int err;
-    sprintf(number, "%05d", output_params.file_number);
+    snprintf(number, sizeof(number), "%05d", output_params.file_number);
 
     fname.append(output_params.file_basename);
     fname.append(".");
@@ -41,13 +44,11 @@ void FITSOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) {
     fname.append(number);
     fname.append(".fits");
 
-    MeshBlock *pmb = pm->pblock;
-
-    while (pmb != NULL) {  // loop over MeshBLocks
-      Inversion *pfit = pmb->pfit;
+    for (int i = 0; i < pm->nblocal; ++i) {
+      MeshBlock *pmb = pm->my_blocks(i);
+      auto &pfit = pmb->pimpl->fitq.back();
       pfit->MakeMCMCOutputs(fname);
       pfit->ResetChain();
-      pmb = pmb->next;
     }
   }
 

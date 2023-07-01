@@ -8,6 +8,9 @@
 #include <athena/mesh/mesh.hpp>
 #include <athena/parameter_input.hpp>
 
+// canoe
+#include <impl.hpp>
+
 // inversion
 #include <inversion/inversion.hpp>
 
@@ -73,7 +76,7 @@ TaskStatus InversionTasks::Optimize(MeshBlock *pmb, int step) {
 }
 
 TaskStatus InversionTasks::Sample(MeshBlock *pmb, int step) {
-  // pmb->pimpl->fitq->MCMCStep();
+  pmb->pimpl->fitq.front()->MCMCMove(pmb->pimpl->prad.get(), pmb->phydro);
   // std::cout << "Sample" << std::endl;
   return TaskStatus::success;
 }
