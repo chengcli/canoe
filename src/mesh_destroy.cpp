@@ -6,6 +6,9 @@
 #include <athena/outputs/io_wrapper.hpp>
 #include <athena/parameter_input.hpp>
 
+// application
+#include <application/globals.hpp>
+
 // canoe
 #include <configure.hpp>
 

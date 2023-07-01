@@ -4,7 +4,7 @@
 
 // athena
 #include <athena/parameter_input.hpp>
-#include <athena/mesh.hpp>
+#include <athena/mesh/mesh.hpp>
 #include <athena/outputs/outputs.hpp>
 #include <athena/task_list/task_list.hpp>
 
@@ -16,12 +16,12 @@
 
 // application
 #include <application/command_line.hpp>
-#include <application/signal_handler.hpp>
+#include <application/signal.hpp>
 #include <application/application.hpp>
 #include <application/exceptions.hpp>
 
 void mesh_setup(ParameterInput* &pin, Mesh* &mesh);
-void mesh_destroy(ParameterInput* &pin, Mesh* &mesh);
+void mesh_destroy(ParameterInput* &pin, Mesh* &mesh, int mbcnt);
 
 using OutputsPtr = std::unique_ptr<Outputs>;
 using TaskListPtr = std::unique_ptr<@TASKLIST@>;
@@ -30,7 +30,7 @@ int main(int argc, char **argv)  {
   Application::Start(argc, argv);
 
   auto cli = CommandLine::GetInstance();
-  auto sig = SignalHandler::GetInstance();
+  auto sig = Signal::GetInstance();
 
   ParameterInput *pinput;
   Mesh *pmesh;
@@ -49,7 +49,7 @@ int main(int argc, char **argv)  {
   // CHANGE TO RUN DIRECTORY, INITIALIZE OUTPUTS OBJECT, AND MAKE OUTPUT OF ICs
   OutputsPtr pouts;
   try {
-    ChangeRunDir(cli->prundir);
+    //ChangeRunDir(cli->prundir);
     pouts = std::make_unique<Outputs>(pmesh, pinput);
     if (cli->res_flag == 0)
       pouts->MakeOutputs(pmesh, pinput);

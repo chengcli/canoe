@@ -265,39 +265,17 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin)
   peos->PrimitiveToConserved(phydro->w, pfield->bcc,
     phydro->u, pcoord, is, ie, js, je, ks, ke);
 
+  // calculate radiative transfer
+  auto prad = pimpl->prad;
+
+  for (int k = ks; k <= ke; ++k) {
+    // run RT models
+    app->Log("run microwave radiative transfer");
+    for (int j = js-1; j <= je; ++j)
+      prad->CalRadiance(0., k, j, is, ie+1);
+  }
+
   FreeCArray(w1);
   delete[] z1;
   delete[] t1;
-
-  // calculate radiative transfer
-  for (int b = 0; b < pmesh->nblocal; ++b) {
-    auto pmb = pmesh->my_blocks(b);
-    auto phydro = pmb->phydro;
-    auto prad = pmb->pimpl->prad;
-
-    int is = pmb->is, js = pmb->js, ks = pmb->ks;
-    int ie = pmb->ie, je = pmb->je, ke = pmb->ke;
-
-    AthenaArray<Real> tempa, qNH3a, qH2Oa;
-    // read profile updates from input
-    std::string file_tempa = pinput->GetOrAddString("problem", "file.tempa", "");
-    if (file_tempa != "") {
-      ReadDataTable(&tempa, file_tempa);
-    }
-    std::string file_nh3a = pinput->GetOrAddString("problem", "file.nh3a", "");
-    if (file_nh3a != "") {
-      ReadDataTable(&qNH3a, file_nh3a);
-    }
-    std::string file_h2oa = pinput->GetOrAddString("problem", "file.h2oa", "");
-    if (file_h2oa != "") {
-      ReadDataTable(&qH2Oa, file_h2oa);
-    }
-
-    for (int k = ks; k <= ke; ++k) {
-      // run RT models
-      app->Log("run microwave radiative transfer");
-      for (int j = js-1; j <= je; ++j)
-        prad->CalRadiance(0., k, j, is, ie+1);
-    }
-  }
 }

@@ -13,8 +13,8 @@ class ParameterInput;
 
 class InversionTasks : public TaskList {
  public:
-  InversionTaskList(ParameterInput *pin, Mesh *pm);
-  ~InversionTaskList() {}
+  InversionTasks(ParameterInput *pin, Mesh *pm);
+  ~InversionTasks() {}
   // void AddInversionTask(uint64_t id, uint64_t dep);
 
   TaskStatus CalculateGradient(MeshBlock *pmb, int step);

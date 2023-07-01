@@ -3,20 +3,21 @@
 #include <athena/outputs/io_wrapper.hpp>
 #include <athena/parameter_input.hpp>
 
+// application
+#include <application/command_line.hpp>
+#include <application/exceptions.hpp>
+
 // canoe
 #include <configure.hpp>
 #include <impl.hpp>
 #include <index_map.hpp>
-
-// application
-#include <application/application.hpp>
 
 // MPI headers
 #ifdef MPI_PARALLEL
 #include <mpi.h>
 #endif
 
-void setup_mesh(ParameterInput*& pinput, Mesh*& pmesh) {
+void mesh_setup(ParameterInput*& pinput, Mesh*& pmesh) {
   IOWrapper infile, restartfile;
   auto cli = CommandLine::GetInstance();
 
@@ -43,12 +44,11 @@ void setup_mesh(ParameterInput*& pinput, Mesh*& pmesh) {
     pinput->ModifyFromCmdline(cli->argc, cli->argv);
   } catch (std::bad_alloc& ba) {
     if (cli->res_flag == 1) restartfile.Close();
-    Debugger::Fatal(
-        "main", "memory allocation failed initializing class ParameterInput:",
-        ba.what());
+    throw RuntimeError(
+        "main", "memory allocation failed initializing class ParameterInput:");
   } catch (std::exception const& ex) {
     if (cli->res_flag == 1) restartfile.Close();
-    Debugger::Fatal("main", ex.what());
+    throw RuntimeError("main", ex.what());
   }
 
   try {
@@ -59,11 +59,11 @@ void setup_mesh(ParameterInput*& pinput, Mesh*& pmesh) {
     }
   } catch (std::bad_alloc& ba) {
     if (cli->res_flag == 1) restartfile.Close();
-    Debugger::Fatal(
-        "main", "memory allocation failed initializing class Mesh:", ba.what());
+    throw RuntimeError("main",
+                       "memory allocation failed initializing class Mesh:");
   } catch (std::exception const& ex) {
     if (cli->res_flag == 1) restartfile.Close();
-    Debugger::Fatal("main", ex.what());
+    throw RuntimeError("main", ex.what());
   }
 
   // With current mesh time possibly read from restart file, correct next_time

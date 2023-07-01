@@ -6,6 +6,9 @@
 #include <athena/parameter_input.hpp>
 #include <athena/scalars/scalars.hpp>
 
+// application
+#include <application/exceptions.hpp>
+
 // canoe
 #include <impl.hpp>
 
@@ -21,7 +24,7 @@ int find_task(Task const *task_list, int ntasks, TaskID const &id) {
   for (int i = 0; i < ntasks; ++i) {
     if (task_list[i].task_id == id) return i;
   }
-  Debugger::Fatal("find_task", "cannot find task function");
+  throw NotFoundError("find_task", "Task Function");
 }
 
 ImplicitHydroTasks::ImplicitHydroTasks(ParameterInput *pin, Mesh *pm)
@@ -78,16 +81,16 @@ void ImplicitHydroTasks::AddTask(TaskID const &id, TaskID const &dep) {
         static_cast<TaskFunction>(&ImplicitHydroTasks::UpdateHydro);
     task_list_[ntasks].lb_time = true;
   } else {
-    Debugger::Fatal("AddTask", "Invalid Task");
+    throw NotFoundError("AddTask", "Task ID");
   }
 
   ntasks++;
 }
 
 TaskStatus ImplicitHydroTasks::IntegrateHydro(MeshBlock *pmb, int stage) {
-  Hydro *ph = pmb->phydro;
-  Field *pf = pmb->pfield;
-  ImplicitSolver *phevi = pmb->pimpl->phevi;
+  auto ph = pmb->phydro;
+  auto pf = pmb->pfield;
+  auto phevi = pmb->pimpl->phevi;
 
   if (pmb->pmy_mesh->fluid_setup != FluidFormulation::evolve)
     return TaskStatus::next;
@@ -172,7 +175,7 @@ TaskStatus ImplicitHydroTasks::AddSourceTerms(MeshBlock *pmb, int stage) {
 
 TaskStatus ImplicitHydroTasks::UpdateHydro(MeshBlock *pmb, int stage) {
   Hydro *ph = pmb->phydro;
-  ImplicitSolver *phevi = pmb->pimpl->phevi;
+  auto phevi = pmb->pimpl->phevi;
   Real dt = pmb->pmy_mesh->dt;
 
   if (stage <= nstages) {

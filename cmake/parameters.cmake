@@ -1,6 +1,6 @@
 # define default parameters
 
-macro(set_if_empty _variable)
+macro(SET_IF_EMPTY _variable)
   if("${${_variable}}" STREQUAL "")
     set(${_variable} ${ARGN})
   endif()
@@ -24,6 +24,8 @@ set_if_empty(WATER_VAPOR_ID -1)
 set_if_empty(EQUATION_OF_STATE "ideal_moist")
 
 set_if_empty(PLANET "Jupiter")
+
+set_if_empty(TASKLIST InversionTasks)
 
 if(NOT NETCDF OR NOT DEFINED NETCDF)
   set(NETCDF_OPTION "NO_NETCDFOUTPUT")
