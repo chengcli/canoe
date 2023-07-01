@@ -270,7 +270,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin)
   for (int k = ks; k <= ke; ++k) {
     // run RT models
     app->Log("run microwave radiative transfer");
-    for (int j = js-1; j <= je; ++j)
+    for (int j = js; j <= je; ++j)
       prad->CalRadiance(0., k, j, is, ie+1);
   }
 

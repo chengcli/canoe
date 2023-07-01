@@ -22,7 +22,7 @@
 
 #ifdef FITSOUTPUT
 extern "C" {
-#include "fitsio.h"
+#include <fitsio.h>
 }
 
 FITSOutput::FITSOutput(OutputParameters oparams) : OutputType(oparams) {}

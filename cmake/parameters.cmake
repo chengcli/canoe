@@ -45,7 +45,7 @@ if(NOT FITS OR NOT DEFINED FITS)
   set(FITS_OPTION "NO_FITSOUTPUT")
 else()
   set(FITS_OPTION "FITSOUTPUT")
-  # find_package(cfits REQUIRED)
+  find_package(cfitsio REQUIRED)
 endif()
 
 if(NOT HYDROSTATIC OR NOT DEFINED HYDROSTATIC)

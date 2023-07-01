@@ -11,6 +11,8 @@
 include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}
   ${CMAKE_BINARY_DIR}
+  ${NETCDF_INCLUDES}
+  ${CFITSIO_INCLUDE_DIR}
   )
 
 set(namel canoe)
@@ -60,6 +62,7 @@ set(CANOE_LIBRARY_${buildu}
   "tasklist_${buildl}"
   "yaml-cpp"
   ${NETCDF_LIBRARIES}
+  ${CFITSIO_LIBRARY}
   CACHE INTERNAL "canoe library")
 
 set(CANOE_INCLUDE_DIR

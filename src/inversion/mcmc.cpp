@@ -9,7 +9,7 @@
 // canoe
 #include <configure.hpp>
 
-#if FITSOUTPUT
+#ifdef FITSOUTPUT
 extern "C" {
 #include <fitsio.h>
 }
@@ -269,7 +269,7 @@ void mcmc_save_fits(char const *fname, mcmc_opts *opts, mcmc_recs *recs,
 #endif
 
   // 6. write FITS file
-#if FITSOUTPUT
+#ifdef FITSOUTPUT
   if (rank == 0) {
     fitsfile *fp;
     int status = 0;
@@ -383,7 +383,7 @@ void mcmc_load_fits(char const *fname, mcmc_opts *opts, mcmc_recs *recs,
   int64_t dims[3] = {1, 1, 1};
   int64_t fpixel[3] = {1, 1, 1};
 
-#if FITSOUTPUT
+#ifdef FITSOUTPUT
   fitsfile *fp;
 
   // open FITS file
