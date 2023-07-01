@@ -97,12 +97,15 @@ void Mesh::InitUserMeshData(ParameterInput *pin)
   Tmin = pin->GetReal("problem", "Tmin");
   clat = pin->GetOrAddReal("problem", "clat", 0.);
 
-  //xH2S = pin->GetReal("problem", "xH2S");
-  //metallicity = pin->GetOrAddReal("problem", "metallicity", 0.);
-  //xNa = pin->GetReal("problem", "xNa");
-  //xNa *= pow(10., metallicity);
-  //xKCl = pin->GetReal("problem", "xKCl");
-  //xKCl *= pow(10., metallicity);
+  xH2S = pin->GetReal("problem", "xH2S");
+
+  metallicity = pin->GetOrAddReal("problem", "metallicity", 0.);
+
+  xNa = pin->GetReal("problem", "xNa");
+  xNa *= pow(10., metallicity);
+
+  xKCl = pin->GetReal("problem", "xKCl");
+  xKCl *= pow(10., metallicity);
 }
 
 void update_gamma(Real* gamma, Real const q[]) {
@@ -121,8 +124,10 @@ void update_gamma(Real* gamma, Real const q[]) {
 
 void MeshBlock::ProblemGenerator(ParameterInput *pin)
 {
-  Application::Logger app("main");
+  Application::Logger app("stdout");
   app->Log("ProblemGenerator: juno");
+
+  auto pthermo = pimpl->pthermo;
 
   // mesh limits
   Real x1min = pmy_mesh->mesh_size.x1min;
@@ -135,7 +140,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin)
 
   // thermodynamic constants
   Real gamma = pin->GetReal("hydro", "gamma");
-  Real Rd = pin->GetReal("thermodynamics", "Rd");
+  Real Rd = pthermo->GetRd();
   Real cp = gamma/(gamma - 1.)*Rd;
 
   // estimate surface temperature and pressure
@@ -161,8 +166,6 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin)
   z1[0] = x1min;
   for (int i = 1; i < nx1; ++i)
     z1[i] = z1[i-1] + H0*dlnp;
-
-  auto pthermo = pimpl->pthermo;
 
   // set up an adiabatic atmosphere
   int max_iter = 200, iter = 0;
@@ -190,7 +193,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin)
     Ts += T0 - t0;
     if (fabs(T0 - t0) < 0.01) break;
 
-    app->Log("iteration #", iter);
+    app->Log("Iteration #", iter);
     app->Log("T", t0);
   }
 
@@ -223,10 +226,9 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin)
           }
         }
 
-    // set tracers, electron, Na and K
+    // set tracers, electron and Na
     int ielec = pindex->GetTracerId("e-");
     int iNa = pindex->GetTracerId("Na");
-    int iK = pindex->GetTracerId("K");
     auto ptracer = pimpl->ptracer;
 
     for (int k = ks; k <= ke; ++k)
@@ -266,37 +268,6 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin)
   FreeCArray(w1);
   delete[] z1;
   delete[] t1;
-}
-
-int main(int argc, char **argv)  {
-  Application::Logger app("main");
-
-  // no MPI
-  Globals::my_rank = 0;
-  Globals::nranks  = 1;
-
-  IOWrapper infile;
-  infile.Open("juno.inp", IOWrapper::FileMode::read);
-
-  ParameterInput *pinput = new ParameterInput;
-  pinput->LoadFromFile(infile);
-  infile.Close();
-
-  // set up mesh
-  int restart = false;
-  int mesh_only = false;
-
-  Mesh *pmesh = new Mesh(pinput, mesh_only);
-
-  // set up components
-  for (int b = 0; b < pmesh->nblocal; ++b) {
-    MeshBlock *pmb = pmesh->my_blocks(b);
-    pmb->pindex = std::make_shared<MeshBlock::IndexMap>(pmb, pinput);
-    pmb->pimpl = std::make_shared<MeshBlock::Impl>(pmb, pinput);
-  }
-
-  // initialize mesh
-  pmesh->Initialize(restart, pinput);
 
   // calculate radiative transfer
   for (int b = 0; b < pmesh->nblocal; ++b) {
@@ -328,17 +299,5 @@ int main(int argc, char **argv)  {
       for (int j = js-1; j <= je; ++j)
         prad->CalRadiance(0., k, j, is, ie+1);
     }
-
   }
-
-  // make output
-  Outputs *pouts;
-  pouts = new Outputs(pmesh, pinput);
-  pouts->MakeOutputs(pmesh, pinput);
-
-  delete pinput;
-  delete pmesh;
-  delete pouts;
-
-  Application::Destroy();
 }
