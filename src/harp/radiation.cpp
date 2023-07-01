@@ -55,18 +55,18 @@ Radiation::Radiation(MeshBlock *pmb, ParameterInput *pin)
     radiance.NewAthenaArray(nout, ncells3, ncells2);
     // set band toa
     int n = 0;
-    for (auto &p : bands) {
+    for (auto &p : bands_) {
       p->btoa.InitWithShallowSlice(radiance, 3, n, p->GetNumOutgoingRays());
       n += p->GetNumOutgoingRays();
     }
   }
 
   // output flux
-  flxup.NewAthenaArray(bands.size(), ncells3, ncells2, ncells1 + 1);
-  flxdn.NewAthenaArray(bands.size(), ncells3, ncells2, ncells1 + 1);
-  for (int n = 0; n < bands.size(); ++n) {
-    bands[n]->bflxup.InitWithShallowSlice(flxup, 4, n, 1);
-    bands[n]->bflxup.InitWithShallowSlice(flxdn, 4, n, 1);
+  flxup.NewAthenaArray(bands_.size(), ncells3, ncells2, ncells1 + 1);
+  flxdn.NewAthenaArray(bands_.size(), ncells3, ncells2, ncells1 + 1);
+  for (int n = 0; n < bands_.size(); ++n) {
+    bands_[n]->bflxup.InitWithShallowSlice(flxup, 4, n, 1);
+    bands_[n]->bflxup.InitWithShallowSlice(flxdn, 4, n, 1);
   }
 
   // time control
@@ -81,8 +81,8 @@ Radiation::~Radiation() {
   app->Log("Destroy Radiation");
 }
 
-RadiationBand *Radiation::GetBand(std::string const &name) {
-  for (auto &band : bands) {
+RadiationBand *Radiation::GetBand(std::string const &name) const {
+  for (auto &band : bands_) {
     if (band->GetName() == name) {
       return band.get();
     }
@@ -110,7 +110,7 @@ void Radiation::PopulateRadiationBands(ParameterInput *pin) {
   for (auto bname : node["bands"]) {
     auto p = std::make_unique<RadiationBand>(pmy_block_, pin, node,
                                              bname.as<std::string>());
-    bands.push_back(std::move(p));
+    bands_.push_back(std::move(p));
   }
 }
 
@@ -129,7 +129,7 @@ void Radiation::CalRadiativeFlux(Real time, int k, int j, int il, int iu) {
     ray = rayInput_[0];
   }
 
-  for (auto &p : bands) {
+  for (auto &p : bands_) {
     // iu ~= ie + 1
     p->SetSpectralProperties(k, j, il - NGHOST, iu + NGHOST - 1);
     p->psolver->CalBandFlux(ray, dist, k, j, il, iu);
@@ -151,20 +151,20 @@ void Radiation::CalRadiance(Real time, int k, int j, int il, int iu) {
     ray = rayInput_[0];
   }
 
-  for (auto &p : bands) {
+  for (auto &p : bands_) {
     // iu ~= ie + 1
     p->SetSpectralProperties(k, j, il - NGHOST, iu + NGHOST - 1);
     p->psolver->CalBandRadiance(ray, dist, k, j, il, iu);
   }
 }
 
-void Radiation::addRadiativeFlux(Hydro *phydro, int k, int j, int il,
+void Radiation::AddRadiativeFlux(Hydro *phydro, int k, int j, int il,
                                  int iu) const {
   Application::Logger app("harp");
   app->Log("AddRadiativeFlux");
 
   // x1-flux divergence
-  for (size_t b = 0; b < bands.size(); ++b) {
+  for (size_t b = 0; b < bands_.size(); ++b) {
 #pragma omp simd
     for (int i = il; i <= iu; ++i)
       phydro->flux[X1DIR](IEN, k, j, i) +=
@@ -174,17 +174,17 @@ void Radiation::addRadiativeFlux(Hydro *phydro, int k, int j, int il,
 
 size_t Radiation::GetNumOutgoingRays() const {
   size_t num = 0;
-  for (auto &p : bands) {
+  for (auto &p : bands_) {
     num += p->GetNumOutgoingRays();
   }
   return num;
 }
 
-size_t Radiation::getRestartDataSizeInBytes() const {
+size_t Radiation::GetRestartDataSizeInBytes() const {
   return flxup.GetSizeInBytes() + flxdn.GetSizeInBytes();
 }
 
-size_t Radiation::dumpRestartData(char *pdst) const {
+size_t Radiation::DumpRestartData(char *pdst) const {
   int offset = 0;
 
   std::memcpy(pdst + offset, flxup.data(), flxup.GetSizeInBytes());
@@ -192,10 +192,10 @@ size_t Radiation::dumpRestartData(char *pdst) const {
   std::memcpy(pdst + offset, flxdn.data(), flxdn.GetSizeInBytes());
   offset += flxdn.GetSizeInBytes();
 
-  return getRestartDataSizeInBytes();
+  return GetRestartDataSizeInBytes();
 }
 
-size_t Radiation::loadRestartData(char *psrc) {
+size_t Radiation::LoadRestartData(char *psrc) {
   int offset = 0;
 
   std::memcpy(flxup.data(), psrc + offset, flxup.GetSizeInBytes());
@@ -203,5 +203,5 @@ size_t Radiation::loadRestartData(char *psrc) {
   std::memcpy(flxdn.data(), psrc + offset, flxdn.GetSizeInBytes());
   offset += flxdn.GetSizeInBytes();
 
-  return getRestartDataSizeInBytes();
+  return GetRestartDataSizeInBytes();
 }

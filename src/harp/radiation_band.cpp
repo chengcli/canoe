@@ -243,7 +243,7 @@ Absorber *RadiationBand::GetAbsorber(std::string const &name) {
   return nullptr;
 }
 
-void RadiationBand::writeBinRadiance(OutputParameters const *pout) const {
+void RadiationBand::WriteBinRadiance(OutputParameters const *pout) const {
   if (!test(RadiationFlags::WriteBinRadiance)) return;
 
   char fname[80], number[6];

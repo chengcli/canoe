@@ -25,6 +25,10 @@
 #include <harp/radiation.hpp>
 #include <harp/radiation_band.hpp>
 
+// application
+#include <application/application.hpp>
+#include <application/exceptions.hpp>
+
 // inversion
 #include "profile_inversion.hpp"
 
@@ -36,29 +40,31 @@ void VLAProfileInversion::CalculateFitTarget(Radiation const *prad, Real *val,
   app->Log("VLAProfileInversion::CalculateFitTarget");
   app->Log("model = " + std::to_string(j));
 
+  if (nvalue != prad->GetNumBands()) {
+    throw RuntimeError("CalculateFitTarget", "nvalue", prad->GetNumBands(),
+                       nvalue);
+  }
+
   // 11. log likelihood
   std::vector<Real> mus, tbs;
 
-  int b = 0, bid = 0;
-  for (auto p : prad->bands) {
+  for (int b = 0; b < prad->GetNumBands(); ++b) {
+    auto pband = prad->GetBand(b);
+
     // emission angles;
-    int ndir = p->GetNumOutgoingRays();
+    int ndir = pband->GetNumOutgoingRays();
     mus.resize(ndir);
     tbs.resize(ndir);
 
-    for (int n = 0; n < ndir; ++n) mus[n] = p->getCosinePolarAngle(n);
+    for (int n = 0; n < ndir; ++n) mus[n] = pband->GetCosinePolarAngle(n);
 
     // brightness temperature
-    val[b] = prad->radiance(bid, k, j);
+    val[b] = prad->radiance(b, k, j);
 
     if (fit_differential_) {
       // brightness temperature differential
-      val[b] -= prad->radiance(bid, k, pmy_block_->js - 1);
+      val[b] -= pband->btoa(0, k, pmy_block_->js - 1);
     }
-
-    bid += ndir;
-    b++;
-    if (b >= nvalue) break;
   }
 
   // app->Log("foward model results", val, nvalue);

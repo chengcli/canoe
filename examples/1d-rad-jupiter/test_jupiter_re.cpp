@@ -225,9 +225,13 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
   }
 
   // set spectral properties
-  for (auto p : pimpl->prad->bands) {
+  auto prad = pimpl->prad;
+  for (int b = 0; b < prad->GetNumBands(); ++b) {
+    auto p = prad->GetBand(b);
+
     for (int k = kl; k <= ku; ++k)
-      for (int j = jl; j <= ju; ++j) p->SetSpectralProperties(k, j, is, ie);
+      for (int j = jl; j <= ju; ++j)
+        p->SetSpectralProperties(k, j, is, ie);
   }
 
   peos->PrimitiveToConserved(phydro->w, pfield->bcc, phydro->u, pcoord, is, ie,

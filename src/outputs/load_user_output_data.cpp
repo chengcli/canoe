@@ -44,12 +44,13 @@ void OutputType::loadUserOutputData(MeshBlock *pmb) {
   // radiation
   if (output_params.variable.compare("rad") == 0 ||
       output_params.variable.compare("radtau") == 0) {
-    for (auto &p : prad->bands) {
+    for (int b = 0; b < prad->GetNumBands(); ++b) {
+      auto pband = prad->GetBand(b);
       // tau
       pod = new OutputData;
       pod->type = "SCALARS";
-      pod->name = p->GetName() + "tau";
-      pod->data.InitWithShallowSlice(p->btau, 4, 0, 1);
+      pod->name = pband->GetName() + "tau";
+      pod->data.InitWithShallowSlice(pband->btau, 4, 0, 1);
       AppendOutputDataNode(pod);
       num_vars_ += 1;
     }
@@ -83,7 +84,7 @@ void OutputType::loadUserOutputData(MeshBlock *pmb) {
       AppendOutputDataNode(pod);
       num_vars_ += 1;
 
-      for (auto p : prad->bands) p->writeBinRadiance(&output_params);
+      // for (auto p : prad->bands) p->writeBinRadiance(&output_params);
     }
   }
 

@@ -59,19 +59,15 @@ class RadiationBand {
 
   std::string GetType() { return type_; }
 
-  Real getCosinePolarAngle(int n) const { return rayOutput_[n].mu; }
+  Real GetCosinePolarAngle(int n) const { return rayOutput_[n].mu; }
 
-  Real getAzimuthalAngle(int n) const { return rayOutput_[n].phi; }
+  Real GetAzimuthalAngle(int n) const { return rayOutput_[n].phi; }
 
   void AddAbsorber(ParameterInput *pin, YAML::Node &node);
 
   void SetSpectralProperties(int k, int j, int il, int iu);
 
-  int test(uint64_t flag) const { return bflags_ & flag; }
-
-  void set(uint64_t flag) { bflags_ |= flag; }
-
-  void writeBinRadiance(OutputParameters const *) const;
+  void WriteBinRadiance(OutputParameters const *) const;
 
   // implementation of RT Solver
   class RTSolver;
@@ -91,6 +87,9 @@ class RadiationBand {
   void addAbsorberEarth(ParameterInput *pin, YAML::Node &node);
   void addAbsorberVenus(ParameterInput *pin, YAML::Node &node);
   void addAbsorberMars(ParameterInput *pin, YAML::Node &node);
+
+  int test(uint64_t flag) const { return bflags_ & flag; }
+  void set(uint64_t flag) { bflags_ |= flag; }
 
   // absorbers
   std::vector<AbsorberPtr> absorbers_;

@@ -37,9 +37,6 @@ class Radiation {
   // access data
   AthenaArray<Real> radiance;
 
-  // radiation bands
-  std::vector<RadiationBandPtr> bands;
-
   AthenaArray<Real> flxup, flxdn;
 
   // functions
@@ -47,11 +44,11 @@ class Radiation {
 
   ~Radiation();
 
-  size_t GetNumBands() { return bands.size(); }
+  size_t GetNumBands() const { return bands_.size(); }
 
-  RadiationBand *GetBand(int i) { return bands[i].get(); }
+  RadiationBand *GetBand(int i) const { return bands_[i].get(); }
 
-  RadiationBand *GetBand(std::string const &name);
+  RadiationBand *GetBand(std::string const &name) const;
 
   void PopulateRadiationBands(ParameterInput *pin);
 
@@ -59,25 +56,27 @@ class Radiation {
 
   void CalRadiance(Real time, int k, int j, int il, int iu);
 
-  void addRadiativeFlux(Hydro *phydro, int k, int j, int il, int iu) const;
+  void AddRadiativeFlux(Hydro *phydro, int k, int j, int il, int iu) const;
 
   size_t GetNumOutgoingRays() const;
 
-  int test(uint64_t flag) const { return rflags_ & flag; }
-
-  void set(uint64_t flag) { rflags_ |= flag; }
-
   // restart functions
-  size_t getRestartDataSizeInBytes() const;
+  size_t GetRestartDataSizeInBytes() const;
 
-  size_t dumpRestartData(char *pdst) const;
+  size_t DumpRestartData(char *pdst) const;
 
-  size_t loadRestartData(char *psrc);
+  size_t LoadRestartData(char *psrc);
 
  protected:
+  int test(uint64_t flag) const { return rflags_ & flag; }
+  void set(uint64_t flag) { rflags_ |= flag; }
+
   // data
   uint64_t rflags_;
   Real cooldown_, current_;
+
+  // radiation bands
+  std::vector<RadiationBandPtr> bands_;
 
   // incomming rays
   std::vector<Direction> rayInput_;
