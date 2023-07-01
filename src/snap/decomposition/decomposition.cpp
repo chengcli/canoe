@@ -12,6 +12,7 @@
 
 // application
 #include <application/application.hpp>
+#include <application/globals.hpp>
 
 // canoe
 #include <constants.hpp>

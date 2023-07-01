@@ -195,7 +195,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin)
   }
 
   if (iter > max_iter) {
-    throw InvalidValueError("ProblemGenerator", "maximum iteration reached");
+    throw RuntimeError("ProblemGenerator", "maximum iteration reached");
   }
 
   // change to log quantity
