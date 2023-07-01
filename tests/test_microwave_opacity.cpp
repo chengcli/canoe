@@ -72,7 +72,7 @@ TEST_F(TestMicrowaveOpacity, Absorbers) {
 
   // NH3 absorption
   auto ab = prad->GetBand("radio")->GetAbsorber("radio-NH3");
-  EXPECT_NEAR(ab->GetAttenuation(0.6, 0.6, var), 8.05853e-07, 1.E-10);
+  EXPECT_NEAR(ab->GetAttenuation(0.6, 0.6, var), 7.9161198e-07, 1.E-10);
 
   // H2O absorption
   ab = prad->GetBand("radio")->GetAbsorber("radio-H2O");

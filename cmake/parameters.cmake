@@ -7,6 +7,7 @@ macro(set_if_empty _variable)
 endmacro()
 
 # populate the default values
+set_if_empty(NVAPOR 0)
 
 set_if_empty(NCLOUD 0)
 
