@@ -1,13 +1,9 @@
-// C/C++
-#include <sstream>
-#include <stdexcept>
-
 // canoe
 #include <configure.hpp>
+#include <variable.hpp>
 
 // athena
 #include <athena/mesh/mesh.hpp>
-#include <athena/parameter_input.hpp>
 
 // climath
 #include <climath/interpolation.h>
@@ -15,14 +11,23 @@
 // application
 #include <application/exceptions.hpp>
 
-// snap
-#include <snap/variable.hpp>
-
 // opacity
 #include "absorption_functions.hpp"
 #include "mwr_absorbers.hpp"
 
 namespace GiantPlanets {
+
+MwrAbsorberNH3::MwrAbsorberNH3(MeshBlock* pmb, std::vector<std::string> species,
+                               ParameterMap params)
+    : Absorber(pmb, "radio-NH3", species, params) {
+  if (!params_.count("xHe")) {
+    throw NotFoundError("MwrAbsorberNH3", "parameter 'xHe'");
+  }
+
+  if (!params_.count("power")) {
+    throw NotFoundError("MwrAbsorberNH3", "parameter 'power'");
+  }
+}
 
 Real MwrAbsorberNH3::GetAttenuation(Real wave1, Real wave2,
                                     Variable const& var) const {
@@ -53,7 +58,7 @@ Real MwrAbsorberNH3::GetAttenuation(Real wave1, Real wave2,
     abs = attenuation_NH3_Hanley(wave, P, P_idl, T, XH2, XHe, XNH3, XH2O,
                                  params_.at("power"));
   } else {
-    throw NotFoundError("MwrAbsorberNH3::GetAttenuation: ", model_name_);
+    throw NotFoundError("MwrAbsorberNH3::GetAttenuation", model_name_);
   }
 
   return 100. * abs;  // 1/cm -> 1/m

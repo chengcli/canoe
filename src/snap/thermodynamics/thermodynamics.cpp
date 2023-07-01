@@ -17,10 +17,6 @@
 // snap
 #include "thermodynamics.hpp"
 
-Real const Thermodynamics::Rgas = 8.314462;
-Real const Thermodynamics::kBoltz = 1.38065E-23;
-Real const Thermodynamics::kBoltz_cgs = 1.38065E-16;
-
 std::ostream& operator<<(std::ostream& os, Thermodynamics const& my) {
   os << "Rd [J/kg]: " << my.Rd_ << std::endl;
   os << "eps: ";
@@ -77,7 +73,7 @@ void ReadThermoProperty(Real var[], char const name[], int len, Real v0,
 }
 
 Thermodynamics::Thermodynamics(MeshBlock* pmb, ParameterInput* pin)
-    : pmy_block(pmb) {
+    : pmy_block_(pmb) {
   Application::Logger app("snap");
   app->Log("Initialize Thermodynamics");
 

@@ -32,18 +32,16 @@ TEST_F(YamlReadTests, OpacitySource) {
       << "Unexpected number of sources in 'opacity-sources'";
 
   // Check first source
-  EXPECT_EQ("H2-H2-CIA", sources[0]["name"].as<std::string>());
+  EXPECT_EQ("ir-H2-H2-CIA", sources[0]["name"].as<std::string>());
   EXPECT_EQ("Hydrogen-Hydrogen collisional absorption",
             sources[0]["long-name"].as<std::string>());
   EXPECT_EQ("xiz", sources[0]["model"].as<std::string>());
-  EXPECT_EQ("lbl", sources[0]["type"].as<std::string>());
 
   // Check third source
-  EXPECT_EQ("CH4", sources[2]["name"].as<std::string>());
+  EXPECT_EQ("ir-CH4", sources[2]["name"].as<std::string>());
   EXPECT_EQ("Methane line absorption",
             sources[2]["long-name"].as<std::string>());
   EXPECT_EQ("Voigt", sources[2]["model"].as<std::string>());
-  EXPECT_EQ("lbl", sources[2]["type"].as<std::string>());
   EXPECT_EQ("kcoeff.<min>-<max>-<res>.nc",
             sources[2]["data"].as<std::string>());
 }

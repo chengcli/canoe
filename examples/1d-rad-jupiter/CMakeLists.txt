@@ -31,5 +31,5 @@ target_include_directories(${namel}.${buildl}
 
 file(GLOB inputs *.inp *.toml)
 foreach(input ${inputs})
-    file(COPY input DESTINATION ${CMAKE_BINARY_DIR}/bin)
+    file(COPY ${input} DESTINATION ${CMAKE_BINARY_DIR}/bin)
 endforeach()

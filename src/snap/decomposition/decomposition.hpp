@@ -1,6 +1,10 @@
 #ifndef SRC_SNAP_DECOMPOSITION_DECOMPOSITION_HPP_
 #define SRC_SNAP_DECOMPOSITION_DECOMPOSITION_HPP_
 
+// C/C++
+#include <memory>
+
+// athena
 #include <athena/athena.hpp>
 #include <athena/bvals/bvals.hpp>
 
@@ -74,5 +78,7 @@ class Decomposition {
   MPI_Request req_recv_sync_bot_;
 #endif
 };
+
+using DecompositionPtr = std::shared_ptr<Decomposition>;
 
 #endif  // SRC_SNAP_DECOMPOSITION_DECOMPOSITION_HPP_

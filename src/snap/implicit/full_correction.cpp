@@ -4,6 +4,7 @@
 
 // canoe
 #include <configure.hpp>
+#include <impl.hpp>
 
 // Eigen
 #include <Eigen/Core>
@@ -21,7 +22,6 @@
 #include <application/application.hpp>
 
 // snap
-#include "../meshblock_impl.hpp"
 #include "../thermodynamics/thermodynamics.hpp"
 #include "flux_decomposition.hpp"
 #include "forward_backward.hpp"
@@ -95,7 +95,7 @@ void ImplicitSolver::FullCorrection(AthenaArray<Real>& du,
   Real* gamma_m1 = new Real[nc];
 
   Real wl[NHYDRO], wr[NHYDRO];
-  Thermodynamics* pthermo = pmy_block_->pimpl->pthermo;
+  auto pthermo = pmy_block_->pimpl->pthermo;
 
   for (int k = ks; k <= ke; ++k)
     for (int j = js; j <= je; ++j) {

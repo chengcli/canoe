@@ -6,7 +6,10 @@
  * @bug No known bugs.
  */
 
-#include "../constants.hpp"
+// canoe
+#include <constants.hpp>
+
+// snap
 #include "thermodynamics.hpp"
 
 Real saha_ionization_electron_density(Real T, Real num, Real ion_ev) {

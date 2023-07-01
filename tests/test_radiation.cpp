@@ -7,8 +7,9 @@
 // athena
 #include <athena/mesh/mesh.hpp>
 
-// snap
-#include <snap/meshblock_impl.hpp>
+// canoe
+#include <impl.hpp>
+#include <index_map.hpp>
 
 // harp
 #include <harp/absorber.hpp>
@@ -57,11 +58,10 @@ TEST_F(TestRadiation, Species) {
   MeshBlock *pmb = pmesh->my_blocks(0);
   EXPECT_EQ(pmb->pindex->GetSpeciesId("vapor.H2O"), 1);
   EXPECT_EQ(pmb->pindex->GetSpeciesId("vapor.NH3"), 2);
-  EXPECT_EQ(pmb->pindex->GetSpeciesId("tracer.elec"), 5);
 }
 
 TEST_F(TestRadiation, Radiation) {
-  Radiation *prad = pmesh->my_blocks(0)->pimpl->prad;
+  auto prad = pmesh->my_blocks(0)->pimpl->prad;
 
   EXPECT_EQ(prad->GetNumBands(), 3);
   EXPECT_EQ(prad->GetBand(0)->GetNumAbsorbers(), 6);

@@ -3,6 +3,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <utility>
 
 // athena
 #include <athena/coordinates/coordinates.hpp>
@@ -11,13 +12,53 @@
 
 // application
 #include <application/application.hpp>
+#include <application/exceptions.hpp>
 
 // utils
 #include <utils/ndarrays.hpp>
+#include <utils/vectorize.hpp>
 
 // inversion
 #include "inversion.hpp"
 #include "inversion_helper.hpp"
+#include "profile_inversion.hpp"
+
+InversionQueue Inversion::NewInversionQueue(MeshBlock *pmb,
+                                            ParameterInput *pin) {
+  std::string str = pin->GetOrAddString("inversion", "tasks", "");
+  std::vector<std::string> task_names =
+      Vectorize<std::string>(str.c_str(), " ,");
+
+  InversionQueue fitq;
+  Application::Logger app("inversion");
+  app->Log("Create inversion queue");
+
+  InversionPtr pfit;
+
+  for (auto p : task_names) {
+    if (p == "VLAProfileInversion") {
+      pfit = std::make_unique<VLAProfileInversion>(pmb, pin);
+    } else if (p == "JunoProfileInversion") {
+      pfit = std::make_unique<JunoProfileInversion>(pmb, pin);
+    } else if (p == "VLACompositionInversion") {
+    } else if (p == "JunoCompositionInversion") {
+    } else {
+      throw InvalidValueError("NewInversionQueue", p);
+    }
+    fitq.push_back(std::move(pfit));
+  }
+
+  int jl = pmb->js;
+  for (auto &q : fitq) {
+    q->InitializePositions();
+    q->setX2Indices(jl);
+    jl += q->getX2Span();
+  }
+
+  app->Log("Number of inversions = " + std::to_string(fitq.size()));
+
+  return fitq;
+}
 
 Inversion::Inversion(MeshBlock *pmb, ParameterInput *pin, std::string name)
     : name_(name),

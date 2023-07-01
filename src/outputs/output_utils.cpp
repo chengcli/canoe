@@ -1,6 +1,5 @@
+// outputs
 #include "output_utils.hpp"
-
-#include "user_outputs.hpp"
 
 extern DiagnosticTable diag_table;
 

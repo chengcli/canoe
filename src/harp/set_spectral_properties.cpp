@@ -8,11 +8,14 @@
 #include <athena/scalars/scalars.hpp>
 #include <athena/stride_iterator.hpp>
 
+// canoe
+#include <constants.hpp>
+#include <impl.hpp>
+#include <variable.hpp>
+
 // snap
-#include <snap/meshblock_impl.hpp>
 #include <snap/reconstruct/interpolation.hpp>
 #include <snap/thermodynamics/thermodynamics.hpp>
-#include <snap/variable.hpp>
 
 // harp
 #include "absorber.hpp"
@@ -45,7 +48,7 @@ void RadiationBand::SetSpectralProperties(int k, int j, int il, int iu) {
       pmb->pimpl->pthermo->PrimitiveToChemical(var.w, w.at(k, j, i));
       //! \todo do we need it?
       // molar concentration to molar mixing ratio
-      Real nmols = var.w[IPR] / (Thermodynamics::Rgas * var.w[IDN]);
+      Real nmols = var.w[IPR] / (Constants::Rgas * var.w[IDN]);
       for (int n = 1; n <= NVAPOR; ++n) var.w[n] /= nmols;
 
       /* molar density of clouds, mol/m^3

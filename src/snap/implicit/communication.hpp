@@ -1,11 +1,6 @@
 #ifndef SRC_SNAP_IMPLICIT_COMMUNICATION_HPP_
 #define SRC_SNAP_IMPLICIT_COMMUNICATION_HPP_
 
-// MPI headers
-#ifdef MPI_PARALLEL
-#include <mpi.h>
-#endif
-
 // C/C++
 #include <cstring>
 #include <functional>
@@ -18,8 +13,15 @@
 #include <athena/mesh/mesh.hpp>
 
 // snap
-#include "../meshblock_impl.hpp"
+#include <impl.hpp>
+
+// snap
 #include "implicit_solver.hpp"
+
+// MPI headers
+#ifdef MPI_PARALLEL
+#include <mpi.h>
+#endif
 
 template <typename T>
 void ImplicitSolver::SendBuffer(T const &a, int k, int j, NeighborBlock nb) {

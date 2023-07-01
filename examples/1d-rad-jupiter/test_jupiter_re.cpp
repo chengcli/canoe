@@ -19,6 +19,8 @@
 
 // canoe
 #include <configure.hpp>
+#include <impl.hpp>
+#include <index_map.hpp>
 
 // math
 #include <climath/interpolation.h>
@@ -26,8 +28,7 @@
 // utils
 #include <utils/ndarrays.hpp>
 
-// thermodynamics
-#include <snap/meshblock_impl.hpp>
+// snap
 #include <snap/thermodynamics/thermodynamics.hpp>
 #include <snap/thermodynamics/thermodynamics_helper.hpp>
 
@@ -46,14 +47,15 @@ void MeshBlock::InitUserMeshBlockData(ParameterInput *pin) {
 
 void MeshBlock::UserWorkBeforeOutput(ParameterInput *pin) {
   Real dq[1 + NVAPOR], rh;
+  auto pthermo = pimpl->pthermo;
 
   for (int k = ks; k <= ke; ++k)
     for (int j = js; j <= je; ++j)
       for (int i = is; i <= ie; ++i) {
         user_out_var(0, k, j, i) =
-            pimpl->pthermo->GetTemp(phydro->w.at(k, j, i));
+            pthermo->GetTemp(phydro->w.at(k, j, i));
         user_out_var(1, k, j, i) =
-            PotentialTemp(phydro->w.at(k, j, i), P0, pimpl->pthermo);
+            pthermo->PotentialTemp(phydro->w.at(k, j, i), P0);
       }
 }
 
@@ -143,7 +145,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
   t1 = new Real[nx1];
 
   // estimate surface temperature and pressure
-  Thermodynamics *pthermo = pimpl->pthermo;
+  auto pthermo = pimpl->pthermo;
   Real Rd = pthermo->GetRd();
   Real cp = gamma / (gamma - 1.) * Rd;
   Real Ts = T0 - grav / cp * (x1min - Z0);
@@ -223,9 +225,13 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
   }
 
   // set spectral properties
-  for (auto p : pimpl->prad->bands) {
+  auto prad = pimpl->prad;
+  for (int b = 0; b < prad->GetNumBands(); ++b) {
+    auto p = prad->GetBand(b);
+
     for (int k = kl; k <= ku; ++k)
-      for (int j = jl; j <= ju; ++j) p->SetSpectralProperties(k, j, is, ie);
+      for (int j = jl; j <= ju; ++j)
+        p->SetSpectralProperties(k, j, is, ie);
   }
 
   peos->PrimitiveToConserved(phydro->w, pfield->bcc, phydro->u, pcoord, is, ie,

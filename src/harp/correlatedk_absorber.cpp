@@ -8,6 +8,8 @@
 
 // canoe
 #include <configure.hpp>
+#include <constants.hpp>
+#include <variable.hpp>
 
 // netcdf
 #ifdef NETCDFOUTPUT
@@ -18,10 +20,6 @@ extern "C" {
 
 // climath
 #include <climath/interpolation.h>
-
-// snap
-#include <snap/constants.hpp>
-#include <snap/variable.hpp>
 
 // harp
 #include "correlatedk_absorber.hpp"

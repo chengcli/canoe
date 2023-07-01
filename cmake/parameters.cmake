@@ -7,8 +7,15 @@ macro(set_if_empty _variable)
 endmacro()
 
 # populate the default values
+set_if_empty(NVAPOR 0)
 
-set_if_empty(NCLOUDS 0)
+set_if_empty(NCLOUD 0)
+
+set_if_empty(NTRACER 0)
+
+set_if_empty(NCHEMISTRY 0)
+
+set_if_empty(NSTATIC 0)
 
 set_if_empty(AMMONIA_VAPOR_ID -1)
 

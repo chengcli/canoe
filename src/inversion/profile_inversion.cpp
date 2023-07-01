@@ -7,6 +7,7 @@
 
 // canoe
 #include <configure.hpp>
+#include <impl.hpp>
 
 // climath
 #include <climath/root.h>
@@ -23,7 +24,6 @@
 #include <application/application.hpp>
 
 // snap
-#include <snap/meshblock_impl.hpp>
 #include <snap/thermodynamics/thermodynamics.hpp>
 #include <snap/thermodynamics/thermodynamics_helper.hpp>
 
@@ -206,9 +206,9 @@ Real solve_thetav(Real rdlnTdlnP, void *aux) {
   pthermo->ConstructAtmosphere(w2, pthermo->GetTemp(w2[0]), w2[0][IPR], 0.,
                                pdata->dlnp, 2, Adiabat::dry, rdlnTdlnP);
   Real thetav0 =
-      PotentialTemp(w2[0], w2[0][IPR], pthermo) * pthermo->RovRd(w2[0]);
+      pthermo->PotentialTemp(w2[0], w2[0][IPR]) * pthermo->RovRd(w2[0]);
   Real thetav1 =
-      PotentialTemp(w2[1], w2[0][IPR], pthermo) * pthermo->RovRd(w2[1]);
+      pthermo->PotentialTemp(w2[1], w2[0][IPR]) * pthermo->RovRd(w2[1]);
   return thetav1 - thetav0;
 }
 
@@ -335,7 +335,7 @@ void ProfileInversion::ConvectiveAdjustment(Hydro *phydro, int k,
   Real dw[1 + NVAPOR];
   int is = pmy_block_->is, ie = pmy_block_->ie;
 
-  auto const pthermo = pmy_block_->pimpl->pthermo;
+  auto pthermo = pmy_block_->pimpl->pthermo;
   for (int i = is + 1; i <= ie; ++i) {
     // if (pcoord_->x1v(i) < zlev[0]) continue;
     //  copy unadjusted temperature and composition profile to ju
@@ -346,7 +346,7 @@ void ProfileInversion::ConvectiveAdjustment(Hydro *phydro, int k,
 
     SolverData solver_data;
     solver_data.w2 = w2;
-    solver_data.pthermo = pthermo;
+    solver_data.pthermo = pthermo.get();
     solver_data.dlnp =
         log(phydro->w(IPR, k, ju, i) / phydro->w(IPR, k, ju, i - 1));
 

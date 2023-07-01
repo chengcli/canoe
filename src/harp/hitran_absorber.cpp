@@ -9,13 +9,6 @@
 // canoe
 #include <configure.hpp>
 
-// netcdf
-#ifdef NETCDFOUTPUT
-extern "C" {
-#include <netcdf.h>
-}
-#endif
-
 // climath
 #include <climath/interpolation.h>
 
@@ -23,11 +16,18 @@ extern "C" {
 #include <athena/athena.hpp>
 
 // snap
-#include <snap/constants.hpp>
-#include <snap/variable.hpp>
+#include <constants.hpp>
+#include <variable.hpp>
 
 // harp
 #include "hitran_absorber.hpp"
+
+// netcdf
+#ifdef NETCDFOUTPUT
+extern "C" {
+#include <netcdf.h>
+}
+#endif
 
 std::ostream &operator<<(std::ostream &os, HitranAbsorber const &ab) {
   for (int i = 0; i < 3; ++i) {

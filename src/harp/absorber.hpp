@@ -30,7 +30,7 @@ using ParameterMap = std::map<std::string, Real>;
 
 class Absorber {
  public:
-  Absorber(std::string name);
+  explicit Absorber(std::string name);
 
   Absorber(MeshBlock* pmb, std::string name, std::vector<std::string> species,
            ParameterMap params);

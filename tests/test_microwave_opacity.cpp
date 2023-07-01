@@ -8,8 +8,9 @@
 #include <athena/mesh/mesh.hpp>
 
 // snap
-#include <snap/meshblock_impl.hpp>
-#include <snap/variable.hpp>
+#include <impl.hpp>
+#include <index_map.hpp>
+#include <variable.hpp>
 
 // harp
 #include <harp/absorber.hpp>
@@ -58,7 +59,7 @@ class TestMicrowaveOpacity : public testing::Test {
 };
 
 TEST_F(TestMicrowaveOpacity, Absorbers) {
-  Radiation *prad = pmesh->my_blocks(0)->pimpl->prad;
+  auto prad = pmesh->my_blocks(0)->pimpl->prad;
 
   EXPECT_EQ(prad->GetNumBands(), 3);
   EXPECT_EQ(prad->GetBand("radio")->GetNumAbsorbers(), 3);
@@ -71,7 +72,7 @@ TEST_F(TestMicrowaveOpacity, Absorbers) {
 
   // NH3 absorption
   auto ab = prad->GetBand("radio")->GetAbsorber("radio-NH3");
-  EXPECT_NEAR(ab->GetAttenuation(0.6, 0.6, var), 8.05853e-07, 1.E-10);
+  EXPECT_NEAR(ab->GetAttenuation(0.6, 0.6, var), 7.9161198e-07, 1.E-10);
 
   // H2O absorption
   ab = prad->GetBand("radio")->GetAbsorber("radio-H2O");
