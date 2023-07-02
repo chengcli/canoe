@@ -19,6 +19,7 @@ set_if_empty(NTRACER 2)
 # canoe task set(TASKLIST InversionTasks)
 
 # canoe configure
+set(PLANET "Jupiter")
 set(HYDROSTATIC ON)
 set(NETCDF ON)
 set(FITS ON)

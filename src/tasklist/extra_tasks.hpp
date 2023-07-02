@@ -46,8 +46,9 @@ class ImplicitHydroTasks : public TimeIntegratorTaskList {
   void AddTask(TaskID const &id, TaskID const &dep) override;
 };
 
+//! This should track the largest task ID in the athena/task_list/task_list.hpp
 namespace HydroIntegratorTaskNames {
-const TaskID UPDATE_HYD(Globals::next_task_id);
+const TaskID UPDATE_HYD(70);
 }
 
 #endif  // SRC_TASKLIST_EXTRA_TASKS_HPP_

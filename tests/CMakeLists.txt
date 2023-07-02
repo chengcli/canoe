@@ -19,10 +19,18 @@ macro(add_test_case test)
     PRIVATE
     ${CMAKE_BINARY_DIR}
     ${CANOE_INCLUDE_DIR}
+    ${MPI_CXX_INCLUDE_PATH}
+    ${NETCDF_INCLUDES}
+    ${PNETCDF_INCLUDE_DIR}
     )
 
   target_link_libraries(${name}.${buildl} gtest_main
-    ${CANOE_LIBRARY_${buildu}})
+    ${ATHENAPP_LIBRARY_${buildu}}
+    ${CANOE_LIBRARY_${buildu}}
+    ${NETCDF_LIBRARIES}
+    ${PNETCDF_LIBRARY}
+    ${MPI_CXX_LIBRARIES}
+    )
 
   add_test(NAME ${name}.${buildl} COMMAND ${name}.${buildl})
 endmacro()
@@ -31,6 +39,7 @@ endmacro()
 enable_testing()
 
 # Add test cases
+add_test_case(test_weno.cpp)
 add_test_case(test_absorber.cpp)
 add_test_case(test_yaml_read.cpp)
 

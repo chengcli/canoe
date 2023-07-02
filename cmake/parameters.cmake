@@ -25,7 +25,7 @@ set_if_empty(EQUATION_OF_STATE "ideal_moist")
 
 set_if_empty(TASKLIST TimeIntegratorTaskList)
 
-set_if_empty(PLANET "Jupiter")
+set_if_empty(PLANET "UNKNOWN")
 
 if(NOT NETCDF OR NOT DEFINED NETCDF)
   set(NETCDF_OPTION "NO_NETCDFOUTPUT")
@@ -52,4 +52,11 @@ if(NOT HYDROSTATIC OR NOT DEFINED HYDROSTATIC)
   set(HYDROSTATIC_OPTION "NOT_HYDROSTATIC")
 else()
   set(HYDROSTATIC_OPTION "HYDROSTATIC")
+endif()
+
+if(NOT MPI OR NOT DEFINED MPI)
+  set(MPI_OPTION "NOT_MPI_PARALLEL")
+else()
+  set(MPI_OPTION "MPI_PARALLEL")
+  find_package(MPI REQUIRED)
 endif()
