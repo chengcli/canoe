@@ -29,4 +29,7 @@ enum class VariableType {prim, cons, chem};
 // HYDROSTATIC option (HYDROSTATIC or NOT_HYDROSTATIC)
 #define @HYDROSTATIC_OPTION@
 
+// MPI parallelization (MPI_PARALLEL or NOT_MPI_PARALLEL)
+#define @MPI_OPTION@
+
 #endif  // CONFIGURE_HPP_

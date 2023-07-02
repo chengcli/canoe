@@ -13,6 +13,8 @@ include_directories(
   ${CMAKE_BINARY_DIR}
   ${NETCDF_INCLUDES}
   ${CFITSIO_INCLUDE_DIR}
+  ${MPI_CXX_INCLUDE_PATH}
+  ${PNETCDF_INCLUDE_DIR}
   )
 
 set(namel canoe)
@@ -22,6 +24,12 @@ string(TOLOWER ${CMAKE_BUILD_TYPE} buildl)
 string(TOUPPER ${CMAKE_BUILD_TYPE} buildu)
 
 file(GLOB src_files *.cpp)
+
+if(EXISTS diag_table_${TASK}.cpp)
+  set(diag_table_file diag_table_${TASK}.cpp)
+else()
+  set(diag_table_file diag_table_default.cpp)
+endif()
 
 add_library(${namel}_${buildl}
     OBJECT

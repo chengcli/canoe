@@ -1,0 +1,34 @@
+diff --git a/src/hydro/calculate_fluxes.cpp b/src/hydro/calculate_fluxes.cpp
+index eeaf381b..679e6401 100644
+--- a/src/hydro/calculate_fluxes.cpp
++++ b/src/hydro/calculate_fluxes.cpp
+@@ -24,6 +24,9 @@
+ #include "hydro.hpp"
+ #include "hydro_diffusion/hydro_diffusion.hpp"
+
++// snap injection
++#include <impl.hpp>
++
+ // OpenMP header
+ #ifdef OPENMP_PARALLEL
+ #include <omp.h>
+@@ -74,6 +77,9 @@ void Hydro::CalculateFluxes(AthenaArray<Real> &w, FaceField &b,
+     }
+   }
+
++  // decompose pressure to pertubation pressure and hydrostatic pressure
++  pmb->pimpl->pdec->ChangeToPerturbation(w, kl, ku, jl, ju);
++
+   for (int k=kl; k<=ku; ++k) {
+     for (int j=jl; j<=ju; ++j) {
+       // reconstruct L/R states
+@@ -89,6 +95,9 @@ void Hydro::CalculateFluxes(AthenaArray<Real> &w, FaceField &b,
+         pmb->precon->PiecewiseParabolicX1(k, j, is-1, ie+1, w, bcc, wl_, wr_);
+       }
+
++      // assemble pressure pertubation
++      pmb->pimpl->pdec->RestoreFromPerturbation(w, wl_, wr_, k, j, is, ie + 1);
++
+       pmb->pcoord->CenterWidth1(k, j, is, ie+1, dxw_);
+ #if !MAGNETIC_FIELDS_ENABLED  // Hydro:
+       RiemannSolver(k, j, is, ie+1, IVX, wl_, wr_, x1flux, dxw_);
