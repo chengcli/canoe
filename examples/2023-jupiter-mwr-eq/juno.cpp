@@ -15,16 +15,16 @@
 #include <athena/outputs/outputs.hpp>
 #include <athena/stride_iterator.hpp>
 
+// application
+#include <application/application.hpp>
+#include <application/exceptions.hpp>
+
 // canoe
 #include <configure.hpp>
 #include <impl.hpp>
 #include <constants.hpp>
 #include <variable.hpp>
 #include <index_map.hpp>
-
-// application
-#include <application/application.hpp>
-#include <application/exceptions.hpp>
 
 // climath
 #include <climath/interpolation.h>
@@ -53,9 +53,8 @@
 // inversion
 #include <inversion/profile_inversion.hpp>
 
-
-Real grav, P0, T0, xHe, xCH4, Tmin, clat;
-Real xH2S, xNa, xKCl, metallicity;
+Real grav, P0, T0, Tmin, clat;
+Real xHe, xCH4, xH2S, xNa, xKCl, metallicity;
 
 void MeshBlock::InitUserMeshBlockData(ParameterInput *pin)
 {
@@ -97,21 +96,29 @@ void Mesh::InitUserMeshData(ParameterInput *pin)
   Tmin = pin->GetReal("problem", "Tmin");
   clat = pin->GetOrAddReal("problem", "clat", 0.);
 
-  //xH2S = pin->GetReal("problem", "xH2S");
-  //metallicity = pin->GetOrAddReal("problem", "metallicity", 0.);
-  //xNa = pin->GetReal("problem", "xNa");
-  //xNa *= pow(10., metallicity);
-  //xKCl = pin->GetReal("problem", "xKCl");
-  //xKCl *= pow(10., metallicity);
+  xH2S = pin->GetReal("problem", "xH2S");
+
+  metallicity = pin->GetOrAddReal("problem", "metallicity", 0.);
+
+  xNa = pin->GetReal("problem", "xNa");
+  xNa *= pow(10., metallicity);
+
+  xKCl = pin->GetReal("problem", "xKCl");
+  xKCl *= pow(10., metallicity);
+
+  xHe = pin->GetReal("problem", "xKCl");
+
+  xCH4 = pin->GetReal("problem", "xKCl");
 }
 
 void update_gamma(Real* gamma, Real const q[]) {
   //std::cout << "I'm here" << std::endl;
   Real T = q[IDN], cp_h2, cp_he, cp_ch4;
-  if (T < 300.)
+  if (T < 300.) {
     cp_h2 = Hydrogen::cp_norm(T);
-  else
+  } else {
     cp_h2 = Hydrogen::cp_nist(T);
+  }
   cp_he = Helium::cp_nist(T);
   cp_ch4 = Methane::cp_nist(T);
 
@@ -124,6 +131,8 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin)
   Application::Logger app("main");
   app->Log("ProblemGenerator: juno");
 
+  auto pthermo = pimpl->pthermo;
+
   // mesh limits
   Real x1min = pmy_mesh->mesh_size.x1min;
   Real x1max = pmy_mesh->mesh_size.x1max;
@@ -135,7 +144,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin)
 
   // thermodynamic constants
   Real gamma = pin->GetReal("hydro", "gamma");
-  Real Rd = pin->GetReal("thermodynamics", "Rd");
+  Real Rd = pthermo->GetRd();
   Real cp = gamma/(gamma - 1.)*Rd;
 
   // estimate surface temperature and pressure
@@ -161,8 +170,6 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin)
   z1[0] = x1min;
   for (int i = 1; i < nx1; ++i)
     z1[i] = z1[i-1] + H0*dlnp;
-
-  auto pthermo = pimpl->pthermo;
 
   // set up an adiabatic atmosphere
   int max_iter = 200, iter = 0;
@@ -190,12 +197,12 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin)
     Ts += T0 - t0;
     if (fabs(T0 - t0) < 0.01) break;
 
-    app->Log("iteration #", iter);
+    app->Log("Iteration #", iter);
     app->Log("T", t0);
   }
 
   if (iter > max_iter) {
-    throw InvalidValueError("ProblemGenerator", "maximum iteration reached");
+    throw RuntimeError("ProblemGenerator", "maximum iteration reached");
   }
 
   // change to log quantity
@@ -223,10 +230,9 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin)
           }
         }
 
-    // set tracers, electron, Na and K
+    // set tracers, electron and Na
     int ielec = pindex->GetTracerId("e-");
     int iNa = pindex->GetTracerId("Na");
-    int iK = pindex->GetTracerId("K");
     auto ptracer = pimpl->ptracer;
 
     for (int k = ks; k <= ke; ++k)
@@ -263,82 +269,26 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin)
   peos->PrimitiveToConserved(phydro->w, pfield->bcc,
     phydro->u, pcoord, is, ie, js, je, ks, ke);
 
+  // Microwave radiative transfer needs temperatures at cell interfaces, which are
+  // interpolated from cell centered hydrodynamic variables.
+  // Normally, the boundary conditions are taken care of internally.
+  // But, since we call radiative tranfer directly in pgen, we would need to update the
+  // boundary conditions manually. The following lines of code updates the boundary
+  // conditions.
+  phydro->hbvar.SwapHydroQuantity(phydro->w, HydroBoundaryQuantity::prim);
+  pbval->ApplyPhysicalBoundaries(0., 0., pbval->bvars_main_int);
+
+  // calculate radiative transfer
+  auto prad = pimpl->prad;
+
+  for (int k = ks; k <= ke; ++k) {
+    // run RT models
+    app->Log("run microwave radiative transfer");
+    for (int j = js; j <= je; ++j)
+      prad->CalRadiance(0., k, j, is, ie+1);
+  }
+
   FreeCArray(w1);
   delete[] z1;
   delete[] t1;
-}
-
-int main(int argc, char **argv)  {
-  Application::Logger app("main");
-
-  // no MPI
-  Globals::my_rank = 0;
-  Globals::nranks  = 1;
-
-  IOWrapper infile;
-  infile.Open("juno.inp", IOWrapper::FileMode::read);
-
-  ParameterInput *pinput = new ParameterInput;
-  pinput->LoadFromFile(infile);
-  infile.Close();
-
-  // set up mesh
-  int restart = false;
-  int mesh_only = false;
-
-  Mesh *pmesh = new Mesh(pinput, mesh_only);
-
-  // set up components
-  for (int b = 0; b < pmesh->nblocal; ++b) {
-    MeshBlock *pmb = pmesh->my_blocks(b);
-    pmb->pindex = std::make_shared<MeshBlock::IndexMap>(pmb, pinput);
-    pmb->pimpl = std::make_shared<MeshBlock::Impl>(pmb, pinput);
-  }
-
-  // initialize mesh
-  pmesh->Initialize(restart, pinput);
-
-  // calculate radiative transfer
-  for (int b = 0; b < pmesh->nblocal; ++b) {
-    auto pmb = pmesh->my_blocks(b);
-    auto phydro = pmb->phydro;
-    auto prad = pmb->pimpl->prad;
-
-    int is = pmb->is, js = pmb->js, ks = pmb->ks;
-    int ie = pmb->ie, je = pmb->je, ke = pmb->ke;
-
-    AthenaArray<Real> tempa, qNH3a, qH2Oa;
-    // read profile updates from input
-    std::string file_tempa = pinput->GetOrAddString("problem", "file.tempa", "");
-    if (file_tempa != "") {
-      ReadDataTable(&tempa, file_tempa);
-    }
-    std::string file_nh3a = pinput->GetOrAddString("problem", "file.nh3a", "");
-    if (file_nh3a != "") {
-      ReadDataTable(&qNH3a, file_nh3a);
-    }
-    std::string file_h2oa = pinput->GetOrAddString("problem", "file.h2oa", "");
-    if (file_h2oa != "") {
-      ReadDataTable(&qH2Oa, file_h2oa);
-    }
-
-    for (int k = ks; k <= ke; ++k) {
-      // run RT models
-      app->Log("run microwave radiative transfer");
-      for (int j = js-1; j <= je; ++j)
-        prad->CalRadiance(0., k, j, is, ie+1);
-    }
-
-  }
-
-  // make output
-  Outputs *pouts;
-  pouts = new Outputs(pmesh, pinput);
-  pouts->MakeOutputs(pmesh, pinput);
-
-  delete pinput;
-  delete pmesh;
-  delete pouts;
-
-  Application::Destroy();
 }

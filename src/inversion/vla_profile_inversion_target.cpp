@@ -38,8 +38,8 @@ void VLAProfileInversion::CalculateFitTarget(Radiation const *prad, Real *val,
   app->Log("model = " + std::to_string(j));
 
   if (nvalue != prad->GetNumBands()) {
-    throw RuntimeError("CalculateFitTarget", "nvalue", prad->GetNumBands(),
-                       nvalue);
+    throw ValueError("CalculateFitTarget", "nvalue", prad->GetNumBands(),
+                     nvalue);
   }
 
   // 11. log likelihood

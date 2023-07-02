@@ -36,10 +36,10 @@ set_target_properties(hitbin.release
 file(GLOB pyfiles *.py)
 
 foreach(pyfile ${pyfiles})
-    file(COPY ${pyfile}
-	DESTINATION
-        ${CMAKE_BINARY_DIR}/bin
-        )
+  file(COPY ${pyfile}
+    DESTINATION
+    ${CMAKE_BINARY_DIR}/bin
+  )
 endforeach()
 
 file(COPY clean_rfm_runs.sh DESTINATION ${CMAKE_BINARY_DIR}/bin)

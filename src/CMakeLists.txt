@@ -11,6 +11,8 @@
 include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}
   ${CMAKE_BINARY_DIR}
+  ${NETCDF_INCLUDES}
+  ${CFITSIO_INCLUDE_DIR}
   )
 
 set(namel canoe)
@@ -41,6 +43,7 @@ add_subdirectory(outputs)
 add_subdirectory(opacity)
 add_subdirectory(tracer)
 add_subdirectory(c3m)
+add_subdirectory(tasklist)
 
 set(CANOE_LIBRARY_${buildu}
   "canoe_${buildl}"
@@ -56,8 +59,10 @@ set(CANOE_LIBRARY_${buildu}
   "opacity_${buildl}"
   "tracer_${buildl}"
   "c3m_${buildl}"
+  "tasklist_${buildl}"
   "yaml-cpp"
   ${NETCDF_LIBRARIES}
+  ${CFITSIO_LIBRARY}
   CACHE INTERNAL "canoe library")
 
 set(CANOE_INCLUDE_DIR

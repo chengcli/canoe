@@ -9,7 +9,7 @@
 // canoe
 #include <configure.hpp>
 
-#if FITSOUTPUT
+#ifdef FITSOUTPUT
 extern "C" {
 #include <fitsio.h>
 }
@@ -269,14 +269,14 @@ void mcmc_save_fits(char const *fname, mcmc_opts *opts, mcmc_recs *recs,
 #endif
 
   // 6. write FITS file
-#if FITSOUTPUT
+#ifdef FITSOUTPUT
   if (rank == 0) {
     fitsfile *fp;
     int status = 0;
-    int64_t naxis = 3;
-    int64_t naxes[3] = {ndim, size * nwalker, cur};
-    int64_t fpixel = 1;
-    int64_t nelements = naxes[0] * naxes[1] * naxes[2];
+    long naxis = 3;
+    long naxes[3] = {ndim, size * nwalker, cur};
+    long fpixel = 1;
+    long nelements = naxes[0] * naxes[1] * naxes[2];
 
     fits_create_file(&fp, fname, &status);
     if (status) fits_report_error(stderr, status);
@@ -380,10 +380,10 @@ void mcmc_load_fits(char const *fname, mcmc_opts *opts, mcmc_recs *recs,
                     int alloc) {
   int status = 0, hdutype;
   int nstep, nwalker, ndim, nvalue;
-  int64_t dims[3] = {1, 1, 1};
-  int64_t fpixel[3] = {1, 1, 1};
+  long dims[3] = {1, 1, 1};
+  long fpixel[3] = {1, 1, 1};
 
-#if FITSOUTPUT
+#ifdef FITSOUTPUT
   fitsfile *fp;
 
   // open FITS file

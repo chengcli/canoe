@@ -21,6 +21,8 @@ class RadiationBand::RTSolver {
     app->Log("Initialize RTSolver " + name_);
   }
 
+  std::string GetName() const { return name_; }
+
   virtual ~RTSolver() {
     Application::Logger app("harp");
     app->Log("Destroy RTSolver " + name_);
