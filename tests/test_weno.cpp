@@ -1,3 +1,4 @@
+#include <algorithm>
 // athena
 #include <athena/reconstruct/interpolation.hpp>
 
