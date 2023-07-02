@@ -66,8 +66,6 @@ ImplicitHydroTasks::ImplicitHydroTasks(ParameterInput *pin, Mesh *pm)
       task_list_[itask].dependency = (RECV_SCLR | UPDATE_HYD);
     }
   }
-
-  Globals::next_task_id++;
 }
 
 void ImplicitHydroTasks::AddTask(TaskID const &id, TaskID const &dep) {
