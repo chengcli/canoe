@@ -299,6 +299,6 @@ void RadiationBand::AddAbsorber(ParameterInput *pin, YAML::Node &node) {
   } else if (strcmp(PLANET, "Venus") == 0) {
     addAbsorberVenus(pin, node);
   } else {
-    throw NotFoundError(PLANET);
+    throw NotFoundError("AddAbsorber", "PLANET = " + PLANET);
   }
 }
