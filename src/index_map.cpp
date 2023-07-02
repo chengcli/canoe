@@ -21,7 +21,7 @@ MeshBlock::IndexMap::IndexMap(MeshBlock *pmb, ParameterInput *pin)
   std::vector<std::string> names = Vectorize<std::string>(str.c_str(), " ,");
 
   if (names.size() > NVAPOR) {
-    throw RuntimeError("IndexMap", "Number of vapors", NVAPOR, names.size());
+    throw ValueError("IndexMap", "Number of vapors", NVAPOR, names.size());
   }
 
   for (size_t i = 0; i < names.size(); ++i) {
@@ -33,7 +33,7 @@ MeshBlock::IndexMap::IndexMap(MeshBlock *pmb, ParameterInput *pin)
   names = Vectorize<std::string>(str.c_str(), " ,");
 
   if (names.size() > NCLOUD) {
-    throw RuntimeError("IndexMap", "Number of clouds", NCLOUD, names.size());
+    throw ValueError("IndexMap", "Number of clouds", NCLOUD, names.size());
   }
 
   for (size_t i = 0; i < names.size(); ++i) {
@@ -45,7 +45,7 @@ MeshBlock::IndexMap::IndexMap(MeshBlock *pmb, ParameterInput *pin)
   names = Vectorize<std::string>(str.c_str(), " ,");
 
   if (names.size() > NTRACER) {
-    throw RuntimeError("IndexMap", "Number of tracers", NTRACER, names.size());
+    throw ValueError("IndexMap", "Number of tracers", NTRACER, names.size());
   }
 
   for (size_t i = 0; i < names.size(); ++i) {
@@ -57,8 +57,8 @@ MeshBlock::IndexMap::IndexMap(MeshBlock *pmb, ParameterInput *pin)
   names = Vectorize<std::string>(str.c_str(), " ,");
 
   if (names.size() > NCHEMISTRY) {
-    throw RuntimeError("IndexMap", "Number of chemistry", NCHEMISTRY,
-                       names.size());
+    throw ValueError("IndexMap", "Number of chemistry", NCHEMISTRY,
+                     names.size());
   }
 
   for (size_t i = 0; i < names.size(); ++i) {
@@ -70,8 +70,8 @@ MeshBlock::IndexMap::IndexMap(MeshBlock *pmb, ParameterInput *pin)
   names = Vectorize<std::string>(str.c_str(), " ,");
 
   if (names.size() > NSTATIC) {
-    throw RuntimeError("IndexMap", "Number of static variables", NSTATIC,
-                       names.size());
+    throw ValueError("IndexMap", "Number of static variables", NSTATIC,
+                     names.size());
   }
 
   for (size_t i = 0; i < names.size(); ++i) {

@@ -14,7 +14,7 @@
 //  \brief a collection of all physical data in a computational cell
 class Variable {
  public:
-  enum { Size = NHYDRO + NSCALARS + NSTATIC };
+  enum { Size = NHYDRO + NCLOUD + NTRACER + NCHEMISTRY + NSTATIC };
 
   //! data pointers
   //! hydro data

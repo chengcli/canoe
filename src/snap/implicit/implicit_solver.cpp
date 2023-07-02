@@ -16,10 +16,10 @@
 
 // application
 #include <application/application.hpp>
+#include <application/globals.hpp>
 
 // utils
 #include <utils/ndarrays.hpp>
-#include <utils/program_setup.hpp>
 
 // snap
 #include "implicit_solver.hpp"

@@ -70,15 +70,16 @@ TEST_F(TestRadiation, Radiation) {
 };
 
 int main(int argc, char **argv) {
+  Application::Start(argc, argv);
+
   testing::InitGoogleTest(&argc, argv);
+
   auto app = Application::GetInstance();
 
   app->InstallMonitor("inversion", "main.out", "main.err");
   app->InstallMonitor("astro", "main.out", "main.err");
   app->InstallMonitor("snap", "main.out", "main.err");
   app->InstallMonitor("harp", "main.out", "main.err");
-
-  Application::Start();
 
   int result = RUN_ALL_TESTS();
 

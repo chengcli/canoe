@@ -77,10 +77,10 @@ TEST_F(TestMesh, Mesh) {
 };
 
 int main(int argc, char **argv) {
+  Application::Start(argc, argv);
   testing::InitGoogleTest(&argc, argv);
 
   auto app = Application::GetInstance();
-  Application::Start();
 
   app->InstallMonitor("inversion", "main.out", "main.err");
   app->InstallMonitor("astro", "main.out", "main.err");

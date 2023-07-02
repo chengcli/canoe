@@ -5,7 +5,8 @@ string(TOUPPER ${CMAKE_BUILD_TYPE} buildu)
 
 set(namel juno)
 
-add_executable(${namel}.${buildl} ${namel}.cpp)
+add_executable(${namel}.${buildl} ${namel}.cpp
+  ${CMAKE_BINARY_DIR}/main_${TASK}.cpp)
 
 set_target_properties(
     ${namel}.${buildl}

@@ -1,6 +1,6 @@
 # define default parameters
 
-macro(set_if_empty _variable)
+macro(SET_IF_EMPTY _variable)
   if("${${_variable}}" STREQUAL "")
     set(${_variable} ${ARGN})
   endif()
@@ -23,6 +23,8 @@ set_if_empty(WATER_VAPOR_ID -1)
 
 set_if_empty(EQUATION_OF_STATE "ideal_moist")
 
+set_if_empty(TASKLIST TimeIntegratorTaskList)
+
 set_if_empty(PLANET "Jupiter")
 
 if(NOT NETCDF OR NOT DEFINED NETCDF)
@@ -37,6 +39,13 @@ if(NOT PNETCDF OR NOT DEFINED PNETCDF)
 else()
   set(PNETCDF_OPTION "PNETCDFOUTPUT")
   find_package(PNetCDF REQUIRED)
+endif()
+
+if(NOT FITS OR NOT DEFINED FITS)
+  set(FITS_OPTION "NO_FITSOUTPUT")
+else()
+  set(FITS_OPTION "FITSOUTPUT")
+  find_package(cfitsio REQUIRED)
 endif()
 
 if(NOT HYDROSTATIC OR NOT DEFINED HYDROSTATIC)

@@ -133,8 +133,7 @@ RadiationBand::RadiationBand(MeshBlock *pmb, ParameterInput *pin,
     if (my["rt-solver"].as<std::string>() == "Lambert") {
       psolver = std::make_shared<RTSolverLambert>(this);
     } else {
-      throw InvalidValueError("RadiationBand",
-                              my["rt-solver"].as<std::string>());
+      throw RuntimeError("RadiationBand", my["rt-solver"].as<std::string>());
     }
   } else {
     psolver = std::make_shared<RTSolver>(this, "Null");
@@ -155,7 +154,7 @@ void RadiationBand::setWavenumberRange(YAML::Node &my) {
   wmin_ = my["wavenumber-range"][0].as<Real>();
   wmax_ = my["wavenumber-range"][1].as<Real>();
   if (wmin_ > wmax_) {
-    throw InvalidValueError("setWavenumberRange", "wmin > wmax");
+    throw RuntimeError("setWavenumberRange", "wmin > wmax");
   }
 
   int num_bins = 1;
@@ -211,7 +210,7 @@ void RadiationBand::setFrequencyGrid(YAML::Node &my) {
   wmax_ = freqs.back();
 
   if (wmin_ > wmax_) {
-    throw InvalidValueError("setWavenumberRange", "wmin > wmax");
+    throw RuntimeError("setWavenumberRange", "wmin > wmax");
   }
 
   spec_.resize(freqs.size());
