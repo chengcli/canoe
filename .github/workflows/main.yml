@@ -156,7 +156,7 @@ jobs:
         run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} -- -j4
 
       - name: run simulation
-        run: cd ${{github.workspace}}/build/bin && ./straka.ex -i straka.inp
+        run: cd ${{github.workspace}}/build/bin && ./straka.release -i straka.inp
 
       - name: combile outputs
         run: cd ${{github.workspace}}/build/bin && ./combine.py -o test
