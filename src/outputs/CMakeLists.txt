@@ -10,7 +10,7 @@ file(GLOB src_files
   netcdf.cpp
   pnetcdf.cpp
   fits.cpp
-  diag_table_${TASK}.cpp
+  ${diag_table_file}
   )
 
 string(TOLOWER ${CMAKE_BUILD_TYPE} buildl)

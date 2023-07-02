@@ -23,6 +23,12 @@ string(TOUPPER ${CMAKE_BUILD_TYPE} buildu)
 
 file(GLOB src_files *.cpp)
 
+if(EXISTS diag_table_${TASK}.cpp)
+  set(diag_table_file diag_table_${TASK}.cpp)
+else()
+  set(diag_table_file diag_table_default.cpp)
+endif()
+
 add_library(${namel}_${buildl}
     OBJECT
     ${src_files}
