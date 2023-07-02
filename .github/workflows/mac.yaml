@@ -36,6 +36,6 @@ jobs:
 
       - name: compare result
         run: >
-          ${{github.workspace}}/examples/2d.straka/test_straka.py
+          ${{github.workspace}}/examples/2019-Li-snap/test_straka.py
           ${{github.workspace}}/build/bin/straka-test-main.nc
-          ${{github.workspace}}/examples/2d.straka/straka_output.nc
+          ${{github.workspace}}/examples/2019-Li-snap/straka_output.nc
