@@ -141,7 +141,7 @@ jobs:
 
   straka-2d:
     if: github.event.pull_request.draft == false
-    runs-on: [self-hosted, linux, 8core]
+    runs-on: [self-hosted, linux]
     needs: build-non-hydrostatic
     steps:
       - uses: actions/checkout@v3
