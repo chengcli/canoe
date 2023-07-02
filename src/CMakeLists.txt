@@ -13,6 +13,8 @@ include_directories(
   ${CMAKE_BINARY_DIR}
   ${NETCDF_INCLUDES}
   ${CFITSIO_INCLUDE_DIR}
+  ${MPI_CXX_INCLUDE_PATH}
+  ${PNETCDF_INCLUDE_DIR}
   )
 
 set(namel canoe)

@@ -6,7 +6,7 @@ FetchContent_Declare(
   application
   # GIT_REPOSITORY https://github.com/chengcli/application/ GIT_TAG cli/flush)
   DOWNLOAD_EXTRACT_TIMESTAMP TRUE
-  URL https://github.com/chengcli/application/archive/refs/tags/v0.5.1.tar.gz)
+  URL https://github.com/chengcli/application/archive/refs/tags/v0.6.tar.gz)
 
 FetchContent_MakeAvailable(application)
 

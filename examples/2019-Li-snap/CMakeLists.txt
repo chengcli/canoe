@@ -3,29 +3,37 @@ string(TOUPPER ${CMAKE_BUILD_TYPE} buildu)
 
 # 1. Compile straka.cpp
 
-set(namel straka)
+#set(namel straka)
 
-add_executable(${namel}.${buildl} ${namel}.cpp
-  ${CMAKE_BINARY_DIR}/main_${TASK}.cpp)
+foreach(namel straka robert)
+  add_executable(${namel}.${buildl} ${namel}.cpp
+    ${CMAKE_BINARY_DIR}/main_${TASK}.cpp)
 
-set_target_properties(
-    ${namel}.${buildl}
-    PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
-    COMPILE_FLAGS ${CMAKE_CXX_FLAGS_${buildu}}
-    )
+  set_target_properties(
+      ${namel}.${buildl}
+      PROPERTIES
+      RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+      COMPILE_FLAGS ${CMAKE_CXX_FLAGS_${buildu}}
+      )
 
-target_link_libraries(${namel}.${buildl}
-    ${ATHENAPP_LIBRARY_${buildu}}
-    ${CANOE_LIBRARY_${buildu}}
-    ${NETCDF_LIBRARIES}
-    )
+  target_link_libraries(${namel}.${buildl}
+      ${ATHENAPP_LIBRARY_${buildu}}
+      ${CANOE_LIBRARY_${buildu}}
+      ${NETCDF_LIBRARIES}
+      ${PNETCDF_LIBRARY}
+      ${MPI_CXX_LIBRARIES}
+      )
 
-target_include_directories(${namel}.${buildl}
-    PRIVATE
-    ${CMAKE_BINARY_DIR}
-    ${CMAKE_SOURCE_DIR}/src
-    )
+  target_include_directories(${namel}.${buildl}
+      PRIVATE
+      ${CMAKE_BINARY_DIR}
+      ${CANOE_INCLUDE_DIR}
+      ${MPI_CXX_INCLUDE_PATH}
+      ${NETCDF_INCLUDES}
+      ${PNETCDF_INCLUDE_DIR}
+      )
+endforeach()
+
 
 # 1. Copy input file to run directory
 
