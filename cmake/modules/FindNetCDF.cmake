@@ -26,7 +26,8 @@ if(NETCDF_INCLUDES AND NETCDF_LIBRARIES)
   set(NETCDF_FIND_QUIETLY TRUE)
 endif(NETCDF_INCLUDES AND NETCDF_LIBRARIES)
 
-find_path(NETCDF_INCLUDES netcdf.h HINTS NETCDF_DIR ENV NETCDF_DIR)
+find_path(NETCDF_INCLUDES netcdf.h HINTS /opt/homebrew/include NETCDF_DIR ENV
+                                         NETCDF_DIR)
 
 find_library(NETCDF_LIBRARIES_C NAMES netcdf)
 mark_as_advanced(NETCDF_LIBRARIES_C)
