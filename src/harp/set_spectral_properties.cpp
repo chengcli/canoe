@@ -43,8 +43,8 @@ void RadiationBand::SetSpectralProperties(int k, int j, int il, int iu) {
 
   for (auto& a : absorbers_) {
     for (int i = il; i <= iu; ++i) {
-      for (int n = 0; n < NSCALARS; ++n)
-        var.s[n] = pmb->pscalars->s(n, k, j, i);
+      for (int n = 0; n < NTRACER; ++n)
+        var.s[n] = pmb->pimpl->ptracer->s(n, k, j, i);
       pmb->pimpl->pthermo->PrimitiveToChemical(var.w, w.at(k, j, i));
       //! \todo do we need it?
       // molar concentration to molar mixing ratio

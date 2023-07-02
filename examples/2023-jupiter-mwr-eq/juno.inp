@@ -55,7 +55,7 @@ ix3_bc      = periodic    # Inner-X3 boundary condition flag
 ox3_bc      = periodic    # Outer-X3 boundary condition flag
 
 ReferencePressure = 1.E5
-PressureScaleHeight = 30.E5
+PressureScaleHeight = 30.E3
 
 #<meshblock>
 #nx1         = 1600

@@ -117,7 +117,7 @@ void Radiation::PopulateRadiationBands(ParameterInput *pin) {
 
 void Radiation::CalRadiativeFlux(Real time, int k, int j, int il, int iu) {
   Application::Logger app("harp");
-  app->Log("CalculateRadiativeFlux");
+  app->Log("CalRadiativeFlux");
   Real dist = stellarDistance_au_;
 
   Coordinates *pcoord = pmy_block_->pcoord;
@@ -139,7 +139,7 @@ void Radiation::CalRadiativeFlux(Real time, int k, int j, int il, int iu) {
 
 void Radiation::CalRadiance(Real time, int k, int j, int il, int iu) {
   Application::Logger app("harp");
-  app->Log("CalculateRadiance");
+  app->Log("CalRadiance");
   Real dist = stellarDistance_au_;
 
   Coordinates *pcoord = pmy_block_->pcoord;

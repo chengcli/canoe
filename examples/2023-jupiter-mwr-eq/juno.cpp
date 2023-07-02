@@ -105,15 +105,20 @@ void Mesh::InitUserMeshData(ParameterInput *pin)
 
   xKCl = pin->GetReal("problem", "xKCl");
   xKCl *= pow(10., metallicity);
+
+  xHe = pin->GetReal("problem", "xKCl");
+
+  xCH4 = pin->GetReal("problem", "xKCl");
 }
 
 void update_gamma(Real* gamma, Real const q[]) {
   //std::cout << "I'm here" << std::endl;
   Real T = q[IDN], cp_h2, cp_he, cp_ch4;
-  if (T < 300.)
+  if (T < 300.) {
     cp_h2 = Hydrogen::cp_norm(T);
-  else
+  } else {
     cp_h2 = Hydrogen::cp_nist(T);
+  }
   cp_he = Helium::cp_nist(T);
   cp_ch4 = Methane::cp_nist(T);
 
@@ -123,7 +128,7 @@ void update_gamma(Real* gamma, Real const q[]) {
 
 void MeshBlock::ProblemGenerator(ParameterInput *pin)
 {
-  Application::Logger app("stdout");
+  Application::Logger app("main");
   app->Log("ProblemGenerator: juno");
 
   auto pthermo = pimpl->pthermo;
