@@ -153,16 +153,13 @@ jobs:
 
       - name: Build
         # Build your program with the given configuration
-        run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} -- -j2
+        run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} -- -j4
 
       - name: run simulation
-        working-directory: ${{github.workspace}}/build/bin
-        run: ./straka.ex -i straka.inp
+        run: cd ${{github.workspace}}/build/bin && ./straka.ex -i straka.inp
 
       - name: combile outputs
-        working-directory: ${{github.workspace}}/build/bin
-        run: ./combine.py -o test
+        run: cd ${{github.workspace}}/build/bin && ./combine.py -o test
 
       - name: compare result
-        working-directory: ${{github.workspace}}
-        run: ./examples/2d.straka/test_straka.py ./build/bin/straka-test-main.nc ./examples/2d.straka/straka_output.nc
+        run: ${{github.workspace}/examples/2d.straka/test_straka.py ${{github.workspace}}/build/bin/straka-test-main.nc ${github.workspace}}/examples/2d.straka/straka_output.nc
