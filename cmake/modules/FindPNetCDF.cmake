@@ -6,7 +6,8 @@
 #
 # Normal usage would be:
 
-find_path(PNETCDF_INCLUDE_DIR pnetcdf.h HINTS $ENV{HOME}/opt/include)
+find_path(PNETCDF_INCLUDE_DIR pnetcdf.h HINTS /opt/homebrew/include
+                                              $ENV{HOME}/opt/include)
 
 find_library(
   PNETCDF_LIBRARY
