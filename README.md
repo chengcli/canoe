@@ -220,7 +220,7 @@ cmake -DRFM=OFF ..
 ```
 
 ## Large file storage
-This repo uses Git Large File (lfs) Storage to store opacity data.
+This repo uses Git Large File (lfs) Storage to store benchmark data.
 To install lfs for this repo, use
 ```
 git lfs install
@@ -249,6 +249,11 @@ git lfs pull
 To check what files are stored in lfs, use
 ```
 git lfs ls-files
+```
+
+To track large data file, use
+```
+git lfs track <file>
 ```
 
 ## Quick tips

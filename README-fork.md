@@ -1,4 +1,4 @@
-The [canoe repository](https://github.com/chengcli/canoe) is public by default 
+The [canoe repository](https://github.com/chengcli/canoe) is public by default
 and Github does not allow the creation of private forks for public repositories.
 
 We recommend a public fork of canoe to create your own features. However, sometime a
@@ -14,7 +14,7 @@ For the canoe repo the commands are:
     git clone --bare https://github.com/chengcli/canoe.git
     ```
 
- 2. [Create a new private repository on Github](https://help.github.com/articles/creating-a-new-repository/) 
+ 2. [Create a new private repository on Github](https://help.github.com/articles/creating-a-new-repository/)
     and name it `canoe-dev` (or anything else you would like to have).
 
  3. Pull in the repository's Git Large File Storage objects.
@@ -25,7 +25,7 @@ For the canoe repo the commands are:
 
  4. Mirror-push your bare clone to your new `canoe-dev` repository.
     > Replace `<username>` with your actual Github username in the url below.
-    
+
     ```bash
     git push --mirror https://<username>@github.com/<username>/canoe-dev.git
     ```
@@ -40,12 +40,12 @@ For the canoe repo the commands are:
     cd ..
     rm -rf canoe.git
     ```
-    
+
  7. You can now clone your `canoe-dev` repository on your machine
     ```bash
     git clone https://<username>@github.com/<username>/canoe-dev.git
     ```
-   
+
  8. Add the original repo as remote to fetch future changes.
     ```bash
     git remote add upstream https://github.com/chengcli/canoe.git
@@ -58,7 +58,7 @@ For the canoe repo the commands are:
     upstream	https://github.com/chengcli/canoe.git (push)
     ```
     > When you push, do so on `origin` with `git push origin`.
-   
+
     > When you want to pull changes from `upstream` you can just fetch the remote and rebase on top of your work.
     ```bash
       git fetch upstream

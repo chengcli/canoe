@@ -42,6 +42,7 @@ class ImplicitSolver {
   ImplicitSolver(MeshBlock *pmb, ParameterInput *pin);
   ~ImplicitSolver();
   void SetDirection(CoordinateDirection dir);
+  int GetImplicitFlag() { return implicit_flag; }
 
   // utility functions
   void FindNeighbors();
