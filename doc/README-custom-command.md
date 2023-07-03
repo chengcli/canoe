@@ -1,11 +1,3 @@
-Git helps us to write our own custom commands. With these commands, you can write your own git tasks. These git commands can be written in any language you prefer like Ruby, JavaScript.
-
-In this tutorial, I will explain how to write your own custom commands and I will give some examples of it. We will be using bash for this tutorial.
-
-
-
-
-
 # Writing custom git command
 
 Writing custom git commands are simple as these three steps:
@@ -20,7 +12,7 @@ Let's call this command `git land`, which writes a useless commit message "wip".
 It’s good to have a directory to contain all our custom commands. So that it will be organized. Let’s create a directory.
 
 ```
-mkdir ~/.gitcustom
+mkdir .gitcustom
 ```
 
 Create a file named `git-land` in the above created directory. And add the following code. Refer to the code in the gist here.
@@ -37,7 +29,9 @@ git push origin $currentBranch
 
 Last but not least, make that file as executable
 
+```bash
 chmod +x git-land
+```
 
 2. Add custom commands to $PATH
 
@@ -45,7 +39,10 @@ This is quite important. This will help Git to recognize the custom commands.
 
 We are adding the directory to $PATH. Add the following line to bashrc or to zshrc
 
-export PATH=$PATH:/your-directory/my-git-custom-commands
+```bash
+export PATH=$PATH:<absolute_path>/.gitcustom
+```
+where `absolute_path` is the absolute path of the directory containing folder `.gitcustom`
 
 You can now source the file or start a new instance of the terminal
 
