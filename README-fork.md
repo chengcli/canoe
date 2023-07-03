@@ -60,9 +60,11 @@ For the [canoe](https://github.com/chengcli/canoe) repo, the specific commands a
     upstream	https://github.com/chengcli/canoe.git (push)
     ```
 
- 10. Push and pull changes
+ 10. Push and pull changes.
+
     When you push, do so on `origin` with `git push origin`.
-    > Replace `<branch_naem>` with your the name of your development branch
+    > Replace `<branch_naem>` with your the name of your development branch.
+
     ```bash
     git push origin <branch_name>
     ```
