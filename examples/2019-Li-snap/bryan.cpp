@@ -129,7 +129,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin)
   Real Rd = pthermo->GetRd();
   Real gamma = peos->GetGamma();
   Real cpd = gamma/(gamma - 1.)*Rd;
-  
+
   // construct a 1D pseudo-moist adiabat with given relative humidity
   Real x1min = pmy_mesh->mesh_size.x1min;
   Real x1max = pmy_mesh->mesh_size.x1max;

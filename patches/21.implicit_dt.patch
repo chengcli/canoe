@@ -5,7 +5,7 @@ index 8b5959f3..f293b7e6 100644
 @@ -26,6 +26,10 @@
  #include "hydro.hpp"
  #include "hydro_diffusion/hydro_diffusion.hpp"
- 
+
 +// snap injection
 +#include <impl.hpp>
 +#include <snap/implicit/implicit_solver.hpp>
