@@ -31,9 +31,6 @@
 
 void ImplicitSolver::FullCorrection(AthenaArray<Real>& du,
                                     AthenaArray<Real> const& w, Real dt) {
-  Application::Logger app("snap");
-  app->Log("ImplicitSolver::FullCorrectin-X" + std::to_string(mydir_ + 1));
-
   MeshBlock const* pmb = pmy_block_;
   int is, ie, js, je, ks, ke;
   int idn = 0, ivx = 1, ivy = 2, ivz = 3, ien = 4;
