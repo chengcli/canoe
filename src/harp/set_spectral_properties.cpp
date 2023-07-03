@@ -5,6 +5,7 @@
 #include <athena/coordinates/coordinates.hpp>
 #include <athena/hydro/hydro.hpp>
 #include <athena/mesh/mesh.hpp>
+#include <athena/reconstruct/interpolation.hpp>
 #include <athena/scalars/scalars.hpp>
 #include <athena/stride_iterator.hpp>
 
@@ -14,7 +15,6 @@
 #include <variable.hpp>
 
 // snap
-#include <snap/reconstruct/interpolation.hpp>
 #include <snap/thermodynamics/thermodynamics.hpp>
 
 // harp
