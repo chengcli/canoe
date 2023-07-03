@@ -53,7 +53,6 @@ class MeshBlock::Impl {
 
   CloudQueue cloudq;
 
-  // FaceReconstruct *precon;
   // Forcing *pforce;
 
   RadiationPtr prad;
@@ -61,6 +60,15 @@ class MeshBlock::Impl {
 
   Real GetReferencePressure() const { return reference_pressure_; }
   Real GetPressureScaleHeight() const { return pressure_scale_height_; }
+
+  void ToMolarFraction(Real *qfrac, int k, int j, int i);
+  void FromMolarFraction(Real const *qfrac, int k, int j, int i);
+
+  void ToMolarDensity(Real *qdens, int k, int j, int i);
+  void FromMolarDensity(Real const *qdens, int k, int j, int i);
+
+  void MolarFractionToMolarDensity(Real *qdens, Real const *qfrac);
+  void MolarDensityToMolarFraction(Real *qfrac, Real const *qdens);
 
  private:
   MeshBlock *pmy_block_;

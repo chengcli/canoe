@@ -3,7 +3,6 @@
  *
  * Contributer:
  * Cheng Li, University of Michigan
- * Huazhi Ge, University of California, Santa Cruz
  *
  * Year: 2021
  * Contact: chengcli@umich.edu

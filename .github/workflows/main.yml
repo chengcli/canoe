@@ -141,7 +141,7 @@ jobs:
 
   straka-2d:
     if: github.event.pull_request.draft == false
-    runs-on: [self-hosted, linux]
+    runs-on: [self-hosted, linux, 4core]
     needs: build-non-hydrostatic
     steps:
       - uses: actions/checkout@v3
@@ -174,7 +174,7 @@ jobs:
 
   robert-2d:
     if: github.event.pull_request.draft == false
-    runs-on: [self-hosted, Linux, 16core]
+    runs-on: [self-hosted, Linux, 8core]
     needs: build-non-hydrostatic
     steps:
       - uses: actions/checkout@v3
@@ -191,7 +191,7 @@ jobs:
 
       - name: Build
         # Build your program with the given configuration
-        run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} -- -j4
+        run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} -- -j8
 
       - name: run simulation
         run: cd ${{github.workspace}}/build/bin && mpiexec -n 8 ./robert.release -i robert2d.inp
