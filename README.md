@@ -265,3 +265,7 @@ git reset <file>
 ```
 git restore <file>
 ```
+- aliasing a git command
+```
+git config --global alias.co checkout
+```
