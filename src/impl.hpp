@@ -30,8 +30,6 @@
 #include "inversion/inversion.hpp"
 
 class ParameterInput;
-class FaceReconstruct;
-class Forcing;
 
 //! \class MeshBlock::Impl
 //  \brief opaque pointer class implements additional functionality of Athena
@@ -52,8 +50,6 @@ class MeshBlock::Impl {
   // StaticVariablePtr pstatic;
 
   CloudQueue cloudq;
-
-  // Forcing *pforce;
 
   RadiationPtr prad;
   InversionQueue fitq;
