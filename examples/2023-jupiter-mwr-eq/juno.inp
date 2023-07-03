@@ -120,3 +120,8 @@ xH2S        = 2.96E-5
 xNa         = 3.97E-6
 xKCl        = 0.
 metallicity = -2
+
+#rdlnTdlnP   = 1.015
+rdlnTdlnP   = 0.985
+rdlnTdlnP.pmin = 1.E5
+rdlnTdlnP.pmax = 20.E5

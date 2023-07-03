@@ -7,7 +7,11 @@
 #include <vector>
 
 // athena
+#include <athena/athena.hpp>
 #include <athena/mesh/mesh.hpp>
+
+// canoe
+#include "variable.hpp"
 
 // snap
 #include "snap/decomposition/decomposition.hpp"
@@ -28,6 +32,7 @@
 
 // inversion
 #include "inversion/inversion.hpp"
+
 
 class ParameterInput;
 
@@ -72,11 +77,19 @@ class MeshBlock::Impl {
   void MolarFractionToMolarDensity(Real *qdens, Real const *qfrac);
   void MolarDensityToMolarFraction(Real *qfrac, Real const *qdens);
 
+  void GatherPrimitive(Variable *pvar, int k, int j, int i);
+  void GatherPrimitive(Real *var, int k, int j, int i);
+  void DistributePrimitive(Variable const& var, int k, int j, int i);
+  void DistributePrimitive(Real const *var, int k, int j, int i);
+
  private:
   MeshBlock *pmy_block_;
 
   Real reference_pressure_;
   Real pressure_scale_height_;
 };
+
+int find_pressure_level_lesser(Real pmax, AthenaArray<Real> const& w,
+    int k, int j, int is, int ie);
 
 #endif  // SRC_IMPL_HPP_

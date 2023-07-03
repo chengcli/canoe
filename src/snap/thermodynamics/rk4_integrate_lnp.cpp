@@ -48,7 +48,7 @@ void rk4_integrate_lnp(Real q[], int isat[], Real const rcp[],
       chi[rk] = dlnTdlnP(q, isat, rcp, beta0, delta0, t3, gamma);
     else  // isothermal
       chi[rk] = 0.;
-    chi[rk] *= rdlnTdlnP;
+    chi[rk] += rdlnTdlnP - 1.;
 
     // integrate over dlnp
     if (rk < 3)

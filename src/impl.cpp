@@ -1,6 +1,7 @@
 // athena
 #include <athena/athena.hpp>
 #include <athena/parameter_input.hpp>
+#include <athena/hydro/hydro.hpp>
 
 // canoe
 #include <configure.hpp>
@@ -58,4 +59,28 @@ MeshBlock::Impl::Impl(MeshBlock *pmb, ParameterInput *pin) : pmy_block_(pmb) {
   reference_pressure_ = 1.0;
   pressure_scale_height_ = 1.0;
 #endif  // HYDROSTATIC
+}
+
+//void MeshBlock::Impl::GatherPrimitive(Variable *pvar, int k, int j, int i)
+void MeshBlock::Impl::GatherPrimitive(Real *pvar, int k, int j, int i)
+{
+  for (int n = 0; n < NHYDRO; ++n)
+    pvar[n] = pmy_block_->phydro->w(n, k, j, i);
+}
+
+//void MeshBlock::Impl::DistributePrimitive(Variable const& var, int k, int j, int i)
+void MeshBlock::Impl::DistributePrimitive(Real const* var, int k, int j, int i)
+{
+  for (int n = 0; n < NHYDRO; ++n)
+    pmy_block_->phydro->w(n, k, j, i) = var[n];
+}
+
+int find_pressure_level_lesser(Real pres, AthenaArray<Real> const& w,
+    int k, int j, int is, int ie)
+{
+  for (int i = is; i <= ie; ++i)
+    if (w(IPR, k, j, i) < pres)
+      return i;
+
+  return ie + 1;
 }

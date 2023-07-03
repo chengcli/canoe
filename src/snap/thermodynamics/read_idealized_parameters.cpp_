@@ -1,0 +1,69 @@
+// C/C++
+#include <string>
+#include <regex>
+
+// athena
+#include <athena/athena.hpp>
+
+// snap
+#include <thermodynamics_helper.hpp>
+
+bool read_idealized_parameters(std::string fname, Real &pmin, Real &pmax, AthenaArray<Real> &dTdz,
+  Real* &pmin_q, Real* &pmax_q, AthenaArray<Real>* &dqdz, std::vector<int> &mindex) 
+{
+  std::stringstream msg;
+  if (!FileExists(fname)) {
+    msg << "### FATAL ERROR in read_idealized_parameters. File " << fname 
+        << " doesn't exist.";
+    ATHENA_ERROR(msg);
+  }
+
+  std::ifstream inp(fname.c_str(), std::ios::in);
+  bool allocated = false;
+  char c = '#';
+  std::string line, ss = "";
+  std::vector<std::string> arr;
+
+  while (!inp.eof() && c == '#') {
+    std::getline(inp, line);
+    // removing leading space
+    line = std::regex_replace(line, std::regex("^ +"), ss);
+    c = line[0];
+  }
+
+  while (!inp.eof() && line.empty()) std::getline(inp, line);
+
+  if (!inp.eof()) {
+    arr = Vectorize<std::string>(line.c_str());
+    int nq = arr.size() - 1;
+    if (nq > 0) {
+      mindex.resize(nq);
+      for (int i = 0; i < nq; ++i)
+        mindex[i] = std::stoi(arr[i+1]); // copy molecule index
+      pmin_q = new Real[nq];
+      pmax_q = new Real[nq];
+      dqdz = new AthenaArray<Real>[nq];
+      allocated = true;
+    }
+
+    // Read temperature parameters
+    int nrows, ncols;
+    inp >> pmin >> pmax >> nrows >> ncols;
+    //std::cout << pmin << " " << pmax << " " << nrows << " " << ncols << std::endl;
+    dTdz.NewAthenaArray(nrows, ncols);
+    for (int i = 0; i < nrows; ++i)
+      for (int j = 0; j < ncols; ++j)
+        inp >> dTdz(i,j);
+
+    // Read mixing ratios 
+    for (int n = 0; n < nq; ++n) {
+      inp >> pmin_q[n] >> pmax_q[n] >> nrows >> ncols;
+      dqdz[n].NewAthenaArray(nrows, ncols);
+      for (int i = 0; i < nrows; ++i)
+        for (int j = 0; j < ncols; ++j)
+          inp >> dqdz[n](i,j);
+    }
+  }
+
+  return allocated;
+}

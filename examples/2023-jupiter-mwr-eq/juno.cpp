@@ -249,6 +249,43 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin)
   }
 
   // if requested
+  // modify atmospheric stability
+  Real rdlnTdlnP = pin->GetOrAddReal("problem", "rdlnTdlnP", 1.);
+  //Variable var2[2];
+
+  if (rdlnTdlnP != 1.) {
+    Real pmin = pin->GetOrAddReal("problem", "rdlnTdlnP.pmin", 1.);
+    Real pmax = pin->GetOrAddReal("problem", "rdlnTdlnP.pmax", 20.);
+
+    std::cout << rdlnTdlnP << std::endl;
+
+    for (int k = ks; k <= ke; ++k)
+      for (int j = js; j <= je; ++j) {
+        int ibegin = find_pressure_level_lesser(pmax, phydro->w, k, j, is, ie);
+        int iend = find_pressure_level_lesser(pmin, phydro->w, k, j, is, ie);
+        std::cout << ibegin << " " << iend << std::endl;
+        std::cout << phydro->w(IPR, k, j, ibegin) << std::endl;
+        std::cout << phydro->w(IPR, k, j, iend) << std::endl;
+        dlnp = log(phydro->w(IPR, k, j, ibegin+1) / phydro->w(IPR, k, j, ibegin));
+
+        //pimpl->GatherPrimitive(&var2[0], k, j, ibegin);
+        pimpl->GatherPrimitive(w1[0], k, j, ibegin);
+
+        for (int i = ibegin; i < iend; ++i) {
+          pthermo->ConstructAtmosphere(w1,
+              pthermo->GetTemp(w1[0]), 
+              w1[0][IPR], 0., dlnp, 2, Adiabat::dry, rdlnTdlnP
+              );
+
+          //pimpl->DistributePrimitive(var2[1], k, j, i+1);
+          //var2[0] = var2[1];
+          pimpl->DistributePrimitive(w1[1], k, j, i+1);
+          for (int n = 0; n < NHYDRO; ++n)
+            w1[0][n] = w1[1][n];
+        }
+      }
+  }
+
   // replace adiabatic temperature profile with measurement
   if (pin->GetOrAddBoolean("problem", "use_fletcher16_cirs", false)) {
     // clat->glat, pa -> bar
