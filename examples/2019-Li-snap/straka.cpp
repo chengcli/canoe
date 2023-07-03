@@ -1,7 +1,10 @@
 /* -------------------------------------------------------------------------------------
  * SNAP Example Program
  *
- * Contributer: Cheng Li, University of Michigan, 2021
+ * Contributer: 
+ * Cheng Li, University of Michigan
+ *
+ * Year: 2021
  * Contact: chengcli@umich.edu
  * Reference: Straka et al., 1993
  * -------------------------------------------------------------------------------------

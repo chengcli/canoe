@@ -24,13 +24,13 @@ brew bundle
 ### Ubuntu Linux Installation Guide
 On a Ubuntu linux system, use `apt` to install
 ```
-sudo apt install clang-format cmake
+sudo apt install clang-format cmake nco libnetcdf-dev libpnetcdf-dev
 ```
 
 ### Redhat Linux Installation Guide
 On a Redhat linux system, use `yum` to install
 ```
-sudo yum install clang-tools-extra cmake
+sudo yum install clang-tools-extra cmake nco netcdf-devel
 ```
 
 ## Install python libraries
@@ -241,8 +241,22 @@ git config --global lfs.https://github.com/chengcli/canoe.git/info/lfs.access ba
 ```
 This command changes the autentication method from `none` to `basic`.
 
+To pull files from lfs, use
+```
+git lfs pull
+```
+
+To check what files are stored in lfs, use
+```
+git lfs ls-files
+```
+
 ## Quick tips
 - undo a "git add"
 ```
 git reset <file>
+```
+- undo change to a file
+```
+git restore <file>
 ```
