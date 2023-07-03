@@ -19,7 +19,6 @@
 // snap
 #include "snap/decomposition/decomposition.hpp"
 #include "snap/implicit/implicit_solver.hpp"
-#include "snap/reconstruct/face_reconstruct.hpp"
 #include "snap/thermodynamics/thermodynamics.hpp"
 
 // canoe
@@ -42,9 +41,6 @@ MeshBlock::Impl::Impl(MeshBlock *pmb, ParameterInput *pin) : pmy_block_(pmb) {
 
   // chemistry
   pchem = std::make_shared<Chemistry>(pmb, pin);
-
-  // reconstruction
-  // precon = new FaceReconstruct(pmb, pin);
 
   // radiation
   prad = std::make_shared<Radiation>(pmb, pin);
