@@ -64,7 +64,6 @@ For the [canoe](https://github.com/chengcli/canoe) repo, the specific commands a
     When you push, do so on `origin` with `git push origin`.
     > Replace `<branch_naem>` with your the name of your development branch.
     ```bash
-    origin	https://<username>@github.com/<username>/canoe-dev (fetch)
     git push origin <branch_name>
     ```
     When you want to pull changes from `upstream`, do so on `upstream` and `rebase` on top of your work.
@@ -72,4 +71,5 @@ For the [canoe](https://github.com/chengcli/canoe) repo, the specific commands a
     git fetch upstream
     git rebase upstream/master
     ```
-    Finally, resolve the conflicts if any.
+
+ 1. Finally, resolve the conflicts if any.
