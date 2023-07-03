@@ -68,8 +68,8 @@ add_subdirectory(data)
 
 ## 5. set up python binding ##
 message(STATUS "5. Set up python binding")
-message(STATUS "Include ${CMAKE_SOURCE_DIR}/cmake/pybind11.cmake")
-include(${CMAKE_SOURCE_DIR}/cmake/pybind11.cmake)
+#message(STATUS "Include ${CMAKE_SOURCE_DIR}/cmake/pybind11.cmake")
+#include(${CMAKE_SOURCE_DIR}/cmake/pybind11.cmake)
 #add_subdirectory(python)
 
 ## 6. set up unit tests and examples
