@@ -30,8 +30,6 @@
 #include "inversion/inversion.hpp"
 
 class ParameterInput;
-class FaceReconstruct;
-class Forcing;
 
 //! \class MeshBlock::Impl
 //  \brief opaque pointer class implements additional functionality of Athena
@@ -53,19 +51,23 @@ class MeshBlock::Impl {
 
   CloudQueue cloudq;
 
-  // Forcing *pforce;
-
   RadiationPtr prad;
   InversionQueue fitq;
 
   Real GetReferencePressure() const { return reference_pressure_; }
   Real GetPressureScaleHeight() const { return pressure_scale_height_; }
 
-  void ToMolarFraction(Real *qfrac, int k, int j, int i);
-  void FromMolarFraction(Real const *qfrac, int k, int j, int i);
+  void ConservedToMolarFraction(Real *qfrac, int k, int j, int i);
+  void ConservedFromMolarFraction(Real const *qfrac, int k, int j, int i);
 
-  void ToMolarDensity(Real *qdens, int k, int j, int i);
-  void FromMolarDensity(Real const *qdens, int k, int j, int i);
+  void PrimitiveToMolarFraction(Real *qfrac, int k, int j, int i);
+  void PrimitiveFromMolarFraction(Real const *qfrac, int k, int j, int i);
+
+  void ConservedToMolarDensity(Real *qdens, int k, int j, int i);
+  void ConservedFromMolarDensity(Real const *qdens, int k, int j, int i);
+
+  void PrimitiveToMolarDensity(Real *qdens, int k, int j, int i);
+  void PrimitiveFromMolarDensity(Real const *qdens, int k, int j, int i);
 
   void MolarFractionToMolarDensity(Real *qdens, Real const *qfrac);
   void MolarDensityToMolarFraction(Real *qfrac, Real const *qdens);

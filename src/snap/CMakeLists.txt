@@ -21,7 +21,6 @@ file(GLOB src_files
     eos/*.cpp
     thermodynamics/*.cpp
     decomposition/*.cpp
-    reconstruct/*.cpp
     implicit/*.cpp
     )
 
