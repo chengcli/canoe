@@ -53,23 +53,23 @@ For the [canoe](https://github.com/chengcli/canoe) repo, the specific commands a
     ```
 
  9. Now, you can list all your remotes with `git remote -v`. You should see:
-    ```
+    ```bash
     origin	https://<username>@github.com/<username>/canoe-dev (fetch)
     origin	https://<username>@github.com/<username>/canoe-dev (push)
     upstream	https://github.com/chengcli/canoe.git (fetch)
     upstream	https://github.com/chengcli/canoe.git (push)
     ```
 
- 10. push and pull changes
-    - When you push, do so on `origin` with `git push origin`.
+ 10. Push and pull changes
+    When you push, do so on `origin` with `git push origin`.
     > Replace `<branch_naem>` with your the name of your development branch
     ```bash
     git push origin <branch_name>
     ```
 
-    - When you want to pull changes from `upstream`, do so on `upstream` and `rebase` on top of your work.
+    When you want to pull changes from `upstream`, do so on `upstream` and `rebase` on top of your work.
     ```bash
     git fetch upstream
     git rebase upstream/master
     ```
-    And, finally, resolve the conflicts if any.
+    Finally, resolve the conflicts if any.
