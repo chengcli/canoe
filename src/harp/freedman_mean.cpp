@@ -28,8 +28,8 @@ Real c8, c9, c10, c11, c12;
 
 Real FreedmanMean::GetAttenuation(Real wave1, Real wave2,
                                   Variable const& var) const {
-  Real p = var.q[IPR];
-  Real T = var.q[IDN];
+  Real p = var.w[IPR];
+  Real T = var.w[IDN];
   if (T < 800.) {
     c8 = -14.051;
     c9 = 3.055;
@@ -54,7 +54,8 @@ Real FreedmanMean::GetAttenuation(Real wave1, Real wave2,
 
   Real result = pow(10.0, klowp) + pow(10.0, khigp);  // cm^2/g
 
-  Real dens = p / (pmy_block_->pimpl->pthermo->GetRd() * T);  // kg/m^3
+  auto pthermo = Thermodynamics::GetInstance();
+  Real dens = p / (pthermo->GetRd() * T);  // kg/m^3
 
   if (p > 5e1)
     return 0.1 * dens * result;  // -> 1/m

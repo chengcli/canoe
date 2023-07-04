@@ -48,14 +48,14 @@ void MeshBlock::InitUserMeshBlockData(ParameterInput *pin)
 // Set temperature and potential temperature.
 void MeshBlock::UserWorkBeforeOutput(ParameterInput *pin)
 {
-  auto pthermo = pimpl->pthermo;
+  auto pthermo = Thermodynamics::GetInstance();
 
   Real gamma = peos->GetGamma();
   for (int k = ks; k <= ke; ++k)
     for (int j = js; j <= je; ++j)
       for (int i = is; i <= ie; ++i) {
-        user_out_var(0,k,j,i) = pthermo->GetTemp(phydro->w.at(k,j,i));
-        user_out_var(1,k,j,i) = pthermo->PotentialTemp(phydro->w.at(k,j,i), p0);
+        user_out_var(0,k,j,i) = pthermo->GetTemp(this,k,j,i);
+        user_out_var(1,k,j,i) = pthermo->PotentialTemp(this,p0,k,j,i),;
       }
 }
 

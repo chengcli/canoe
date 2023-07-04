@@ -71,19 +71,19 @@ void MeshBlock::InitUserMeshBlockData(ParameterInput *pin)
 
 void MeshBlock::UserWorkBeforeOutput(ParameterInput *pin)
 {
-  auto pthermo = pimpl->pthermo;
+  auto pthermo = Thermodynamics::GetInstance();
 
   for (int k = ks; k <= ke; ++k)
     for (int j = js; j <= je; ++j)
       for (int i = is; i <= ie; ++i) {
-        user_out_var(0,k,j,i) = pthermo->GetTemp(phydro->w.at(k,j,i));
-        user_out_var(1,k,j,i) = pthermo->PotentialTemp(phydro->w.at(k,j,i), P0);
+        user_out_var(0,k,j,i) = pthermo->GetTemp(this,k,j,i);
+        user_out_var(1,k,j,i) = pthermo->PotentialTemp(this,P0,k,j,i);
         // theta_v
-        user_out_var(2,k,j,i) = user_out_var(1,k,j,i)*pthermo->RovRd(phydro->w.at(k,j,i));
+        user_out_var(2,k,j,i) = user_out_var(1,k,j,i)*pthermo->RovRd(this,k,j,i);
         // mse
-        user_out_var(3,k,j,i) = pthermo->MoistStaticEnergy(phydro->w.at(k,j,i), grav*pcoord->x1v(i));
+        user_out_var(3,k,j,i) = pthermo->MoistStaticEnergy(this,grav*pcoord->x1v(i),k,j,i);
         for (int n = 1; n <= NVAPOR; ++n)
-          user_out_var(3+n,k,j,i) = pthermo->RelativeHumidity(phydro->w.at(k,j,i), n);
+          user_out_var(3+n,k,j,i) = pthermo->RelativeHumidity(this,n,k,j,i);
       }
 }
 
@@ -131,7 +131,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin)
   Application::Logger app("main");
   app->Log("ProblemGenerator: juno");
 
-  auto pthermo = pimpl->pthermo;
+  auto pthermo = Thermodynamics::GetInstance();
 
   // mesh limits
   Real x1min = pmy_mesh->mesh_size.x1min;

@@ -9,7 +9,7 @@
 #include "../thermodynamics/thermodynamics.hpp"
 
 void apply_vapor_limiter(AthenaArray<Real> *pu, MeshBlock *pmb) {
-  auto pthermo = pmb->pimpl->pthermo;
+  auto pthermo = Thermodynamics::GetInstance();
   if (NVAPOR == 0) return;
 
   int is = pmb->is;

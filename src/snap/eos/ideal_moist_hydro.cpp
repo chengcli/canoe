@@ -45,7 +45,7 @@ void EquationOfState::ConservedToPrimitive(
     Coordinates* pco, int il, int iu, int jl, int ju, int kl, int ku) {
   Real gm1 = GetGamma() - 1.0;
   std::stringstream msg;
-  auto pthermo = pmy_block_->pimpl->pthermo;
+  auto pthermo = Thermodynamics::GetInstance();
 
   apply_vapor_limiter(&cons, pmy_block_);
 
@@ -189,7 +189,7 @@ void EquationOfState::PrimitiveToConserved(const AthenaArray<Real>& prim,
         // vapors
         for (int n = 1; n <= NVAPOR; ++n) {
           fsig += prim(n, k, j, i) * (pthermo->GetCvRatio(n) - 1.);
-          feps += prim(n, k, j, i) * (1. / pthermo->GetMassRatio(n) - 1.);
+          feps += prim(n, k, j, i) * (1. / pthermo->GetMuRatio(n) - 1.);
         }
         u_e = igm1 * w_p * fsig / feps + KE;
       }
@@ -203,12 +203,12 @@ void EquationOfState::PrimitiveToConserved(const AthenaArray<Real>& prim,
 // \!fn Real EquationOfState::SoundSpeed(Real prim[NHYDRO])
 // \brief returns adiabatic sound speed given vector of primitive variables
 Real EquationOfState::SoundSpeed(const Real prim[NHYDRO]) {
-  auto pthermo = pmy_block_->pimpl->pthermo;
+  auto pthermo = Thermodynamics::GetInstance();
 
   Real fsig = 1., feps = 1.;
   for (int n = 1; n <= NVAPOR; ++n) {
     fsig += prim[n] * (pthermo->GetCvRatio(n) - 1.);
-    feps += prim[n] * (1. / pthermo->GetMassRatio(n) - 1.);
+    feps += prim[n] * (1. / pthermo->GetMuRatio(n) - 1.);
   }
 
   return std::sqrt((1. + (gamma_ - 1) * feps / fsig) * prim[IPR] / prim[IDN]);

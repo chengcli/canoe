@@ -16,8 +16,10 @@
 // snap
 #include "../thermodynamics/thermodynamics.hpp"
 
-void check_hydro_variables(MeshBlock *pmb, AthenaArray<Real> const &w) {
+void check_hydro_variables(MeshBlock *pmb) {
   Application::Logger app("snap");
+  auto pthermo = Thermodynamics::GetInstance();
+  auto &w = pmb->phydro->w;
 
   for (int k = pmb->ks; k <= pmb->ke; ++k)
     for (int j = pmb->js; j <= pmb->je; ++j)
@@ -36,8 +38,7 @@ void check_hydro_variables(MeshBlock *pmb, AthenaArray<Real> const &w) {
           }
         }
 
-        auto pthermo = pmb->pimpl->pthermo;
-        Real temp = pthermo->GetTemp(w.at(k, j, i));
+        Real temp = pthermo->GetTemp(pmb, k, j, i);
         Real grav = -pmb->phydro->hsrc.GetG1();
         if (grav != 0) {
           Real Tmin = grav * pmb->pcoord->dx1f(i) / pthermo->GetRd();

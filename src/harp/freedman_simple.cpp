@@ -12,6 +12,7 @@
 #include <athena/mesh/mesh.hpp>
 
 // canoe
+#include <constants.hpp>
 #include <impl.hpp>
 #include <variable.hpp>
 
@@ -32,12 +33,11 @@ FreedmanSimple::FreedmanSimple(MeshBlock *pmb, ParameterInput *pin,
 // xiz semigrey
 Real FreedmanSimple::GetAttenuation(Real wave1, Real wave2,
                                     Variable const &var) const {
-  static const Real Rgas = 8.314462;
-  const Absorber *pabs = this;
-  Real mu = Rgas / pmy_block_->pimpl->pthermo->GetRd();
+  auto pthermo = Thermodynamics::GetInstance();
+  Real mu = Constants::Rgas / pthermo->GetRd();
   Real result;
-  Real p = var.q[IPR];
-  Real T = var.q[IDN];
+  Real p = var.w[IPR];
+  Real T = var.w[IDN];
 
   /*xiz semigrey
   //Tan and Komacek 2019 simple fit m^2/kg

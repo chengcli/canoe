@@ -49,7 +49,7 @@ class Thermodynamics {
   //! Constructor for class sets up the initial conditions
   //! Protected ctor access thru static member function Instance
   Thermodynamics() {}
-  Thermodynamics *fromYAMLInput(std::string filename);
+  Thermodynamics *fromYAMLFile(std::string filename);
 
  public:
   enum { Size = 1 + NVAPOR + NCLOUD };
@@ -65,7 +65,9 @@ class Thermodynamics {
   ~Thermodynamics();
 
   //! Return a pointer to the one and only instance of Thermodynamics
-  static Thermodynamics *GetInstance();
+  static Thermodynamics const *GetInstance();
+
+  static Thermodynamics const *GetInstance();
 
   //! Destroy the one and only instance of Thermodynamics
   static void Destroy();
@@ -223,7 +225,7 @@ class Thermodynamics {
   //! Moist static energy
   //!$h_s = c_{pd}T + gz + L_vq_v + L_s\sum_i q_i$
   //! \return $h_s$
-  Real MoistStaticEnergy(MeshBlock *pmb, Real gz, int k, int j, int i);
+  Real MoistStaticEnergy(MeshBlock *pmb, Real gz, int k, int j, int i) const;
 
   //! Relative humidity
   //! $H_i = \frac{e_i}{e_i^s}$
@@ -231,11 +233,11 @@ class Thermodynamics {
   Real RelativeHumidity(MeshBlock *pmb, int n, int k, int j, int i) const;
 
  protected:
-  Real updateGammad(Variable const &var) {
+  Real updateGammad(Variable const &var) const {
     return update_gammad(gammad_, var.w);
   }
 
-  Real setTotalEquivalentVapor(Variable *qfrac, int iv) {
+  Real setTotalEquivalentVapor(Variable *qfrac, int iv) const {
     for (auto &n : cloud_index_set_[iv]) {
       qfrac->w[iv] += qfrac->c[n];
       qfrac->c[n] = 0.;
@@ -243,14 +245,14 @@ class Thermodynamics {
   }
 
   //! TODO(cli): only works for temperature updates
-  Real updateGammad(MeshBlock *pmb, int k, int j, int i) {
+  Real updateGammad(MeshBlock *pmb, int k, int j, int i) const {
     return update_gammad(gammad_, &pmb->phydro->w(IDN, k, j, i));
   }
 
   //! Calculate moist adiabatic temperature gradient
   //! $\Gamma_m = (\frac{d\ln T}{d\ln P})_m$
   //! \return $\Gamma_m$
-  Real calDlnTDlnP(Variable const &qfrac, Real gammad, int isat[]) const;
+  Real calDlnTDlnP(Variable const &qfrac, Real latent[]) const;
 
   void rk4IntegrateLnp(Variable *qfrac, int isat[], Real dlnp, Method method,
                        Real adlnTdlnP);

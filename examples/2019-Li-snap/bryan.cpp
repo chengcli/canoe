@@ -81,20 +81,20 @@ void MeshBlock::InitUserMeshBlockData(ParameterInput *pin)
 
 void MeshBlock::UserWorkBeforeOutput(ParameterInput *pin)
 {
-  auto pthermo = pimpl->pthermo;
+  auto pthermo = Thermodynamics::GetInstance();
 
   for (int j = js; j <= je; ++j)
     for (int i = is; i <= ie; ++i) {
-      user_out_var(0,j,i) = pthermo->GetTemp(phydro->w.at(j,i));
-      user_out_var(1,j,i) = pthermo->PotentialTemp(phydro->w.at(j,i), p0);
+      user_out_var(0,j,i) = pthermo->GetTemp(this, ks, j, i);
+      user_out_var(1,j,i) = pthermo->PotentialTemp(this, p0, ks, j,i);
       // theta_v
-      user_out_var(2,j,i) = user_out_var(1,j,i)*pthermo->RovRd(phydro->w.at(j,i));
+      user_out_var(2,j,i) = user_out_var(1,j,i)*pthermo->RovRd(this, ks, j, i);
       // msv
-      user_out_var(3,j,i) = pthermo->MoistStaticEnergy(phydro->w.at(j,i), grav*pcoord->x1v(i));
+      user_out_var(3,j,i) = pthermo->MoistStaticEnergy(this, grav*pcoord->x1v(i), ks, j, i);
       // theta_e
-      user_out_var(4,j,i) = pthermo->EquivalentPotentialTemp(phydro->w.at(j,i), p0);
+      user_out_var(4,j,i) = pthermo->EquivalentPotentialTemp(this, p0, ks, j, i);
       for (int n = 1; n <= NVAPOR; ++n)
-        user_out_var(4+n,k,j,i) = pthermo->RelativeHumidity(phydro->w.at(k,j,i), n);
+        user_out_var(4+n,k,j,i) = pthermo->RelativeHumidity(this, n, ks, j, i);
     }
 }
 
@@ -119,10 +119,12 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin)
   iH2O = pindex->GetVariableId("H2O");
   iH2Oc = pindex->GetVariableId("H2O(c)");
 
+  auto pthermo = Thermodynamics::GetInstance();
+
   RootData solver;
   solver.p3 = pin->GetReal("thermodynamics", "Ptriple1");
   solver.t3 = pin->GetReal("thermodynamics", "Ttriple1");
-  solver.eps = pthermo->GetMassRatio(iH2Oc);
+  solver.eps = pthermo->GetMuRatio(iH2Oc);
   solver.beta = pthermo->GetBeta(iH2Oc);
   solver.delta = pthermo->GetDelta(iH2Oc);
 

@@ -32,7 +32,7 @@ Thermodynamics::~Thermodynamics() {
   app->Log("Destroy Thermodynamics");
 }
 
-Thermodynamics* Thermodynamics::GetInstance() {
+Thermodynamics const* Thermodynamics::GetInstance() {
   // RAII
   std::unique_lock<std::mutex> lock(thermo_mutex);
 

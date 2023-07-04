@@ -41,27 +41,12 @@ void RadiationBand::SetSpectralProperties(int k, int j, int il, int iu) {
   MeshBlock* pmb = pmy_block_;
   AthenaArray<Real> const& w = pmb->phydro->w;
 
-  for (auto& a : absorbers_) {
-    for (int i = il; i <= iu; ++i) {
-      for (int n = 0; n < NTRACER; ++n)
-        var.s[n] = pmb->pimpl->ptracer->s(n, k, j, i);
-      pmb->pimpl->pthermo->PrimitiveToChemical(var.w, w.at(k, j, i));
-      //! \todo do we need it?
-      // molar concentration to molar mixing ratio
-      Real nmols = var.w[IPR] / (Constants::Rgas * var.w[IDN]);
-      for (int n = 1; n <= NVAPOR; ++n) var.w[n] /= nmols;
+  for (int i = il; i <= iu; ++i) {
+    pmb->pimpl->GetPrimitive(&var, k, j, i);
+    var.ConvertToMoleFraction();
+    tem_(i) = var.w[IDN];
 
-      /* molar density of clouds, mol/m^3
-      ppart = pmb->ppart;
-      int ip = 0;
-      while (ppart != nullptr) {
-        for (int n = 0; n < ppart->u.GetDim4(); ++n)
-          var.c[ip++] = ppart->u(n,k,j,i)/ppart->GetMolecularWeight(n);
-        ppart = ppart->next;
-      }*/
-
-      tem_(i) = var.w[IDN];
-      // std::cout << i << " " << tem_(i] << std::endl;
+    for (auto& a : absorbers_) {
       for (int m = 0; m < nspec; ++m) {
         Real kcoeff =
             a->GetAttenuation(spec_[m].wav1, spec_[m].wav2, var);  // 1/m

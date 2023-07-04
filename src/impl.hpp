@@ -41,11 +41,10 @@ class ParameterInput;
 class MeshBlock::Impl {
  public:
   Impl(MeshBlock *pmb, ParameterInput *pin);
-  ~Impl() {}
+  ~Impl();
 
   AthenaArray<Real> du;  // stores tendency
 
-  ThermodynamicsPtr pthermo;
   DecompositionPtr pdec;
   ImplicitSolverPtr phevi;
 
@@ -53,7 +52,7 @@ class MeshBlock::Impl {
   ChemistryPtr pchem;
   // StaticVariablePtr pstatic;
 
-  CloudQueue cloudq;
+  CloudQueue pcloud;
 
   RadiationPtr prad;
   InversionQueue fitq;
@@ -61,23 +60,11 @@ class MeshBlock::Impl {
   Real GetReferencePressure() const { return reference_pressure_; }
   Real GetPressureScaleHeight() const { return pressure_scale_height_; }
 
-  void ConservedToMolarFraction(Variable *qfrac, int k, int j, int i);
-  void ConservedFromMolarFraction(Variable const &qfrac, int k, int j, int i);
-
-  void GetMolarFraction(Variable *qfrac, int k, int j, int i);
-  void PrimitiveFromMolarFraction(Variable const &qfrac, int k, int j, int i);
-
-  void ConservedToMolarDensity(Variable *qdens, int k, int j, int i);
-  void ConservedFromMolarDensity(Variable const &qdens, int k, int j, int i);
-
-  void PrimitiveToMolarDensity(Variable *qdens, int k, int j, int i);
-  void PrimitiveFromMolarDensity(Variable const &qdens, int k, int j, int i);
-
-  void MolarFractionToMolarDensity(Variable *qdens, Variable const &qfrac);
-  void MolarDensityToMolarFraction(Variable *qfrac, Variable const &qdens);
-
   void GatherPrimitive(Variable *prim, int k, int j, int i);
+  void GatherConserved(Variable *cons, int k, int j, int i);
+
   void DistributePrimitive(Variable const &prim, int k, int j, int i);
+  void DistributeConserved(Variable const &cons, int k, int j, int i);
 
  private:
   MeshBlock *pmy_block_;

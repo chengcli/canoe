@@ -93,7 +93,8 @@ void ImplicitSolver::PartialCorrection(AthenaArray<Real>& du,
   Bnd << 1., 0., 0., 0., -1., 0., 0., 0., 1.;
 
   Real wl[NHYDRO], wr[NHYDRO];
-  auto pthermo = pmy_block_->pimpl->pthermo;
+  auto pthermo = Thermodynamics::GetInstance();
+
   for (int k = ks; k <= ke; ++k)
     for (int j = js; j <= je; ++j) {
       // calculate and save flux Jacobian matrix
@@ -102,7 +103,7 @@ void ImplicitSolver::PartialCorrection(AthenaArray<Real>& du,
         CopyPrimitives(wl, wr, w, k, j, i, mydir_);
         for (int n = 1; n <= NVAPOR; ++n) {
           fsig += wr[n] * (pthermo->GetCvRatio(n) - 1.);
-          feps += wr[n] * (1. / pthermo->GetMassRatio(n) - 1.);
+          feps += wr[n] * (1. / pthermo->GetMuRatio(n) - 1.);
         }
 
         gamma_m1[i] = (gamma - 1.) * feps / fsig;

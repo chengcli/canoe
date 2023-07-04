@@ -31,7 +31,7 @@ void Decomposition::ChangeToBuoyancy(AthenaArray<Real> &w, int kl, int ku,
                                      int jl, int ju) {
   auto pmb = pmy_block_;
   auto pco = pmb->pcoord;
-  auto pthermo = pmb->pimpl->pthermo;
+  auto pthermo = Thermodynamics::GetInstance();
 
   Real grav = -pmb->phydro->hsrc.GetG1();  // positive downward pointing
 
@@ -57,7 +57,7 @@ void Decomposition::ChangeToBuoyancy(AthenaArray<Real> &w, int kl, int ku,
     for (int k = kl; k <= ku; ++k)
       for (int j = jl; j <= ju; ++j) {
         Real P1 = w(IPR, k, j, ie);
-        Real T1 = pthermo->GetTemp(w.at(k, j, ie));
+        Real T1 = pthermo->GetTemp(pmb, k, j, ie);
         Real dz = pco->dx1f(ie);
         for (int n = 0; n < NHYDRO; ++n) w1[0][n] = w(n, k, j, ie);
 
@@ -152,7 +152,7 @@ void Decomposition::RestoreFromBuoyancy(AthenaArray<Real> &w,
                                         int il, int iu) {
   auto pmb = pmy_block_;
   auto pco = pmb->pcoord;
-  auto pthermo = pmb->pimpl->pthermo;
+  auto pthermo = Thermodynamics::GetInstance();
   Real grav = -pmb->phydro->hsrc.GetG1();  // positive downward pointing
   int is = pmb->is, ie = pmb->ie;
   if (grav == 0.) return;
@@ -185,7 +185,7 @@ void Decomposition::RestoreFromBuoyancy(AthenaArray<Real> &w,
 
   // adiabatic extrapolation for a grid
   Real P1 = w(IPR, k, j, is);
-  Real T1 = pthermo->GetTemp(w.at(k, j, is));
+  Real T1 = pthermo->GetTemp(pmb, k, j, is);
   Real dz = pco->dx1f(is);
   for (int n = 0; n < NHYDRO; ++n) w1[0][n] = w(n, k, j, is);
   pthermo->ConstructAtmosphere(w1, T1, P1, grav, -dz, 2, Adiabat::reversible,
@@ -208,7 +208,7 @@ void Decomposition::RestoreFromBuoyancy(AthenaArray<Real> &w,
 
   // adiabatic extrapolation for a grid
   P1 = w(IPR, k, j, ie);
-  T1 = pthermo->GetTemp(w.at(k, j, ie));
+  T1 = pthermo->GetTemp(pmb, k, j, ie);
   dz = pco->dx1f(ie);
   for (int n = 0; n < NHYDRO; ++n) w1[0][n] = w(n, k, j, ie);
   pthermo->ConstructAtmosphere(w1, T1, P1, grav, dz, 2, Adiabat::reversible,
