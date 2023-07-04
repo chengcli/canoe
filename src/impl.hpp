@@ -33,7 +33,6 @@
 // inversion
 #include "inversion/inversion.hpp"
 
-
 class ParameterInput;
 
 //! \class MeshBlock::Impl
@@ -62,25 +61,23 @@ class MeshBlock::Impl {
   Real GetReferencePressure() const { return reference_pressure_; }
   Real GetPressureScaleHeight() const { return pressure_scale_height_; }
 
-  void ConservedToMolarFraction(Real *qfrac, int k, int j, int i);
-  void ConservedFromMolarFraction(Real const *qfrac, int k, int j, int i);
+  void ConservedToMolarFraction(Variable *qfrac, int k, int j, int i);
+  void ConservedFromMolarFraction(Variable const &qfrac, int k, int j, int i);
 
-  void PrimitiveToMolarFraction(Real *qfrac, int k, int j, int i);
-  void PrimitiveFromMolarFraction(Real const *qfrac, int k, int j, int i);
+  void GetMolarFraction(Variable *qfrac, int k, int j, int i);
+  void PrimitiveFromMolarFraction(Variable const &qfrac, int k, int j, int i);
 
-  void ConservedToMolarDensity(Real *qdens, int k, int j, int i);
-  void ConservedFromMolarDensity(Real const *qdens, int k, int j, int i);
+  void ConservedToMolarDensity(Variable *qdens, int k, int j, int i);
+  void ConservedFromMolarDensity(Variable const &qdens, int k, int j, int i);
 
-  void PrimitiveToMolarDensity(Real *qdens, int k, int j, int i);
-  void PrimitiveFromMolarDensity(Real const *qdens, int k, int j, int i);
+  void PrimitiveToMolarDensity(Variable *qdens, int k, int j, int i);
+  void PrimitiveFromMolarDensity(Variable const &qdens, int k, int j, int i);
 
-  void MolarFractionToMolarDensity(Real *qdens, Real const *qfrac);
-  void MolarDensityToMolarFraction(Real *qfrac, Real const *qdens);
+  void MolarFractionToMolarDensity(Variable *qdens, Variable const &qfrac);
+  void MolarDensityToMolarFraction(Variable *qfrac, Variable const &qdens);
 
-  void GatherPrimitive(Variable *pvar, int k, int j, int i);
-  void GatherPrimitive(Real *var, int k, int j, int i);
-  void DistributePrimitive(Variable const& var, int k, int j, int i);
-  void DistributePrimitive(Real const *var, int k, int j, int i);
+  void GatherPrimitive(Variable *prim, int k, int j, int i);
+  void DistributePrimitive(Variable const &prim, int k, int j, int i);
 
  private:
   MeshBlock *pmy_block_;
@@ -89,7 +86,7 @@ class MeshBlock::Impl {
   Real pressure_scale_height_;
 };
 
-int find_pressure_level_lesser(Real pmax, AthenaArray<Real> const& w,
-    int k, int j, int is, int ie);
+int find_pressure_level_lesser(Real pmax, AthenaArray<Real> const &w, int k,
+                               int j, int is, int ie);
 
 #endif  // SRC_IMPL_HPP_
