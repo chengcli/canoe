@@ -15,6 +15,12 @@
 class Variable {
  public:
   enum { Size = NHYDRO + NCLOUD + NTRACER + NCHEMISTRY + NSTATIC };
+  enum class Type {
+    Prim = 0,
+    Cons = 1,
+    Frac = 2,
+    Chem = 3
+  }
 
   //! data pointers
   //! hydro data

@@ -27,95 +27,107 @@ class ParameterInput;
 // iphase = 1 - primary condensible species
 // iphase = 2..(N-1) - all other condensible species
 
-enum class Adiabat { reversible = 0, pseudo = 1, dry = 2, isothermal = 3 };
-
-void update_gamma(Real *gamma, Real const q[]);
-
-/*! Calculate the equilibrium between vapor and cloud
- *
- * @param q molar mixing ratio
- * #param iv index of vapor
- * @param ic index of cloud
- * @param t3 triple point temperature
- * @param p3 triple point pressure
- * @param alpha = L/cv evaluated at current temperature
- * @return molar change of vapor to cloud
- */
-Real VaporCloudEquilibrium(Real const q[], int iv, int ic, Real t3, Real p3,
-                           Real alpha, Real beta, Real delta,
-                           bool no_cloud = false);
-
 class Thermodynamics {
   friend std::ostream &operator<<(std::ostream &os, Thermodynamics const &my);
 
  public:
-  enum { NPHASE = 3, Size = 1 + NPHASE * NVAPOR };
+  enum { Size = 1 + NVAPOR + NCLOUD };
+
+  enum class Method {
+    ReversibleAdiabat,
+    PseudoAdiabat,
+    DryAdiabat,
+    Isothermal
+  };
 
   // member functions
   Thermodynamics(MeshBlock *pmb, ParameterInput *pin);
   ~Thermodynamics();
 
+  void EnrollSatVaporPresFuncs() {
+    if (iv == AMMONIA_VAPOR_ID)
+      s = sat_vapor_p_NH3_BriggsS(q[IDN]);
+    else if (iv == WATER_VAPOR_ID)
+      s = sat_vapor_p_H2O_BriggsS(q[IDN]);
+    else
+      s = SatVaporPresIdeal(t, p3, beta, delta);
+    s /= q[IPR];
+  }
+
+  //! Calculate the equilibrium mole transfer between vapor and cloud
+  //! \param L_ov_cv L/cv evaluated at current temperature
+  //! \return molar fraction change of vapor to cloud
+  Real TryEquilibriumTP(Variable const &qfrac, int ivapor, Real L_ov_cv = 0.,
+                        bool no_cloud = false) const;
+
+  Real ExecuteEquilibriumTP(Variable const &qfrac, int ivapor);
+
+  //! Calculate moist adiabatic temperature gradient
+  //! $\Gamma_m = (\frac{d\ln T}{d\ln P})_m$
+  //! \return $\Gamma_m$
+  Real CalDlnTDlnP(Variable const &qfrac, Real gammad, int isat[]) const;
+
   //! Ideal gas constant of dry air in [J/(kg K)]
-  //! @return $R_d=\hat{R}/\mu_d$
+  //! \return $R_d=\hat{R}/\mu_d$
   Real GetRd() const { return Rd_; }
 
   //! Molecular weight
-  //! @return $\mu$
+  //! \return $\mu$
   Real GetMu(int n) const { return mu_[n]; }
 
   //! Mean molecular weight
   //! $mu = \mu_d (1 + \sum_i q_i (\epsilon_i - 1))$
-  //! @return $mu$
+  //! \return $mu$
   Real GetMu(int k, int j, int i) const;
 
   //! Ratio of molecular weights
-  //! @return $\epsilon_i=\mu_i/\mu_d$
+  //! \return $\epsilon_i=\mu_i/\mu_d$
   Real GetMassRatio(int n) const { return mu_ratio_[n]; }
 
   //! Inverse of the mean molecular weight
   //! $ \frac{R}{R_d} = \frac{\mu_d}{\mu}$
-  //! @return $1/\mu$
+  //! \return $1/\mu$
   Real RovRd(int k, int j, int i) const;
 
   //! Ratio of specific heat capacity [J/(kg K)] at constant volume
-  //! @return $c_{v,i}/c_{v,d}$
+  //! \return $c_{v,i}/c_{v,d}$
   Real GetCvRatioMass(int n) const { return cv_ratio_mass_[n]; }
 
   //! Ratio of specific heat capacity [J/(mol K)] at constant volume
-  //! @return $\hat{c}_{v,i}/\hat{c}_{v,d}$
+  //! \return $\hat{c}_{v,i}/\hat{c}_{v,d}$
   Real GetCvRatioMole(int n) const { return cv_ratio_mole_[n]; }
 
   //! Specific heat capacity [J/(kg K)] at constant volume
   //! $c_{v,d} = \frac{R_d}{\gamma_d - 1}$ \n
   //! $c_{v,i} = \frac{c_{v,i}}{c_{v,d}}\times c_{v,d}$
-  //! @return $c_{v,i}$
+  //! \return $c_{v,i}$
   Real GetCvMass(int n) const {
     Real cvd = Rd_ / (pmy_block_->peos->GetGamma() - 1.);
     return cv_ratio_mass_[n] * cvd;
   }
 
   //! Specific heat capacity [J/(mol K)] of the air parcel at constant volume
-  //! @return $\hat{c}_v$
+  //! \return $\hat{c}_v$
   Real GetCvMole(int n) const { return GetCvMass(n) * mu_[n]; }
 
   //! Specific heat capacity [J/(kg K)] of the air parcel at constant volume
   //! c_v = c_{v,d}*(1 + \sum_i (q_i*(\hat{c}_{v,i} - 1.)))
   //!   = \gamma_d/(\gamma_d - 1.)*R_d*T*(1 + \sum_i (q_i*(\hat{c}_{v,i} - 1.)))
-  //! @return $c_v$
+  //! \return $c_v$
   Real GetCvMass(int k, int j, int i) const;
 
   //! Ratio of specific heat capacity [J/(kg K)] at constant pressure
-  //! @return $c_{p,i}/c_{p,d}$
+  //! \return $c_{p,i}/c_{p,d}$
   Real GetCpRatioMass(int n) const { return cp_ratio_mass_[n]; }
 
   //! Ratio of specific heat capacity [J/(mol K)] at constant pressure
-  //! @return $\hat{c}_{p,i}/\hat{c}_{p,d}$
+  //! \return $\hat{c}_{p,i}/\hat{c}_{p,d}$
   Real GetCpRatioMole(int n) const { return cp_ratio_mole_[n]; }
 
   //! Specific heat capacity [J/(kg K)] at constant pressure
   //! $c_{p,d} = \frac{\gamma_d}{\gamma_d - 1}R_d$ \n
   //! $c_{p,i} = \frac{c_{p,i}}{c_{p,d}}\times c_{p,d}$
-  //! @return $c_p$
+  //! \return $c_p$
   Real GetCpMass(int n) const {
     Real gamma = pmy_block_->peos->GetGamma();
     Real cpd = Rd_ * gamma / (gamma - 1.);
@@ -123,28 +135,34 @@ class Thermodynamics {
   }
 
   //! Specific heat capacity [J/(mol K)] of the air parcel at constant pressure
-  //! @return $\hat{c}_v$
+  //! \return $\hat{c}_v$
   Real GetCpMole(int n) const { return GetCpMass(n) * mu_[n]; }
 
   //! Specific heat capacity [J/(kg K)] of the air parcel at constant pressure
   //! c_p = c_{p,d}*(1 + \sum_i (q_i*(\hat{c}_{p,i} - 1.)))
   //!   = \gamma_d/(\gamma_d - 1.)*R_d*T*(1 + \sum_i (q_i*(\hat{c}_{p,i} - 1.)))
-  //! @return $c_p$
+  //! \return $c_p$
   Real GetCpMass(int k, int j, int i) const;
 
-  //! Temperature dependent specific latent heat [J/kg] of condensates at
+  //! Temperature dependent specific latent energy [J/kg] of condensates at
   //! constant volume $L_{ij}(T) = L_{ij}^r - (c_{ij} - c_{p,i})\times(T - T^r)$
   //! $= L_{ij}^r - \delta_{ij}R_i(T - T^r)$
-  //! @return $L_{ij}(T)$
-  Real GetLatentMass(int n, Real temp) const {
+  //! \return $L_{ij}(T)$
+  Real GetLatentEnergyMass(int n, Real temp) const {
     return latent_[n] - delta_[n] * Rd_ / mu_ratio_[j] * temp;
   }
 
-  //! Temperature dependent specific latent heat [J/mol] of condensates at
+  //! Temperature dependent specific latent energy [J/mol] of condensates at
   //! constant volume
-  //! @return $L_{ij}(T)$
-  Real GetLatentMole(int n, Real temp) const {
+  //! \return $L_{ij}(T)$
+  Real GetLatentEnergyMole(int n, Real temp) const {
     return GetLatentMass(n, temp) * mu_[n];
+  }
+
+  Real GetLatentHeat(int n, Real temp) const {
+    // int nc = iv + NVAPOR;
+    int nc = q[IDN] > t3[iv] ? iv + NVAPOR : iv + 2 * NVAPOR;
+    Real latent = beta[nc] * t3[iv] / q[IDN] - delta[nc];
   }
 
   //! Dimensionless latent heat
@@ -153,7 +171,7 @@ class Thermodynamics {
   //! $\Delta U_{ij}$ is the difference in internal energy between the vapor $i$
   //! and the condensate $j$ $R_i=\hat{R}/m_i=R_d/\epsilon_i$ $T^r$ is the
   //! triple point temperature
-  //! @return $\beta_{ij}$
+  //! \return $\beta_{ij}$
   Real GetBeta(int n) const { return beta_[n]; }
 
   //! Dimensionless heat capacity difference
@@ -162,22 +180,22 @@ class Thermodynamics {
   //! $\Delta c_{ij} = c_{ij} - c_{p,j}$ is the difference in specific heat
   //! capacity at constant temperature. $c_{ij}$ is the heat capacity of
   //! condensate $j$ of vapor $i$
-  //! @return $\delta_{ij}$
+  //! \return $\delta_{ij}$
   Real GetDelta(int n) const { return delta_[n]; }
 
   //! Adiabatic index
   //!$\chi = \frac{R}{c_p}$
-  //! @return $\chi$
+  //! \return $\chi$
   Real GetChi(int k, int j, int i) const;
 
   //! Polytropic index
   //!$\gamma = \frac{c_p}{c_v}$
-  //! @return $\gamma$
+  //! \return $\gamma$
   Real GetGamma(int k, int j, in i) const;
 
   //! Potential temperature
   //!$\theta = T(\frac{p_0}{p})^{\chi}$
-  //! @return $\theta$
+  //! \return $\theta$
   Real PotentialTemp(Real p0, int k, int j, int i) const {
     auto &w = pmy_block_->phydro->w;
     return GetTemp(k, j, i) * pow(p0 / w(IPR, k, j, i), GetChi(k, j, i));
@@ -185,14 +203,14 @@ class Thermodynamics {
 
   //! Temperature
   //!$T = p/(\rho R) = p/(\rho \frac{R}{R_d} Rd)
-  //! @return $T$
+  //! \return $T$
   Real GetTemp(int k, int j, int i) const {
     auto &w = pmy_block_->phydro->w;
     return w(IPR, k, j, i) / (w(IDN, k, j, i) * Rd_ * RovRd(k, j, i));
   }
 
   //! Pressure from conserved variables
-  //! @return $p$
+  //! \return $p$
   Real GetPres(int k, int j, int i) const;
 
   //! Construct an 1d atmosphere
@@ -207,7 +225,7 @@ class Thermodynamics {
 
   //! Moist static energy
   //!$h_s = c_{pd}T + gz + L_vq_v + L_s\sum_i q_i$
-  //! @return $h_s$
+  //! \return $h_s$
   Real MoistStaticEnergy(Real gz, int k, int j, int i);
 
   //! Saturation surplus for vapors can be both positive and negative
@@ -218,8 +236,11 @@ class Thermodynamics {
 
   //! Relative humidity
   //! $H = \frac{e_i}{e_i^s}$
-  //! @return $H$
+  //! \return $H$
   Real RelativeHumidity(int n, int k, int j, int i) const;
+
+  //! Retrieve saturation vapor pressure function
+  SatVaporPresFunc GetSatVaporPresFunc(int ivapor, int cloud) const;
 
  private:
   MeshBlock *pmy_block_;
@@ -265,6 +286,20 @@ class Thermodynamics {
 
   //! triple point pressure [pa]
   std::array<Real, 1 + NVAPOR> p3_;
+
+  //! saturation vapor pressure function
+  std::vector<SatVaporPresFunc> svp_func_;
+
+ protected:
+  void updateGammad(Variable const &var);
+
+  void rk4IntegrateLnp(Real q[], int isat[], Real const rcp[],
+
+  Real setTotalEquivalentVapor(qfrac) {
+    q[iv] += q[NHYDRO + iv - 1] + q[NHYDRO + NVAPOR + iv - 1];
+    q[NHYDRO + iv - 1] = 0.;
+    q[NHYDRO + NVAPOR + iv - 1] = 0.;
+  }
 };
 
 using ThermodynamicsPtr = std::shared_ptr<Thermodynamics>;
