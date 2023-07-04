@@ -12,7 +12,7 @@ class ParameterInput;
 
 class Tracer {
  public:
-  AthenaArray<Real> r, s;
+  AthenaArray<Real> w, u;
 
   Tracer(MeshBlock *pmb, ParameterInput *pin);
 

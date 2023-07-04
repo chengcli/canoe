@@ -13,12 +13,10 @@ class ParameterInput;
 
 class Cloud {
  public:
-  static std::vector<std::unique_ptr<Cloud>> NewCloudsQueue(
-      MeshBlock *pmb, ParameterInput *pin);
+  AthenaArray<Real> w, u;
 
  protected:
   Cloud(MeshBlock *pmb, ParameterInput *pin);
-  AthenaArray<Real> r, s;
 };
 
 using CloudPtr = std::unique_ptr<Cloud>;

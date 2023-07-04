@@ -52,7 +52,7 @@ class MeshBlock::Impl {
   ChemistryPtr pchem;
   // StaticVariablePtr pstatic;
 
-  CloudQueue pcloud;
+  CloudPtr pcloud;
 
   RadiationPtr prad;
   InversionQueue fitq;
@@ -62,9 +62,11 @@ class MeshBlock::Impl {
 
   void GatherPrimitive(Variable *prim, int k, int j, int i);
   void GatherConserved(Variable *cons, int k, int j, int i);
+  void GatherMoleFraction(Variable *qfrac, int k, int j, int i);
+  void GatherMoleConcentration(Variable *qconc, int k, int j, int i);
 
-  void DistributePrimitive(Variable const &prim, int k, int j, int i);
-  void DistributeConserved(Variable const &cons, int k, int j, int i);
+  void DistributePrimitive(Variable &prim, int k, int j, int i);
+  void DistributeConserved(Variable &cons, int k, int j, int i);
 
  private:
   MeshBlock *pmy_block_;

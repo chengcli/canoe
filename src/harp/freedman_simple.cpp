@@ -57,9 +57,9 @@ Real FreedmanSimple::GetAttenuation(Real wave1, Real wave2,
   result = 2.28e-6 * pow(p, 0.53);  // visible opacity scale in disort
   //
 
-  Real dens = p * mu / (Rgas * T);  // kg/m^3
-                                    //  if (p > 5e1)
-  return scale_ * dens * result;    // -> 1/m
+  Real dens = p * mu / (Constants::Rgas * T);  // kg/m^3
+                                               //  if (p > 5e1)
+  return scale_ * dens * result;               // -> 1/m
   //  else
   //    return 0.;
 }

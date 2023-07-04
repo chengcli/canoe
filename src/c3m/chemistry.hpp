@@ -12,7 +12,7 @@ class ParameterInput;
 
 class Chemistry {
  public:
-  AthenaArray<Real> r, s;
+  AthenaArray<Real> w, u;
 
   Chemistry(MeshBlock *pmb, ParameterInput *pin);
 

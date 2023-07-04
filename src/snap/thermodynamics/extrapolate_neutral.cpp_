@@ -1,0 +1,39 @@
+
+void Thermodynamics::extrapolateNeutral()
+{
+struct SolverData {
+  Variable var;
+  Real dlnp;
+};
+
+    Real adlnTdlnP = 0.;
+    // std::cout << solve_thetav(1., &solver) << std::endl;
+    int err = root(-0.1, 0.1, 1.E-4, &adlnTdlnP, solve_thetav, &solver);
+    if (err) {
+      char buf[80];
+      snprintf(buf, sizeof(buf),
+               "root solver does not converge: %12.3g - %12.3g",
+               solve_thetav(-0.1, &solver), solve_thetav(0.1, &solver));
+      throw RuntimeError("ConvectiveAdjustment",
+                         "root solver does not converge");
+    }
+    // msg << "- adlnTdlnP = " << adlnTdlnP << std::endl;
+
+Real solve_thetav(Real adlnTdlnP, void *aux) {
+  // grav parameter is not used in hydrostatic formulation, set to zero
+  SolverData *pdata = static_cast<SolverData *>(aux);
+  auto pthermo = Thermodynamics::GetInstance();
+  auto const& var0 = pdata->var;
+
+  Variable var1 = var0;
+
+  pthermo->Extrapolate(&var1, pdata->dlnp,
+      Thermodynamics::Method::DryAdiabat, 0., adlnTdlnP);
+
+  Real thetav0 =
+      pthermo->PotentialTemp(var0.w[IPR], var0) * pthermo->RovRd(var0);
+  Real thetav1 =
+      pthermo->PotentialTemp(var0.w[IPR], var1) * pthermo->RovRd(var1);
+  return thetav1 - thetav0;
+}
+}

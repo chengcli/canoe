@@ -61,30 +61,30 @@ MeshBlock::Impl::Impl(MeshBlock *pmb, ParameterInput *pin) : pmy_block_(pmb) {
 #endif  // HYDROSTATIC
 }
 
-MeshBlock::~Impl() { Thermodynamics::Destroy(); }
+MeshBlock::Impl::~Impl() { Thermodynamics::Destroy(); }
 
 void MeshBlock::Impl::GatherPrimitive(Variable *var, int k, int j, int i) {
   for (int n = 0; n < NHYDRO; ++n)
     var->w[n] = pmy_block_->phydro->w(n, k, j, i);
 
-  for (int n = 0; n < NCLOUD; ++n)
-    var->c[n] = pmy_block_->pimpl->pcloud->w(n, k, j, i);
+  // for (int n = 0; n < NCLOUD; ++n)
+  //   var->c[n] = pmy_block_->pimpl->pcloud->w(n, k, j, i);
 
   for (int n = 0; n < NTRACER; ++n)
     var->x[n] = pmy_block_->pimpl->ptracer->w(n, k, j, i);
 
   for (int n = 0; n < NCHEMISTRY; ++n)
-    var->q[n] = pmy_block_->piml->pchem->w(n, k, j, i);
+    var->q[n] = pmy_block_->pimpl->pchem->w(n, k, j, i);
 
-  var->SetType(Variable::Prim);
+  var->SetType(Variable::Type::MassFrac);
 }
 
 void MeshBlock::Impl::GatherConserved(Variable *var, int k, int j, int i) {
   for (int n = 0; n < NHYDRO; ++n)
     var->w[n] = pmy_block_->phydro->u(n, k, j, i);
 
-  for (int n = 0; n < NCLOUD; ++n)
-    var->c[n] = pmy_block_->pimpl->pcloud->u(n, k, j, i);
+  // for (int n = 0; n < NCLOUD; ++n)
+  //   var->c[n] = pmy_block_->pimpl->pcloud->u(n, k, j, i);
 
   for (int n = 0; n < NTRACER; ++n)
     var->x[n] = pmy_block_->pimpl->ptracer->u(n, k, j, i);
@@ -92,17 +92,16 @@ void MeshBlock::Impl::GatherConserved(Variable *var, int k, int j, int i) {
   for (int n = 0; n < NCHEMISTRY; ++n)
     var->q[n] = pmy_block_->pimpl->pchem->u(n, k, j, i);
 
-  var->SetType(Variable::Cons);
+  var->SetType(Variable::Type::MassConc);
 }
 
-void MeshBlock::Impl::DistributePrimitive(Variable const &var, int k, int j,
-                                          int i) {
+void MeshBlock::Impl::DistributePrimitive(Variable &var, int k, int j, int i) {
   var.ConvertToPrimitive();
 
   for (int n = 0; n < NHYDRO; ++n) pmy_block_->phydro->w(n, k, j, i) = var.w[n];
 
-  for (int n = 0; n < NCLOUD; ++n)
-    pmy_block_->pimpl->pcloud->w(n, k, j, i) = var.c[n];
+  // for (int n = 0; n < NCLOUD; ++n)
+  //   pmy_block_->pimpl->pcloud->w(n, k, j, i) = var.c[n];
 
   for (int n = 0; n < NTRACER; ++n)
     pmy_block_->pimpl->ptracer->w(n, k, j, i) = var.x[n];
@@ -111,14 +110,13 @@ void MeshBlock::Impl::DistributePrimitive(Variable const &var, int k, int j,
     pmy_block_->pimpl->pchem->w(n, k, j, i) = var.q[n];
 }
 
-void MeshBlock::Impl::DistributeConserved(Variable const &var, int k, int j,
-                                          int i) {
+void MeshBlock::Impl::DistributeConserved(Variable &var, int k, int j, int i) {
   var.ConvertToConserved();
 
   for (int n = 0; n < NHYDRO; ++n) pmy_block_->phydro->u(n, k, j, i) = var.w[n];
 
-  for (int n = 0; n < NCLOUD; ++n)
-    pmy_block_->pimpl->pcloud->u(n, k, j, i) = var.c[n];
+  // for (int n = 0; n < NCLOUD; ++n)
+  //   pmy_block_->pimpl->pcloud->u(n, k, j, i) = var.c[n];
 
   for (int n = 0; n < NTRACER; ++n)
     pmy_block_->pimpl->ptracer->u(n, k, j, i) = var.x[n];

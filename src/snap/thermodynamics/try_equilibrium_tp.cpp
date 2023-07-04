@@ -2,14 +2,14 @@
 #include <algorithm>
 
 // canoe
-#include <variables.hpp>
+#include <variable.hpp>
 
 // snap
 #include "thermodynamics.hpp"
 
 std::vector<Real> Thermodynamics::TryEquilibriumTP(Variable const& qfrac,
                                                    int ivapor, Real l_over_cv,
-                                                   bool misty) {
+                                                   bool misty) const {
   Real xv = qfrac.w[ivapor];
   Real t = qfrac.w[IDN] / t3_[ivapor];
   std::vector<Real> rates(1 + cloud_index_set_[ivapor].size(), 0.);
@@ -17,14 +17,15 @@ std::vector<Real> Thermodynamics::TryEquilibriumTP(Variable const& qfrac,
   for (int n = 0; n < cloud_index_set_[ivapor].size(); ++n) {
     Real xs = svp_func_[ivapor][n](qfrac) / qfrac.w[IPR];
 
+    int jcloud = cloud_index_set_[ivapor][n];
+    Real xc = qfrac.c[jcloud];
+
     if (misty) {
       rates[0] += xs - xv;
       rates[1 + n] = -xc;
       continue;
     }
 
-    int jcloud = cloud_index_set_[ivapor][n];
-    Real xc = qfrac.c[jcloud];
     // if saturation vapor pressure is larger than the total pressure
     // evaporate all condensates
     if (xs > 1.) {

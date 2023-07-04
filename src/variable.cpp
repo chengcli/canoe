@@ -1,28 +1,10 @@
 // application
-#include <application/application.hpp>
+#include <application/exceptions.hpp>
 
 // canoe
 #include "variable.hpp"
 
-void Variable::ConvertTo(Variable::Type type) {
-  if (type == mytype_) {
-    return;
-  }
-
-  if (type == Type::MassFrac) {
-    convertToPrimitive();
-  } else if (type == Type::MassConc) {
-    convertToConserved();
-  } else if (type == Type::MoleFrac) {
-    convertToMoleFraction();
-  } else if (type == Type::MoleConc) {
-    convertToMoleConcentration();
-  } else {
-    throw RuntimeError("Variable", "Unknown variable type");
-  }
-}
-
-void Variable::convertToPrimitive() {
+void Variable::ConvertToPrimitive() {
   if (mytype_ == Type::MassFrac) {
     return;
   }
@@ -40,7 +22,7 @@ void Variable::convertToPrimitive() {
   mytype_ = Type::MassFrac;
 }
 
-void Variable::convertToConserved() {
+void Variable::ConvertToConserved() {
   if (mytype_ == Type::MassConc) {
     return;
   }
@@ -58,7 +40,7 @@ void Variable::convertToConserved() {
   mytype_ = Type::MassConc;
 }
 
-void Variable::convertToMoleFraction() {
+void Variable::ConvertToMoleFraction() {
   if (mytype_ == Type::MoleFrac) {
     return;
   }
@@ -76,7 +58,7 @@ void Variable::convertToMoleFraction() {
   mytype_ = Type::MoleFrac;
 }
 
-void Variable::convertToMoleConcentration() {
+void Variable::ConvertToMoleConcentration() {
   if (mytype_ == Type::MoleConc) {
     return;
   }

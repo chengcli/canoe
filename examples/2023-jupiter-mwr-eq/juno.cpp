@@ -31,7 +31,6 @@
 
 // snap
 #include <snap/thermodynamics/thermodynamics.hpp>
-#include <snap/thermodynamics/thermodynamics_helper.hpp>
 #include <snap/thermodynamics/molecules.hpp>
 #include <snap/thermodynamics/vapors/sodium_vapors.hpp>
 
@@ -147,16 +146,6 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin)
   Real Rd = pthermo->GetRd();
   Real cp = gamma/(gamma - 1.)*Rd;
 
-  // estimate surface temperature and pressure
-  Real Ps = P0*exp(-x1min/H0);
-  Real Ts = T0*pow(Ps/P0,Rd/cp);
-  Real dlnp, **w1, *z1, *t1;
-  dlnp = (x1max - x1min)/pmy_mesh->mesh_size.nx1/(2.*H0);
-  size_t nx1 = (x1max - x1min)/(H0*dlnp);
-  NewCArray(w1, nx1, Variable::Size);
-  z1 = new Real [nx1];
-  t1 = new Real [nx1];
-
   // index
   int iH2O = pindex->GetVaporId("H2O");
   int iNH3 = pindex->GetVaporId("NH3");
@@ -164,35 +153,31 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin)
   app->Log("index of H2O", iH2O);
   app->Log("index of NH3", iNH3);
 
-  // read in vapors
-  w1[0][iH2O] = pin->GetReal("problem", "qH2O.gkg")/1.E3;
-  w1[0][iNH3] = pin->GetReal("problem", "qNH3.gkg")/1.E3;
-  z1[0] = x1min;
-  for (int i = 1; i < nx1; ++i)
-    z1[i] = z1[i-1] + H0*dlnp;
-
   // set up an adiabatic atmosphere
   int max_iter = 200, iter = 0;
-  Real t0;
-  while (iter++ < max_iter) {
-    pthermo->ConstructAtmosphere(w1, Ts, Ps, grav, -dlnp, nx1, Adiabat::dry, 1.);
+  Real dlnp = pcoord->dx1f(is)/H0;
 
-    // Replace adiabatic atmosphere with isothermal atmosphere if temperature is too low
-    int ii = 0;
-    for (; ii < nx1-1; ++ii)
-      if (pthermo->GetTemp(w1[ii]) < Tmin) break;
-    Real Tv = w1[ii][IPR]/(w1[ii][IDN]*Rd);
-    for (int i = ii; i < nx1; ++i) {
-      w1[i][IDN] = w1[i][IPR]/(Rd*Tv);
-      for (int n = 1; n <= NVAPOR; ++n)
-        w1[i][n] = w1[ii][n];
+  Variable var;
+  // estimate surface temperature and pressure
+  Real Ps = P0*exp(-x1min/H0);
+  Real Ts = T0*pow(var.w[IPR]/P0, Rd/cp);
+  Real xH2O = pin->GetReal("problem", "qH2O.ppmv")/1.E6;
+  Real xNH3 = pin->GetReal("problem", "qNH3.ppmv")/1.E6;
+
+  while (iter++ < max_iter) {
+    // read in vapors
+    var.w[iH2O] = xH2O;
+    var.w[iNH3] = xNH3;
+    var.w[IPR] = Ps;
+    var.w[IDN] = Ts;
+
+    for (int i = is; i <= ie; ++i) {
+      pthermo->Extrapolate(&var, -dlnp, Thermodynamics::Method::DryAdiabat);
+      if (var.w[IDN] < P0) break;
     }
 
     // Find T at p = p0
-    for (int i = 0; i < nx1; ++i) {
-      t1[i] = pthermo->GetTemp(w1[i]);
-    }
-    t0 = interp1(0, t1, z1, nx1);
+    Real t0;
 
     Ts += T0 - t0;
     if (fabs(T0 - t0) < 0.01) break;
@@ -205,83 +190,67 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin)
     throw RuntimeError("ProblemGenerator", "maximum iteration reached");
   }
 
-  // change to log quantity
-  for (int i = 0; i < nx1; ++i)
-    for (int n = 0; n < Variable::Size; ++n) {
-      if (n == IVX || n == IVY || n == IVZ)
-        w1[i][n] = 0.;
-      else
-        w1[i][n] = log(w1[i][n]);
+  // construct atmosphere from bottom up
+  var.SetZero();
+
+  var.w[iH2O] = xH2O;
+  var.w[iNH3] = xNH3;
+  var.w[IPR] = Ps;
+  var.w[IDN] = Ts;
+
+  for (int k = ks; k <= ke; ++k)
+    for (int j = js; j <= je; ++j) {
+      int i = is;
+      for (; i <= ie; ++i) {
+        pimpl->DistributePrimitive(var, k, j, i);
+        pthermo->Extrapolate(&var, -dlnp, Thermodynamics::Method::DryAdiabat);
+        if (var.w[IDN] < Tmin) break;
+      }
+
+      // Replace adiabatic atmosphere with isothermal atmosphere if temperature is too low
+      for (; i <= ie; ++i) {
+        pimpl->DistributePrimitive(var, k, j, i);
+        pthermo->Extrapolate(&var, -dlnp, Thermodynamics::Method::Isothermal);
+      }
     }
 
-  // interpolate to model grid
-  for (int i = is; i <= ie; ++i) {
-    Real buf[Variable::Size];
+  // set tracers, electron and Na
+  int ielec = pindex->GetTracerId("e-");
+  int iNa = pindex->GetTracerId("Na");
+  auto ptracer = pimpl->ptracer;
 
-    // set gas concentration and velocity
-    interpn(buf, &pcoord->x1v(i), *w1, z1, &nx1, 1, Variable::Size);
-    for (int n = 0; n < NHYDRO; ++n)
-      for (int k = ks; k <= ke; ++k)
-        for (int j = js; j <= je; ++j) {
-          if (n == IVX || n == IVY || n == IVZ)
-            phydro->w(n,k,j,i) = 0.;
-          else {
-            phydro->w(n,k,j,i) = exp(buf[n]);
-          }
-        }
-
-    // set tracers, electron and Na
-    int ielec = pindex->GetTracerId("e-");
-    int iNa = pindex->GetTracerId("Na");
-    auto ptracer = pimpl->ptracer;
-
-    for (int k = ks; k <= ke; ++k)
-      for (int j = js; j <= je; ++j) {
-        Real temp = pthermo->GetTemp(phydro->w.at(k,j,i));
+  for (int k = ks; k <= ke; ++k)
+    for (int j = js; j <= je; ++j)
+      for (int i = is; i <= ie; ++i) {
+        Real temp = pthermo->GetTemp(this,k,j,i);
         Real pH2S = xH2S*phydro->w(IPR,k,j,i);
         Real pNa = xNa*phydro->w(IPR,k,j,i);
         Real svp = sat_vapor_p_Na_H2S_Visscher(temp, pH2S);
         pNa = std::min(svp, pNa);
 
-        ptracer->s(iNa,k,j,i) = pNa/(Constants::kBoltz*temp);
-        ptracer->s(ielec,k,j,i) = saha_ionization_electron_density(temp, ptracer->s(iNa,k,j,i), 5.14);
+        ptracer->u(iNa,k,j,i) = pNa/(Constants::kBoltz*temp);
+        ptracer->u(ielec,k,j,i) = saha_ionization_electron_density(temp, ptracer->u(iNa,k,j,i), 5.14);
       }
-  }
 
   // if requested
   // modify atmospheric stability
-  Real rdlnTdlnP = pin->GetOrAddReal("problem", "rdlnTdlnP", 1.);
-  //Variable var2[2];
+  Real adlnTdlnP = pin->GetOrAddReal("problem", "adlnTdlnP", 0.);
 
-  if (rdlnTdlnP != 1.) {
-    Real pmin = pin->GetOrAddReal("problem", "rdlnTdlnP.pmin", 1.);
-    Real pmax = pin->GetOrAddReal("problem", "rdlnTdlnP.pmax", 20.);
-
-    std::cout << rdlnTdlnP << std::endl;
+  if (adlnTdlnP != 0.) {
+    Real pmin = pin->GetOrAddReal("problem", "adlnTdlnP.pmin", 1.);
+    Real pmax = pin->GetOrAddReal("problem", "adlnTdlnP.pmax", 20.);
 
     for (int k = ks; k <= ke; ++k)
       for (int j = js; j <= je; ++j) {
         int ibegin = find_pressure_level_lesser(pmax, phydro->w, k, j, is, ie);
         int iend = find_pressure_level_lesser(pmin, phydro->w, k, j, is, ie);
-        std::cout << ibegin << " " << iend << std::endl;
-        std::cout << phydro->w(IPR, k, j, ibegin) << std::endl;
-        std::cout << phydro->w(IPR, k, j, iend) << std::endl;
-        dlnp = log(phydro->w(IPR, k, j, ibegin+1) / phydro->w(IPR, k, j, ibegin));
 
-        //pimpl->GatherPrimitive(&var2[0], k, j, ibegin);
-        pimpl->GatherPrimitive(w1[0], k, j, ibegin);
+        pimpl->GatherPrimitive(&var, k, j, ibegin);
 
         for (int i = ibegin; i < iend; ++i) {
-          pthermo->ConstructAtmosphere(w1,
-              pthermo->GetTemp(w1[0]),
-              w1[0][IPR], 0., dlnp, 2, Adiabat::dry, rdlnTdlnP
-              );
-
-          //pimpl->DistributePrimitive(var2[1], k, j, i+1);
-          //var2[0] = var2[1];
-          pimpl->DistributePrimitive(w1[1], k, j, i+1);
-          for (int n = 0; n < NHYDRO; ++n)
-            w1[0][n] = w1[1][n];
+          pthermo->Extrapolate(&var, -dlnp, Thermodynamics::Method::DryAdiabat,
+              0., adlnTdlnP);
+          pimpl->DistributePrimitive(var, k, j, i+1);
         }
       }
   }
@@ -294,10 +263,10 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin)
       for (int j = js; j <= je; ++j)
         for (int i = is; i <= ie; ++i) {
           if (phydro->w(IPR,k,j,i) > 1.E5) continue;
-          Real temp_ad = pthermo->GetTemp(phydro->w.at(k,j,i));
+          Real temp_ad = pthermo->GetTemp(this,k,j,i);
           // pa -> bar
           Real temp_real = Jupiter::get_temp_fletcher16_cirs(glat, phydro->w(IPR,k,j,i)/1.E5);
-          Real R = pthermo->RovRd(phydro->w.at(k,j,i))*Rd;
+          Real R = pthermo->RovRd(this,k,j,i)*Rd;
           phydro->w(IDN,k,j,i) = phydro->w(IPR,k,j,i)/(R*std::max(temp_real, temp_ad));
         }
   }
@@ -324,8 +293,4 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin)
     for (int j = js; j <= je; ++j)
       prad->CalRadiance(0., k, j, is, ie+1);
   }
-
-  FreeCArray(w1);
-  delete[] z1;
-  delete[] t1;
 }

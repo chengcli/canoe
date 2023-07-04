@@ -4,10 +4,9 @@
 
 // thermodynamics
 #include "thermodynamics.hpp"
-#include "thermodynamics_helper.hpp"
 
-void Thermodynamics::rk4IntegrateLnp(Variable *qfrac, int isat[], Real dlnp,
-                                     Method method, Real adlnTdlnP) {
+void Thermodynamics::rk4IntegrateLnp(Variable *qfrac, Real latent[], Real dlnp,
+                                     Method method, Real adlnTdlnP) const {
   Real step[] = {0.5, 0.5, 1.};
   Real temp = qfrac->w[IDN];
   Real pres = qfrac->w[IPR];
@@ -17,31 +16,31 @@ void Thermodynamics::rk4IntegrateLnp(Variable *qfrac, int isat[], Real dlnp,
     // reset vapor and cloud
     for (int iv = 1; iv <= NVAPOR; ++iv) {
       setTotalEquivalentVapor(qfrac, iv);
-      isat[iv] = 0;
+      latent[iv] = 0;
     }
 
     for (int iv = 1; iv <= NVAPOR; ++iv) {
       auto rates = TryEquilibriumTP(*qfrac, iv);
 
       // saturation indicator
-      if (rates[0] > 0.) isat[iv] = 1;
+      getLatentHeat(latent, rates, iv);
 
       // vapor condensation rate
       qfrac->w[iv] -= rates[0];
 
       // cloud concentration rates
-      if (method == ReversibleAdiabat) {
+      if (method == Method::ReversibleAdiabat) {
         for (int n = 1; n < rates.size(); ++n)
           qfrac->c[cloud_index_set_[iv][n - 1]] += rates[n];
       }
     }
 
     // calculate tendency
-    if (method == ReversibleAdiabat || method == PseudoAdiabat)
-      chi[rk] = CaldlnTdlnP(*qfrac, isat);
-    else if (method == DryAdiabat) {
-      for (int iv = 1; iv <= NVAPOR; ++iv) isat[iv] = 0;
-      chi[rk] = CaldlnTdlnP(*qfrac, isat);
+    if (method == Method::ReversibleAdiabat || method == Method::PseudoAdiabat)
+      chi[rk] = calDlnTDlnP(*qfrac, latent);
+    else if (method == Method::DryAdiabat) {
+      for (int iv = 1; iv <= NVAPOR; ++iv) latent[iv] = 0;
+      chi[rk] = calDlnTDlnP(*qfrac, latent);
     } else {  // isothermal
       chi[rk] = 0.;
     }
@@ -63,13 +62,13 @@ void Thermodynamics::rk4IntegrateLnp(Variable *qfrac, int isat[], Real dlnp,
     auto rates = TryEquilibriumTP(*qfrac, iv);
 
     // saturation indicator
-    if (rates[0] > 0.) isat[iv] = 1;
+    getLatentHeat(latent, rates, iv);
 
     // vapor condensation rate
     qfrac->w[iv] -= rates[0];
 
     // cloud concentration rates
-    if (method == ReversibleAdiabat) {
+    if (method == Method::ReversibleAdiabat) {
       for (int n = 1; n < rates.size(); ++n)
         qfrac->c[cloud_index_set_[iv][n - 1]] += rates[n];
     }

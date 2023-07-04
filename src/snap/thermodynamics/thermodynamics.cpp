@@ -7,13 +7,21 @@
 #include <string>
 #include <vector>  // fill
 
-// climath
-#include <climath/core>
-
 // athena
+#include <athena/athena.hpp>
+#include <athena/eos/eos.hpp>
 #include <athena/hydro/hydro.hpp>
 #include <athena/mesh/mesh.hpp>
 #include <athena/parameter_input.hpp>
+
+// canoe
+#include <configure.hpp>
+#include <constants.hpp>
+#include <impl.hpp>
+#include <variable.hpp>
+
+// climath
+#include <climath/core.h>
 
 // application
 #include <application/application.hpp>
@@ -37,9 +45,13 @@ Thermodynamics const* Thermodynamics::GetInstance() {
   std::unique_lock<std::mutex> lock(thermo_mutex);
 
   if (mythermo_ == nullptr) {
-    mythermo_ = Thermodynamics::fromAthenaInput(ParameterInput * pin);
+    mythermo_ = new Thermodynamics();
   }
 
+  return mythermo_;
+}
+
+Thermodynamics const* Thermodynamics::InitFromAthenaInput(ParameterInput* pin) {
   return mythermo_;
 }
 
@@ -48,7 +60,7 @@ void Thermodynamics::Destroy() {
 
   if (Thermodynamics::mythermo_ != nullptr) {
     delete Thermodynamics::mythermo_;
-    Thermodynamics::myapp_ = nullptr;
+    Thermodynamics::mythermo_ = nullptr;
   }
 }
 
@@ -63,8 +75,11 @@ Real Thermodynamics::GetPres(MeshBlock* pmb, int k, int j, int i) const {
     feps += u(n, k, j, i) / mu_ratio_[n];
   }
 
-  Real KE = 0.5 * (sqr(u[IM1]) + sqr(u[IM2]) + sqr(u[IM3])) / rho;
-  return gm1 * (u[IEN] - KE) * feps / fsig;
+  Real KE =
+      0.5 *
+      (sqr(u(IM1, k, j, i)) + sqr(u(IM2, k, j, i)) + sqr(u(IM3, k, j, i))) /
+      rho;
+  return gm1 * (u(IEN, k, j, i) - KE) * feps / fsig;
 }
 
 Real Thermodynamics::GetChi(MeshBlock* pmb, int k, int j, int i) const {
@@ -80,8 +95,20 @@ Real Thermodynamics::GetChi(MeshBlock* pmb, int k, int j, int i) const {
   return (gammad - 1.) / gammad * feps / qsig;
 }
 
+// TODO(cli): check
+Real Thermodynamics::GetChi(Variable const& qfrac) const {
+  Real gammad = updateGammad(qfrac);
+
+  Real qsig = 1.;
+  for (int n = 1; n <= NVAPOR; ++n) {
+    qsig += qfrac.w[n] * (cp_ratio_mole_[n] - 1.);
+  }
+
+  return (gammad - 1.) / gammad / qsig;
+}
+
 Real Thermodynamics::GetGamma(MeshBlock* pmb, int k, int j, int i) const {
-  Real gammad = updateGammad(k, j, i);
+  Real gammad = updateGammad(pmb, k, j, i);
   auto& w = pmb->phydro->w;
 
   Real fsig = 1., feps = 1.;
@@ -96,23 +123,24 @@ Real Thermodynamics::RovRd(MeshBlock* pmb, int k, int j, int i) const {
   auto& w = pmb->phydro->w;
 
   Real feps = 1.;
-  for (int n = 1; n <= NVAPOR; ++n) feps += w[n] * (1. / mu_ratio_[n] - 1.);
+  for (int n = 1; n <= NVAPOR; ++n)
+    feps += w(n, k, j, i) * (1. / mu_ratio_[n] - 1.);
   return feps;
 }
 
 Real Thermodynamics::MoistStaticEnergy(MeshBlock* pmb, Real gz, int k, int j,
                                        int i) const {
   auto& w = pmb->phydro->w;
-  auto& q = pmb->pcloud->w;
+  auto& c = pmb->pimpl->pcloud->w;
 
-  Real temp = GetTemp(k, j, i);
-  Real IE = w(IDN, k, j, i) * GetCpMass(n, k, j, i) * temp;
+  Real temp = GetTemp(pmb, k, j, i);
+  Real IE = w(IDN, k, j, i) * GetCpMass(pmb, k, j, i) * temp;
   Real rho_gas = w(IDN, k, j, i);
   Real rho_total = rho_gas;
 
   for (int n = 0; n < NCLOUD; ++n) {
-    IE += rho * w(n, k, j, i) * GetCpMass(n, k, j, i) * temp;
-    rho_total += rho * w(n, k, j, i);
+    IE += rho_gas * c(n, k, j, i) * GetCpMass(n) * temp;
+    rho_total += rho_gas * c(n, k, j, i);
   }
 
   return IE / rho_total + gz;
@@ -146,11 +174,10 @@ Real Thermodynamics::GetEnthalpyMass(MeshBlock* pmb, int k, int j,
   Real qsig = 1.;
   for (int n = 1; n <= NVAPOR; ++n)
     qsig += w(n, k, j, i) * (cp_ratio_mass_[n] - 1.);
-  return gammad / (gammad - 1.) * Rd_ * qsig * tem[0];
+  return gammad / (gammad - 1.) * Rd_ * qsig * w(IDN, k, j, i);
 }
 
-Real Thermodynamics::GetMeanMolecularWeight(MeshBlock* pmb, int k, int j,
-                                            int i) const {
+Real Thermodynamics::GetMu(MeshBlock* pmb, int k, int j, int i) const {
   auto& w = pmb->phydro->w;
 
   Real feps = 1.;
@@ -164,19 +191,49 @@ Real Thermodynamics::RelativeHumidity(MeshBlock* pmb, int n, int k, int j,
   auto& w = pmb->phydro->w;
 
   Variable var;
-  Real dw[1 + NVAPOR];
 
   pmb->pimpl->GatherPrimitive(&var, k, j, i);
-  SaturationSurplus(dw, &var);
+  getSaturationSurplus(dw, var);
   return w(n, k, j, i) / (w(n, k, j, i) + dw[n]);
 }
 
-void Thermodynamics::SaturationSurplus(Real dw[], Variable* var) const {
-  var.ConvertTo(Variable::Type::MoleFraction);
+void Thermodynamics::Extrapolate(Variable* qfrac, Real dzORdlnp, Method method,
+                                 Real grav, Real userp) const {
+  Real latent[1 + NVAPOR];
+  for (int n = 0; n <= NVAPOR; ++n) latent[n] = 0;
 
+  // equilibrate with liquid (iv+NVAPOR) or ice (iv+2*NVAPOR)
   for (int iv = 1; iv <= NVAPOR; ++iv) {
-    auto rates = TryEquilibriumTP(var, iv, 0., true.);
-    dw[iv] = rates[0] / var->w[iv] * var.w[iv];
+    auto rates = TryEquilibriumTP(*qfrac, iv);
+
+    // saturation indicator
+    getLatentHeat(latent, rates, iv);
+
+    // vapor condensation rate
+    qfrac->w[iv] += rates[0];
+
+    // cloud concentration rates
+    for (int n = 1; n < rates.size(); ++n)
+      qfrac->c[cloud_index_set_[iv][n - 1]] += rates[n];
+  }
+
+  // RK4 integration
+#ifdef HYDROSTATIC
+  rk4IntegrateLnp(qfrac, latent, dzORdlnp, method, userp);
+#else
+  rk4IntegrateZ(qfrac, latent, dzORdlnp, method, grav, userp);
+#endif
+}
+
+void Thermodynamics::getSaturationSurplus(Real dw[], Variable& var) const {
+  for (int iv = 1; iv <= NVAPOR; ++iv) {
+    dw[iv] = var.w[iv];
+  }
+
+  var.ConvertToMoleFraction();
+  for (int iv = 1; iv <= NVAPOR; ++iv) {
+    auto rates = TryEquilibriumTP(var, iv, 0., true);
+    dw[iv] *= rates[0] / var.w[iv];
   }
 }
 

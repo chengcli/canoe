@@ -7,11 +7,12 @@
 #include <athena/hydro/hydro.hpp>
 #include <athena/stride_iterator.hpp>
 
-// utils
-#include <utils/ndarrays.hpp>
-
 // canoe
 #include <impl.hpp>
+#include <variable.hpp>
+
+// utils
+#include <utils/ndarrays.hpp>
 
 // snap
 #include "../thermodynamics/thermodynamics.hpp"
@@ -32,6 +33,7 @@ void Decomposition::ChangeToBuoyancy(AthenaArray<Real> &w, int kl, int ku,
   auto pmb = pmy_block_;
   auto pco = pmb->pcoord;
   auto pthermo = Thermodynamics::GetInstance();
+  auto pimpl = pmb->pimpl;
 
   Real grav = -pmb->phydro->hsrc.GetG1();  // positive downward pointing
 
@@ -46,25 +48,24 @@ void Decomposition::ChangeToBuoyancy(AthenaArray<Real> &w, int kl, int ku,
     ATHENA_ERROR(msg);
   }
 
-  Real **w1;
-  NewCArray(w1, 2, NHYDRO);
   FindNeighbors();
 
   if (has_top_neighbor) {
     RecvFromTop(psf_, kl, ku, jl, ju);
   } else {
     // adiabatic extrapolation
+    Variable var;
+
     for (int k = kl; k <= ku; ++k)
       for (int j = jl; j <= ju; ++j) {
-        Real P1 = w(IPR, k, j, ie);
-        Real T1 = pthermo->GetTemp(pmb, k, j, ie);
         Real dz = pco->dx1f(ie);
-        for (int n = 0; n < NHYDRO; ++n) w1[0][n] = w(n, k, j, ie);
+        pimpl->GatherMoleFraction(&var, k, j, ie);
 
         // adiabatic extrapolation for half a grid
-        pthermo->ConstructAtmosphere(w1, T1, P1, grav, dz / 2., 2,
-                                     Adiabat::reversible, 0.);
-        psf_(k, j, ie + 1) = w1[1][IPR];
+        pthermo->Extrapolate(&var, dz / 2.,
+                             Thermodynamics::Method::ReversibleAdiabat, grav);
+
+        psf_(k, j, ie + 1) = var.w[IPR];
       }
   }
   IntegrateDownwards(psf_, w, pco, grav, kl, ku, jl, ju, is, ie);
@@ -140,7 +141,6 @@ void Decomposition::ChangeToBuoyancy(AthenaArray<Real> &w, int kl, int ku,
     std::cout << "==========" << std::endl;
   }*/
 
-  FreeCArray(w1);
   // finish MPI communication
   WaitToFinishSend();
   WaitToFinishSync(w, kl, ku, jl, ju);
@@ -153,6 +153,8 @@ void Decomposition::RestoreFromBuoyancy(AthenaArray<Real> &w,
   auto pmb = pmy_block_;
   auto pco = pmb->pcoord;
   auto pthermo = Thermodynamics::GetInstance();
+  auto pimpl = pmb->pimpl;
+
   Real grav = -pmb->phydro->hsrc.GetG1();  // positive downward pointing
   int is = pmb->is, ie = pmb->ie;
   if (grav == 0.) return;
@@ -180,18 +182,17 @@ void Decomposition::RestoreFromBuoyancy(AthenaArray<Real> &w,
   }
 
   // fix boundary condition
-  Real **w1;
-  NewCArray(w1, 2, NHYDRO);
+  Variable var0, var1;
 
   // adiabatic extrapolation for a grid
-  Real P1 = w(IPR, k, j, is);
-  Real T1 = pthermo->GetTemp(pmb, k, j, is);
   Real dz = pco->dx1f(is);
-  for (int n = 0; n < NHYDRO; ++n) w1[0][n] = w(n, k, j, is);
-  pthermo->ConstructAtmosphere(w1, T1, P1, grav, -dz, 2, Adiabat::reversible,
-                               0.);
+  pimpl->GatherMoleFraction(&var0, k, j, is);
 
-  mdpdz = (w1[1][IPR] - w1[0][IPR]) / dz;
+  var1 = var0;
+  pthermo->Extrapolate(&var1, -dz, Thermodynamics::Method::ReversibleAdiabat,
+                       grav);
+
+  mdpdz = (var1.w[IPR] - var0.w[IPR]) / dz;
   if (pmb->pbval->block_bcs[inner_x1] == BoundaryFlag::reflect) {
     for (int i = il + 1; i < is; ++i) {
       wl(IDN, i) = wl(IDN, 2 * is - i);
@@ -207,14 +208,12 @@ void Decomposition::RestoreFromBuoyancy(AthenaArray<Real> &w,
   }
 
   // adiabatic extrapolation for a grid
-  P1 = w(IPR, k, j, ie);
-  T1 = pthermo->GetTemp(pmb, k, j, ie);
-  dz = pco->dx1f(ie);
-  for (int n = 0; n < NHYDRO; ++n) w1[0][n] = w(n, k, j, ie);
-  pthermo->ConstructAtmosphere(w1, T1, P1, grav, dz, 2, Adiabat::reversible,
-                               0.);
+  pimpl->GatherMoleFraction(&var0, k, j, ie);
+  var1 = var0;
+  pthermo->Extrapolate(&var1, dz, Thermodynamics::Method::ReversibleAdiabat,
+                       grav);
 
-  mdpdz = (w1[0][IPR] - w1[1][IPR]) / dz;
+  mdpdz = (var0.w[IPR] - var1.w[IPR]) / dz;
   if (pmb->pbval->block_bcs[outer_x1] == BoundaryFlag::reflect) {
     for (int i = ie + 2; i <= iu + 1; ++i) {
       wl(IDN, i) = wl(IDN, 2 * ie - i + 2);
@@ -228,8 +227,6 @@ void Decomposition::RestoreFromBuoyancy(AthenaArray<Real> &w,
     wl(IDN, ie + 1) = (mdpdz - wl(IDN, ie + 1)) / grav;
     wr(IDN, ie + 1) = (mdpdz - wr(IDN, ie + 1)) / grav;
   }
-
-  FreeCArray(w1);
 
   /* debug
   int km = (pmb->ks + pmb->ke)/2, jm = (pmb->js + pmb->je)/2;

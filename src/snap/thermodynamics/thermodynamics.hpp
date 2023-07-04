@@ -15,7 +15,6 @@
 
 // athena
 #include <athena/athena.hpp>
-#include <athena/eos/eos.hpp>
 #include <athena/hydro/hydro.hpp>
 #include <athena/mesh/mesh.hpp>
 
@@ -23,6 +22,7 @@ class MeshBlock;
 class ParameterInput;
 
 using CloudIndexSet = std::vector<int>;
+using SatVaporPresFunc = Real (*)(Variable const &);
 
 Real update_gammad(Real const &gammad, Real const q[]);
 
@@ -58,7 +58,8 @@ class Thermodynamics {
     ReversibleAdiabat = 0,
     PseudoAdiabat = 1,
     DryAdiabat = 2,
-    Isothermal = 3
+    Isothermal = 3,
+    NeutralStability = 4
   };
 
   // member functions
@@ -67,7 +68,7 @@ class Thermodynamics {
   //! Return a pointer to the one and only instance of Thermodynamics
   static Thermodynamics const *GetInstance();
 
-  static Thermodynamics const *GetInstance();
+  static Thermodynamics const *InitFromAthenaInput(ParameterInput *pin);
 
   //! Destroy the one and only instance of Thermodynamics
   static void Destroy();
@@ -131,20 +132,14 @@ class Thermodynamics {
   //! $= L_{ij}^r - \delta_{ij}R_i(T - T^r)$
   //! \return $L_{ij}(T)$
   Real GetLatentEnergyMass(int n, Real temp) const {
-    return latent_energy_mass_[n] - delta_[n] * Rd_ / mu_ratio_[j] * temp;
+    return latent_energy_mass_[n] - delta_[n] * Rd_ / mu_ratio_[n] * temp;
   }
 
   //! Temperature dependent specific latent energy [J/mol] of condensates at
   //! constant volume
   //! \return $L_{ij}(T)$
   Real GetLatentEnergyMole(int n, Real temp) const {
-    return GetLatentMass(n, temp) * mu_[n];
-  }
-
-  Real GetLatentHeat(int n, Real temp) const {
-    // int nc = iv + NVAPOR;
-    int nc = q[IDN] > t3[iv] ? iv + NVAPOR : iv + 2 * NVAPOR;
-    Real latent = beta[nc] * t3[iv] / q[IDN] - delta[nc];
+    return GetLatentEnergyMass(n, temp) * mu_[n];
   }
 
   //! Calculate the equilibrium mole transfer between vapor and cloud
@@ -156,13 +151,8 @@ class Thermodynamics {
 
   //! Construct an 1d atmosphere
   //! @param method choose from [reversible, pseudo, dry, isothermal]
-  void ConstructAtmosphere(Variable *prim, Real dzORdlnp, Method method,
-                           Real userp) const;
-
-  //! Saturation surplus for vapors can be both positive and negative
-  //! positive value represents supersaturation
-  //! negative value represents saturation deficit
-  void SaturationSurplus(Real dw[], Variable *v) const;
+  void Extrapolate(Variable *qfrac, Real dzORdlnp, Method method,
+                   Real grav = 0., Real userp = 0.) const;
 
   //! Potential temperature
   //!$\theta = T(\frac{p_0}{p})^{\chi}$
@@ -208,10 +198,12 @@ class Thermodynamics {
   //! \return $\chi$
   Real GetChi(MeshBlock *pmb, int k, int j, int i) const;
 
+  Real GetChi(Variable const &qfrac) const;
+
   //! Polytropic index
   //!$\gamma = \frac{c_p}{c_v}$
   //! \return $\gamma$
-  Real GetGamma(MeshBlock *pmb, int k, int j, in i) const;
+  Real GetGamma(MeshBlock *pmb, int k, int j, int i) const;
 
   //! Pressure from conserved variables
   //! \return $p$
@@ -237,16 +229,27 @@ class Thermodynamics {
     return update_gammad(gammad_, var.w);
   }
 
-  Real setTotalEquivalentVapor(Variable *qfrac, int iv) const {
+  //! TODO(cli): only works for temperature updates
+  Real updateGammad(MeshBlock *pmb, int k, int j, int i) const {
+    return update_gammad(gammad_, &pmb->phydro->w(IDN, k, j, i));
+  }
+
+  //! Saturation surplus for vapors can be both positive and negative
+  //! positive value represents supersaturation
+  //! negative value represents saturation deficit
+  void getSaturationSurplus(Real dw[], Variable &v) const;
+
+  void setTotalEquivalentVapor(Variable *qfrac, int iv) const {
     for (auto &n : cloud_index_set_[iv]) {
       qfrac->w[iv] += qfrac->c[n];
       qfrac->c[n] = 0.;
     }
   }
 
-  //! TODO(cli): only works for temperature updates
-  Real updateGammad(MeshBlock *pmb, int k, int j, int i) const {
-    return update_gammad(gammad_, &pmb->phydro->w(IDN, k, j, i));
+  //! TODO(cli)
+  Real getLatentHeat(Real latent[], std::vector<Real> const &rates,
+                     int iv) const {
+    return 0.;
   }
 
   //! Calculate moist adiabatic temperature gradient
@@ -254,10 +257,10 @@ class Thermodynamics {
   //! \return $\Gamma_m$
   Real calDlnTDlnP(Variable const &qfrac, Real latent[]) const;
 
-  void rk4IntegrateLnp(Variable *qfrac, int isat[], Real dlnp, Method method,
-                       Real adlnTdlnP);
-  void rk4IntegrateZ(Variable *qfrac, int isat[], Real dlnp, Method method,
-                     Real adlnTdlnP);
+  void rk4IntegrateLnp(Variable *qfrac, Real latent[], Real dlnp, Method method,
+                       Real adlnTdlnP) const;
+  void rk4IntegrateZ(Variable *qfrac, Real latent[], Real dlnp, Method method,
+                     Real grav, Real adlnTdlnP) const;
 
   void enrollSystem(ParameterInput *pin);
   void enrollSystemJupiterJuno();

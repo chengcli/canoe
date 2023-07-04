@@ -4,6 +4,9 @@
 // C/C++
 #include <array>
 
+// athena
+#include <athena/athena.hpp>  // Real
+
 // canoe
 #include <configure.hpp>
 
@@ -11,17 +14,10 @@
 //  \brief a collection of all physical data in a computational cell
 class Variable {
  private:
-  // disallow copy constructor
-  Variable(Variable const &var) = delete;
-
  public:
   enum { Size = NHYDRO + NCLOUD + NTRACER + NCHEMISTRY + NSTATIC };
-  enum class Type {
-    MassFrac = 0,
-    MassConc = 1,
-    MoleFrac = 2,
-    MoleConc = 3
-  }
+
+  enum class Type { MassFrac = 0, MassConc = 1, MoleFrac = 2, MoleConc = 3 };
 
   //! data pointers
   //! hydro data
@@ -43,12 +39,25 @@ class Variable {
   Real *d;
 
   // constructor
-  Variable() : type_(Type::Prim) {
+  explicit Variable(Type type = Type::MassFrac) : mytype_(type) {
     w = data_.data();
     c = w + NHYDRO;
     x = c + NCLOUD;
     q = x + NTRACER;
     s = q + NCHEMISTRY;
+    d = s + NSTATIC;
+    std::fill(data_.begin(), data_.end(), 0.0);
+  }
+
+  // copy constructor
+  Variable(Variable const &other) : mytype_(other.mytype_) {
+    data_ = other.data_;
+    w = data_.data();
+    c = w + NHYDRO;
+    x = c + NCLOUD;
+    q = x + NTRACER;
+    s = q + NCHEMISTRY;
+    d = s + NSTATIC;
   }
 
   // Assignment operator
@@ -58,15 +67,14 @@ class Variable {
       return *this;
     }
 
-    // Perform member-wise assignment
-    std::copy(other.w, other.w + Size, w);
-
+    data_ = other.data_;
     return *this;
   }
 
   void SetType(Type type) { mytype_ = type; }
-
   Type GetType() const { return mytype_; }
+
+  void SetZero() { std::fill(data_.begin(), data_.end(), 0.0); }
 
   void ConvertToPrimitive();
   void ConvertToConserved();

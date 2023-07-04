@@ -42,8 +42,7 @@ void RadiationBand::SetSpectralProperties(int k, int j, int il, int iu) {
   AthenaArray<Real> const& w = pmb->phydro->w;
 
   for (int i = il; i <= iu; ++i) {
-    pmb->pimpl->GetPrimitive(&var, k, j, i);
-    var.ConvertToMoleFraction();
+    pmb->pimpl->GatherMoleFraction(&var, k, j, i);
     tem_(i) = var.w[IDN];
 
     for (auto& a : absorbers_) {
