@@ -13,6 +13,10 @@
 //! \class Variable
 //  \brief a collection of all physical data in a computational cell
 class Variable {
+ private:
+  // disallow copy constructor
+  Variable(Variable const &var) = delete;
+
  public:
   enum { Size = NHYDRO + NCLOUD + NTRACER + NCHEMISTRY + NSTATIC };
   enum class Type {
@@ -42,17 +46,40 @@ class Variable {
   Real *p;
 
   // constructor
-  Variable() {
-    w = data_.data();
-    c = w + NHYDRO;
-    s = c + NCLOUD;
-    q = s + NTRACER;
-    x = q + NCHEMISTRY;
-  }
+  Variable() : type_(Type::Prim) {
+    {
+      w = data_.data();
+      c = w + NHYDRO;
+      s = c + NCLOUD;
+      q = s + NTRACER;
+      x = q + NCHEMISTRY;
+    }
 
- private:
-  // data holder
-  std::array<Real, Size> data_;
-};
+    // Assignment operator
+    Variable &operator=(const Variable &other) {
+      // Check for self-assignment
+      if (this == &other) {
+        return *this;
+      }
+
+      // Perform member-wise assignment
+      std::copy(other.w, other.w + Size, w);
+
+      return *this;
+    }
+
+    void SetType(Type type) { type_ = type; }
+
+    Type GetType() const { return type_; }
+
+    void ConvertTo(Type type);
+
+   private:
+    // data holder
+    std::array<Real, Size> data_;
+
+    // type
+    Type type_;
+  };
 
 #endif  // SRC_VARIABLE_HPP_

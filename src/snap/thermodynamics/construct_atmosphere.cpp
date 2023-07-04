@@ -15,29 +15,30 @@
 
 void Thermodynamics::ConstructAtmosphere(Variable *qfrac, Real dzORdlnp,
                                          Method method, Real userp) const {
-  Real gammad = pmy_block_->peos->GetGamma();
-  Real grav = -pmy_block_->phydro->hsrc.GetG1();
-  auto pimpl = pmy_block_->pimpl;
-
   int isat[1 + NVAPOR];
   for (int n = 0; n <= NVAPOR; ++n) isat[n] = 0;
 
   // equilibrate with liquid (iv+NVAPOR) or ice (iv+2*NVAPOR)
   Real xg = 1.;  // total moles in gas phase
   for (int iv = 1; iv <= NVAPOR; ++iv) {
-    Real rate = TryEquilibriumTP(*qfrac, iv);
-    if (rate > 0.) isat[iv] = 1;
-    ExecuteEquilibriumTP(qfrac, iv);
+    auto rates = TryEquilibriumTP(*qfrac, iv);
+
+    // saturation indicator
+    if (rates[0] < 0.) isat[iv] = 1;
+
+    // vapor condensation rate
+    qfrac->w[iv] += rates[0];
+
+    // cloud concentration rates
+    for (int n = 1; n < rates.size(); ++n)
+      qfrac->c[cloud_index_set_[iv][n - 1]] += rates[n];
     xg -= rate;
   }
 
   // RK4 integration
-  Real adlnTdlnP, adTdz;
 #ifdef HYDROSTATIC
-  adlnTdlnP = userp;
-  rk4IntegrateLnp(qfrac, isat, gammad, dzORdlnp, method, adlnTdlnP);
+  rk4IntegrateLnp(qfrac, isat, dzORdlnp, method, userp);
 #else
-  adTdz = userp;
-  rk4IntegrateZ(qfrac, isat, gammad, dzORdlnp, method, adTdz);
+  rk4IntegrateZ(qfrac, isat, dzORdlnp, method, userp);
 #endif
 }

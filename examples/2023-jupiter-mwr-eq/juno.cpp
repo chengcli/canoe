@@ -111,7 +111,7 @@ void Mesh::InitUserMeshData(ParameterInput *pin)
   xCH4 = pin->GetReal("problem", "xKCl");
 }
 
-void update_gamma(Real* gamma, Real const q[]) {
+Real update_gammad(Real const& gammad, Real const q[]) {
   //std::cout << "I'm here" << std::endl;
   Real T = q[IDN], cp_h2, cp_he, cp_ch4;
   if (T < 300.) {
@@ -123,7 +123,7 @@ void update_gamma(Real* gamma, Real const q[]) {
   cp_ch4 = Methane::cp_nist(T);
 
   Real cp_real = (1. - xHe - xCH4)*cp_h2 + xHe*cp_he + xCH4*cp_ch4;
-  *gamma = cp_real/(cp_real - Constants::Rgas);
+  return cp_real/(cp_real - Constants::Rgas);
 }
 
 void MeshBlock::ProblemGenerator(ParameterInput *pin)
@@ -273,7 +273,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin)
 
         for (int i = ibegin; i < iend; ++i) {
           pthermo->ConstructAtmosphere(w1,
-              pthermo->GetTemp(w1[0]), 
+              pthermo->GetTemp(w1[0]),
               w1[0][IPR], 0., dlnp, 2, Adiabat::dry, rdlnTdlnP
               );
 

@@ -4,8 +4,10 @@
 // snap
 #include "thermodynamics.hpp"
 
-Real Thermodynamics::CaldlnTdlnP(Variable const& qfrac, int isat[],
-                                 Real gammad) const {
+Real Thermodynamics::CaldlnTdlnP(Variable const& qfrac, int isat[]) const {
+  // calculate gammad
+  Real gammad = getGammad(qfrac);
+
   Real q_gas = 1.;
   for (int n = 0; n < NCLOUD; ++n) q_gas -= qfrac.c[n];
 

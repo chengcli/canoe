@@ -6,39 +6,42 @@
 #include "thermodynamics.hpp"
 #include "thermodynamics_helper.hpp"
 
-void rk4IntegrateLnp(Variable *qfrac, int isat[] Real gamma, Real dlnp,
-                     int method, Real adlnTdlnP) {
+void Thermodynamics::rk4IntegrateLnp(Variable *qfrac, int isat[], Real dlnp,
+                                     Method method, Real adlnTdlnP) {
   Real step[] = {0.5, 0.5, 1.};
-  Real temp = qfrac.w[IDN];
-  Real pres = qfrac.w[IPR];
+  Real temp = qfrac->w[IDN];
+  Real pres = qfrac->w[IPR];
   Real chi[4];
 
   for (int rk = 0; rk < 4; ++rk) {
     // reset vapor and cloud
     for (int iv = 1; iv <= NVAPOR; ++iv) {
-      setTotalEquivalentVapor(qfrac);
+      setTotalEquivalentVapor(qfrac, iv);
       isat[iv] = 0;
     }
 
     for (int iv = 1; iv <= NVAPOR; ++iv) {
-      Real rate = TryEquilibriumTP(qfrac, iv);
-      if (rate > 0.) isat[iv] = 1;
+      auto rates = TryEquilibriumTP(*qfrac, iv);
+
+      // saturation indicator
+      if (rates[0] > 0.) isat[iv] = 1;
+
+      // vapor condensation rate
+      qfrac->w[iv] -= rates[0];
+
+      // cloud concentration rates
       if (method == ReversibleAdiabat) {
-        ExecuteEquilibriumTP(qfrac);
-      } else {
-        qfrac.w[iv] -= rate;
+        for (int n = 1; n < rates.size(); ++n)
+          qfrac->c[cloud_index_set_[iv][n - 1]] += rates[n];
       }
     }
 
-    // calculate gamma
-    gammad = updateGammad(qfrac);
-
     // calculate tendency
     if (method == ReversibleAdiabat || method == PseudoAdiabat)
-      chi[rk] = CaldlnTdlnP(qfrac, isat, gammad);
+      chi[rk] = CaldlnTdlnP(*qfrac, isat);
     else if (method == DryAdiabat) {
       for (int iv = 1; iv <= NVAPOR; ++iv) isat[iv] = 0;
-      chi[rk] = CaldlnTdlnP(qfrac, isat, gammad);
+      chi[rk] = CaldlnTdlnP(*qfrac, isat);
     } else {  // isothermal
       chi[rk] = 0.;
     }
@@ -46,23 +49,29 @@ void rk4IntegrateLnp(Variable *qfrac, int isat[] Real gamma, Real dlnp,
 
     // integrate over dlnp
     if (rk < 3) {
-      qfrac.w[IDN] = temp * exp(chi[rk] * dlnp * step[rk]);
+      qfrac->w[IDN] = temp * exp(chi[rk] * dlnp * step[rk]);
     } else {
-      qfrac.w[IDN] =
+      qfrac->w[IDN] =
           temp *
           exp(1. / 6. * (chi[0] + 2. * chi[1] + 2. * chi[2] + chi[3]) * dlnp);
     }
-    qfrac.w[IPR] = pres * exp(dlnp);
+    qfrac->w[IPR] = pres * exp(dlnp);
   }
 
   // recondensation
   for (int iv = 1; iv <= NVAPOR; ++iv) {
-    Real rate = TryEquilibriumTP(qfrac, iv);
-    if (rate > 0.) isat[iv] = 1;
+    auto rates = TryEquilibriumTP(*qfrac, iv);
+
+    // saturation indicator
+    if (rates[0] > 0.) isat[iv] = 1;
+
+    // vapor condensation rate
+    qfrac->w[iv] -= rates[0];
+
+    // cloud concentration rates
     if (method == ReversibleAdiabat) {
-      ExecuteEquilibriumTP(qfrac);
-    } else {
-      qfrac.w[iv] -= rate;
+      for (int n = 1; n < rates.size(); ++n)
+        qfrac->c[cloud_index_set_[iv][n - 1]] += rates[n];
     }
   }
 }

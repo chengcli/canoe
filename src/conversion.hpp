@@ -84,3 +84,36 @@ void ChemicalToConserved(T1 u, T2 const c) const {
   u[IVY] = c[IVY] * rho;
   u[IVZ] = c[IVZ] * rho;
 }
+
+/*! Change mass mixing ratio to molar mixing ratio
+inline void mass_to_molar(Real q[], Real const w[], Real const eps[], Real Rd) {
+  // set molar mixing ratio
+  Real sum = 1.;
+  for (int n = 1; n <= NVAPOR; ++n) {
+    q[n] = w[n]/eps[n];
+    sum += w[n]*(1./eps[n] - 1.);
+  }
+
+  for (int n = 1; n <= NVAPOR; ++n)
+    q[n] /= sum;
+
+  // set pressure and temperature
+  q[IPR] = w[IPR];
+  q[IDN] = w[IPR]/(w[IDN]*Rd*sum);
+}
+
+ Change molar mixing ratio to mass mixing ratio
+inline void molar_to_mass(Real w[], Real const q[], Real const eps[], Real Rd) {
+  // set mass mixing ratio
+  Real sum = 1.;
+  for (int n = 1; n <= NVAPOR; ++n) {
+    w[n] = q[n]*eps[n];
+    sum += q[n]*(eps[n] - 1.);
+  }
+  for (int n = 1; n <= NVAPOR; ++n)
+    w[n] /= sum;
+
+  // set pressure and density
+  w[IPR] = q[IPR];
+  w[IDN] = sum*q[IPR]/(q[IDN]*Rd);
+}*/
