@@ -82,7 +82,7 @@ class Thermodynamics {
   //! \return $R_d=\hat{R}/\mu_d$
   Real GetRd() const { return Rd_; }
 
-  Real GetGammad() const { return gammad_; }
+  Real GetGammad(Variable const &var) const;
 
   //! Molecular weight
   //! \return $\mu$
@@ -104,14 +104,21 @@ class Thermodynamics {
   //! $c_{v,d} = \frac{R_d}{\gamma_d - 1}$ \n
   //! $c_{v,i} = \frac{c_{v,i}}{c_{v,d}}\times c_{v,d}$
   //! \return $c_{v,i}$
+  Real GetCvMass(Variable const &qfrac, int n) const {
+    Real cvd = Rd_ / (GetGammad(qfrac) - 1.);
+    return cv_ratio_mass_[n] * cvd;
+  }
+
   Real GetCvMass(int n) const {
-    Real cvd = Rd_ / (gammad_ - 1.);
+    Real cvd = Rd_ / (gammad_ref_ - 1.);
     return cv_ratio_mass_[n] * cvd;
   }
 
   //! Specific heat capacity [J/(mol K)] of the air parcel at constant volume
   //! \return $\hat{c}_v$
-  Real GetCvMole(int n) const { return GetCvMass(n) * mu_[n]; }
+  Real GetCvMole(Variable const &qfrac, int n) const {
+    return GetCvMass(qfrac, n) * mu_[n];
+  }
 
   //! Ratio of specific heat capacity [J/(kg K)] at constant pressure
   //! \return $c_{p,i}/c_{p,d}$
@@ -125,14 +132,22 @@ class Thermodynamics {
   //! $c_{p,d} = \frac{\gamma_d}{\gamma_d - 1}R_d$ \n
   //! $c_{p,i} = \frac{c_{p,i}}{c_{p,d}}\times c_{p,d}$
   //! \return $c_p$
+  Real GetCpMass(Variable const &qfrac, int n) const {
+    Real gammad = GetGammad(qfrac);
+    Real cpd = Rd_ * gammad / (gammad - 1.);
+    return cp_ratio_mass_[n] * cpd;
+  }
+
   Real GetCpMass(int n) const {
-    Real cpd = Rd_ * gammad_ / (gammad_ - 1.);
+    Real cpd = Rd_ * gammad_ref_ / (gammad_ref_ - 1.);
     return cp_ratio_mass_[n] * cpd;
   }
 
   //! Specific heat capacity [J/(mol K)] of the air parcel at constant pressure
   //! \return $\hat{c}_v$
-  Real GetCpMole(int n) const { return GetCpMass(n) * mu_[n]; }
+  Real GetCpMole(Variable const &qfrac, int n) const {
+    return GetCpMass(qfrac, n) * mu_[n];
+  }
 
   //! Temperature dependent specific latent energy [J/kg] of condensates at
   //! constant volume $L_{ij}(T) = L_{ij}^r - (c_{ij} - c_{p,i})\times(T - T^r)$
@@ -232,17 +247,6 @@ class Thermodynamics {
   Real RelativeHumidity(MeshBlock *pmb, int n, int k, int j, int i) const;
 
  protected:
-  Real updateGammad(Variable const &var) const {
-    return updateGammad(gammad_, var.w);
-  }
-
-  //! TODO(cli): only works for temperature updates
-  Real updateGammad(MeshBlock *pmb, int k, int j, int i) const {
-    return updateGammad(gammad_, &pmb->phydro->w(IDN, k, j, i));
-  }
-
-  Real updateGammad(Real gammad, Real const q[]) const;
-
   //! Saturation surplus for vapors can be both positive and negative
   //! positive value represents supersaturation
   //! negative value represents saturation deficit
@@ -277,8 +281,8 @@ class Thermodynamics {
   //! ideal gas constant of dry air in J/kg
   Real Rd_;
 
-  //! polytropic index of dry air
-  Real gammad_;
+  //! reference polytropic index of dry air
+  Real gammad_ref_;
 
   //! ratio of mean molecular weights
   std::array<Real, Size> mu_ratio_;

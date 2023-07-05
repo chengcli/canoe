@@ -110,9 +110,9 @@ void Mesh::InitUserMeshData(ParameterInput *pin)
   xCH4 = pin->GetReal("problem", "xKCl");
 }
 
-Real Thermodynamics::updateGammad(Real gammad, Real const q[]) const {
+Real Thermodynamics::GetGammad(Variable const& qfrac) const {
   //std::cout << "I'm here" << std::endl;
-  Real T = q[IDN], cp_h2, cp_he, cp_ch4;
+  Real T = qfrac.w[IDN], cp_h2, cp_he, cp_ch4;
   if (T < 300.) {
     cp_h2 = Hydrogen::cp_norm(T);
   } else {

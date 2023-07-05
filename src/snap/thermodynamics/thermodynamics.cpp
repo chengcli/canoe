@@ -37,8 +37,8 @@
 static std::mutex thermo_mutex;
 
 Real __attribute__((weak))
-Thermodynamics::updateGammad(Real gammad, Real const q[]) const {
-  return gammad;
+Thermodynamics::GetGammad(Variable const& qfrac) const {
+  return gammad_ref_;
 }
 
 Thermodynamics::~Thermodynamics() {
@@ -108,7 +108,7 @@ Thermodynamics const* Thermodynamics::InitFromAthenaInput(ParameterInput* pin) {
   }
 
   mythermo_->Rd_ = pin->GetOrAddReal("thermodynamics", "Rd", 1.);
-  mythermo_->gammad_ = pin->GetReal("hydro", "gamma");
+  mythermo_->gammad_ref_ = pin->GetReal("hydro", "gamma");
 
   // alias
   auto& Rd = mythermo_->Rd_;
@@ -176,7 +176,7 @@ Real Thermodynamics::GetPres(MeshBlock* pmb, int k, int j, int i) const {
 }
 
 Real Thermodynamics::GetChi(MeshBlock* pmb, int k, int j, int i) const {
-  Real gammad = updateGammad(pmb, k, j, i);
+  Real gammad = pmb->peos->GetGamma();
   auto& w = pmb->phydro->w;
 
   Real qsig = 1., feps = 1.;
@@ -190,7 +190,7 @@ Real Thermodynamics::GetChi(MeshBlock* pmb, int k, int j, int i) const {
 
 // TODO(cli): check
 Real Thermodynamics::GetChi(Variable const& qfrac) const {
-  Real gammad = updateGammad(qfrac);
+  Real gammad = GetGammad(qfrac);
 
   Real qsig = 1.;
   for (int n = 1; n <= NVAPOR; ++n) {
@@ -201,7 +201,7 @@ Real Thermodynamics::GetChi(Variable const& qfrac) const {
 }
 
 Real Thermodynamics::GetGamma(MeshBlock* pmb, int k, int j, int i) const {
-  Real gammad = updateGammad(pmb, k, j, i);
+  Real gammad = pmb->peos->GetGamma();
   auto& w = pmb->phydro->w;
 
   Real fsig = 1., feps = 1.;
@@ -240,7 +240,7 @@ Real Thermodynamics::MoistStaticEnergy(MeshBlock* pmb, Real gz, int k, int j,
 }
 
 Real Thermodynamics::GetCpMass(MeshBlock* pmb, int k, int j, int i) const {
-  Real gammad = updateGammad(pmb, k, j, i);
+  Real gammad = pmb->peos->GetGamma();
   auto& w = pmb->phydro->w;
 
   Real qsig = 1.;
@@ -250,7 +250,7 @@ Real Thermodynamics::GetCpMass(MeshBlock* pmb, int k, int j, int i) const {
 }
 
 Real Thermodynamics::GetCvMass(MeshBlock* pmb, int k, int j, int i) const {
-  Real gammad = updateGammad(pmb, k, j, i);
+  Real gammad = pmb->peos->GetGamma();
   auto& w = pmb->phydro->w;
 
   Real qsig = 1.;
@@ -261,7 +261,7 @@ Real Thermodynamics::GetCvMass(MeshBlock* pmb, int k, int j, int i) const {
 
 Real Thermodynamics::GetEnthalpyMass(MeshBlock* pmb, int k, int j,
                                      int i) const {
-  Real gammad = updateGammad(pmb, k, j, i);
+  Real gammad = pmb->peos->GetGamma();
   auto& w = pmb->phydro->w;
 
   Real qsig = 1.;

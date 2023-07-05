@@ -132,7 +132,7 @@ void Variable::massConcentrationToMoleFraction() {
 
   // TODO(cli): not true for cubed-sphere
   Real KE = 0.5 * (sqr(w[IM1]) + sqr(w[IM2]) + sqr(w[IM3])) * di;
-  Real gm1 = pthermo->GetGammad() - 1.;
+  Real gm1 = pthermo->GetGammad(*this) - 1.;
 
   w[IPR] = gm1 * (w[IEN] - KE) * feps / fsig;
   w[IDN] = w[IPR] / (feps * pthermo->GetRd());
@@ -161,9 +161,9 @@ void Variable::moleFractionToMassConcentration() {
   for (int n = 1; n <= NVAPOR; ++n) {
     w[n] = rho * w[n] * pthermo->GetMuRatio(n) / sum;
     w[IDN] -= w[n];
-    w[IEN] += w[n] * pthermo->GetCvMass(n) * tem;
+    w[IEN] += w[n] * pthermo->GetCvMass(*this, n) * tem;
   }
-  w[IEN] += w[IDN] * pthermo->GetCvMass(0) * tem;
+  w[IEN] += w[IDN] * pthermo->GetCvMass(*this, 0) * tem;
   w[IVX] *= rho;
   w[IVY] *= rho;
   w[IVZ] *= rho;
@@ -171,7 +171,7 @@ void Variable::moleFractionToMassConcentration() {
 
 void Variable::massFractionToMassConcentration() {
   auto pthermo = Thermodynamics::GetInstance();
-  Real igm1 = 1.0 / (pthermo->GetGammad() - 1.0);
+  Real igm1 = 1.0 / (pthermo->GetGammad(*this) - 1.0);
 
   // density
   Real rho = w[IDN], pres = w[IPR];
@@ -198,7 +198,7 @@ void Variable::massFractionToMassConcentration() {
 
 void Variable::massConcentrationToMassFraction() {
   auto pthermo = Thermodynamics::GetInstance();
-  Real gm1 = pthermo->GetGammad() - 1.;
+  Real gm1 = pthermo->GetGammad(*this) - 1.;
 
   Real rho = 0.;
   for (int n = 0; n <= NVAPOR; ++n) rho += w[n];

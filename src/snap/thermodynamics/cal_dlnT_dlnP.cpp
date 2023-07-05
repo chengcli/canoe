@@ -6,7 +6,7 @@
 
 Real Thermodynamics::calDlnTDlnP(Variable const& qfrac, Real latent[]) const {
   // calculate gammad
-  Real gammad = updateGammad(qfrac);
+  Real gammad = GetGammad(qfrac);
 
   Real q_gas = 1.;
   for (int n = 0; n < NCLOUD; ++n) q_gas -= qfrac.c[n];
