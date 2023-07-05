@@ -325,7 +325,7 @@ void ProfileInversion::ConvectiveAdjustment(Hydro *phydro, int k,
 
     pthermo->Extrapolate(&var, dlnp, Thermodynamics::Method::NeutralStability);
 
-    var.ConvertToPrimitive();
+    var.ConvertToMassFraction();
 
     // stability
     phydro->w(IDN, k, ju, i) = std::min(var.w[IDN], phydro->w(IDN, k, ju, i));

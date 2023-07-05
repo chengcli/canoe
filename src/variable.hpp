@@ -76,24 +76,29 @@ class Variable {
 
   void SetZero() { std::fill(data_.begin(), data_.end(), 0.0); }
 
-  void ConvertToPrimitive();
-  void ConvertToConserved();
+  void ConvertToMassFraction();
+  void ConvertToMassConcentration();
   void ConvertToMoleFraction();
   void ConvertToMoleConcentration();
 
  protected:
-  void primitiveToConserved();
-  void primitiveToMoleFraction();
-  void primitiveToMoleConcentration();
-  void conservedToPrimitive();
-  void conservedToMoleFraction();
-  void conservedToMoleConcentration();
-  void moleFractionToPrimitive();
-  void moleFractionToConserved();
+  void massFractionToMassConcentration();
+  void massConcentrationToMassFraction();
+
+  void massFractionToMoleFraction();
+  void moleFractionToMassFraction();
+
+  void massConcentrationToMoleFraction();
+  void moleFractionToMassConcentration();
+
   void moleFractionToMoleConcentration();
-  void moleConcentrationToPrimitive();
-  void moleConcentrationToConserved();
   void moleConcentrationToMoleFraction();
+
+  void massConcentrationToMoleConcentration();
+  void moleConcentrationToMassConcentration();
+
+  void massFractionToMoleConcentration();
+  void moleConcentrationToMassFraction();
 
   // data holder
   std::array<Real, Size> data_;

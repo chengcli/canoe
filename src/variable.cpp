@@ -4,17 +4,23 @@
 // canoe
 #include "variable.hpp"
 
-void Variable::ConvertToPrimitive() {
+// climath
+#include <climath/core.h>
+
+// snap
+#include <snap/thermodynamics/thermodynamics.hpp>
+
+void Variable::ConvertToMassFraction() {
   if (mytype_ == Type::MassFrac) {
     return;
   }
 
   if (mytype_ == Type::MassConc) {
-    conservedToPrimitive();
+    massConcentrationToMassFraction();
   } else if (mytype_ == Type::MoleFrac) {
-    moleFractionToPrimitive();
+    moleFractionToMassFraction();
   } else if (mytype_ == Type::MoleConc) {
-    moleConcentrationToPrimitive();
+    moleConcentrationToMassFraction();
   } else {
     throw RuntimeError("Variable", "Unknown variable type");
   }
@@ -22,17 +28,17 @@ void Variable::ConvertToPrimitive() {
   mytype_ = Type::MassFrac;
 }
 
-void Variable::ConvertToConserved() {
+void Variable::ConvertToMassConcentration() {
   if (mytype_ == Type::MassConc) {
     return;
   }
 
   if (mytype_ == Type::MassFrac) {
-    primitiveToConserved();
+    massFractionToMassConcentration();
   } else if (mytype_ == Type::MoleFrac) {
-    moleFractionToConserved();
+    moleFractionToMassConcentration();
   } else if (mytype_ == Type::MoleConc) {
-    moleConcentrationToConserved();
+    moleConcentrationToMassConcentration();
   } else {
     throw RuntimeError("Variable", "Unknown variable type");
   }
@@ -46,9 +52,9 @@ void Variable::ConvertToMoleFraction() {
   }
 
   if (mytype_ == Type::MassFrac) {
-    primitiveToMoleFraction();
+    massFractionToMoleFraction();
   } else if (mytype_ == Type::MassConc) {
-    conservedToMoleFraction();
+    massConcentrationToMoleFraction();
   } else if (mytype_ == Type::MoleConc) {
     moleConcentrationToMoleFraction();
   } else {
@@ -64,9 +70,9 @@ void Variable::ConvertToMoleConcentration() {
   }
 
   if (mytype_ == Type::MassFrac) {
-    primitiveToMoleConcentration();
+    massFractionToMoleConcentration();
   } else if (mytype_ == Type::MassConc) {
-    conservedToMoleConcentration();
+    massConcentrationToMoleConcentration();
   } else if (mytype_ == Type::MoleFrac) {
     moleFractionToMoleConcentration();
   } else {
@@ -74,4 +80,170 @@ void Variable::ConvertToMoleConcentration() {
   }
 
   mytype_ = Type::MoleConc;
+}
+
+void Variable::massFractionToMoleFraction() {
+  auto pthermo = Thermodynamics::GetInstance();
+
+  // set molar mixing ratio
+  Real sum = 1.;
+  for (int n = 1; n <= NVAPOR; ++n) {
+    sum += w[n] * (1. / pthermo->GetMuRatio(n) - 1.);
+    w[n] /= pthermo->GetMuRatio(n);
+  }
+
+#pragma omp simd
+  for (int n = 1; n <= NVAPOR; ++n) w[n] /= sum;
+
+  // set temperature
+  w[IDN] = w[IPR] / (w[IDN] * pthermo->GetRd() * sum);
+}
+
+void Variable::moleFractionToMassFraction() {
+  auto pthermo = Thermodynamics::GetInstance();
+
+  // set mass mixing ratio
+  Real sum = 1.;
+  for (int n = 1; n <= NVAPOR; ++n) {
+    sum += w[n] * (pthermo->GetMuRatio(n) - 1.);
+    w[n] *= pthermo->GetMuRatio(n);
+  }
+
+#pragma omp simd
+  for (int n = 1; n <= NVAPOR; ++n) w[n] /= sum;
+
+  // set density
+  w[IDN] = sum * w[IPR] / (w[IDN] * pthermo->GetRd());
+}
+
+void Variable::massConcentrationToMoleFraction() {
+  auto pthermo = Thermodynamics::GetInstance();
+
+  Real rho = 0., feps = 0., fsig = 0.;
+  for (int n = 0; n <= NVAPOR; ++n) rho += w[n];
+
+  for (int n = 0; n <= NVAPOR; ++n) {
+    feps += w[n];
+    fsig += w[n] * pthermo->GetCvRatioMass(n);
+    w[n] /= pthermo->GetMuRatio(n);
+  }
+
+  Real di = 1. / rho;
+
+  // TODO(cli): not true for cubed-sphere
+  Real KE = 0.5 * (sqr(w[IM1]) + sqr(w[IM2]) + sqr(w[IM3])) * di;
+  Real gm1 = pthermo->GetGammad() - 1.;
+
+  w[IPR] = gm1 * (w[IEN] - KE) * feps / fsig;
+  w[IDN] = w[IPR] / (feps * pthermo->GetRd());
+  w[IVX] *= di;
+  w[IVY] *= di;
+  w[IVZ] *= di;
+
+#pragma omp simd
+  for (int n = 1; n <= NVAPOR; ++n) w[n] /= feps;
+}
+
+void Variable::moleFractionToMassConcentration() {
+  auto pthermo = Thermodynamics::GetInstance();
+
+  Real tem = w[IDN];
+  Real sum = 1.;
+
+  for (int n = 1; n <= NVAPOR; ++n) sum += w[n] * (pthermo->GetMuRatio(n) - 1.);
+
+  Real rho = w[IPR] * sum / (pthermo->GetRd() * tem);
+
+  w[IDN] = rho;
+
+  // TODO(cli): not true for cubed-sphere
+  w[IEN] = 0.5 * rho * (sqr(w[IVX]) + sqr(w[IVY]) + sqr(w[IVZ]));
+  for (int n = 1; n <= NVAPOR; ++n) {
+    w[n] = rho * w[n] * pthermo->GetMuRatio(n) / sum;
+    w[IDN] -= w[n];
+    w[IEN] += w[n] * pthermo->GetCvMass(n) * tem;
+  }
+  w[IEN] += w[IDN] * pthermo->GetCvMass(0) * tem;
+  w[IVX] *= rho;
+  w[IVY] *= rho;
+  w[IVZ] *= rho;
+}
+
+void Variable::massFractionToMassConcentration() {
+  auto pthermo = Thermodynamics::GetInstance();
+  Real igm1 = 1.0 / (pthermo->GetGammad() - 1.0);
+
+  // density
+  Real rho = w[IDN], pres = w[IPR];
+  for (int n = 1; n <= NVAPOR; ++n) {
+    w[n] *= rho;
+    w[IDN] -= w[n];
+  }
+
+  // total energy
+  w[IEN] = 0.5 * rho * (sqr(w[IVX]) + sqr(w[IVY]) + sqr(w[IVZ]));
+  Real fsig = 1., feps = 1.;
+  // vapors
+  for (int n = 1; n <= NVAPOR; ++n) {
+    fsig += w[n] * (pthermo->GetCvRatioMass(n) - 1.);
+    feps += w[n] * (1. / pthermo->GetMuRatio(n) - 1.);
+  }
+  w[IEN] += igm1 * pres * fsig / feps;
+
+  // momentum
+  w[IVX] *= rho;
+  w[IVY] *= rho;
+  w[IVZ] *= rho;
+}
+
+void Variable::massConcentrationToMassFraction() {
+  auto pthermo = Thermodynamics::GetInstance();
+  Real gm1 = pthermo->GetGammad() - 1.;
+
+  Real rho = 0.;
+  for (int n = 0; n <= NVAPOR; ++n) rho += w[n];
+  w[IDN] = rho;
+  Real di = 1. / rho;
+
+  // mass mixing ratio
+  for (int n = 1; n <= NVAPOR; ++n) w[n] *= di;
+
+  // pressure
+  Real KE = 0.5 * di * (sqr(w[IVX]) + sqr(w[IVY]) + sqr(w[IVZ]));
+  Real fsig = 1., feps = 1.;
+  // vapors
+  for (int n = 1; n <= NVAPOR; ++n) {
+    fsig += w[n] * (pthermo->GetCvRatioMass(n) - 1.);
+    feps += w[n] * (1. / pthermo->GetMuRatio(n) - 1.);
+  }
+  w[IPR] = gm1 * (w[IEN] - KE) * feps / fsig;
+
+  // velocity
+  w[IVX] *= di;
+  w[IVY] *= di;
+  w[IVZ] *= di;
+}
+
+void Variable::moleFractionToMoleConcentration() {
+  throw NotImplementedError("Variable::moleFractionToMoleConcentration");
+}
+
+void Variable::moleConcentrationToMoleFraction() {
+  throw NotImplementedError("Variable::moleConcentrationToMoleFraction");
+}
+
+void Variable::massConcentrationToMoleConcentration() {
+  throw NotImplementedError("Variable::massConcentrationToMoleConcentration");
+}
+
+void Variable::moleConcentrationToMassConcentration() {
+  throw NotImplementedError("Variable::moleConcentrationToMassConcentration");
+}
+
+void Variable::massFractionToMoleConcentration() {
+  throw NotImplementedError("Variable::massFractionToMoleConcentration");
+}
+
+void Variable::moleConcentrationToMassFraction() {
+  throw NotImplementedError("Variable::moleConcentrationToMassFraction");
 }

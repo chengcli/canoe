@@ -237,6 +237,8 @@ void Thermodynamics::getSaturationSurplus(Real dw[], Variable& var) const {
   }
 }
 
+Thermodynamics* Thermodynamics::mythermo_ = nullptr;
+
 /*void Thermodynamics::UpdateTPConservingU(Real q[], Real rho, Real uhat) const
 {
   Real gamma = pmy_block_->peos->GetGamma();

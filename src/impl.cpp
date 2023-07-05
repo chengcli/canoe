@@ -95,8 +95,10 @@ void MeshBlock::Impl::GatherConserved(Variable *var, int k, int j, int i) {
   var->SetType(Variable::Type::MassConc);
 }
 
+void MeshBlock::Impl::GatherMoleFraction(Variable *var, int k, int j, int i) {}
+
 void MeshBlock::Impl::DistributePrimitive(Variable &var, int k, int j, int i) {
-  var.ConvertToPrimitive();
+  var.ConvertToMassFraction();
 
   for (int n = 0; n < NHYDRO; ++n) pmy_block_->phydro->w(n, k, j, i) = var.w[n];
 
@@ -111,7 +113,7 @@ void MeshBlock::Impl::DistributePrimitive(Variable &var, int k, int j, int i) {
 }
 
 void MeshBlock::Impl::DistributeConserved(Variable &var, int k, int j, int i) {
-  var.ConvertToConserved();
+  var.ConvertToMassConcentration();
 
   for (int n = 0; n < NHYDRO; ++n) pmy_block_->phydro->u(n, k, j, i) = var.w[n];
 

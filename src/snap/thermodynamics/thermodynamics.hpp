@@ -77,6 +77,8 @@ class Thermodynamics {
   //! \return $R_d=\hat{R}/\mu_d$
   Real GetRd() const { return Rd_; }
 
+  Real GetGammad() const { return gammad_; }
+
   //! Molecular weight
   //! \return $\mu$
   Real GetMu(int n) const { return mu_[n]; }
