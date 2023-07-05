@@ -34,7 +34,7 @@ MeshBlock::Impl::Impl(MeshBlock *pmb, ParameterInput *pin) : pmy_block_(pmb) {
   // decomposition
   pdec = std::make_shared<Decomposition>(pmb);
 
-  // implicit methodsphydro
+  // implicit methods
   phevi = std::make_shared<ImplicitSolver>(pmb, pin);
 
   // tracer

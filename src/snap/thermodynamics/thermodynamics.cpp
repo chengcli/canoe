@@ -1,5 +1,6 @@
 // C/C++ header
 #include <cstring>
+#include <fstream>
 #include <iostream>
 #include <mutex>
 #include <sstream>
@@ -7,12 +8,19 @@
 #include <string>
 #include <vector>  // fill
 
+// external
+#include <yaml-cpp/yaml.h>
+
 // athena
 #include <athena/athena.hpp>
 #include <athena/eos/eos.hpp>
 #include <athena/hydro/hydro.hpp>
 #include <athena/mesh/mesh.hpp>
 #include <athena/parameter_input.hpp>
+
+// application
+#include <application/application.hpp>
+#include <application/exceptions.hpp>
 
 // canoe
 #include <configure.hpp>
@@ -22,9 +30,6 @@
 
 // climath
 #include <climath/core.h>
-
-// application
-#include <application/application.hpp>
 
 // snap
 #include "thermodynamics.hpp"
@@ -40,6 +45,23 @@ Thermodynamics::~Thermodynamics() {
   app->Log("Destroy Thermodynamics");
 }
 
+Thermodynamics::Thermodynamics(YAML::Node& node) {
+  /* Read molecular weight ratios
+  ReadThermoProperty(mu_ratios_, "eps", 3, 1., pin);
+
+  // Read cp ratios
+  ReadThermoProperty(cp_ratios_, "rcp", 3, 1., pin);
+
+  // Read beta parameter
+  ReadThermoProperty(beta_, "beta", 3, 0., pin);
+
+  // Read triple point temperature
+  ReadThermoProperty(t3_, "Ttriple", 1, 0., pin);
+
+  // Read triple point pressure
+  ReadThermoProperty(p3_, "Ptriple", 1, 0., pin);*/
+}
+
 Thermodynamics const* Thermodynamics::GetInstance() {
   // RAII
   std::unique_lock<std::mutex> lock(thermo_mutex);
@@ -52,6 +74,56 @@ Thermodynamics const* Thermodynamics::GetInstance() {
 }
 
 Thermodynamics const* Thermodynamics::InitFromAthenaInput(ParameterInput* pin) {
+  std::string filename = pin->GetString("thermodynamics", "control_file");
+
+  std::ifstream stream(filename);
+  if (stream.good() == false) {
+    throw RuntimeError("Thermodynamics",
+                       "Cannot open thermodynamic file: " + filename);
+  }
+  YAML::Node node = YAML::Load(stream);
+
+  mythermo_ = new Thermodynamics(node);
+
+  mythermo_->Rd_ = pin->GetOrAddReal("thermodynamics", "Rd", 1.);
+
+  mythermo_->gammad_ = pin->GetReal("hydro", "gamma");
+
+  // alias
+  auto& Rd = mythermo_->Rd_;
+  auto& gammad = mythermo_->Rd_;
+  auto& mu_ratio = mythermo_->mu_ratio_;
+
+  auto& cp_ratio_mole = mythermo_->cp_ratio_mole_;
+  auto& cp_ratio_mass = mythermo_->cp_ratio_mass_;
+  auto& cv_ratio_mole = mythermo_->cv_ratio_mole_;
+  auto& cv_ratio_mass = mythermo_->cv_ratio_mass_;
+
+  auto& latent_energy_mass = mythermo_->latent_energy_mass_;
+  auto& latent_energy_mole = mythermo_->latent_energy_mole_;
+
+  auto& beta = mythermo_->beta_;
+  auto& delta = mythermo_->delta_;
+  auto& t3 = mythermo_->t3_;
+  auto& p3 = mythermo_->p3_;
+
+  // calculate latent energy = $\beta\frac{R_d}{\epsilon}T^r$
+  for (int n = 0; n <= NVAPOR; ++n) latent_energy_mass[n] = 0.;
+  for (int n = 1 + NVAPOR; n < Size; ++n)
+    latent_energy_mass[n] = beta[n] * Rd / mu_ratio[n] * t3[n];
+
+  // calculate delta = $(\sigma_j - \sigma_i)*\epsilon_i*\gamma/(\gamma - 1)$
+  for (int n = 0; n <= NVAPOR; ++n) delta[n] = 0.;
+  for (int n = 1 + NVAPOR; n < Size; ++n)
+    delta[n] = (cp_ratio_mass[n] - cp_ratio_mass[1 + (n - 1) % NVAPOR]) *
+               mu_ratio[n] / (1. - 1. / gammad);
+
+  // calculate cv_ratio = $\gamma\sigma_i + (1. - \gamma)/\epsilon_i$
+  for (int n = 0; n <= NVAPOR; ++n)
+    cv_ratio_mass[n] = gammad * cp_ratio_mass[n] + (1. - gammad) / mu_ratio[n];
+  for (int n = 1 + NVAPOR; n < 1 + 3 * NVAPOR; ++n)
+    cv_ratio_mass[n] = gammad * cp_ratio_mass[n];
+
   return mythermo_;
 }
 

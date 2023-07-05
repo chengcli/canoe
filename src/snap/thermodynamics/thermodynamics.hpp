@@ -8,15 +8,18 @@
 #include <memory>
 #include <set>
 
-// canoe
-#include <configure.hpp>
-#include <constants.hpp>
-#include <variable.hpp>
+// external
+#include <yaml-cpp/yaml.h>
 
 // athena
 #include <athena/athena.hpp>
 #include <athena/hydro/hydro.hpp>
 #include <athena/mesh/mesh.hpp>
+
+// canoe
+#include <configure.hpp>
+#include <constants.hpp>
+#include <variable.hpp>
 
 class MeshBlock;
 class ParameterInput;
@@ -49,7 +52,7 @@ class Thermodynamics {
   //! Constructor for class sets up the initial conditions
   //! Protected ctor access thru static member function Instance
   Thermodynamics() {}
-  Thermodynamics *fromYAMLFile(std::string filename);
+  explicit Thermodynamics(YAML::Node &node);
 
  public:
   enum { Size = 1 + NVAPOR + NCLOUD };
