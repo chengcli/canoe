@@ -92,6 +92,10 @@ class Thermodynamics {
   //! \return $\epsilon_i=\mu_i/\mu_d$
   Real GetMuRatio(int n) const { return mu_ratio_[n]; }
 
+  //! Ratio of molecular weights
+  //! \return $\epsilon_i^{-1} =\mu_d/\mu_i$
+  Real GetInvMuRatio(int n) const { return inv_mu_ratio_[n]; }
+
   //! Ratio of specific heat capacity [J/(kg K)] at constant volume
   //! \return $c_{v,i}/c_{v,d}$
   Real GetCvRatioMass(int n) const { return cv_ratio_mass_[n]; }
@@ -109,7 +113,7 @@ class Thermodynamics {
     return cv_ratio_mass_[n] * cvd;
   }
 
-  Real GetCvMass(int n) const {
+  Real GetCvMassRef(int n) const {
     Real cvd = Rd_ / (gammad_ref_ - 1.);
     return cv_ratio_mass_[n] * cvd;
   }
@@ -138,7 +142,7 @@ class Thermodynamics {
     return cp_ratio_mass_[n] * cpd;
   }
 
-  Real GetCpMass(int n) const {
+  Real GetCpMassRef(int n) const {
     Real cpd = Rd_ * gammad_ref_ / (gammad_ref_ - 1.);
     return cp_ratio_mass_[n] * cpd;
   }
@@ -148,6 +152,10 @@ class Thermodynamics {
   Real GetCpMole(Variable const &qfrac, int n) const {
     return GetCpMass(qfrac, n) * mu_[n];
   }
+
+  //! Adiabatic index
+  //! \return $\chi = \frac{R}{c_p}$
+  Real GetChi(Variable const &qfrac) const;
 
   //! Temperature dependent specific latent energy [J/kg] of condensates at
   //! constant volume $L_{ij}(T) = L_{ij}^r - (c_{ij} - c_{p,i})\times(T - T^r)$
@@ -220,8 +228,6 @@ class Thermodynamics {
   //! \return $\chi$
   Real GetChi(MeshBlock *pmb, int k, int j, int i) const;
 
-  Real GetChi(Variable const &qfrac) const;
-
   //! Polytropic index
   //!$\gamma = \frac{c_p}{c_v}$
   //! \return $\gamma$
@@ -286,6 +292,9 @@ class Thermodynamics {
 
   //! ratio of mean molecular weights
   std::array<Real, Size> mu_ratio_;
+
+  //! inverse ratio of mean molecular weights
+  std::array<Real, Size> inv_mu_ratio_;
 
   //! molecular weight [kg/mol]
   std::array<Real, Size> mu_;

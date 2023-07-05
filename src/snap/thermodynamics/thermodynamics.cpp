@@ -63,7 +63,7 @@ Thermodynamics const* Thermodynamics::InitFromAthenaInput(ParameterInput* pin) {
   Application::Logger app("snap");
   app->Log("Initialize Thermodynamics");
 
-  if (pin->DoesParameterExist("thermodynamics", "control_file") == false) {
+  if (pin->DoesParameterExist("thermodynamics", "control_file")) {
     std::string filename = pin->GetString("thermodynamics", "control_file");
     std::ifstream stream(filename);
     if (stream.good() == false) {
@@ -92,28 +92,30 @@ Thermodynamics const* Thermodynamics::InitFromAthenaInput(ParameterInput* pin) {
     read_thermo_property(mythermo_->beta_.data(), "beta", NPHASE, 0., pin);
 
     // Read triple point temperature
-    read_thermo_property(mythermo_->t3_.data(), "Ttriple", NPHASE, 0., pin);
+    read_thermo_property(mythermo_->t3_.data(), "Ttriple", 1, 0., pin);
 
     // Read triple point pressure
-    read_thermo_property(mythermo_->p3_.data(), "Ptriple", NPHASE, 0., pin);
+    read_thermo_property(mythermo_->p3_.data(), "Ptriple", 1, 0., pin);
 
-    mythermo_->cloud_index_set_.resize(NVAPOR);
+    mythermo_->cloud_index_set_.resize(1 + NVAPOR);
 
-    for (int i = 1; i < NVAPOR; ++i) {
+    for (int i = 1; i <= NVAPOR; ++i) {
       mythermo_->cloud_index_set_[i].resize(NPHASE - 1);
       for (int j = 1; j < NPHASE; ++j) {
         mythermo_->cloud_index_set_[i][j - 1] = 1 + j * NVAPOR + i - 1;
       }
     }
-  }
 
-  mythermo_->Rd_ = pin->GetOrAddReal("thermodynamics", "Rd", 1.);
-  mythermo_->gammad_ref_ = pin->GetReal("hydro", "gamma");
+    mythermo_->Rd_ = pin->GetOrAddReal("thermodynamics", "Rd", 1.);
+    mythermo_->gammad_ref_ = pin->GetReal("hydro", "gamma");
+  }
 
   // alias
   auto& Rd = mythermo_->Rd_;
-  auto& gammad = mythermo_->Rd_;
+  auto& gammad = mythermo_->gammad_ref_;
   auto& mu_ratio = mythermo_->mu_ratio_;
+  auto& inv_mu_ratio = mythermo_->inv_mu_ratio_;
+  auto& mu = mythermo_->mu_;
 
   auto& cp_ratio_mole = mythermo_->cp_ratio_mole_;
   auto& cp_ratio_mass = mythermo_->cp_ratio_mass_;
@@ -127,11 +129,31 @@ Thermodynamics const* Thermodynamics::InitFromAthenaInput(ParameterInput* pin) {
   auto& delta = mythermo_->delta_;
   auto& t3 = mythermo_->t3_;
   auto& p3 = mythermo_->p3_;
+  auto& cloud_index_set = mythermo_->cloud_index_set_;
+
+  // molecular weight
+  mu[0] = Constants::Rgas / Rd;
+
+  // inverse mu ratio
+  for (int n = 0; n < mu_ratio.size(); ++n) {
+    inv_mu_ratio[n] = 1. / mu_ratio[n];
+    mu[n] = mu[0] * mu_ratio[n];
+    cp_ratio_mole[n] = cp_ratio_mass[n] * mu_ratio[n];
+  }
 
   // calculate latent energy = $\beta\frac{R_d}{\epsilon}T^r$
-  for (int n = 0; n <= NVAPOR; ++n) latent_energy_mass[n] = 0.;
-  for (int n = 1 + NVAPOR; n < Size; ++n)
-    latent_energy_mass[n] = beta[n] * Rd / mu_ratio[n] * t3[n];
+  for (int n = 0; n <= NVAPOR; ++n) {
+    latent_energy_mass[n] = 0.;
+    latent_energy_mole[n] = 0.;
+  }
+
+  for (int i = 1; i <= NVAPOR; ++i) {
+    for (int j = 0; j < NPHASE - 1; ++j) {
+      int n = cloud_index_set[i][j];
+      latent_energy_mass[n] = beta[n] * Rd / mu_ratio[n] * t3[i];
+      latent_energy_mole[n] = latent_energy_mass[n] * mu[n];
+    }
+  }
 
   // calculate delta = $(\sigma_j - \sigma_i)*\epsilon_i*\gamma/(\gamma - 1)$
   for (int n = 0; n <= NVAPOR; ++n) delta[n] = 0.;
@@ -139,11 +161,16 @@ Thermodynamics const* Thermodynamics::InitFromAthenaInput(ParameterInput* pin) {
     delta[n] = (cp_ratio_mass[n] - cp_ratio_mass[1 + (n - 1) % NVAPOR]) *
                mu_ratio[n] / (1. - 1. / gammad);
 
-  // calculate cv_ratio = $\gamma\sigma_i + (1. - \gamma)/\epsilon_i$
-  for (int n = 0; n <= NVAPOR; ++n)
+  // calculate cv_ratio = $\sigma_i + (1. - \gamma)/\epsilon_i$
+  for (int n = 0; n <= NVAPOR; ++n) {
     cv_ratio_mass[n] = gammad * cp_ratio_mass[n] + (1. - gammad) / mu_ratio[n];
-  for (int n = 1 + NVAPOR; n < 1 + 3 * NVAPOR; ++n)
+    cv_ratio_mole[n] = cv_ratio_mass[n] * mu_ratio[n];
+  }
+
+  for (int n = 1 + NVAPOR; n < Size; ++n) {
     cv_ratio_mass[n] = gammad * cp_ratio_mass[n];
+    cv_ratio_mole[n] = cv_ratio_mass[n] * mu_ratio[n];
+  }
 
   return mythermo_;
 }
@@ -162,10 +189,11 @@ Real Thermodynamics::GetPres(MeshBlock* pmb, int k, int j, int i) const {
   auto& u = pmb->phydro->u;
 
   Real rho = 0., fsig = 0., feps = 0.;
+#pragma omp simd reduction(+ : rho, fsig, feps)
   for (int n = 0; n <= NVAPOR; ++n) {
     rho += u(n, k, j, i);
     fsig += u(n, k, j, i) * cv_ratio_mass_[n];
-    feps += u(n, k, j, i) / mu_ratio_[n];
+    feps += u(n, k, j, i) * inv_mu_ratio_[n];
   }
 
   Real KE =
@@ -180,9 +208,10 @@ Real Thermodynamics::GetChi(MeshBlock* pmb, int k, int j, int i) const {
   auto& w = pmb->phydro->w;
 
   Real qsig = 1., feps = 1.;
+#pragma omp simd reduction(+ : qsig, feps)
   for (int n = 1; n <= NVAPOR; ++n) {
     qsig += w(n, k, j, i) * (cp_ratio_mass_[n] - 1.);
-    feps += w(n, k, j, i) * (1. / mu_ratio_[n] - 1.);
+    feps += w(n, k, j, i) * (inv_mu_ratio_[n] - 1.);
   }
 
   return (gammad - 1.) / gammad * feps / qsig;
@@ -193,6 +222,7 @@ Real Thermodynamics::GetChi(Variable const& qfrac) const {
   Real gammad = GetGammad(qfrac);
 
   Real qsig = 1.;
+#pragma omp simd reduction(+ : qsig)
   for (int n = 1; n <= NVAPOR; ++n) {
     qsig += qfrac.w[n] * (cp_ratio_mole_[n] - 1.);
   }
@@ -205,9 +235,10 @@ Real Thermodynamics::GetGamma(MeshBlock* pmb, int k, int j, int i) const {
   auto& w = pmb->phydro->w;
 
   Real fsig = 1., feps = 1.;
+#pragma omp simd reduction(+ : fsig, feps)
   for (int n = 1; n <= NVAPOR; ++n) {
     fsig += w(n, k, j, i) * (cv_ratio_mass_[n] - 1.);
-    feps += w(n, k, j, i) * (1. / mu_ratio_[n] - 1.);
+    feps += w(n, k, j, i) * (inv_mu_ratio_[n] - 1.);
   }
   return 1. + (gammad - 1.) * feps / fsig;
 }
@@ -216,8 +247,9 @@ Real Thermodynamics::RovRd(MeshBlock* pmb, int k, int j, int i) const {
   auto& w = pmb->phydro->w;
 
   Real feps = 1.;
+#pragma omp simd reduction(+ : feps)
   for (int n = 1; n <= NVAPOR; ++n)
-    feps += w(n, k, j, i) * (1. / mu_ratio_[n] - 1.);
+    feps += w(n, k, j, i) * (inv_mu_ratio_[n] - 1.);
   return feps;
 }
 
@@ -231,8 +263,9 @@ Real Thermodynamics::MoistStaticEnergy(MeshBlock* pmb, Real gz, int k, int j,
   Real rho_gas = w(IDN, k, j, i);
   Real rho_total = rho_gas;
 
+#pragma omp simd reduction(+ : IE, rho_total)
   for (int n = 0; n < NCLOUD; ++n) {
-    IE += rho_gas * c(n, k, j, i) * GetCpMass(n) * temp;
+    IE += rho_gas * c(n, k, j, i) * GetCpMassRef(n) * temp;
     rho_total += rho_gas * c(n, k, j, i);
   }
 
@@ -244,6 +277,7 @@ Real Thermodynamics::GetCpMass(MeshBlock* pmb, int k, int j, int i) const {
   auto& w = pmb->phydro->w;
 
   Real qsig = 1.;
+#pragma omp simd reduction(+ : qsig)
   for (int n = 1; n <= NVAPOR; ++n)
     qsig += w(n, k, j, i) * (cp_ratio_mass_[n] - 1.);
   return gammad / (gammad - 1.) * Rd_ * qsig;
@@ -254,6 +288,7 @@ Real Thermodynamics::GetCvMass(MeshBlock* pmb, int k, int j, int i) const {
   auto& w = pmb->phydro->w;
 
   Real qsig = 1.;
+#pragma omp simd reduction(+ : qsig)
   for (int n = 1; n <= NVAPOR; ++n)
     qsig += w(n, k, j, i) * (cv_ratio_mass_[n] - 1.);
   return 1. / (gammad - 1.) * Rd_ * qsig;
@@ -265,6 +300,7 @@ Real Thermodynamics::GetEnthalpyMass(MeshBlock* pmb, int k, int j,
   auto& w = pmb->phydro->w;
 
   Real qsig = 1.;
+#pragma omp simd reduction(+ : qsig)
   for (int n = 1; n <= NVAPOR; ++n)
     qsig += w(n, k, j, i) * (cp_ratio_mass_[n] - 1.);
   return gammad / (gammad - 1.) * Rd_ * qsig * w(IDN, k, j, i);
@@ -274,6 +310,7 @@ Real Thermodynamics::GetMu(MeshBlock* pmb, int k, int j, int i) const {
   auto& w = pmb->phydro->w;
 
   Real feps = 1.;
+#pragma omp simd reduction(+ : feps)
   for (int n = 1; n <= NVAPOR; ++n) feps += w(n, k, j, i) * (mu_ratio_[n] - 1.);
   return mu_[0] * feps;
 }

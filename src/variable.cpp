@@ -87,13 +87,15 @@ void Variable::massFractionToMoleFraction() {
 
   // set molar mixing ratio
   Real sum = 1.;
+#pragma reduction(+ : sum)
   for (int n = 1; n <= NVAPOR; ++n) {
-    sum += w[n] * (1. / pthermo->GetMuRatio(n) - 1.);
-    w[n] /= pthermo->GetMuRatio(n);
+    sum += w[n] * (pthermo->GetInvMuRatio(n) - 1.);
   }
 
 #pragma omp simd
-  for (int n = 1; n <= NVAPOR; ++n) w[n] /= sum;
+  for (int n = 1; n <= NVAPOR; ++n) {
+    w[n] *= pthermo->GetInvMuRatio(n) / sum;
+  }
 
   // set temperature
   w[IDN] = w[IPR] / (w[IDN] * pthermo->GetRd() * sum);
@@ -104,13 +106,15 @@ void Variable::moleFractionToMassFraction() {
 
   // set mass mixing ratio
   Real sum = 1.;
+#pragma reduction(+ : sum)
   for (int n = 1; n <= NVAPOR; ++n) {
     sum += w[n] * (pthermo->GetMuRatio(n) - 1.);
-    w[n] *= pthermo->GetMuRatio(n);
   }
 
 #pragma omp simd
-  for (int n = 1; n <= NVAPOR; ++n) w[n] /= sum;
+  for (int n = 1; n <= NVAPOR; ++n) {
+    w[n] *= pthermo->GetMuRatio(n) / sum;
+  }
 
   // set density
   w[IDN] = sum * w[IPR] / (w[IDN] * pthermo->GetRd());
@@ -120,12 +124,17 @@ void Variable::massConcentrationToMoleFraction() {
   auto pthermo = Thermodynamics::GetInstance();
 
   Real rho = 0., feps = 0., fsig = 0.;
-  for (int n = 0; n <= NVAPOR; ++n) rho += w[n];
 
+#pragma reduction(+ : rho, feps, fsig)
   for (int n = 0; n <= NVAPOR; ++n) {
-    feps += w[n];
+    rho += w[n];
+    feps += w[n] * pthermo->GetInvMuRatio(n);
     fsig += w[n] * pthermo->GetCvRatioMass(n);
-    w[n] /= pthermo->GetMuRatio(n);
+  }
+
+#pragma omp simd
+  for (int n = 0; n <= NVAPOR; ++n) {
+    w[n] *= pthermo->GetInvMuRatio(n);
   }
 
   Real di = 1. / rho;
@@ -150,6 +159,7 @@ void Variable::moleFractionToMassConcentration() {
   Real tem = w[IDN];
   Real sum = 1.;
 
+#pragma reduction(+ : sum)
   for (int n = 1; n <= NVAPOR; ++n) sum += w[n] * (pthermo->GetMuRatio(n) - 1.);
 
   Real rho = w[IPR] * sum / (pthermo->GetRd() * tem);
@@ -158,11 +168,13 @@ void Variable::moleFractionToMassConcentration() {
 
   // TODO(cli): not true for cubed-sphere
   w[IEN] = 0.5 * rho * (sqr(w[IVX]) + sqr(w[IVY]) + sqr(w[IVZ]));
+
   for (int n = 1; n <= NVAPOR; ++n) {
-    w[n] = rho * w[n] * pthermo->GetMuRatio(n) / sum;
+    w[n] *= rho * pthermo->GetMuRatio(n) / sum;
     w[IDN] -= w[n];
     w[IEN] += w[n] * pthermo->GetCvMass(*this, n) * tem;
   }
+
   w[IEN] += w[IDN] * pthermo->GetCvMass(*this, 0) * tem;
   w[IVX] *= rho;
   w[IVY] *= rho;
@@ -184,9 +196,10 @@ void Variable::massFractionToMassConcentration() {
   w[IEN] = 0.5 * rho * (sqr(w[IVX]) + sqr(w[IVY]) + sqr(w[IVZ]));
   Real fsig = 1., feps = 1.;
   // vapors
+#pragma omp simd reduction(+ : fsig, feps)
   for (int n = 1; n <= NVAPOR; ++n) {
     fsig += w[n] * (pthermo->GetCvRatioMass(n) - 1.);
-    feps += w[n] * (1. / pthermo->GetMuRatio(n) - 1.);
+    feps += w[n] * (pthermo->GetInvMuRatio(n) - 1.);
   }
   w[IEN] += igm1 * pres * fsig / feps;
 
@@ -206,15 +219,17 @@ void Variable::massConcentrationToMassFraction() {
   Real di = 1. / rho;
 
   // mass mixing ratio
+#pragma omp simd
   for (int n = 1; n <= NVAPOR; ++n) w[n] *= di;
 
   // pressure
   Real KE = 0.5 * di * (sqr(w[IVX]) + sqr(w[IVY]) + sqr(w[IVZ]));
   Real fsig = 1., feps = 1.;
   // vapors
+#pragma omp simd reduction(+ : fsig, feps)
   for (int n = 1; n <= NVAPOR; ++n) {
     fsig += w[n] * (pthermo->GetCvRatioMass(n) - 1.);
-    feps += w[n] * (1. / pthermo->GetMuRatio(n) - 1.);
+    feps += w[n] * (pthermo->GetInvMuRatio(n) - 1.);
   }
   w[IPR] = gm1 * (w[IEN] - KE) * feps / fsig;
 

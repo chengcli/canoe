@@ -104,7 +104,7 @@ void EquationOfState::ConservedToPrimitive(
         // vapors
         for (int n = 1; n <= NVAPOR; ++n) {
           fsig += prim(n, k, j, i) * (pthermo->GetCvRatioMass(n) - 1.);
-          feps += prim(n, k, j, i) * (1. / pthermo->GetMuRatio(n) - 1.);
+          feps += prim(n, k, j, i) * (pthermo->GetInvMuRatio(n) - 1.);
         }
         w_p = gm1 * (u_e - KE) * feps / fsig;
 
@@ -189,7 +189,7 @@ void EquationOfState::PrimitiveToConserved(const AthenaArray<Real>& prim,
         // vapors
         for (int n = 1; n <= NVAPOR; ++n) {
           fsig += prim(n, k, j, i) * (pthermo->GetCvRatioMass(n) - 1.);
-          feps += prim(n, k, j, i) * (1. / pthermo->GetMuRatio(n) - 1.);
+          feps += prim(n, k, j, i) * (pthermo->GetInvMuRatio(n) - 1.);
         }
         u_e = igm1 * w_p * fsig / feps + KE;
       }
@@ -208,7 +208,7 @@ Real EquationOfState::SoundSpeed(const Real prim[NHYDRO]) {
   Real fsig = 1., feps = 1.;
   for (int n = 1; n <= NVAPOR; ++n) {
     fsig += prim[n] * (pthermo->GetCvRatioMass(n) - 1.);
-    feps += prim[n] * (1. / pthermo->GetMuRatio(n) - 1.);
+    feps += prim[n] * (pthermo->GetInvMuRatio(n) - 1.);
   }
 
   return std::sqrt((1. + (gamma_ - 1) * feps / fsig) * prim[IPR] / prim[IDN]);
