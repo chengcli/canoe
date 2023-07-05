@@ -27,7 +27,6 @@ class ParameterInput;
 using CloudIndexSet = std::vector<int>;
 using SatVaporPresFunc = Real (*)(Variable const &);
 
-Real update_gammad(Real gammad, Real const q[]);
 void read_thermo_property(Real var[], char const name[], int len, Real v0,
                           ParameterInput *pin);
 Real saha_ionization_electron_density(Real T, Real num, Real ion_ev);
@@ -234,13 +233,15 @@ class Thermodynamics {
 
  protected:
   Real updateGammad(Variable const &var) const {
-    return update_gammad(gammad_, var.w);
+    return updateGammad(gammad_, var.w);
   }
 
   //! TODO(cli): only works for temperature updates
   Real updateGammad(MeshBlock *pmb, int k, int j, int i) const {
-    return update_gammad(gammad_, &pmb->phydro->w(IDN, k, j, i));
+    return updateGammad(gammad_, &pmb->phydro->w(IDN, k, j, i));
   }
+
+  Real updateGammad(Real gammad, Real const q[]) const;
 
   //! Saturation surplus for vapors can be both positive and negative
   //! positive value represents supersaturation
@@ -264,10 +265,10 @@ class Thermodynamics {
   //! \return $\Gamma_m$
   Real calDlnTDlnP(Variable const &qfrac, Real latent[]) const;
 
-  void rk4IntegrateLnp(Variable *qfrac, Real latent[], Real dlnp, Method method,
+  void rk4IntegrateLnp(Variable *qfrac, Real dlnp, Method method,
                        Real adlnTdlnP) const;
-  void rk4IntegrateZ(Variable *qfrac, Real latent[], Real dlnp, Method method,
-                     Real grav, Real adlnTdlnP) const;
+  void rk4IntegrateZ(Variable *qfrac, Real dlnp, Method method, Real grav,
+                     Real adlnTdlnP) const;
 
   void enrollSystem(ParameterInput *pin);
   void enrollSystemJupiterJuno();

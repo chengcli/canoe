@@ -36,7 +36,8 @@
 
 static std::mutex thermo_mutex;
 
-Real __attribute__((weak)) update_gammad(Real gammad, Real const q[]) {
+Real __attribute__((weak))
+Thermodynamics::updateGammad(Real gammad, Real const q[]) const {
   return gammad;
 }
 
@@ -291,29 +292,23 @@ Real Thermodynamics::RelativeHumidity(MeshBlock* pmb, int n, int k, int j,
 
 void Thermodynamics::Extrapolate(Variable* qfrac, Real dzORdlnp, Method method,
                                  Real grav, Real userp) const {
-  Real latent[1 + NVAPOR];
-  for (int n = 0; n <= NVAPOR; ++n) latent[n] = 0;
-
-  // equilibrate with liquid (iv+NVAPOR) or ice (iv+2*NVAPOR)
-  for (int iv = 1; iv <= NVAPOR; ++iv) {
-    auto rates = TryEquilibriumTP(*qfrac, iv);
-
-    // saturation indicator
-    latent[iv] = getLatentHeat(rates, iv);
+  // equilibrate vapor with clouds
+  for (int i = 1; i <= NVAPOR; ++i) {
+    auto rates = TryEquilibriumTP(*qfrac, i);
 
     // vapor condensation rate
-    qfrac->w[iv] += rates[0];
+    qfrac->w[i] += rates[0];
 
     // cloud concentration rates
-    for (int n = 1; n < rates.size(); ++n)
-      qfrac->c[cloud_index_set_[iv][n - 1]] += rates[n];
+    for (int j = 1; j < rates.size(); ++j)
+      qfrac->c[cloud_index_set_[i][j - 1]] += rates[j];
   }
 
   // RK4 integration
 #ifdef HYDROSTATIC
-  rk4IntegrateLnp(qfrac, latent, dzORdlnp, method, userp);
+  rk4IntegrateLnp(qfrac, dzORdlnp, method, userp);
 #else
-  rk4IntegrateZ(qfrac, latent, dzORdlnp, method, grav, userp);
+  rk4IntegrateZ(qfrac, dzORdlnp, method, grav, userp);
 #endif
 }
 

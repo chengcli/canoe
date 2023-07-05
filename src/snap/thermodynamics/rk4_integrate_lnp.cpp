@@ -5,12 +5,13 @@
 // thermodynamics
 #include "thermodynamics.hpp"
 
-void Thermodynamics::rk4IntegrateLnp(Variable *qfrac, Real latent[], Real dlnp,
-                                     Method method, Real adlnTdlnP) const {
+void Thermodynamics::rk4IntegrateLnp(Variable *qfrac, Real dlnp, Method method,
+                                     Real adlnTdlnP) const {
   Real step[] = {0.5, 0.5, 1.};
   Real temp = qfrac->w[IDN];
   Real pres = qfrac->w[IPR];
   Real chi[4];
+  Real latent[1 + NVAPOR];
 
   for (int rk = 0; rk < 4; ++rk) {
     // reset vapor and cloud
@@ -26,7 +27,7 @@ void Thermodynamics::rk4IntegrateLnp(Variable *qfrac, Real latent[], Real dlnp,
       latent[iv] = getLatentHeat(rates, iv);
 
       // vapor condensation rate
-      qfrac->w[iv] -= rates[0];
+      qfrac->w[iv] += rates[0];
 
       // cloud concentration rates
       if (method == Method::ReversibleAdiabat) {
@@ -65,7 +66,7 @@ void Thermodynamics::rk4IntegrateLnp(Variable *qfrac, Real latent[], Real dlnp,
     latent[iv] = getLatentHeat(rates, iv);
 
     // vapor condensation rate
-    qfrac->w[iv] -= rates[0];
+    qfrac->w[iv] += rates[0];
 
     // cloud concentration rates
     if (method == Method::ReversibleAdiabat) {
