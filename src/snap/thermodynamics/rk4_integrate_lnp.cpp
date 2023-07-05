@@ -23,7 +23,7 @@ void Thermodynamics::rk4IntegrateLnp(Variable *qfrac, Real latent[], Real dlnp,
       auto rates = TryEquilibriumTP(*qfrac, iv);
 
       // saturation indicator
-      getLatentHeat(latent, rates, iv);
+      latent[iv] = getLatentHeat(rates, iv);
 
       // vapor condensation rate
       qfrac->w[iv] -= rates[0];
@@ -62,7 +62,7 @@ void Thermodynamics::rk4IntegrateLnp(Variable *qfrac, Real latent[], Real dlnp,
     auto rates = TryEquilibriumTP(*qfrac, iv);
 
     // saturation indicator
-    getLatentHeat(latent, rates, iv);
+    latent[iv] = getLatentHeat(rates, iv);
 
     // vapor condensation rate
     qfrac->w[iv] -= rates[0];

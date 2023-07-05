@@ -299,7 +299,7 @@ void Thermodynamics::Extrapolate(Variable* qfrac, Real dzORdlnp, Method method,
     auto rates = TryEquilibriumTP(*qfrac, iv);
 
     // saturation indicator
-    getLatentHeat(latent, rates, iv);
+    latent[iv] = getLatentHeat(rates, iv);
 
     // vapor condensation rate
     qfrac->w[iv] += rates[0];

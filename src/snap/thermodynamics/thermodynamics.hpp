@@ -255,8 +255,7 @@ class Thermodynamics {
   }
 
   //! TODO(cli)
-  Real getLatentHeat(Real latent[], std::vector<Real> const &rates,
-                     int iv) const {
+  Real getLatentHeat(std::vector<Real> const &rates, int iv) const {
     return 0.;
   }
 
