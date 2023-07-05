@@ -60,10 +60,8 @@ void Thermodynamics::rk4IntegrateLnp(Variable *qfrac, Real dlnp, Method method,
 
   // recondensation
   for (int iv = 1; iv <= NVAPOR; ++iv) {
+    setTotalEquivalentVapor(qfrac, iv);
     auto rates = TryEquilibriumTP(*qfrac, iv);
-
-    // saturation indicator
-    latent[iv] = getLatentHeat(rates, iv);
 
     // vapor condensation rate
     qfrac->w[iv] += rates[0];

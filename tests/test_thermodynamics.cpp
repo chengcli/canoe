@@ -4,10 +4,7 @@
 // application
 #include <application/application.hpp>
 
-// athena
-#include <athena/mesh/mesh.hpp>
-
-// snap
+// canoe
 #include <impl.hpp>
 #include <index_map.hpp>
 #include <variable.hpp>
@@ -18,7 +15,6 @@
 class TestThermodynamics : public testing::Test {
  protected:
   ParameterInput *pinput;
-  Mesh *pmesh;
 
   virtual void SetUp() {
     // code here will execute just before the test ensues
@@ -29,19 +25,6 @@ class TestThermodynamics : public testing::Test {
     pinput->LoadFromFile(infile);
     infile.Close();
 
-    // set up mesh
-    int restart = false;
-    int mesh_only = false;
-    pmesh = new Mesh(pinput, mesh_only);
-
-    // set up components
-    for (int b = 0; b < pmesh->nblocal; ++b) {
-      MeshBlock *pmb = pmesh->my_blocks(b);
-      pmb->pindex = std::make_shared<MeshBlock::IndexMap>(pmb, pinput);
-      pmb->pimpl = std::make_shared<MeshBlock::Impl>(pmb, pinput);
-    }
-
-    pmesh->Initialize(restart, pinput);
     Thermodynamics::InitFromAthenaInput(pinput);
   }
 
@@ -50,7 +33,6 @@ class TestThermodynamics : public testing::Test {
     // ok to through exceptions from here if need be
 
     delete pinput;
-    delete pmesh;
   }
 };
 

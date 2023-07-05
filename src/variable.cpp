@@ -24,8 +24,6 @@ void Variable::ConvertToMassFraction() {
   } else {
     throw RuntimeError("Variable", "Unknown variable type");
   }
-
-  mytype_ = Type::MassFrac;
 }
 
 void Variable::ConvertToMassConcentration() {
@@ -42,8 +40,6 @@ void Variable::ConvertToMassConcentration() {
   } else {
     throw RuntimeError("Variable", "Unknown variable type");
   }
-
-  mytype_ = Type::MassConc;
 }
 
 void Variable::ConvertToMoleFraction() {
@@ -60,8 +56,6 @@ void Variable::ConvertToMoleFraction() {
   } else {
     throw RuntimeError("Variable", "Unknown variable type");
   }
-
-  mytype_ = Type::MoleFrac;
 }
 
 void Variable::ConvertToMoleConcentration() {
@@ -78,8 +72,6 @@ void Variable::ConvertToMoleConcentration() {
   } else {
     throw RuntimeError("Variable", "Unknown variable type");
   }
-
-  mytype_ = Type::MoleConc;
 }
 
 void Variable::massFractionToMoleFraction() {
@@ -99,6 +91,8 @@ void Variable::massFractionToMoleFraction() {
 
   // set temperature
   w[IDN] = w[IPR] / (w[IDN] * pthermo->GetRd() * sum);
+
+  mytype_ = Type::MoleFrac;
 }
 
 void Variable::moleFractionToMassFraction() {
@@ -118,6 +112,8 @@ void Variable::moleFractionToMassFraction() {
 
   // set density
   w[IDN] = sum * w[IPR] / (w[IDN] * pthermo->GetRd());
+
+  mytype_ = Type::MassFrac;
 }
 
 void Variable::massConcentrationToMoleFraction() {
@@ -151,6 +147,8 @@ void Variable::massConcentrationToMoleFraction() {
 
 #pragma omp simd
   for (int n = 1; n <= NVAPOR; ++n) w[n] /= feps;
+
+  mytype_ = Type::MassFrac;
 }
 
 void Variable::moleFractionToMassConcentration() {
@@ -179,6 +177,8 @@ void Variable::moleFractionToMassConcentration() {
   w[IVX] *= rho;
   w[IVY] *= rho;
   w[IVZ] *= rho;
+
+  mytype_ = Type::MassConc;
 }
 
 void Variable::massFractionToMassConcentration() {
@@ -207,6 +207,8 @@ void Variable::massFractionToMassConcentration() {
   w[IVX] *= rho;
   w[IVY] *= rho;
   w[IVZ] *= rho;
+
+  mytype_ = Type::MassConc;
 }
 
 void Variable::massConcentrationToMassFraction() {
@@ -237,6 +239,8 @@ void Variable::massConcentrationToMassFraction() {
   w[IVX] *= di;
   w[IVY] *= di;
   w[IVZ] *= di;
+
+  mytype_ = Type::MassFrac;
 }
 
 void Variable::moleFractionToMoleConcentration() {
@@ -247,18 +251,18 @@ void Variable::moleConcentrationToMoleFraction() {
   throw NotImplementedError("Variable::moleConcentrationToMoleFraction");
 }
 
-void Variable::massConcentrationToMoleConcentration() {
-  throw NotImplementedError("Variable::massConcentrationToMoleConcentration");
-}
-
-void Variable::moleConcentrationToMassConcentration() {
-  throw NotImplementedError("Variable::moleConcentrationToMassConcentration");
-}
-
 void Variable::massFractionToMoleConcentration() {
   throw NotImplementedError("Variable::massFractionToMoleConcentration");
 }
 
 void Variable::moleConcentrationToMassFraction() {
   throw NotImplementedError("Variable::moleConcentrationToMassFraction");
+}
+
+void Variable::massConcentrationToMoleConcentration() {
+  throw NotImplementedError("Variable::massConcentrationToMoleConcentration");
+}
+
+void Variable::moleConcentrationToMassConcentration() {
+  throw NotImplementedError("Variable::moleConcentrationToMassConcentration");
 }

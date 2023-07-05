@@ -42,6 +42,7 @@ enable_testing()
 add_test_case(test_weno.cpp)
 add_test_case(test_absorber.cpp)
 add_test_case(test_yaml_read.cpp)
+add_test_case(test_variable.cpp)
 
 if (${NVAPOR} EQUAL 0)
   add_test_case(test_mesh.cpp)
