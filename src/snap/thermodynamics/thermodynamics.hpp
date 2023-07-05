@@ -27,8 +27,9 @@ class ParameterInput;
 using CloudIndexSet = std::vector<int>;
 using SatVaporPresFunc = Real (*)(Variable const &);
 
-Real update_gammad(Real const &gammad, Real const q[]);
-
+Real update_gammad(Real gammad, Real const q[]);
+void read_thermo_property(Real var[], char const name[], int len, Real v0,
+                          ParameterInput *pin);
 Real saha_ionization_electron_density(Real T, Real num, Real ion_ev);
 
 //! Ideal saturation vapor pressure
@@ -49,6 +50,8 @@ inline Real SatVaporPresIdeal(Real t, Real p3, Real beta, Real delta) {
 
 class Thermodynamics {
  protected:
+  enum { NPHASE = 3 };
+
   //! Constructor for class sets up the initial conditions
   //! Protected ctor access thru static member function Instance
   Thermodynamics() {}

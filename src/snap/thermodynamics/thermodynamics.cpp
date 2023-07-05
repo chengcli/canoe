@@ -36,7 +36,7 @@
 
 static std::mutex thermo_mutex;
 
-Real __attribute__((weak)) update_gammad(Real const& gammad, Real const q[]) {
+Real __attribute__((weak)) update_gammad(Real gammad, Real const q[]) {
   return gammad;
 }
 
@@ -45,22 +45,7 @@ Thermodynamics::~Thermodynamics() {
   app->Log("Destroy Thermodynamics");
 }
 
-Thermodynamics::Thermodynamics(YAML::Node& node) {
-  /* Read molecular weight ratios
-  ReadThermoProperty(mu_ratios_, "eps", 3, 1., pin);
-
-  // Read cp ratios
-  ReadThermoProperty(cp_ratios_, "rcp", 3, 1., pin);
-
-  // Read beta parameter
-  ReadThermoProperty(beta_, "beta", 3, 0., pin);
-
-  // Read triple point temperature
-  ReadThermoProperty(t3_, "Ttriple", 1, 0., pin);
-
-  // Read triple point pressure
-  ReadThermoProperty(p3_, "Ptriple", 1, 0., pin);*/
-}
+Thermodynamics::Thermodynamics(YAML::Node& node) {}
 
 Thermodynamics const* Thermodynamics::GetInstance() {
   // RAII
@@ -74,19 +59,54 @@ Thermodynamics const* Thermodynamics::GetInstance() {
 }
 
 Thermodynamics const* Thermodynamics::InitFromAthenaInput(ParameterInput* pin) {
-  std::string filename = pin->GetString("thermodynamics", "control_file");
+  Application::Logger app("snap");
+  app->Log("Initialize Thermodynamics");
 
-  std::ifstream stream(filename);
-  if (stream.good() == false) {
-    throw RuntimeError("Thermodynamics",
-                       "Cannot open thermodynamic file: " + filename);
+  if (pin->DoesParameterExist("thermodynamics", "control_file") == false) {
+    std::string filename = pin->GetString("thermodynamics", "control_file");
+    std::ifstream stream(filename);
+    if (stream.good() == false) {
+      throw RuntimeError("Thermodynamics",
+                         "Cannot open thermodynamic file: " + filename);
+    }
+    YAML::Node node = YAML::Load(stream);
+    mythermo_ = new Thermodynamics(node);
+  } else {  // legacy input
+    if (NCLOUD != 2 * NVAPOR) {
+      throw RuntimeError(
+          "Thermodynamics",
+          "NCLOUD != 2*NVAPOR is not supported for legacy input");
+    }
+
+    mythermo_ = new Thermodynamics();
+
+    // Read molecular weight ratios
+    read_thermo_property(mythermo_->mu_ratio_.data(), "eps", NPHASE, 1., pin);
+
+    // Read cp ratios
+    read_thermo_property(mythermo_->cp_ratio_mass_.data(), "rcp", NPHASE, 1.,
+                         pin);
+
+    // Read beta parameter
+    read_thermo_property(mythermo_->beta_.data(), "beta", NPHASE, 0., pin);
+
+    // Read triple point temperature
+    read_thermo_property(mythermo_->t3_.data(), "Ttriple", NPHASE, 0., pin);
+
+    // Read triple point pressure
+    read_thermo_property(mythermo_->p3_.data(), "Ptriple", NPHASE, 0., pin);
+
+    mythermo_->cloud_index_set_.resize(NVAPOR);
+
+    for (int i = 1; i < NVAPOR; ++i) {
+      mythermo_->cloud_index_set_[i].resize(NPHASE - 1);
+      for (int j = 1; j < NPHASE; ++j) {
+        mythermo_->cloud_index_set_[i][j - 1] = 1 + j * NVAPOR + i - 1;
+      }
+    }
   }
-  YAML::Node node = YAML::Load(stream);
-
-  mythermo_ = new Thermodynamics(node);
 
   mythermo_->Rd_ = pin->GetOrAddReal("thermodynamics", "Rd", 1.);
-
   mythermo_->gammad_ = pin->GetReal("hydro", "gamma");
 
   // alias
