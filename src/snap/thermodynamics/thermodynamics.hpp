@@ -266,12 +266,12 @@ class Thermodynamics {
   //! Saturation surplus for vapors can be both positive and negative
   //! positive value represents supersaturation
   //! negative value represents saturation deficit
-  void getSaturationSurplus(Real dw[], Variable &v) const;
+  void getSaturationSurplus(Real dw[], Variable const &v) const;
 
-  void setTotalEquivalentVapor(Variable *qfrac, int iv) const {
-    for (auto &n : cloud_index_set_[iv]) {
-      qfrac->w[iv] += qfrac->c[n];
-      qfrac->c[n] = 0.;
+  void setTotalEquivalentVapor(Variable *qfrac, int i) const {
+    for (auto &j : cloud_index_set_[i]) {
+      qfrac->w[i] += qfrac->c[j];
+      qfrac->c[j] = 0.;
     }
   }
 

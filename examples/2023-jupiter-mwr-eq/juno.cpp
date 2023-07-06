@@ -157,7 +157,8 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin)
   int max_iter = 200, iter = 0;
   Real dlnp = pcoord->dx1f(is)/H0;
 
-  Variable var;
+  Variable var(Variable::Type::MoleFrac);
+
   // estimate surface temperature and pressure
   Real Ps = P0*exp(-x1min/H0);
   Real Ts = T0*pow(Ps/P0, Rd/cp);
@@ -205,14 +206,14 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin)
     for (int j = js; j <= je; ++j) {
       int i = is;
       for (; i <= ie; ++i) {
-        pimpl->DistributePrimitive(var, k, j, i);
+        pimpl->DistributeToPrimitive(var, k, j, i);
         pthermo->Extrapolate(&var, -dlnp, Thermodynamics::Method::DryAdiabat);
         if (var.w[IDN] < Tmin) break;
       }
 
       // Replace adiabatic atmosphere with isothermal atmosphere if temperature is too low
       for (; i <= ie; ++i) {
-        pimpl->DistributePrimitive(var, k, j, i);
+        pimpl->DistributeToPrimitive(var, k, j, i);
         pthermo->Extrapolate(&var, -dlnp, Thermodynamics::Method::Isothermal);
       }
     }
@@ -248,12 +249,12 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin)
         int ibegin = find_pressure_level_lesser(pmax, phydro->w, k, j, is, ie);
         int iend = find_pressure_level_lesser(pmin, phydro->w, k, j, is, ie);
 
-        pimpl->GatherPrimitive(&var, k, j, ibegin);
+        pimpl->GatherFromPrimitive(&var, k, j, ibegin);
 
         for (int i = ibegin; i < iend; ++i) {
           pthermo->Extrapolate(&var, -dlnp, Thermodynamics::Method::DryAdiabat,
               0., adlnTdlnP);
-          pimpl->DistributePrimitive(var, k, j, i+1);
+          pimpl->DistributeToPrimitive(var, k, j, i+1);
         }
       }
   }

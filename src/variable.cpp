@@ -10,9 +10,44 @@
 // snap
 #include <snap/thermodynamics/thermodynamics.hpp>
 
+std::ostream& operator<<(std::ostream& os, Variable::Type const& type) {
+  if (type == Variable::Type::MassFrac) {
+    os << "Mass Fraction";
+  } else if (type == Variable::Type::MassConc) {
+    os << "Mass Concentration";
+  } else if (type == Variable::Type::MoleFrac) {
+    os << "Mole Fraction";
+  } else if (type == Variable::Type::MoleConc) {
+    os << "Mole Concentration";
+  } else {
+    throw RuntimeError("Variable", "Unknown variable type");
+  }
+
+  return os;
+}
+
 std::ostream& operator<<(std::ostream& os, Variable const& var) {
+  os << var.mytype_ << ": ";
   for (auto& v : var.data_) os << v << ", ";
   return os;
+}
+
+void Variable::ConvertTo(Variable::Type type) {
+  if (type == mytype_) {
+    return;
+  }
+
+  if (type == Type::MassFrac) {
+    ConvertToMassFraction();
+  } else if (type == Type::MassConc) {
+    ConvertToMassConcentration();
+  } else if (type == Type::MoleFrac) {
+    ConvertToMoleFraction();
+  } else if (type == Type::MoleConc) {
+    ConvertToMoleConcentration();
+  } else {
+    throw RuntimeError("Variable", "Unknown variable type");
+  }
 }
 
 void Variable::ConvertToMassFraction() {
@@ -97,7 +132,7 @@ void Variable::massFractionToMoleFraction() {
   // set temperature
   w[IDN] = w[IPR] / (w[IDN] * pthermo->GetRd() * sum);
 
-  mytype_ = Type::MoleFrac;
+  SetType(Type::MoleFrac);
 }
 
 void Variable::moleFractionToMassFraction() {
@@ -118,7 +153,7 @@ void Variable::moleFractionToMassFraction() {
   // set density
   w[IDN] = sum * w[IPR] / (w[IDN] * pthermo->GetRd());
 
-  mytype_ = Type::MassFrac;
+  SetType(Type::MassFrac);
 }
 
 void Variable::massConcentrationToMoleFraction() {
@@ -153,7 +188,7 @@ void Variable::massConcentrationToMoleFraction() {
 #pragma omp simd
   for (int n = 1; n <= NVAPOR; ++n) w[n] /= feps;
 
-  mytype_ = Type::MassFrac;
+  SetType(Type::MassFrac);
 }
 
 void Variable::moleFractionToMassConcentration() {
@@ -183,7 +218,7 @@ void Variable::moleFractionToMassConcentration() {
   w[IVY] *= rho;
   w[IVZ] *= rho;
 
-  mytype_ = Type::MassConc;
+  SetType(Type::MassConc);
 }
 
 void Variable::massFractionToMassConcentration() {
@@ -213,7 +248,7 @@ void Variable::massFractionToMassConcentration() {
   w[IVY] *= rho;
   w[IVZ] *= rho;
 
-  mytype_ = Type::MassConc;
+  SetType(Type::MassConc);
 }
 
 void Variable::massConcentrationToMassFraction() {
@@ -245,7 +280,7 @@ void Variable::massConcentrationToMassFraction() {
   w[IVY] *= di;
   w[IVZ] *= di;
 
-  mytype_ = Type::MassFrac;
+  SetType(Type::MassFrac);
 }
 
 void Variable::moleFractionToMoleConcentration() {

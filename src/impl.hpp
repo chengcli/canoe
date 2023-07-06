@@ -59,13 +59,11 @@ class MeshBlock::Impl {
   Real GetReferencePressure() const { return reference_pressure_; }
   Real GetPressureScaleHeight() const { return pressure_scale_height_; }
 
-  void GatherPrimitive(Variable *prim, int k, int j, int i);
-  void GatherConserved(Variable *cons, int k, int j, int i);
-  void GatherMoleFraction(Variable *qfrac, int k, int j, int i);
-  void GatherMoleConcentration(Variable *qconc, int k, int j, int i);
+  void GatherFromPrimitive(Variable *prim, int k, int j, int i);
+  void GatherFromConserved(Variable *cons, int k, int j, int i);
 
-  void DistributePrimitive(Variable &prim, int k, int j, int i);
-  void DistributeConserved(Variable &cons, int k, int j, int i);
+  void DistributeToPrimitive(Variable const& prim, int k, int j, int i);
+  void DistributeToConserved(Variable const& cons, int k, int j, int i);
 
  private:
   MeshBlock *pmy_block_;

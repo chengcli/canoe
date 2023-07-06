@@ -54,7 +54,8 @@ class TestVariable : public testing::Test {
 };
 
 TEST(variable, copy_constructer) {
-  Variable a;
+  Variable a(Variable::Type::MoleFrac);
+
   std::fill(a.w, a.w + Variable::Size, 1.0);
 
   Variable b(a);
@@ -70,10 +71,12 @@ TEST(variable, copy_constructer) {
 }
 
 TEST(variable, assignment_operator) {
-  Variable a;
+  Variable a(Variable::Type::MoleFrac);
+
   std::fill(a.w, a.w + Variable::Size, 1.0);
 
-  Variable b;
+  Variable b(Variable::Type::MoleFrac);
+  b = a;
   std::fill(b.w, b.w + Variable::Size, 2.0);
 
   EXPECT_DOUBLE_EQ(a.w[0], 1.0);

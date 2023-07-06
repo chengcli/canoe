@@ -104,7 +104,7 @@ Thermodynamics const* Thermodynamics::InitFromAthenaInput(ParameterInput* pin) {
       mythermo_->cloud_index_set_[i].resize(NPHASE - 1);
       mythermo_->svp_func_[i].resize(NPHASE - 1);
       for (int j = 1; j < NPHASE; ++j) {
-        mythermo_->cloud_index_set_[i][j - 1] = 1 + j * NVAPOR + i - 1;
+        mythermo_->cloud_index_set_[i][j - 1] = (j - 1) * NVAPOR + (i - 1);
       }
     }
 
@@ -324,9 +324,9 @@ Real Thermodynamics::RelativeHumidity(MeshBlock* pmb, int n, int k, int j,
   Real dw[1 + NVAPOR];
   auto& w = pmb->phydro->w;
 
-  Variable var;
+  Variable var(Variable::Type::MoleFrac);
 
-  pmb->pimpl->GatherPrimitive(&var, k, j, i);
+  pmb->pimpl->GatherFromPrimitive(&var, k, j, i);
   getSaturationSurplus(dw, var);
   return w(n, k, j, i) / (w(n, k, j, i) + dw[n]);
 }
@@ -341,8 +341,8 @@ void Thermodynamics::Extrapolate(Variable* qfrac, Real dzORdlnp, Method method,
     qfrac->w[i] += rates[0];
 
     // cloud concentration rates
-    for (int j = 1; j < rates.size(); ++j)
-      qfrac->c[cloud_index_set_[i][j - 1]] += rates[j];
+    for (int n = 1; n < rates.size(); ++n)
+      qfrac->c[cloud_index_set_[i][n - 1]] += rates[n];
   }
 
   // RK4 integration
@@ -353,12 +353,11 @@ void Thermodynamics::Extrapolate(Variable* qfrac, Real dzORdlnp, Method method,
 #endif
 }
 
-void Thermodynamics::getSaturationSurplus(Real dw[], Variable& var) const {
+void Thermodynamics::getSaturationSurplus(Real dw[], Variable const& var) const {
   for (int iv = 1; iv <= NVAPOR; ++iv) {
     dw[iv] = var.w[iv];
   }
 
-  var.ConvertToMoleFraction();
   for (int iv = 1; iv <= NVAPOR; ++iv) {
     auto rates = TryEquilibriumTP(var, iv, 0., true);
     dw[iv] *= rates[0] / var.w[iv];

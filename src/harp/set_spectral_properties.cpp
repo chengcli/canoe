@@ -35,14 +35,14 @@ void RadiationBand::SetSpectralProperties(int k, int j, int il, int iu) {
 
   std::vector<Real> mypmom(1 + npmom);
 
-  Variable var;
+  Variable var(Variable::Type::MoleFrac);
   // Particles *ppart;
 
   MeshBlock* pmb = pmy_block_;
   AthenaArray<Real> const& w = pmb->phydro->w;
 
   for (int i = il; i <= iu; ++i) {
-    pmb->pimpl->GatherMoleFraction(&var, k, j, i);
+    pmb->pimpl->GatherFromPrimitive(&var, k, j, i);
     tem_(i) = var.w[IDN];
 
     for (auto& a : absorbers_) {

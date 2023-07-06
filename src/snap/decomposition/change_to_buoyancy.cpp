@@ -54,12 +54,12 @@ void Decomposition::ChangeToBuoyancy(AthenaArray<Real> &w, int kl, int ku,
     RecvFromTop(psf_, kl, ku, jl, ju);
   } else {
     // adiabatic extrapolation
-    Variable var;
+    Variable var(Variable::Type::MoleFrac);
 
     for (int k = kl; k <= ku; ++k)
       for (int j = jl; j <= ju; ++j) {
         Real dz = pco->dx1f(ie);
-        pimpl->GatherMoleFraction(&var, k, j, ie);
+        pimpl->GatherFromPrimitive(&var, k, j, ie);
 
         // adiabatic extrapolation for half a grid
         pthermo->Extrapolate(&var, dz / 2.,
@@ -182,11 +182,12 @@ void Decomposition::RestoreFromBuoyancy(AthenaArray<Real> &w,
   }
 
   // fix boundary condition
-  Variable var0, var1;
+  Variable var0(Variable::Type::MoleFrac);
+  Variable var1(Variable::Type::MoleFrac);
 
   // adiabatic extrapolation for a grid
   Real dz = pco->dx1f(is);
-  pimpl->GatherMoleFraction(&var0, k, j, is);
+  pimpl->GatherFromPrimitive(&var0, k, j, is);
 
   var1 = var0;
   pthermo->Extrapolate(&var1, -dz, Thermodynamics::Method::ReversibleAdiabat,
@@ -208,7 +209,7 @@ void Decomposition::RestoreFromBuoyancy(AthenaArray<Real> &w,
   }
 
   // adiabatic extrapolation for a grid
-  pimpl->GatherMoleFraction(&var0, k, j, ie);
+  pimpl->GatherFromPrimitive(&var0, k, j, ie);
   var1 = var0;
   pthermo->Extrapolate(&var1, dz, Thermodynamics::Method::ReversibleAdiabat,
                        grav);

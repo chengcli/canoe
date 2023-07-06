@@ -3,6 +3,7 @@
 
 // C/C++
 #include <array>
+#include <iostream>
 
 // athena
 #include <athena/athena.hpp>  // Real
@@ -13,12 +14,13 @@
 //! \class Variable
 //  \brief a collection of all physical data in a computational cell
 class Variable {
-  friend std::ostream &operator<<(std::ostream &os, Variable const &var);
-
  public:
   enum { Size = NHYDRO + NCLOUD + NCHEMISTRY + NTRACER + NSTATIC };
 
   enum class Type { MassFrac = 0, MassConc = 1, MoleFrac = 2, MoleConc = 3 };
+
+  friend std::ostream &operator<<(std::ostream &os, Type const &type);
+  friend std::ostream &operator<<(std::ostream &os, Variable const &var);
 
   //! data pointers
   //! hydro data
@@ -40,7 +42,7 @@ class Variable {
   Real *d;
 
   // constructor
-  explicit Variable(Type type = Type::MassFrac) : mytype_(type) {
+  explicit Variable(Type type = Type::MoleFrac) : mytype_(type) {
     w = data_.data();
     c = w + NHYDRO;
     q = c + NCLOUD;
@@ -72,10 +74,15 @@ class Variable {
     return *this;
   }
 
-  void SetType(Type type) { mytype_ = type; }
+  void SetType(Type type) { 
+    mytype_ = type; 
+  }
+
   Type GetType() const { return mytype_; }
 
   void SetZero() { std::fill(data_.begin(), data_.end(), 0.0); }
+
+  void ConvertTo(Variable::Type type);
 
   void ConvertToMassFraction();
   void ConvertToMassConcentration();
