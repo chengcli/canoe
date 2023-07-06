@@ -153,7 +153,7 @@ Thermodynamics const* Thermodynamics::InitFromAthenaInput(ParameterInput* pin) {
 
   for (int i = 1; i <= NVAPOR; ++i) {
     for (int j = 0; j < NPHASE - 1; ++j) {
-      int n = cloud_index_set[i][j];
+      int n = cloud_index_set[i][j] + 1 + NVAPOR;
       latent_energy_mass[n] = beta[n] * Rd / mu_ratio[n] * t3[i];
       latent_energy_mole[n] = latent_energy_mass[n] * mu[n];
     }
@@ -370,7 +370,8 @@ Real Thermodynamics::GetLatentHeatMole(int i, std::vector<Real> const& rates,
 
   Real heat = 0.;
   for (int j = 1; j < rates.size(); ++j) {
-    heat += rates[j] * GetLatentEnergyMole(cloud_index_set_[i][j - 1], temp);
+    int n = cloud_index_set_[i][j - 1] + 1 + NVAPOR;
+    heat += rates[j] * GetLatentEnergyMole(n, temp);
   }
 
   return heat / std::abs(rates[0]) + Constants::Rgas * temp;
