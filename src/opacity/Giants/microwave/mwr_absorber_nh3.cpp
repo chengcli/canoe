@@ -2,9 +2,6 @@
 #include <configure.hpp>
 #include <variable.hpp>
 
-// athena
-#include <athena/mesh/mesh.hpp>
-
 // climath
 #include <climath/interpolation.h>
 
@@ -17,9 +14,9 @@
 
 namespace GiantPlanets {
 
-MwrAbsorberNH3::MwrAbsorberNH3(MeshBlock* pmb, std::vector<std::string> species,
+MwrAbsorberNH3::MwrAbsorberNH3(std::vector<std::string> species,
                                ParameterMap params)
-    : Absorber(pmb, "radio-NH3", species, params) {
+    : Absorber("radio-NH3", species, params) {
   if (!params_.count("xHe")) {
     throw NotFoundError("MwrAbsorberNH3", "parameter 'xHe'");
   }

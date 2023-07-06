@@ -1,3 +1,7 @@
+// C/C++
+#include <mutex>
+#include <string>
+
 // canoe
 #include <configure.hpp>
 
@@ -6,6 +10,7 @@
 #include <athena/parameter_input.hpp>
 
 // application
+#include <application/application.hpp>
 #include <application/exceptions.hpp>
 
 // utils
@@ -14,8 +19,37 @@
 // canoe
 #include "index_map.hpp"
 
-MeshBlock::IndexMap::IndexMap(MeshBlock *pmb, ParameterInput *pin)
-    : pmy_block_(pmb) {
+static std::mutex imap_mutex;
+
+IndexMap::~IndexMap() {
+  Application::Logger app("canoe");
+  app->Log("Destroy IndexMap");
+}
+
+IndexMap const* IndexMap::GetInstance() {
+  // RAII
+  std::unique_lock<std::mutex> lock(imap_mutex);
+
+  if (myindex_map_ == nullptr) {
+    myindex_map_ = new IndexMap();
+  }
+
+  return myindex_map_;
+}
+
+IndexMap const* IndexMap::InitFromAthenaInput(ParameterInput* pin) {
+  Application::Logger app("canoe");
+  app->Log("Initialize IndexMap");
+
+  myindex_map_ = new IndexMap();
+
+  auto& vapor_index_map = myindex_map_->vapor_index_map_;
+  auto& cloud_index_map = myindex_map_->cloud_index_map_;
+  auto& chemistry_index_map = myindex_map_->chemistry_index_map_;
+  auto& tracer_index_map = myindex_map_->tracer_index_map_;
+  auto& static_index_map = myindex_map_->static_index_map_;
+  auto& particle_index_map = myindex_map_->particle_index_map_;
+
   // vapor id
   std::string str = pin->GetOrAddString("species", "vapor", "");
   std::vector<std::string> names = Vectorize<std::string>(str.c_str(), " ,");
@@ -25,7 +59,7 @@ MeshBlock::IndexMap::IndexMap(MeshBlock *pmb, ParameterInput *pin)
   }
 
   for (size_t i = 0; i < names.size(); ++i) {
-    vapor_index_map_[names[i]] = 1 + i;
+    vapor_index_map[names[i]] = 1 + i;
   }
 
   // cloud id
@@ -37,19 +71,7 @@ MeshBlock::IndexMap::IndexMap(MeshBlock *pmb, ParameterInput *pin)
   }
 
   for (size_t i = 0; i < names.size(); ++i) {
-    cloud_index_map_[names[i]] = i;
-  }
-
-  // tracer id
-  str = pin->GetOrAddString("species", "tracer", "");
-  names = Vectorize<std::string>(str.c_str(), " ,");
-
-  if (names.size() > NTRACER) {
-    throw ValueError("IndexMap", "Number of tracers", NTRACER, names.size());
-  }
-
-  for (size_t i = 0; i < names.size(); ++i) {
-    tracer_index_map_[names[i]] = i;
+    cloud_index_map[names[i]] = i;
   }
 
   // chemistry id
@@ -62,7 +84,19 @@ MeshBlock::IndexMap::IndexMap(MeshBlock *pmb, ParameterInput *pin)
   }
 
   for (size_t i = 0; i < names.size(); ++i) {
-    chemistry_index_map_[names[i]] = i;
+    chemistry_index_map[names[i]] = i;
+  }
+
+  // tracer id
+  str = pin->GetOrAddString("species", "tracer", "");
+  names = Vectorize<std::string>(str.c_str(), " ,");
+
+  if (names.size() > NTRACER) {
+    throw ValueError("IndexMap", "Number of tracers", NTRACER, names.size());
+  }
+
+  for (size_t i = 0; i < names.size(); ++i) {
+    tracer_index_map[names[i]] = i;
   }
 
   // static variable id
@@ -75,18 +109,20 @@ MeshBlock::IndexMap::IndexMap(MeshBlock *pmb, ParameterInput *pin)
   }
 
   for (size_t i = 0; i < names.size(); ++i) {
-    static_index_map_[names[i]] = i;
+    static_index_map[names[i]] = i;
   }
 
   // particle id
   str = pin->GetOrAddString("species", "particle", "");
   names = Vectorize<std::string>(str.c_str(), " ,");
   for (size_t i = 0; i < names.size(); ++i) {
-    particle_index_map_[names[i]] = i;
+    particle_index_map[names[i]] = i;
   }
+
+  return myindex_map_;
 }
 
-size_t MeshBlock::IndexMap::GetSpeciesId(std::string category_name) const {
+size_t IndexMap::GetSpeciesId(std::string category_name) const {
   std::string delimiter = ".";
 
   // Find the position of the delimiter
@@ -113,3 +149,14 @@ size_t MeshBlock::IndexMap::GetSpeciesId(std::string category_name) const {
     throw NotFoundError("GetSpeciesId", "Category " + category);
   }
 }
+
+void IndexMap::Destroy() {
+  std::unique_lock<std::mutex> lock(imap_mutex);
+
+  if (IndexMap::myindex_map_ != nullptr) {
+    delete IndexMap::myindex_map_;
+    IndexMap::myindex_map_ = nullptr;
+  }
+}
+
+IndexMap* IndexMap::myindex_map_ = nullptr;

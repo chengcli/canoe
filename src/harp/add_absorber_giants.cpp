@@ -45,32 +45,32 @@ void RadiationBand::addAbsorberGiants(ParameterInput *pin, YAML::Node &node) {
   if (type_ == "radio") {
     if (aname == "NH3") {
       auto ab = std::make_unique<gp::MwrAbsorberNH3>(
-          pmy_block_, species, ToParameterMap(node["parameters"]));
+          species, ToParameterMap(node["parameters"]));
 
       absorbers_.push_back(std::move(ab));
     } else if (aname == "H2O") {
       auto ab = std::make_unique<gp::MwrAbsorberH2O>(
-          pmy_block_, species, ToParameterMap(node["parameters"]));
+          species, ToParameterMap(node["parameters"]));
 
       absorbers_.push_back(std::move(ab));
     } else if (aname == "H2S") {
       auto ab = std::make_unique<gp::MwrAbsorberH2S>(
-          pmy_block_, species, ToParameterMap(node["parameters"]));
+          species, ToParameterMap(node["parameters"]));
 
       absorbers_.push_back(std::move(ab));
     } else if (aname == "PH3") {
       auto ab = std::make_unique<gp::MwrAbsorberPH3>(
-          pmy_block_, species, ToParameterMap(node["parameters"]));
+          species, ToParameterMap(node["parameters"]));
 
       absorbers_.push_back(std::move(ab));
     } else if (aname == "CIA") {
       auto ab = std::make_unique<gp::MwrAbsorberCIA>(
-          pmy_block_, species, ToParameterMap(node["parameters"]));
+          species, ToParameterMap(node["parameters"]));
 
       absorbers_.push_back(std::move(ab));
     } else if (aname == "Electron") {
       auto ab = std::make_unique<gp::MwrAbsorberElectron>(
-          pmy_block_, species, ToParameterMap(node["parameters"]));
+          species, ToParameterMap(node["parameters"]));
 
       absorbers_.push_back(std::move(ab));
     } else {

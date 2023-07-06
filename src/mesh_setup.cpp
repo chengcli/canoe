@@ -97,7 +97,6 @@ void mesh_setup(ParameterInput*& pinput, Mesh*& pmesh) {
   // set up additional components
   for (int b = 0; b < pmesh->nblocal; ++b) {
     MeshBlock* pmb = pmesh->my_blocks(b);
-    pmb->pindex = std::make_shared<MeshBlock::IndexMap>(pmb, pinput);
     pmb->pimpl = std::make_shared<MeshBlock::Impl>(pmb, pinput);
   }
 

@@ -27,6 +27,7 @@ class TestThermodynamics : public testing::Test {
     pinput->LoadFromFile(infile);
     infile.Close();
 
+    IndexMap::InitFromAthenaInput(pinput);
     Thermodynamics::InitFromAthenaInput(pinput);
   }
 
@@ -35,6 +36,7 @@ class TestThermodynamics : public testing::Test {
     // ok to through exceptions from here if need be
 
     Thermodynamics::Destroy();
+    IndexMap::Destroy();
     delete pinput;
   }
 };

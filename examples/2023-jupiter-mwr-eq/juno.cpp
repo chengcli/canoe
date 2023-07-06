@@ -147,6 +147,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin)
   Real cp = gamma/(gamma - 1.)*Rd;
 
   // index
+  auto pindex = IndexMap::GetInstance();
   int iH2O = pindex->GetVaporId("H2O");
   int iNH3 = pindex->GetVaporId("NH3");
 
@@ -218,24 +219,6 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin)
       }
     }
 
-  // set tracers, electron and Na
-  int ielec = pindex->GetTracerId("e-");
-  int iNa = pindex->GetTracerId("Na");
-  auto ptracer = pimpl->ptracer;
-
-  for (int k = ks; k <= ke; ++k)
-    for (int j = js; j <= je; ++j)
-      for (int i = is; i <= ie; ++i) {
-        Real temp = pthermo->GetTemp(this,k,j,i);
-        Real pH2S = xH2S*phydro->w(IPR,k,j,i);
-        Real pNa = xNa*phydro->w(IPR,k,j,i);
-        Real svp = sat_vapor_p_Na_H2S_Visscher(temp, pH2S);
-        pNa = std::min(svp, pNa);
-
-        ptracer->u(iNa,k,j,i) = pNa/(Constants::kBoltz*temp);
-        ptracer->u(ielec,k,j,i) = saha_ionization_electron_density(temp, ptracer->u(iNa,k,j,i), 5.14);
-      }
-
   // if requested
   // modify atmospheric stability
   Real adlnTdlnP = pin->GetOrAddReal("problem", "adlnTdlnP", 0.);
@@ -274,6 +257,24 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin)
           phydro->w(IDN,k,j,i) = phydro->w(IPR,k,j,i)/(R*std::max(temp_real, temp_ad));
         }
   }
+
+  // set tracers, electron and Na
+  int ielec = pindex->GetTracerId("e-");
+  int iNa = pindex->GetTracerId("Na");
+  auto ptracer = pimpl->ptracer;
+
+  for (int k = ks; k <= ke; ++k)
+    for (int j = js; j <= je; ++j)
+      for (int i = is; i <= ie; ++i) {
+        Real temp = pthermo->GetTemp(this,k,j,i);
+        Real pH2S = xH2S*phydro->w(IPR,k,j,i);
+        Real pNa = xNa*phydro->w(IPR,k,j,i);
+        Real svp = sat_vapor_p_Na_H2S_Visscher(temp, pH2S);
+        pNa = std::min(svp, pNa);
+
+        ptracer->u(iNa,k,j,i) = pNa/(Constants::kBoltz*temp);
+        ptracer->u(ielec,k,j,i) = saha_ionization_electron_density(temp, ptracer->u(iNa,k,j,i), 5.14);
+      }
 
   // primitive to conserved conversion
   peos->PrimitiveToConserved(phydro->w, pfield->bcc,
