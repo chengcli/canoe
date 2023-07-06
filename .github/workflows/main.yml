@@ -163,7 +163,7 @@ jobs:
 
       - name: compare result
         run: >
-          ${{github.workspace}}/examples/2019-Li-snap/test_straka.py
+          python3 ${{github.workspace}}/examples/2019-Li-snap/test_straka.py
           ${{github.workspace}}/build/bin/straka-test-main.nc
           ${{github.workspace}}/examples/2019-Li-snap/straka_output.nc
 
@@ -193,13 +193,13 @@ jobs:
 
       - name: compare result
         run: >
-          ${{github.workspace}}/examples/2019-Li-snap/test_robert.py
+          python3 ${{github.workspace}}/examples/2019-Li-snap/test_robert.py
           ${{github.workspace}}/build/bin/robert-test-main.nc
           ${{github.workspace}}/examples/2019-Li-snap/robert_output.nc
 
   robert-3d:
     if: github.event.pull_request.draft == false
-    runs-on: [self-hosted, Linux, 8core]
+    runs-on: [self-hosted, Linux, 16core]
     needs: build-non-hydrostatic
     steps:
       - uses: actions/checkout@v3
@@ -214,8 +214,6 @@ jobs:
         run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} -- -j8
 
       - name: run simulation
-        env:
-          PATH: $PATH:/usr/lib64/mpich/bin
         run: cd ${{github.workspace}}/build/bin && mpiexec -n 8 ./robert.release -i robert3d.inp
 
       - name: combile outputs
@@ -223,6 +221,6 @@ jobs:
 
       - name: compare result
         run: >
-          ${{github.workspace}}/examples/2019-Li-snap/test_robert.py
+          python3 ${{github.workspace}}/examples/2019-Li-snap/test_robert.py
           ${{github.workspace}}/build/bin/robert-test-main.nc
           ${{github.workspace}}/examples/2019-Li-snap/robert3d_output.nc
