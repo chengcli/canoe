@@ -48,7 +48,6 @@
 // Finally, the Thermodynamics class works with thermodynamic aspects of the problem
 // such as the temperature, potential temperature, condensation of vapor, etc.
 #include <snap/thermodynamics/thermodynamics.hpp>
-#include <snap/thermodynamics/thermodynamics_helper.hpp>
 
 // Functions in the math library are protected by a specific namespace because math
 // functions are usually concise in the names, such as <code>min</code>,
@@ -88,18 +87,19 @@ void MeshBlock::InitUserMeshBlockData(ParameterInput *pin)
 // MeshBlock, you can access all physics in the simulation.
 void MeshBlock::UserWorkBeforeOutput(ParameterInput *pin)
 {
-  auto pthermo = pimpl->pthermo;
+  auto pthermo = Thermodynamics::GetInstance();
 
   // Loop over the grids. <code>js,je,is,ie</code> are members of the MeshBlock class.
   // They are integer values representing the start index and the end index of the grids
   // in each dimension.
+  int k = ks;
   for (int j = js; j <= je; ++j)
     for (int i = is; i <= ie; ++i) {
       // <code>user_out_var</code> stores the actual data.
       // <code>phydro</code> is a pointer to the Hydro class, which has a member
       // <code>w</code> that stores density, pressure, and velocities at each grid.
-      user_out_var(0,j,i) = pthermo->GetTemp(phydro->w.at(j,i));
-      user_out_var(1,j,i) = pthermo->PotentialTemp(phydro->w.at(j,i), p0);
+      user_out_var(0,j,i) = pthermo->GetTemp(this,k,j,i);
+      user_out_var(1,j,i) = pthermo->PotentialTemp(this,p0,k,j,i);
     }
 }
 
@@ -127,23 +127,24 @@ void Diffusion(MeshBlock *pmb, Real const time, Real const dt,
 
   // Similarly, we use <code>pmb</code> to find the pointer to the Thermodynamics class,
   // <code>pthermo</code>.
-  auto pthermo = pmb->pimpl->pthermo;
+  auto pthermo = Thermodynamics::GetInstance();
 
   // Loop over the grids.
+  int k = pmb->ks;
   for (int j = pmb->js; j <= pmb->je; ++j)
     for (int i = pmb->is; i <= pmb->ie; ++i) {
 
       // Similar to what we have done in MeshBlock::UserWorkBeforeOutput, we use the
       // Thermodynamics class to calculate temperature and potential temperature.
-      Real temp = pthermo->GetTemp(w.at(j,i));
-      Real theta = pthermo->PotentialTemp(w.at(j,i), p0);
+      Real temp = pthermo->GetTemp(pmb,pmb->ks,j,i);
+      Real theta = pthermo->PotentialTemp(pmb,p0,pmb->ks,j,i);
 
       // The thermal diffusion is applied to the potential temperature field, which is
       // not exactly correct. But this is the setting of the test program.
-      Real theta_ip1_j = pthermo->PotentialTemp(w.at(j+1,i), p0);
-      Real theta_im1_j = pthermo->PotentialTemp(w.at(j-1,i), p0);
-      Real theta_i_jp1 = pthermo->PotentialTemp(w.at(j,i+1), p0);
-      Real theta_i_jm1 = pthermo->PotentialTemp(w.at(j,i-1), p0);
+      Real theta_ip1_j = pthermo->PotentialTemp(pmb,p0,k,j+1,i);
+      Real theta_im1_j = pthermo->PotentialTemp(pmb,p0,k,j-1,i);
+      Real theta_i_jp1 = pthermo->PotentialTemp(pmb,p0,k,j,i+1);
+      Real theta_i_jm1 = pthermo->PotentialTemp(pmb,p0,k,j,i-1);
 
       // Add viscous dissipation to the velocities. Now you encounter another variable
       // called <code>u</code>. <code>u</code> stands for `conserved variables`, which

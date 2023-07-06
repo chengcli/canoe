@@ -6,20 +6,18 @@ macro(SET_IF_EMPTY _variable)
   endif()
 endmacro()
 
+list(APPEND CMAKE_PREFIX_PATH "/usr/include/mpich-x84_64" "/usr/lib64/mpich/")
+
 # populate the default values
 set_if_empty(NVAPOR 0)
 
 set_if_empty(NCLOUD 0)
 
-set_if_empty(NTRACER 0)
-
 set_if_empty(NCHEMISTRY 0)
 
+set_if_empty(NTRACER 0)
+
 set_if_empty(NSTATIC 0)
-
-set_if_empty(AMMONIA_VAPOR_ID -1)
-
-set_if_empty(WATER_VAPOR_ID -1)
 
 set_if_empty(EQUATION_OF_STATE "ideal_moist")
 

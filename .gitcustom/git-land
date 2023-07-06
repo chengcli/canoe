@@ -1,7 +1,0 @@
-#!/bin/sh
-
-currentBranch=$(git symbolic-ref --short -q HEAD) # Getting the current branch
-
-git add .
-git commit -m "wip"
-git push origin $currentBranch
