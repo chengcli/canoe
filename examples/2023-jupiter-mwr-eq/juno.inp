@@ -116,7 +116,6 @@ xNa         = 3.97E-6
 xKCl        = 0.
 metallicity = -2
 
-#rdlnTdlnP   = 1.015
-rdlnTdlnP   = 0.985
-rdlnTdlnP.pmin = 1.E5
-rdlnTdlnP.pmax = 20.E5
+adlnTdlnP   = 0.015
+adlnTdlnP.pmin = 1.E5
+adlnTdlnP.pmax = 20.E5

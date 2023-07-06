@@ -70,7 +70,7 @@ class Thermodynamics {
   };
 
   // member functions
-  virtual ~Thermodynamics();
+  ~Thermodynamics();
 
   //! Return a pointer to the one and only instance of Thermodynamics
   static Thermodynamics const *GetInstance();

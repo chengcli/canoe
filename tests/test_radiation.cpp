@@ -38,7 +38,6 @@ class TestRadiation : public testing::Test {
     // set up components
     for (int b = 0; b < pmesh->nblocal; ++b) {
       MeshBlock *pmb = pmesh->my_blocks(b);
-      pmb->pindex = std::make_shared<MeshBlock::IndexMap>(pmb, pinput);
       pmb->pimpl = std::make_shared<MeshBlock::Impl>(pmb, pinput);
     }
 
@@ -55,9 +54,9 @@ class TestRadiation : public testing::Test {
 };
 
 TEST_F(TestRadiation, Species) {
-  MeshBlock *pmb = pmesh->my_blocks(0);
-  EXPECT_EQ(pmb->pindex->GetSpeciesId("vapor.H2O"), 1);
-  EXPECT_EQ(pmb->pindex->GetSpeciesId("vapor.NH3"), 2);
+  auto pindex = IndexMap::GetInstance();
+  EXPECT_EQ(pindex->GetSpeciesId("vapor.H2O"), 1);
+  EXPECT_EQ(pindex->GetSpeciesId("vapor.NH3"), 2);
 }
 
 TEST_F(TestRadiation, Radiation) {

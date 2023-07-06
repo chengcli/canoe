@@ -26,8 +26,7 @@ namespace GiantPlanets {
 
 class MwrAbsorberCIA : public Absorber {
  public:
-  MwrAbsorberCIA(MeshBlock* pmb, std::vector<std::string> species,
-                 ParameterMap params);
+  MwrAbsorberCIA(std::vector<std::string> species, ParameterMap params);
 
   Real GetAttenuation(Real wave1, Real wave2, Variable const& var) const;
 
@@ -37,8 +36,7 @@ class MwrAbsorberCIA : public Absorber {
 
 class MwrAbsorberNH3 : public Absorber {
  public:
-  MwrAbsorberNH3(MeshBlock* pmb, std::vector<std::string> species,
-                 ParameterMap params);
+  MwrAbsorberNH3(std::vector<std::string> species, ParameterMap params);
 
   MwrAbsorberNH3& SetModelHanley() {
     model_name_ = "Hanley09";
@@ -66,9 +64,8 @@ class MwrAbsorberNH3 : public Absorber {
 
 class MwrAbsorberPH3 : public Absorber {
  public:
-  MwrAbsorberPH3(MeshBlock* pmb, std::vector<std::string> species,
-                 ParameterMap params)
-      : Absorber(pmb, "radio-PH3", species, params) {}
+  MwrAbsorberPH3(std::vector<std::string> species, ParameterMap params)
+      : Absorber("radio-PH3", species, params) {}
 
   MwrAbsorberPH3& SetModelRadtran() {
     model_name_ = "Radtran";
@@ -85,8 +82,7 @@ class MwrAbsorberPH3 : public Absorber {
 class MwrAbsorberH2O : public Absorber {
  public:
   // TODO(cli) check Karpowics model
-  MwrAbsorberH2O(MeshBlock* pmb, std::vector<std::string> species,
-                 ParameterMap params);
+  MwrAbsorberH2O(std::vector<std::string> species, ParameterMap params);
 
   MwrAbsorberH2O& SetModeldeBoer() {
     model_name_ = "deBoer";
@@ -110,18 +106,16 @@ class MwrAbsorberH2O : public Absorber {
 
 class MwrAbsorberH2S : public Absorber {
  public:
-  MwrAbsorberH2S(MeshBlock* pmb, std::vector<std::string> species,
-                 ParameterMap params)
-      : Absorber(pmb, "radio-H2S", species, params) {}
+  MwrAbsorberH2S(std::vector<std::string> species, ParameterMap params)
+      : Absorber("radio-H2S", species, params) {}
 
   Real GetAttenuation(Real wave1, Real wave2, Variable const& var) const;
 };
 
 class MwrAbsorberElectron : public Absorber {
  public:
-  MwrAbsorberElectron(MeshBlock* pmb, std::vector<std::string> species,
-                      ParameterMap params)
-      : Absorber(pmb, "radio-Electron", species, params) {}
+  MwrAbsorberElectron(std::vector<std::string> species, ParameterMap params)
+      : Absorber("radio-Electron", species, params) {}
 
   MwrAbsorberElectron& SetModelAppletonHartree() {
     model_name_ = "AppletonHartree";
