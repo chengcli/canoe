@@ -9,7 +9,7 @@
 #include "../thermodynamics/thermodynamics.hpp"
 
 void apply_vapor_limiter(AthenaArray<Real> *pu, MeshBlock *pmb) {
-  auto pthermo = pmb->pimpl->pthermo;
+  auto pthermo = Thermodynamics::GetInstance();
   if (NVAPOR == 0) return;
 
   int is = pmb->is;
@@ -35,7 +35,7 @@ void apply_vapor_limiter(AthenaArray<Real> *pu, MeshBlock *pmb) {
         Real KE = 0.5 * density * (v1 * v1 + v2 * v2 + v3 * v3);
         Real LE = 0., rhocv = 0.;
         for (int n = 0; n <= NVAPOR; ++n)
-          rhocv += u(n, k, j, i) * pthermo->GetCv(n);
+          rhocv += u(n, k, j, i) * pthermo->GetCvMassRef(n);
         Real temp = (u(IEN, k, j, i) - KE) / rhocv;
 
         for (int n = 1; n <= NVAPOR; ++n) {
@@ -45,8 +45,8 @@ void apply_vapor_limiter(AthenaArray<Real> *pu, MeshBlock *pmb) {
             u(IM1, k, j, i - 1) += v1 * rho;
             u(IM2, k, j, i - 1) += v2 * rho;
             u(IM3, k, j, i - 1) += v3 * rho;
-            Real en =
-                pthermo->GetCv(n) * temp + 0.5 * (v1 * v1 + v2 * v2 + v3 * v3);
+            Real en = pthermo->GetCvMassRef(n) * temp +
+                      0.5 * (v1 * v1 + v2 * v2 + v3 * v3);
             u(IEN, k, j, i - 1) += en * rho;
 
             u(n, k, j, i) = 0.;

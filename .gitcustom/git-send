@@ -3,5 +3,12 @@
 currentBranch=$(git symbolic-ref --short -q HEAD) # Getting the current branch
 
 git add .
-git commit -m "wip"
+
+if [ ! -z "$1" ]
+then
+  git commit -m "$1"
+else
+  git commit -m "wip"
+fi
+
 git push origin $currentBranch

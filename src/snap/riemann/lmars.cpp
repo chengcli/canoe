@@ -25,7 +25,8 @@ void Hydro::RiemannSolver(int const k, int const j, int const il, int const iu,
   int ivy = IVX + ((ivx - IVX) + 1) % 3;
   int ivz = IVX + ((ivx - IVX) + 2) % 3;
 
-  Thermodynamics *pthermo = pmy_block->pimpl->pthermo;
+  auto pthermo = Thermodynamics::GetInstance();
+
   Real rhobar, pbar, cbar, ubar, hl, hr;
   Real gamma = pmy_block->peos->getGamma();
   Real wli[NHYDRO], wri[NHYDRO];
@@ -41,7 +42,7 @@ void Hydro::RiemannSolver(int const k, int const j, int const il, int const iu,
     Real fsig = 1., feps = 1.;
     for (int n = 1; n <= NVAPOR; ++n) {
       fsig += wli[n] * (pthermo->getCvRatio(n) - 1.);
-      feps += wli[n] * (1. / pthermo->getMassRatio(n) - 1.);
+      feps += wli[n] * (1. / pthermo->getMuRatio(n) - 1.);
     }
     Real kappal = 1. / (gamma - 1.) * fsig / feps;
 

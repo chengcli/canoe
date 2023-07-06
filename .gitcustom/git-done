@@ -1,0 +1,8 @@
+#!/bin/sh
+
+currentBranch=$(git symbolic-ref --short -q HEAD) # Getting the current branch
+
+git checkout main
+git fetch
+git rebase origin/main
+git branch -D currentBranch

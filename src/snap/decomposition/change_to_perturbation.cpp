@@ -43,7 +43,7 @@ void Decomposition::ChangeToPerturbation(AthenaArray<Real> &w, int kl, int ku,
   Coordinates *pco = pmb->pcoord;
 
   Real grav = -pmb->phydro->hsrc.GetG1();  // positive downward pointing
-  Real Rd = pmb->pimpl->pthermo->GetRd();
+  Real Rd = Thermodynamics::GetInstance()->GetRd();
   int is = pmb->is, ie = pmb->ie;
   if (grav == 0.) return;
 
@@ -162,7 +162,7 @@ void Decomposition::RestoreFromPerturbation(AthenaArray<Real> &w,
                                             int il, int iu) {
   MeshBlock *pmb = pmy_block_;
   Hydro *phydro = pmb->phydro;
-  Real Rd = pmb->pimpl->pthermo->GetRd();
+  Real Rd = Thermodynamics::GetInstance()->GetRd();
   int is = pmb->is, ie = pmb->ie;
   if (phydro->hsrc.GetG1() == 0.) return;
 

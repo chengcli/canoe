@@ -348,10 +348,11 @@ void Decomposition::PopulateBotEntropy(AthenaArray<Real> const &w, int kl,
   }
 
   int ssize = 2 * (ku - kl + 1) * (ju - jl + 1), p = 0;
+  auto pthermo = Thermodynamics::GetInstance();
   if (!has_bot_neighbor) {
     for (int k = kl; k <= ku; ++k)
       for (int j = jl; j <= ju; ++j) {
-        Real gamma = pmb->pimpl->pthermo->GetGamma(w.at(k, j, pmb->is));
+        Real gamma = pthermo->GetGamma(pmb, k, j, pmb->is);
         buffer_[p++] = gamma;
         buffer_[p++] =
             log(w(IPR, k, j, pmb->is)) - gamma * log(w(IDN, k, j, pmb->is));

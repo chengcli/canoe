@@ -1,11 +1,12 @@
+// C/C++
 #include <algorithm>
-// athena
-#include <athena/reconstruct/interpolation.hpp>
+#include <cmath>
 
 // external
 #include <gtest/gtest.h>
 
-#include <cmath>
+// athena
+#include <athena/reconstruct/interpolation.hpp>
 
 TEST(interp_weno3, test_case1) {
   double phim1 = 1.0;

@@ -26,7 +26,6 @@
 
 // snap
 #include <snap/thermodynamics/thermodynamics.hpp>
-#include <snap/thermodynamics/thermodynamics_helper.hpp>
 
 // utils
 #include <utils/ndarrays.hpp>
@@ -195,26 +194,6 @@ void ProfileInversion::UpdateHydro(Hydro *phydro, ParameterInput *pin) const {
   FreeCArray(XpSample);
 }
 
-struct SolverData {
-  Thermodynamics const *pthermo;
-  Real **w2;
-  Real dlnp;
-};
-
-Real solve_thetav(Real rdlnTdlnP, void *aux) {
-  // grav parameter is not used in hydrostatic formulation, set to zero
-  SolverData *pdata = static_cast<SolverData *>(aux);
-  Real **w2 = pdata->w2;
-  Thermodynamics const *pthermo = pdata->pthermo;
-  pthermo->ConstructAtmosphere(w2, pthermo->GetTemp(w2[0]), w2[0][IPR], 0.,
-                               pdata->dlnp, 2, Adiabat::dry, rdlnTdlnP);
-  Real thetav0 =
-      pthermo->PotentialTemp(w2[0], w2[0][IPR]) * pthermo->RovRd(w2[0]);
-  Real thetav1 =
-      pthermo->PotentialTemp(w2[1], w2[0][IPR]) * pthermo->RovRd(w2[1]);
-  return thetav1 - thetav0;
-}
-
 void ProfileInversion::UpdateProfiles(Hydro *phydro, Real **XpSample, int k,
                                       int jl, int ju) const {
   Application::Logger app("inversion");
@@ -252,12 +231,13 @@ void ProfileInversion::UpdateProfiles(Hydro *phydro, Real **XpSample, int k,
       for (int i = is; i <= ie; ++i)
         phydro->w(n, k, j, i) = phydro->w(n, k, jl - 1, i);
 
-  auto pthermo = pmy_block_->pimpl->pthermo;
+  auto pthermo = Thermodynamics::GetInstance();
+  auto pmb = pmy_block_;
   Real Rd = pthermo->GetRd();
 
   // calculate perturbed profiles
   app->Log("Update profiles");
-  auto pcoord = pmy_block_->pcoord;
+  auto pcoord = pmb->pcoord;
   for (size_t n = 0; n < idx_.size(); ++n) {
     int jn = jl + n;
     int m = idx_[n];
@@ -273,7 +253,7 @@ void ProfileInversion::UpdateProfiles(Hydro *phydro, Real **XpSample, int k,
                Xlen_[m]);
 
     for (int i = is; i <= ie; ++i) {
-      Real temp = pthermo->GetTemp(phydro->w.at(k, jn, i));
+      Real temp = pthermo->GetTemp(pmb, k, jn, i);
 
       // do not alter levels lower than zlev[0] or higher than zlev[nsample-1]
       if (pcoord->x1v(i) < zlev[0] || pcoord->x1v(i) > zlev[nsample - 1])
@@ -286,9 +266,8 @@ void ProfileInversion::UpdateProfiles(Hydro *phydro, Real **XpSample, int k,
         } else {
           temp += Xp[m][i - is];
         }
-        phydro->w(IDN, k, jn, i) =
-            phydro->w(IPR, k, jn, i) /
-            (Rd * temp * pthermo->RovRd(phydro->w.at(k, jn, i)));
+        phydro->w(IDN, k, jn, i) = phydro->w(IPR, k, jn, i) /
+                                   (Rd * temp * pthermo->RovRd(pmb, k, jn, i));
       } else {  // save perturbed compositional profiles
         phydro->w(m, k, jn, i) += Xp[m][i - is];
         phydro->w(m, k, jn, i) = std::max(phydro->w(m, k, jn, i), 0.);
@@ -303,14 +282,14 @@ void ProfileInversion::UpdateProfiles(Hydro *phydro, Real **XpSample, int k,
 
   for (int i = is; i <= ie; ++i) {
     // get initial temperature from jl-1
-    temp1d[i - is] = pthermo->GetTemp(phydro->w.at(k, jl - 1, i));
+    temp1d[i - is] = pthermo->GetTemp(pmb, k, jl - 1, i);
 
     for (size_t n = 0; n < idx_.size(); ++n) {
       int jn = jl + n;
       int m = idx_[n];
       if (m == IDN) {
         // override with new temperature
-        temp1d[i - is] = pthermo->GetTemp(phydro->w.at(k, jn, i));
+        temp1d[i - is] = pthermo->GetTemp(pmb, k, jn, i);
       } else {
         phydro->w(m, k, ju, i) = phydro->w(m, k, jn, i);
       }
@@ -319,7 +298,7 @@ void ProfileInversion::UpdateProfiles(Hydro *phydro, Real **XpSample, int k,
     // reset temperature given new concentration
     phydro->w(IDN, k, ju, i) =
         phydro->w(IPR, k, ju, i) /
-        (Rd * temp1d[i - is] * pthermo->RovRd(phydro->w.at(k, ju, i)));
+        (Rd * temp1d[i - is] * pthermo->RovRd(pmb, k, ju, i));
   }
 
   delete[] temp1d;
@@ -334,51 +313,27 @@ void ProfileInversion::ConvectiveAdjustment(Hydro *phydro, int k,
   Application::Logger app("inversion");
   app->Log("doing convective adjustment");
 
-  Real **w2;
-  NewCArray(w2, 2, NHYDRO + 2 * NVAPOR);
-
-  Real dw[1 + NVAPOR];
   int is = pmy_block_->is, ie = pmy_block_->ie;
 
-  auto pthermo = pmy_block_->pimpl->pthermo;
+  auto pthermo = Thermodynamics::GetInstance();
+  auto pmb = pmy_block_;
+
+  Variable var(Variable::Type::MoleFrac);
   for (int i = is + 1; i <= ie; ++i) {
-    // if (pcoord_->x1v(i) < zlev[0]) continue;
-    //  copy unadjusted temperature and composition profile to ju
-    Real temp = pthermo->GetTemp(phydro->w.at(k, ju, i));
+    pmy_block_->pimpl->GatherFromPrimitive(&var, k, ju, i - 1);
+    Real dlnp = log(phydro->w(IPR, k, ju, i) / phydro->w(IPR, k, ju, i - 1));
 
-    // constant virtual potential temperature move
-    for (int n = 0; n < NHYDRO; ++n) w2[0][n] = phydro->w(n, k, ju, i - 1);
+    pthermo->Extrapolate(&var, dlnp, Thermodynamics::Method::NeutralStability);
 
-    SolverData solver_data;
-    solver_data.w2 = w2;
-    solver_data.pthermo = pthermo.get();
-    solver_data.dlnp =
-        log(phydro->w(IPR, k, ju, i) / phydro->w(IPR, k, ju, i - 1));
-
-    Real rdlnTdlnP = 1.;
-    // std::cout << solve_thetav(1., &solver_data) << std::endl;
-    int err = root(0.5, 8., 1.E-4, &rdlnTdlnP, solve_thetav, &solver_data);
-    if (err) {
-      char buf[80];
-      snprintf(buf, sizeof(buf),
-               "root solver does not converge: %12.3g - %12.3g",
-               solve_thetav(0.5, &solver_data), solve_thetav(8., &solver_data));
-      throw RuntimeError("ConvectiveAdjustment",
-                         "root solver does not converge");
-    }
-    // msg << "- rdlnTdlnP = " << rdlnTdlnP << std::endl;
-
-    pthermo->ConstructAtmosphere(w2, pthermo->GetTemp(w2[0]), w2[0][IPR], 0.,
-                                 solver_data.dlnp, 2, Adiabat::dry, rdlnTdlnP);
+    var.ConvertToMassFraction();
 
     // stability
-    phydro->w(IDN, k, ju, i) = std::min(w2[1][IDN], phydro->w(IDN, k, ju, i));
+    phydro->w(IDN, k, ju, i) = std::min(var.w[IDN], phydro->w(IDN, k, ju, i));
 
     // saturation
-    pthermo->SaturationSurplus(dw, phydro->w.at(k, ju, i), VariableType::prim);
-    for (int n = 1; n <= NVAPOR; ++n)
-      if (dw[n] > 0.) phydro->w(n, k, ju, i) -= dw[n];
+    for (int n = 1; n <= NVAPOR; ++n) {
+      Real rh = pthermo->RelativeHumidity(pmb, n, k, ju, i);
+      if (rh > 1.) phydro->w(n, k, ju, i) /= rh;
+    }
   }
-
-  FreeCArray(w2);
 }
