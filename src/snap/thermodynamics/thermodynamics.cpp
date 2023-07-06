@@ -361,6 +361,18 @@ void Thermodynamics::getSaturationSurplus(Real dw[], Variable& var) const {
   }
 }
 
+Real Thermodynamics::GetLatentHeatMole(int i, std::vector<Real> const& rates,
+                                       Real temp) const {
+  if (std::abs(rates[0]) < 1.E-8) return 0.;
+
+  Real heat = 0.;
+  for (int j = 1; j < rates.size(); ++j) {
+    heat += rates[j] * GetLatentEnergyMole(cloud_index_set_[i][j - 1], temp);
+  }
+
+  return heat / std::abs(rates[0]) + Constants::Rgas * temp;
+}
+
 Thermodynamics* Thermodynamics::mythermo_ = nullptr;
 
 /*void Thermodynamics::UpdateTPConservingU(Real q[], Real rho, Real uhat) const

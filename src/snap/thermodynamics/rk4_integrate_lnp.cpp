@@ -24,7 +24,7 @@ void Thermodynamics::rk4IntegrateLnp(Variable *qfrac, Real dlnp, Method method,
       auto rates = TryEquilibriumTP(*qfrac, iv);
 
       // saturation indicator
-      latent[iv] = getLatentHeat(rates, iv);
+      latent[iv] = GetLatentHeatMole(iv, rates, qfrac->w[IDN]);
 
       // vapor condensation rate
       qfrac->w[iv] += rates[0];

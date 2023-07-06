@@ -32,6 +32,7 @@ class TestThermodynamics : public testing::Test {
     // code here will be called just after the test completes
     // ok to through exceptions from here if need be
 
+    Thermodynamics::Destroy();
     delete pinput;
   }
 };
@@ -104,6 +105,23 @@ TEST_F(TestThermodynamics, ammonia_cloud) {
   EXPECT_NEAR(pthermo->GetLatentEnergyMass(4, 0.), 2262832.9904145, 1e-6);
   EXPECT_NEAR(pthermo->GetLatentEnergyMole(4, 0.), 38455.367856516, 1e-6);
 };
+
+TEST_F(TestThermodynamics, latent_heats) {
+  auto pthermo = Thermodynamics::GetInstance();
+
+  std::vector<Real> rates(3);
+  rates[0] = -1.;
+  rates[1] = 0.5;
+  rates[2] = 0.5;
+
+  EXPECT_NEAR(pthermo->GetLatentEnergyMole(3, 300.), 43573.1037985724, 1e-6);
+  EXPECT_NEAR(pthermo->GetLatentHeatMole(1, rates, 300.), 46067.442398572,
+              1e-6);
+
+  EXPECT_NEAR(pthermo->GetLatentEnergyMass(3, 300.), 2419791.93586797, 1e-6);
+  EXPECT_NEAR(pthermo->GetLatentHeatMass(1, rates, 300.), 2558312.7182640,
+              1e-6);
+}
 
 int main(int argc, char *argv[]) {
   Application::Start(argc, argv);

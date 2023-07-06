@@ -68,7 +68,7 @@ class Thermodynamics {
   };
 
   // member functions
-  ~Thermodynamics();
+  virtual ~Thermodynamics();
 
   //! Return a pointer to the one and only instance of Thermodynamics
   static Thermodynamics const *GetInstance();
@@ -172,6 +172,14 @@ class Thermodynamics {
     return GetLatentEnergyMass(n, temp) * mu_[n];
   }
 
+  Real GetLatentHeatMole(int i, std::vector<Real> const &rates,
+                         Real temp) const;
+
+  Real GetLatentHeatMass(int i, std::vector<Real> const &rates,
+                         Real temp) const {
+    return GetLatentHeatMole(i, rates, temp) / mu_[i];
+  }
+
   //! Calculate the equilibrium mole transfer between vapor and cloud
   //! \param L_ov_cv L/cv evaluated at current temperature
   //! \return molar fraction change of vapor to cloud
@@ -263,11 +271,6 @@ class Thermodynamics {
       qfrac->w[iv] += qfrac->c[n];
       qfrac->c[n] = 0.;
     }
-  }
-
-  //! TODO(cli)
-  Real getLatentHeat(std::vector<Real> const &rates, int iv) const {
-    return 0.;
   }
 
   //! Calculate moist adiabatic temperature gradient
