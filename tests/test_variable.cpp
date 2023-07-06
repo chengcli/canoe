@@ -150,11 +150,11 @@ TEST_F(TestVariable, MassFraction_MassConcentration) {
   EXPECT_DOUBLE_EQ(a.w[IVZ], 0.3);
 }
 
-TEST(TestVariable, MoleFraction_MoleConcentration) {}
+TEST_F(TestVariable, MoleFraction_MoleConcentration) {}
 
-TEST(TestVariable, MassFraction_MoleConcentration) {}
+TEST_F(TestVariable, MassFraction_MoleConcentration) {}
 
-TEST(TestVariable, MassConcentration_MoleConcentration) {}
+TEST_F(TestVariable, MassConcentration_MoleConcentration) {}
 
 int main(int argc, char **argv) {
   Application::Start(argc, argv);

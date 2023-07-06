@@ -15,7 +15,7 @@
 #include "vapors/ammonia_vapors.hpp"
 #include "vapors/water_vapors.hpp"
 
-Real NullSatVaporPres(Variable const& qfrac, int i) {
+Real NullSatVaporPres(Variable const& qfrac, int i, int j) {
   Real g = 1.;
 
 #pragma omp reduction(+ : g)
@@ -48,11 +48,11 @@ void Thermodynamics::enrollVaporFunctionsJupiterJuno() {
   for (int n = 0; n < cloud_index_set_[iH2O].size(); ++n) {
     int j = cloud_index_set_[iH2O][n];
     if (n == 0) {
-      svp_func_[iH2O][j] = [](Variable const& qfrac, int) {
+      svp_func_[iH2O][n] = [](Variable const& qfrac, int, int) {
         return sat_vapor_p_H2O_BriggsS(qfrac.w[IDN]);
       };
     } else {
-      svp_func_[iH2O][j] = NullSatVaporPres;
+      svp_func_[iH2O][n] = NullSatVaporPres;
     }
   }
 
@@ -62,11 +62,11 @@ void Thermodynamics::enrollVaporFunctionsJupiterJuno() {
   for (int n = 0; n < cloud_index_set_[iNH3].size(); ++n) {
     int j = cloud_index_set_[iNH3][n];
     if (n == 0) {
-      svp_func_[iNH3][0] = [](Variable const& qfrac, int) {
+      svp_func_[iNH3][n] = [](Variable const& qfrac, int, int) {
         return sat_vapor_p_NH3_BriggsS(qfrac.w[IDN]);
       };
     } else {
-      svp_func_[iNH3][j] = NullSatVaporPres;
+      svp_func_[iNH3][n] = NullSatVaporPres;
     }
   }
 }

@@ -11,6 +11,8 @@
 
 // snap
 #include <snap/thermodynamics/thermodynamics.hpp>
+#include <snap/thermodynamics/vapors/ammonia_vapors.hpp>
+#include <snap/thermodynamics/vapors/water_vapors.hpp>
 
 class TestThermodynamics : public testing::Test {
  protected:
@@ -123,7 +125,7 @@ TEST_F(TestThermodynamics, latent_heats) {
               1e-6);
 }
 
-TEST_F(TestThermodynamics, try_equilibrium) {
+TEST_F(TestThermodynamics, equilibrium_water) {
   auto pthermo = Thermodynamics::GetInstance();
 
   int iH2O = 1;
@@ -137,10 +139,35 @@ TEST_F(TestThermodynamics, try_equilibrium) {
   qfrac.w[iH2O] = 0.2;
   qfrac.w[iNH3] = 0.1;
 
+  // water
+  Real svp = sat_vapor_p_H2O_BriggsS(qfrac.w[IDN]);
   auto rates = pthermo->TryEquilibriumTP(qfrac, iH2O);
 
-  EXPECT_NEAR(rates[0], 0.0, 1e-8);
-  EXPECT_NEAR(rates[1], 0.0, 1e-8);
+  EXPECT_NEAR(rates[0], svp / qfrac.w[IPR] - qfrac.w[iH2O], 1e-3);
+  EXPECT_NEAR(rates[1], 0.19592911846053, 1e-8);
+  EXPECT_NEAR(rates[2], 0.0, 1e-8);
+}
+
+TEST_F(TestThermodynamics, equilibrium_ammonia) {
+  auto pthermo = Thermodynamics::GetInstance();
+
+  int iH2O = 1;
+  int iNH3 = 2;
+
+  Variable qfrac(Variable::Type::MoleFrac);
+  qfrac.SetZero();
+
+  qfrac.w[IDN] = 160.;
+  qfrac.w[IPR] = 7.E4;
+  qfrac.w[iH2O] = 0.02;
+  qfrac.w[iNH3] = 0.01;
+
+  // ammonia
+  Real svp = sat_vapor_p_NH3_BriggsS(qfrac.w[IDN]);
+  auto rates = pthermo->TryEquilibriumTP(qfrac, iNH3);
+
+  EXPECT_NEAR(rates[0], svp / qfrac.w[IPR] - qfrac.w[iNH3], 1e-3);
+  EXPECT_NEAR(rates[1], 0.0088517945331865, 1e-8);
   EXPECT_NEAR(rates[2], 0.0, 1e-8);
 }
 

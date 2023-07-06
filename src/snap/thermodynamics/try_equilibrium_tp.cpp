@@ -16,7 +16,7 @@ std::vector<Real> Thermodynamics::TryEquilibriumTP(Variable const& qfrac,
 
   for (int n = 0; n < cloud_index_set_[ivapor].size(); ++n) {
     int jcloud = cloud_index_set_[ivapor][n];
-    Real xs = svp_func_[ivapor][jcloud](qfrac, ivapor) / qfrac.w[IPR];
+    Real xs = svp_func_[ivapor][n](qfrac, ivapor, jcloud) / qfrac.w[IPR];
 
     Real xc = qfrac.c[jcloud];
 

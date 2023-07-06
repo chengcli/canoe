@@ -25,9 +25,9 @@ class MeshBlock;
 class ParameterInput;
 
 using CloudIndexSet = std::vector<int>;
-using SatVaporPresFunc = Real (*)(Variable const &, int i);
+using SatVaporPresFunc = Real (*)(Variable const &, int i, int j);
 
-Real NullSatVaporPres(Variable const &, int);
+Real NullSatVaporPres(Variable const &, int, int);
 
 void read_thermo_property(Real var[], char const name[], int len, Real v0,
                           ParameterInput *pin);
