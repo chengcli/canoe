@@ -1,6 +1,3 @@
-// athena
-#include <athena/mesh/mesh.hpp>
-
 // canoe
 #include <configure.hpp>
 #include <variable.hpp>
@@ -14,9 +11,9 @@
 
 namespace GiantPlanets {
 
-MwrAbsorberCIA::MwrAbsorberCIA(MeshBlock* pmb, std::vector<std::string> species,
+MwrAbsorberCIA::MwrAbsorberCIA(std::vector<std::string> species,
                                ParameterMap params)
-    : Absorber(pmb, "radio-CIA", species, params) {
+    : Absorber("radio-CIA", species, params) {
   if (!params_.count("xHe")) {
     throw NotFoundError("MwrAbsorberCIA", "parameter 'xHe'");
   }

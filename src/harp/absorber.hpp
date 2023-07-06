@@ -24,7 +24,6 @@
 #include <athena/athena.hpp>
 
 class Variable;
-class MeshBlock;
 
 using ParameterMap = std::map<std::string, Real>;
 
@@ -32,7 +31,7 @@ class Absorber {
  public:
   explicit Absorber(std::string name);
 
-  Absorber(MeshBlock* pmb, std::string name, std::vector<std::string> species,
+  Absorber(std::string name, std::vector<std::string> species,
            ParameterMap params);
 
   std::string GetName() const { return name_; }
