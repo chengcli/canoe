@@ -195,15 +195,14 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin)
   }
 
   // construct atmosphere from bottom up
-  var.SetZero();
-
-  var.w[iH2O] = xH2O;
-  var.w[iNH3] = xNH3;
-  var.w[IPR] = Ps;
-  var.w[IDN] = Ts;
-
   for (int k = ks; k <= ke; ++k)
     for (int j = js; j <= je; ++j) {
+      var.SetZero();
+      var.w[iH2O] = xH2O;
+      var.w[iNH3] = xNH3;
+      var.w[IPR] = Ps;
+      var.w[IDN] = Ts;
+
       int i = is;
       for (; i <= ie; ++i) {
         pimpl->DistributeToPrimitive(var, k, j, i);
@@ -212,9 +211,10 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin)
       }
 
       // Replace adiabatic atmosphere with isothermal atmosphere if temperature is too low
+      pthermo->Extrapolate(&var, dlnp, Thermodynamics::Method::DryAdiabat);
       for (; i <= ie; ++i) {
-        pimpl->DistributeToPrimitive(var, k, j, i);
         pthermo->Extrapolate(&var, -dlnp, Thermodynamics::Method::Isothermal);
+        pimpl->DistributeToPrimitive(var, k, j, i);
       }
     }
 
