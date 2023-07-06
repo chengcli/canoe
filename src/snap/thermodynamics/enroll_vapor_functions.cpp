@@ -25,6 +25,8 @@ Real NullSatVaporPres(Variable const& qfrac, int i, int j) {
 }
 
 void Thermodynamics::enrollVaporFunctions(ParameterInput* pin) {
+  if (NVAPOR == 0 && NCLOUD == 0) return;
+
   if (strcmp(PLANET, "Earth") == 0) {
     enrollVaporFunctionsEarth();
   } else if (strcmp(PLANET, "Jupiter") == 0) {
