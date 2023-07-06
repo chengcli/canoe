@@ -1,7 +1,4 @@
 name: Linux-Build
-defaults:
-  run:
-    shell: bash -ieo pipefail {0}
 on:
   push:
     branches:
@@ -147,6 +144,9 @@ jobs:
     runs-on: [self-hosted, linux, 4core]
     needs: build-non-hydrostatic
     steps:
+      - name: source
+        run: source ~/.bashrc
+
       - uses: actions/checkout@v3
 
       - name: create build directory
@@ -175,6 +175,9 @@ jobs:
     runs-on: [self-hosted, Linux, 8core]
     needs: build-non-hydrostatic
     steps:
+      - name: source
+        run: source ~/.bashrc
+
       - uses: actions/checkout@v3
 
       - name: create build directory
@@ -203,6 +206,9 @@ jobs:
     runs-on: [self-hosted, Linux, 8core]
     needs: build-non-hydrostatic
     steps:
+      - name: source
+        run: source ~/.bashrc
+
       - uses: actions/checkout@v3
 
       - name: create build directory
