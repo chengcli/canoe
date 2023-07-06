@@ -15,6 +15,7 @@ class Chemistry {
   AthenaArray<Real> w, u;
 
   Chemistry(MeshBlock *pmb, ParameterInput *pin);
+  ~Chemistry();
 
  protected:
   MeshBlock *pmy_block_;

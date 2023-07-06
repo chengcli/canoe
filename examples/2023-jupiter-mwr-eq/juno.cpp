@@ -173,7 +173,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin)
 
     // stop at just above P0
     for (int i = is; i <= ie; ++i) {
-      pthermo->Extrapolate(&var, -dlnp, Thermodynamics::Method::DryAdiabat);
+      pthermo->Extrapolate(&var, -dlnp/2., Thermodynamics::Method::DryAdiabat);
       if (var.w[IPR] < P0) break;
     }
 
@@ -183,12 +183,11 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin)
 
     // make up for the difference
     Ts += T0 - var.w[IDN];
-    if (fabs(T0 - var.w[IDN]) < 0.01) break;
+    if (std::abs(T0 - var.w[IDN]) < 0.01) break;
 
     app->Log("Iteration #", iter);
     app->Log("T", var.w[IDN]);
   }
-
 
   if (iter > max_iter) {
     throw RuntimeError("ProblemGenerator", "maximum iteration reached");

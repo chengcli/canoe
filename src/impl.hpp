@@ -22,7 +22,7 @@
 #include "harp/radiation.hpp"
 
 // cloud
-#include "clouds/cloud.hpp"
+#include "dusts/cloud.hpp"
 
 // tracer
 #include "tracer/tracer.hpp"
@@ -48,11 +48,10 @@ class MeshBlock::Impl {
   DecompositionPtr pdec;
   ImplicitSolverPtr phevi;
 
-  TracerPtr ptracer;
-  ChemistryPtr pchem;
-  // StaticVariablePtr pstatic;
-
   CloudPtr pcloud;
+  ChemistryPtr pchem;
+  TracerPtr ptracer;
+  // StaticVariablePtr pstatic;
 
   RadiationPtr prad;
   InversionQueue fitq;

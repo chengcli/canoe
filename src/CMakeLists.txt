@@ -49,8 +49,9 @@ add_subdirectory(harp)
 add_subdirectory(inversion)
 add_subdirectory(outputs)
 add_subdirectory(opacity)
-add_subdirectory(tracer)
+add_subdirectory(dusts)
 add_subdirectory(c3m)
+add_subdirectory(tracer)
 add_subdirectory(tasklist)
 
 set(CANOE_LIBRARY_${buildu}
@@ -65,8 +66,9 @@ set(CANOE_LIBRARY_${buildu}
   "inversion_${buildl}"
   "outputs_${buildl}"
   "opacity_${buildl}"
-  "tracer_${buildl}"
+  "dusts_${buildl}"
   "c3m_${buildl}"
+  "tracer_${buildl}"
   "tasklist_${buildl}"
   "yaml-cpp"
   ${NETCDF_LIBRARIES}

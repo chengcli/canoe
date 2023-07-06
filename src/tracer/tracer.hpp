@@ -15,6 +15,7 @@ class Tracer {
   AthenaArray<Real> w, u;
 
   Tracer(MeshBlock *pmb, ParameterInput *pin);
+  ~Tracer();
 
  protected:
   MeshBlock *pmy_block_;

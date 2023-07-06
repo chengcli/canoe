@@ -37,11 +37,14 @@ MeshBlock::Impl::Impl(MeshBlock *pmb, ParameterInput *pin) : pmy_block_(pmb) {
   // implicit methods
   phevi = std::make_shared<ImplicitSolver>(pmb, pin);
 
-  // tracer
-  ptracer = std::make_shared<Tracer>(pmb, pin);
+  // cloud
+  pcloud = std::make_shared<Cloud>(pmb, pin);
 
   // chemistry
   pchem = std::make_shared<Chemistry>(pmb, pin);
+
+  // tracer
+  ptracer = std::make_shared<Tracer>(pmb, pin);
 
   // radiation
   prad = std::make_shared<Radiation>(pmb, pin);

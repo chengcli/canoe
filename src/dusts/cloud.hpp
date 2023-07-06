@@ -15,11 +15,13 @@ class Cloud {
  public:
   AthenaArray<Real> w, u;
 
- protected:
   Cloud(MeshBlock *pmb, ParameterInput *pin);
+  ~Cloud();
+
+ protected:
+  MeshBlock *pmy_block_;
 };
 
-using CloudPtr = std::unique_ptr<Cloud>;
-using CloudQueue = std::vector<CloudPtr>;
+using CloudPtr = std::shared_ptr<Cloud>;
 
 #endif  // SRC_CLOUDS_CLOUD_HPP_
