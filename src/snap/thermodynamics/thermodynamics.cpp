@@ -161,9 +161,13 @@ Thermodynamics const* Thermodynamics::InitFromAthenaInput(ParameterInput* pin) {
 
   // calculate delta = $(\sigma_j - \sigma_i)*\epsilon_i*\gamma/(\gamma - 1)$
   for (int n = 0; n <= NVAPOR; ++n) delta[n] = 0.;
-  for (int n = 1 + NVAPOR; n < Size; ++n)
-    delta[n] = (cp_ratio_mass[n] - cp_ratio_mass[1 + (n - 1) % NVAPOR]) *
-               mu_ratio[n] / (1. - 1. / gammad);
+  for (int i = 1; i <= NVAPOR; ++i) {
+    for (int j = 0; j < cloud_index_set[i].size(); ++j) {
+      int n = cloud_index_set[i][j] + 1 + NVAPOR;
+      delta[n] = (cp_ratio_mass[n] - cp_ratio_mass[i]) * mu_ratio[i] /
+                 (1. - 1. / gammad);
+    }
+  }
 
   // calculate cv_ratio = $\sigma_i + (1. - \gamma)/\epsilon_i$
   for (int n = 0; n <= NVAPOR; ++n) {
@@ -353,7 +357,8 @@ void Thermodynamics::Extrapolate(Variable* qfrac, Real dzORdlnp, Method method,
 #endif
 }
 
-void Thermodynamics::getSaturationSurplus(Real dw[], Variable const& var) const {
+void Thermodynamics::getSaturationSurplus(Real dw[],
+                                          Variable const& var) const {
   for (int iv = 1; iv <= NVAPOR; ++iv) {
     dw[iv] = var.w[iv];
   }

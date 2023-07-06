@@ -48,7 +48,6 @@
 // Finally, the Thermodynamics class works with thermodynamic aspects of the problem
 // such as the temperature, potential temperature, condensation of vapor, etc.
 #include <snap/thermodynamics/thermodynamics.hpp>
-#include <snap/thermodynamics/thermodynamics_helper.hpp>
 
 // Functions in the math library are protected by a specific namespace because math
 // functions are usually concise in the names, such as <code>min</code>,
@@ -137,8 +136,8 @@ void Diffusion(MeshBlock *pmb, Real const time, Real const dt,
 
       // Similar to what we have done in MeshBlock::UserWorkBeforeOutput, we use the
       // Thermodynamics class to calculate temperature and potential temperature.
-      Real temp = pthermo->GetTemp(pmb,ks,j,i);
-      Real theta = pthermo->PotentialTemp(pmb,p0,ks,j,i);
+      Real temp = pthermo->GetTemp(pmb,pmb->ks,j,i);
+      Real theta = pthermo->PotentialTemp(pmb,p0,pmb->ks,j,i);
 
       // The thermal diffusion is applied to the potential temperature field, which is
       // not exactly correct. But this is the setting of the test program.

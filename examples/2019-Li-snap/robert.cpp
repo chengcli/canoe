@@ -30,7 +30,6 @@
 
 // snap
 #include <snap/thermodynamics/thermodynamics.hpp>
-#include <snap/thermodynamics/thermodynamics_helper.hpp>
 
 // @sect3{Preamble}
 
@@ -55,7 +54,7 @@ void MeshBlock::UserWorkBeforeOutput(ParameterInput *pin)
     for (int j = js; j <= je; ++j)
       for (int i = is; i <= ie; ++i) {
         user_out_var(0,k,j,i) = pthermo->GetTemp(this,k,j,i);
-        user_out_var(1,k,j,i) = pthermo->PotentialTemp(this,p0,k,j,i),;
+        user_out_var(1,k,j,i) = pthermo->PotentialTemp(this,p0,k,j,i);
       }
 }
 
