@@ -160,7 +160,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin)
   Variable var;
   // estimate surface temperature and pressure
   Real Ps = P0*exp(-x1min/H0);
-  Real Ts = T0*pow(var.w[IPR]/P0, Rd/cp);
+  Real Ts = T0*pow(Ps/P0, Rd/cp);
   Real xH2O = pin->GetReal("problem", "qH2O.ppmv")/1.E6;
   Real xNH3 = pin->GetReal("problem", "qNH3.ppmv")/1.E6;
 
@@ -171,20 +171,24 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin)
     var.w[IPR] = Ps;
     var.w[IDN] = Ts;
 
+    // stop at just above P0
     for (int i = is; i <= ie; ++i) {
       pthermo->Extrapolate(&var, -dlnp, Thermodynamics::Method::DryAdiabat);
-      if (var.w[IDN] < P0) break;
+      if (var.w[IPR] < P0) break;
     }
 
-    // Find T at p = p0
-    Real t0;
+    // extrapolate down to where var is
+    pthermo->Extrapolate(&var, log(P0/var.w[IPR]),
+        Thermodynamics::Method::DryAdiabat);
 
-    Ts += T0 - t0;
-    if (fabs(T0 - t0) < 0.01) break;
+    // make up for the difference
+    Ts += T0 - var.w[IDN];
+    if (fabs(T0 - var.w[IDN]) < 0.01) break;
 
     app->Log("Iteration #", iter);
-    app->Log("T", t0);
+    app->Log("T", var.w[IDN]);
   }
+
 
   if (iter > max_iter) {
     throw RuntimeError("ProblemGenerator", "maximum iteration reached");

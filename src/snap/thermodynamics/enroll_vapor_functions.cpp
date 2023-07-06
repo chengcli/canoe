@@ -44,7 +44,6 @@ void Thermodynamics::enrollVaporFunctionsGiants() {
 void Thermodynamics::enrollVaporFunctionsJupiterJuno() {
   // water svp:
   int iH2O = 1;
-
   for (int n = 0; n < cloud_index_set_[iH2O].size(); ++n) {
     int j = cloud_index_set_[iH2O][n];
     if (n == 0) {
@@ -58,7 +57,6 @@ void Thermodynamics::enrollVaporFunctionsJupiterJuno() {
 
   // ammonia svp:
   int iNH3 = 2;
-
   for (int n = 0; n < cloud_index_set_[iNH3].size(); ++n) {
     int j = cloud_index_set_[iNH3][n];
     if (n == 0) {

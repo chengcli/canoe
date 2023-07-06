@@ -102,14 +102,14 @@ void MeshBlock::Impl::DistributePrimitive(Variable &var, int k, int j, int i) {
 
   for (int n = 0; n < NHYDRO; ++n) pmy_block_->phydro->w(n, k, j, i) = var.w[n];
 
-  // for (int n = 0; n < NCLOUD; ++n)
-  //   pmy_block_->pimpl->pcloud->w(n, k, j, i) = var.c[n];
-
-  for (int n = 0; n < NTRACER; ++n)
-    pmy_block_->pimpl->ptracer->w(n, k, j, i) = var.x[n];
+  for (int n = 0; n < NCLOUD; ++n)
+    pmy_block_->pimpl->pcloud->w(n, k, j, i) = var.c[n];
 
   for (int n = 0; n < NCHEMISTRY; ++n)
     pmy_block_->pimpl->pchem->w(n, k, j, i) = var.q[n];
+
+  for (int n = 0; n < NTRACER; ++n)
+    pmy_block_->pimpl->ptracer->w(n, k, j, i) = var.x[n];
 }
 
 void MeshBlock::Impl::DistributeConserved(Variable &var, int k, int j, int i) {
@@ -117,14 +117,14 @@ void MeshBlock::Impl::DistributeConserved(Variable &var, int k, int j, int i) {
 
   for (int n = 0; n < NHYDRO; ++n) pmy_block_->phydro->u(n, k, j, i) = var.w[n];
 
-  // for (int n = 0; n < NCLOUD; ++n)
-  //   pmy_block_->pimpl->pcloud->u(n, k, j, i) = var.c[n];
-
-  for (int n = 0; n < NTRACER; ++n)
-    pmy_block_->pimpl->ptracer->u(n, k, j, i) = var.x[n];
+  for (int n = 0; n < NCLOUD; ++n)
+    pmy_block_->pimpl->pcloud->u(n, k, j, i) = var.c[n];
 
   for (int n = 0; n < NCHEMISTRY; ++n)
     pmy_block_->pimpl->pchem->u(n, k, j, i) = var.q[n];
+
+  for (int n = 0; n < NTRACER; ++n)
+    pmy_block_->pimpl->ptracer->u(n, k, j, i) = var.x[n];
 }
 
 int find_pressure_level_lesser(Real pres, AthenaArray<Real> const &w, int k,

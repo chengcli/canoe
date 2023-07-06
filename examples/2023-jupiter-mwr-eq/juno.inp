@@ -73,13 +73,6 @@ cloud = H2O(S), H2O(L), NH3(S), NH3(L)
 tracer = e-, Na
 
 <thermodynamics>
-vapor = nasa_gas.yaml
-cloud.H2O(S) = water.yaml
-cloud.H2O(L) = water.yaml
-cloud.NH3(S) = ammonia.yaml
-cloud.NH3(L) = ammonia.yaml
-cloud.NH4SH(S) = ammonium_hydrosulfide.yaml
-
 #Rd          = 3615.   # mu = 2.3 g/mol
 Rd          = 3587.   # mu = 2.3175 g/mol
 eps1        = 8.18    8.18    8.18
@@ -106,8 +99,8 @@ outdir       = (0,) (15,) (30,) (45,)
 use_temperature_dependent_cp = true
 use_fletcher16_cirs = false
 
-qH2O.gkg    = 20.   # g/kg
-qNH3.gkg    = 2.38  # g/kg
+qH2O.ppmv   = 4000.
+qNH3.ppmv   = 350.
 
 atm_file    = jupiter.yaml
 clat        = 0.

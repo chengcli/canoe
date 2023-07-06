@@ -1,5 +1,5 @@
-#ifndef SRC_CLOUDS_CLOUD_HPP_
-#define SRC_CLOUDS_CLOUD_HPP_
+#ifndef SRC_DUSTS_CLOUD_HPP_
+#define SRC_DUSTS_CLOUD_HPP_
 
 // C/C++
 #include <memory>

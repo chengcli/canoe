@@ -13,7 +13,8 @@
 //! \class Variable
 //  \brief a collection of all physical data in a computational cell
 class Variable {
- private:
+  friend std::ostream &operator<<(std::ostream &os, Variable const &var);
+
  public:
   enum { Size = NHYDRO + NCLOUD + NCHEMISTRY + NTRACER + NSTATIC };
 

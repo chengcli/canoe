@@ -12,6 +12,6 @@
 Chemistry::Chemistry(MeshBlock *pmb, ParameterInput *pin) : pmy_block_(pmb) {
   if (NCHEMISTRY == 0) return;
 
-  w.InitWithShallowSlice(pmb->pscalars->r, 4, NCLOUD + NTRACER, NCHEMISTRY);
-  u.InitWithShallowSlice(pmb->pscalars->s, 4, NCLOUD + NTRACER, NCHEMISTRY);
+  w.InitWithShallowSlice(pmb->pscalars->r, 4, NCLOUD, NCHEMISTRY);
+  u.InitWithShallowSlice(pmb->pscalars->s, 4, NCLOUD, NCHEMISTRY);
 }

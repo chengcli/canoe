@@ -10,6 +10,11 @@
 // snap
 #include <snap/thermodynamics/thermodynamics.hpp>
 
+std::ostream& operator<<(std::ostream& os, Variable const& var) {
+  for (auto& v : var.data_) os << v << ", ";
+  return os;
+}
+
 void Variable::ConvertToMassFraction() {
   if (mytype_ == Type::MassFrac) {
     return;
