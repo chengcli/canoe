@@ -47,7 +47,8 @@ class TestVariable : public testing::Test {
   virtual void TearDown() {
     // code here will be called just after the test completes
     // ok to through exceptions from here if need be
-
+    //
+    Thermodynamics::Destroy();
     delete pinput;
   }
 };
@@ -149,11 +150,11 @@ TEST_F(TestVariable, MassFraction_MassConcentration) {
   EXPECT_DOUBLE_EQ(a.w[IVZ], 0.3);
 }
 
-TEST(variable, MoleFraction_MoleConcentration) {}
+TEST(TestVariable, MoleFraction_MoleConcentration) {}
 
-TEST(variable, MassFraction_MoleConcentration) {}
+TEST(TestVariable, MassFraction_MoleConcentration) {}
 
-TEST(variable, MassConcentration_MoleConcentration) {}
+TEST(TestVariable, MassConcentration_MoleConcentration) {}
 
 int main(int argc, char **argv) {
   Application::Start(argc, argv);

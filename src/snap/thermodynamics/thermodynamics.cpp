@@ -98,9 +98,11 @@ Thermodynamics const* Thermodynamics::InitFromAthenaInput(ParameterInput* pin) {
     read_thermo_property(mythermo_->p3_.data(), "Ptriple", 1, 0., pin);
 
     mythermo_->cloud_index_set_.resize(1 + NVAPOR);
+    mythermo_->svp_func_.resize(NVAPOR);
 
     for (int i = 1; i <= NVAPOR; ++i) {
       mythermo_->cloud_index_set_[i].resize(NPHASE - 1);
+      mythermo_->svp_func_[i].resize(NPHASE - 1);
       for (int j = 1; j < NPHASE; ++j) {
         mythermo_->cloud_index_set_[i][j - 1] = 1 + j * NVAPOR + i - 1;
       }
@@ -108,6 +110,8 @@ Thermodynamics const* Thermodynamics::InitFromAthenaInput(ParameterInput* pin) {
 
     mythermo_->Rd_ = pin->GetOrAddReal("thermodynamics", "Rd", 1.);
     mythermo_->gammad_ref_ = pin->GetReal("hydro", "gamma");
+
+    mythermo_->enrollVaporFunctions(pin);
   }
 
   // alias

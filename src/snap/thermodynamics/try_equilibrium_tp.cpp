@@ -15,14 +15,13 @@ std::vector<Real> Thermodynamics::TryEquilibriumTP(Variable const& qfrac,
   std::vector<Real> rates(1 + cloud_index_set_[ivapor].size(), 0.);
 
   for (int n = 0; n < cloud_index_set_[ivapor].size(); ++n) {
-    Real xs = svp_func_[ivapor][n](qfrac) / qfrac.w[IPR];
-
     int jcloud = cloud_index_set_[ivapor][n];
+    Real xs = svp_func_[ivapor][jcloud](qfrac, ivapor) / qfrac.w[IPR];
+
     Real xc = qfrac.c[jcloud];
 
-    if (misty) {
+    if (misty) {  // no cloud in variable
       rates[0] += xs - xv;
-      rates[1 + n] = -xc;
       continue;
     }
 

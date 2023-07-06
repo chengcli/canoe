@@ -123,6 +123,27 @@ TEST_F(TestThermodynamics, latent_heats) {
               1e-6);
 }
 
+TEST_F(TestThermodynamics, try_equilibrium) {
+  auto pthermo = Thermodynamics::GetInstance();
+
+  int iH2O = 1;
+  int iNH3 = 2;
+
+  Variable qfrac(Variable::Type::MoleFrac);
+  qfrac.SetZero();
+
+  qfrac.w[IDN] = 300.;
+  qfrac.w[IPR] = 7.E5;
+  qfrac.w[iH2O] = 0.2;
+  qfrac.w[iNH3] = 0.1;
+
+  auto rates = pthermo->TryEquilibriumTP(qfrac, iH2O);
+
+  EXPECT_NEAR(rates[0], 0.0, 1e-8);
+  EXPECT_NEAR(rates[1], 0.0, 1e-8);
+  EXPECT_NEAR(rates[2], 0.0, 1e-8);
+}
+
 int main(int argc, char *argv[]) {
   Application::Start(argc, argv);
 

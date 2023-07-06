@@ -25,7 +25,9 @@ class MeshBlock;
 class ParameterInput;
 
 using CloudIndexSet = std::vector<int>;
-using SatVaporPresFunc = Real (*)(Variable const &);
+using SatVaporPresFunc = Real (*)(Variable const &, int i);
+
+Real NullSatVaporPres(Variable const &, int);
 
 void read_thermo_property(Real var[], char const name[], int len, Real v0,
                           ParameterInput *pin);
@@ -283,8 +285,10 @@ class Thermodynamics {
   void rk4IntegrateZ(Variable *qfrac, Real dlnp, Method method, Real grav,
                      Real adlnTdlnP) const;
 
-  void enrollSystem(ParameterInput *pin);
-  void enrollSystemJupiterJuno();
+  void enrollVaporFunctions(ParameterInput *pin);
+  void enrollVaporFunctionsEarth();
+  void enrollVaporFunctionsGiants();
+  void enrollVaporFunctionsJupiterJuno();
 
  private:
   //! ideal gas constant of dry air in J/kg
