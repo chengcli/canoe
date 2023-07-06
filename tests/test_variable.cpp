@@ -30,6 +30,7 @@ class TestVariable : public testing::Test {
     pinput->LoadFromFile(infile);
     infile.Close();
 
+    IndexMap::InitFromAthenaInput(pinput);
     Thermodynamics::InitFromAthenaInput(pinput);
 
     a.SetType(Variable::Type::MoleFrac);
@@ -49,6 +50,7 @@ class TestVariable : public testing::Test {
     // ok to through exceptions from here if need be
     //
     Thermodynamics::Destroy();
+    IndexMap::Destroy();
     delete pinput;
   }
 };
