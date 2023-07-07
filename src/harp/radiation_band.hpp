@@ -84,6 +84,10 @@ class RadiationBand {
   void setWavelengthGrid(YAML::Node &my);
 
   void addAbsorberGiants(ParameterInput *pin, YAML::Node &node);
+  void addAbsorberGiantsRADIO(ParameterInput *pin, YAML::Node &node);
+  void addAbsorberGiantsVISIR(ParameterInput *pin, YAML::Node &node);
+  void addAbsorberGiantsUV(ParameterInput *pin, YAML::Node &node);
+
   void addAbsorberEarth(ParameterInput *pin, YAML::Node &node);
   void addAbsorberVenus(ParameterInput *pin, YAML::Node &node);
   void addAbsorberMars(ParameterInput *pin, YAML::Node &node);
