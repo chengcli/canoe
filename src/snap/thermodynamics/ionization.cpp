@@ -5,6 +5,8 @@
  * @date Saturday Dec 04, 2021 23:30:27 EST
  * @bug No known bugs.
  */
+// C/C++
+#include <cmath>
 
 // canoe
 #include <constants.hpp>
