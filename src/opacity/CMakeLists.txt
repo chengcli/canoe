@@ -2,6 +2,7 @@ set(namel opacity)
 string(TOUPPER ${namel} nameu)
 
 file(GLOB src_files
+    Giants/*.cpp
     Giants/microwave/*.cpp
     )
 

@@ -12,6 +12,8 @@
 
 // opacity
 #include <opacity/Giants/microwave/mwr_absorbers.hpp>
+#include <opacity/Giants/freedman.hpp>
+#include <opacity/Giants/hydrogen_cia.hpp>
 
 // utils
 #include <utils/parameter_map.hpp>
@@ -19,36 +21,18 @@
 // harp
 #include "absorber.hpp"
 #include "radiation_band.hpp"
+#include "correlatedk_absorber.hpp"
 
 namespace gp = GiantPlanets;
 
-std::string extract_name(std::string band_name) {
-  // extract name without band type
+// extract name after hiphen
+std::string extract_second(std::string first_second) {
   std::string delimiter = "-";
-  size_t delimiter_pos = aname.find("-");
-  return aname.substr(delimiter_pos + delimiter.length());
+  size_t delimiter_pos = first_second.find("-");
+  return first_second.substr(delimiter_pos + delimiter.length());
 }
 
 void RadiationBand::addAbsorberGiants(ParameterInput *pin, YAML::Node &node) {
-  if (type_ == "radio") {
-    addAbsorberGiantsRADIO(pin, node);
-  } else if (type_ == "ir") {
-    addAbsorberGaintsVISIR(pin, node);
-  } else if (type_ == "vis") {
-    addAbsorberGaintsVISIR(pin, node);
-  } else if (type_ == "uv") {
-    addAbsorberGaintsUV(pin, node);
-  } else {
-    throw NotFoundError("addAbsorberGiants", "Band " + type_);
-  }
-
-  absorbers_.back()->SetModel(node["model"].as<std::string>());
-}
-
-void RadiationBand::addAbsorberGaintsRADIO(ParameterInput *pin,
-                                           YAML::Node &node) {
-  auto aname = extract_name(node["name"].as<std::string>());
-
   if (!node["parameters"]) {
     node["parameters"] = {};
   }
@@ -57,8 +41,26 @@ void RadiationBand::addAbsorberGaintsRADIO(ParameterInput *pin,
     node["model"] = "unspecified";
   }
 
-  std::vector<std::string> species;
+  if (type_ == "radio") {
+    addAbsorberGiantsRADIO(pin, node);
+  } else if (type_ == "ir") {
+    addAbsorberGiantsIR(pin, node);
+  } else if (type_ == "vis") {
+    addAbsorberGiantsVIS(pin, node);
+  } else if (type_ == "uv") {
+    addAbsorberGiantsUV(pin, node);
+  } else {
+    throw NotFoundError("addAbsorberGiants", "Band " + type_);
+  }
 
+  absorbers_.back()->SetModel(node["model"].as<std::string>());
+}
+
+void RadiationBand::addAbsorberGiantsRADIO(ParameterInput *pin,
+                                           YAML::Node &node) {
+  auto name = extract_second(node["name"].as<std::string>());
+
+  std::vector<std::string> species;
   if (node["dependent-species"])
     species = node["dependent-species"].as<std::vector<std::string>>();
 
@@ -97,27 +99,51 @@ void RadiationBand::addAbsorberGaintsRADIO(ParameterInput *pin,
   }
 }
 
-void RadiationBand::addAbsorberGiantsVISIR(ParameterInput *pin,
+void RadiationBand::addAbsorberGiantsIR(ParameterInput *pin,
                                            YAML::Node &node) {
-  auto name = extract_name(node["name"].as<std::string>());
+  auto name = extract_second(node["name"].as<std::string>());
+
+  std::vector<std::string> species;
+  if (node["dependent-species"])
+    species = node["dependent-species"].as<std::vector<std::string>>();
 
   if (name == "H2-H2") {
-    pabs->addAbsorber(XizH2H2CIA(this, 0, xH2))->loadCoefficient(file);
+    auto ab = std::make_unique<XizH2H2CIA>(
+        species, ToParameterMap(node["parameters"]));
+
+    absorbers_.push_back(std::move(ab));
   } else if (name == "H2-He") {
-    pabs->addAbsorber(XizH2HeCIA(this, 0, xH2, xHe))->loadCoefficient(file);
+    auto ab = std::make_unique<XizH2HeCIA>(
+        species, ToParameterMap(node["parameters"]));
+
+    absorbers_.push_back(std::move(ab));
   } else if (name == "freedman_simple") {
-    pabs->addAbsorber(FreedmanSimple(this, pin));
+    auto ab = std::make_unique<FreedmanSimple>(
+        species, ToParameterMap(node["parameters"]));
+
+    absorbers_.push_back(std::move(ab));
   } else if (name == "freedman_mean") {
-    pabs->addAbsorber(FreedmanMean(this));
+    auto ab = std::make_unique<FreedmanSimple>(
+        species, ToParameterMap(node["parameters"]));
+
+    absorbers_.push_back(std::move(ab));
   } else if (strncmp(name.c_str(), "ck-", 3) == 0) {
-    auto aname = extract_name(name);
-    pabs->addAbsorber(CorrelatedKAbsorber(this, aname));
+    auto aname = extract_second(name);
+    auto ab = std::make_unique<CorrelatedKAbsorber>(
+        aname, species, ToParameterMap(node["parameters"]));
+
+    absorbers_.push_back(std::move(ab));
   } else {
-    throw NotFoundError("addAbsorberGiants", "Absorber " + aname);
+    throw NotFoundError("addAbsorberGiants", "Absorber " + name);
   }
 }
 
-void RadiationBand::addAbsorberGiantsVISIR(ParameterInput *pin,
+void RadiationBand::addAbsorberGiantsVIS(ParameterInput *pin,
                                            YAML::Node &node) {
-  throw NotImplementedError("addAbsorberGiants", "VISIR");
+  throw NotImplementedError("addAbsorberGiantsVIS");
+}
+
+void RadiationBand::addAbsorberGiantsUV(ParameterInput *pin,
+                                           YAML::Node &node) {
+  throw NotImplementedError("addAbsorberGiantsUV");
 }

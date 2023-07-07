@@ -1,30 +1,50 @@
 opacity-sources:
-  - name: ir-H2-H2-CIA, vis-H2-H2-CIA
+  - name: ir-H2-H2-CIA
     long-name: "Hydrogen-Hydrogen collisional absorption"
     model: xiz
 
-  - name: ir-H2-He-CIA, vis-H2-He-CIA
+  - name: vis-H2-H2-CIA
+    long-name: "Hydrogen-Hydrogen collisional absorption"
+    model: xiz
+
+  - name: ir-H2-He-CIA
     long-name: "Hydrogen-Helium collisional absorption"
     model: xiz
 
-  - name: ir-CH4, vis-CH4
+  - name: vis-H2-He-CIA
+    long-name: "Hydrogen-Helium collisional absorption"
+    model: xiz
+
+  - name: ir-CH4
     long-name: "Methane line absorption"
-    model: Voigt
     data: 'kcoeff.<min>-<max>-<res>.nc'
 
-  - name: ir-C2H2, vis-C2H2
+  - name: vis-CH4
+    long-name: "Methane line absorption"
+    data: 'kcoeff.<min>-<max>-<res>.nc'
+
+  - name: ir-C2H2
     long-name: "Acetylene line absorption"
-    model: Voigt
     data: 'kcoeff.<min>-<max>-<res>.nc'
 
-  - name: ir-C2H4, vis-C2H2
+  - name: vis-C2H2
+    long-name: "Acetylene line absorption"
+    data: 'kcoeff.<min>-<max>-<res>.nc'
+
+  - name: ir-C2H4
     long-name: "Ethylene line absorption"
-    model: Voigt
     data: 'kcoeff.<min>-<max>-<res>.nc'
 
-  - name: ir-C2H6, vis-C2H6
+  - name: vis-C2H4
+    long-name: "Ethylene line absorption"
+    data: 'kcoeff.<min>-<max>-<res>.nc'
+
+  - name: ir-C2H6
     long-name: "Ethane line absorption"
-    model: Voigt
+    data: 'kcoeff.<min>-<max>-<res>.nc'
+
+  - name: vis-C2H6
+    long-name: "Ethane line absorption"
     data: 'kcoeff.<min>-<max>-<res>.nc'
 
 B1:

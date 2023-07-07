@@ -10,9 +10,8 @@
 
 class CorrelatedKAbsorber : public Absorber {
  public:
-  CorrelatedKAbsorber(MeshBlock *pmb, ParameterInput *pin, std::string bname,
-                      std::string name)
-      : Absorber(name) {}
+  CorrelatedKAbsorber(std::string name, std::vector<std::string> species, ParameterMap params)
+      : Absorber(name, species, params) {}
   virtual ~CorrelatedKAbsorber() {}
   void LoadCoefficient(std::string fname, size_t bid) override;
   // Real ckAbsorptionCoefficient(int mw, int mg, Real const prim[]) const;
