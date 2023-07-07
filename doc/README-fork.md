@@ -1,3 +1,4 @@
+# How to private fork [canoe](https://github.com/chengcli/canoe)
 The [canoe](https://github.com/chengcli/canoe) repository is public by default
 but Github does not allow the creation of private forks for public repositories.
 
@@ -31,7 +32,7 @@ For the [canoe](https://github.com/chengcli/canoe) repo, the specific commands a
     git push --mirror https://<username>@github.com/<username>/canoe-dev.git
     ```
 
- 1. Push the repository's Git Large File Storage objects to your mirror.
+ 1. Push the repository's Git Large File Storage objects to your fork.
     ```bash
     git lfs push --all https://<username>@github.com/<username>/canoe-dev.git
     ```
@@ -65,10 +66,38 @@ For the [canoe](https://github.com/chengcli/canoe) repo, the specific commands a
     ```bash
     git push origin <branch_name>
     ```
-    When you want to pull changes from `upstream`, do so on `upstream` and `rebase` on top of your work.
     ```bash
-    git fetch upstream
-    git rebase upstream/master
     ```
 
  1. Finally, resolve the conflicts if any.
+
+# How to fetch updates from upstream
+
+If `upstream` has updates without lfs object, you can simply pull changes
+from `upstream` by:
+```bash
+git fetch upstream
+git rebase upstream/master
+```
+When `upstream` has new lfs object, do these extra steps before fetch:
+
+ 1. Create another bare clone of [canoe](https://github.com/chengcli/canoe).
+     ```bash
+     git clone --bare https://github.com/chengcli/canoe.git
+     ```
+
+ 1. Pull in the updated Git Large File Storage objects.
+    ```bash
+    cd canoe.git
+    git lfs fetch --all
+    ```
+
+ 1. Push the repository's Git Large File Storage objects to your fork.
+    ```bash
+    git lfs push --all https://<username>@github.com/<username>/canoe-dev.git
+    ```
+Then, `fetch` and `rebase` will bring in the update from `upstream`
+```bash
+git fetch upstream
+git rebase upstream/master
+```
