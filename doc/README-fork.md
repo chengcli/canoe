@@ -66,8 +66,6 @@ For the [canoe](https://github.com/chengcli/canoe) repo, the specific commands a
     ```bash
     git push origin <branch_name>
     ```
-    ```bash
-    ```
 
  1. Finally, resolve the conflicts if any.
 
@@ -113,15 +111,15 @@ If `rebase` fails because of conflicting changes, you have four options:
 Here, you would need the concept of `ours` and `theirs`.
 
 - To accept the changes from `upstream` (if you know that `upstream` has the most updated code), use
-```bash
-git rebase -Xours upstream/main
-```
+  ```bash
+  git rebase -Xours upstream/main
+  ```
 This command will override the local changes with updates from `upstream`.
 
 - To accept local changes, use
-```bash
-git rebase -Xtheirs upstream/main
-```
+  ```bash
+  git rebase -Xtheirs upstream/main
+  ```
 This command will override the changes from `upstream` and with updates from local.
 
 Note that during `rebase`, `ours` and `theirs` may appear swapped;
