@@ -58,13 +58,7 @@ std::ostream &operator<<(std::ostream &os, HitranAbsorber const &ab) {
   return os;
 }
 
-HitranAbsorber::HitranAbsorber(MeshBlock *pmb, ParameterInput *pin,
-                               std::string bname, std::string name, int imol)
-    : Absorber(name) {
-  imols_ = {imol};
-}
-
-Real HitranAbsorber::RefTemp_(Real pres) const {
+Real HitranAbsorber::getRefTemp(Real pres) const {
   int nlevel = refatm_.GetDim1();
   int jl = -1, ju = nlevel, jm;
   // make sure pressure is in ascending order
@@ -135,15 +129,15 @@ void HitranAbsorber::LoadCoefficient(std::string fname, int bid) {
 Real HitranAbsorber::GetAttenuation(Real wave1, Real wave2,
                                     Variable const &var) const {
   // first axis is wavenumber, second is pressure, third is temperature anomaly
-  Real val, coord[3] = {wave1, var.q[IPR], var.q[IDN] - RefTemp_(var.q[IPR])};
+  Real val, coord[3] = {wave1, var.w[IPR], var.w[IDN] - getRefTemp(var.w[IPR])};
   interpn(&val, coord, kcoeff_.data(), axis_.data(), len_, 3, 1);
 
-  Real dens = var.q[IPR] / (Constants::Rgas * var.q[IDN]);
+  Real dens = var.w[IPR] / (Constants::Rgas * var.w[IDN]);
   Real x0 = 1.;
   if (imols_[0] == 0) {
-    for (int n = 1; n <= NVAPOR; ++n) x0 -= var.q[n];
+    for (int n = 1; n <= NVAPOR; ++n) x0 -= var.w[n];
   } else {
-    x0 = var.q[imols_[0]];
+    x0 = var.w[imols_[0]];
   }
   return 1.E-3 * exp(val) * dens * x0;  // ln(m*2/kmol) -> 1/m
 }

@@ -1,12 +1,12 @@
-#ifndef SRC_HARP_CORRELATEDK_ABSORBER_HPP_
-#define SRC_HARP_CORRELATEDK_ABSORBER_HPP_
+#ifndef SRC_OPACITY_CORRELATEDK_ABSORBER_HPP_
+#define SRC_OPACITY_CORRELATEDK_ABSORBER_HPP_
 
 // C/C++
 #include <string>
 #include <vector>
 
 // harp
-#include "absorber.hpp"
+#include <harp/absorber.hpp>
 
 class CorrelatedKAbsorber : public Absorber {
  public:
@@ -23,4 +23,4 @@ class CorrelatedKAbsorber : public Absorber {
   std::vector<Real> kcoeff_; /**< absorption coefficient */
 };
 
-#endif  // SRC_HARP_CORRELATEDK_ABSORBER_HPP_
+#endif  // SRC_OPACITY_CORRELATEDK_ABSORBER_HPP_
