@@ -6,6 +6,7 @@ double const Rgas = 8.314462;
 double const Rgas_cgs = 8.314462E7;
 double const kBoltz = 1.3806504E-23;
 double const kBoltz_cgs = 1.3806504E-16;
+double const Lo = 2.68719E25;
 
 double const hPlanck = 6.62606957E-34;
 double const hPlanck_cgs = 6.62606957e-27;

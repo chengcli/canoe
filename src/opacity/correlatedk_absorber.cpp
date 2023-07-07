@@ -21,7 +21,7 @@ extern "C" {
 // climath
 #include <climath/interpolation.h>
 
-// harp
+// opacity
 #include "correlatedk_absorber.hpp"
 
 void CorrelatedKAbsorber::LoadCoefficient(std::string fname, size_t bid) {
