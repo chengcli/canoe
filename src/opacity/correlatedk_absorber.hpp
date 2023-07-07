@@ -1,18 +1,17 @@
-#ifndef SRC_HARP_CORRELATEDK_ABSORBER_HPP_
-#define SRC_HARP_CORRELATEDK_ABSORBER_HPP_
+#ifndef SRC_OPACITY_CORRELATEDK_ABSORBER_HPP_
+#define SRC_OPACITY_CORRELATEDK_ABSORBER_HPP_
 
 // C/C++
 #include <string>
 #include <vector>
 
 // harp
-#include "absorber.hpp"
+#include <harp/absorber.hpp>
 
 class CorrelatedKAbsorber : public Absorber {
  public:
-  CorrelatedKAbsorber(MeshBlock *pmb, ParameterInput *pin, std::string bname,
-                      std::string name)
-      : Absorber(name) {}
+  CorrelatedKAbsorber(std::string name, std::vector<std::string> species, ParameterMap params)
+      : Absorber(name, species, params) {}
   virtual ~CorrelatedKAbsorber() {}
   void LoadCoefficient(std::string fname, size_t bid) override;
   // Real ckAbsorptionCoefficient(int mw, int mg, Real const prim[]) const;
@@ -24,4 +23,4 @@ class CorrelatedKAbsorber : public Absorber {
   std::vector<Real> kcoeff_; /**< absorption coefficient */
 };
 
-#endif  // SRC_HARP_CORRELATEDK_ABSORBER_HPP_
+#endif  // SRC_OPACITY_CORRELATEDK_ABSORBER_HPP_

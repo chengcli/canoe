@@ -17,8 +17,8 @@
 // snap
 #include <snap/thermodynamics/thermodynamics.hpp>
 
-// harp
-#include "freedman_mean.hpp"
+// opacity
+#include "freedman.hpp"
 
 // coefficient from Richard S. Freedman 2014. APJS
 

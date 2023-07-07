@@ -269,3 +269,8 @@ git restore <file>
 ```
 git config --global alias.co checkout
 ```
+- clean *ALL* untracked files (this will cause unrecoverable damage, make sure what you
+  are doing.
+```
+git clean -fd
+```

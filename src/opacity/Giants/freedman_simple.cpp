@@ -19,16 +19,8 @@
 // snap
 #include <snap/thermodynamics/thermodynamics.hpp>
 
-// harp
-#include "freedman_simple.hpp"
-
-FreedmanSimple::FreedmanSimple(MeshBlock *pmb, ParameterInput *pin,
-                               std::string bname)
-    : Absorber("FreedmanSimple") {
-  char str[80];
-  snprintf(str, sizeof(str), "%s.%s.scale", bname.c_str(), name_.c_str());
-  scale_ = pin->GetOrAddReal("radiation", str, 1.);
-}
+// opacity
+#include "freedman.hpp"
 
 // xiz semigrey
 Real FreedmanSimple::GetAttenuation(Real wave1, Real wave2,
@@ -59,7 +51,7 @@ Real FreedmanSimple::GetAttenuation(Real wave1, Real wave2,
 
   Real dens = p * mu / (Constants::Rgas * T);  // kg/m^3
                                                //  if (p > 5e1)
-  return scale_ * dens * result;               // -> 1/m
+  return params_.at("scale") * dens * result;               // -> 1/m
   //  else
   //    return 0.;
 }
