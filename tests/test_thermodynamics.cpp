@@ -173,6 +173,40 @@ TEST_F(TestThermodynamics, equilibrium_ammonia) {
   EXPECT_NEAR(rates[2], 0.0, 1e-8);
 }
 
+TEST_F(TestThermodynamics, saturation_adjust) {
+  auto pthermo = Thermodynamics::GetInstance();
+
+  int iH2O = 1;
+  int iNH3 = 2;
+  int iH2Oc = 0;
+  int iNH3c = 1;
+
+  Variable qfrac(Variable::Type::MoleFrac);
+  qfrac.SetZero();
+
+  qfrac.w[IDN] = 160.;
+  qfrac.w[IPR] = 7.E4;
+  qfrac.w[iH2O] = 0.02;
+  qfrac.w[iNH3] = 0.10;
+
+  pthermo->SaturationAdjustment(&qfrac);
+
+  EXPECT_NEAR(qfrac.w[IDN], 206.41191698346, 1e-8);
+  EXPECT_NEAR(qfrac.w[IPR], 88499.531838818, 1e-8);
+
+  Real svp1 = sat_vapor_p_H2O_BriggsS(qfrac.w[IDN]);
+
+  Real qgas = 1.;
+#pragma omp parallel for reduction(+ : qgas)
+  for (int n = 0; n < NCLOUD; ++n) qgas += -qfrac.c[n];
+
+  EXPECT_NEAR(qfrac.w[iH2O] / qgas * qfrac.w[IPR] / svp1, 1., 0.01);
+  EXPECT_NEAR(qfrac.w[iNH3], 0.1, 1e-8);
+
+  EXPECT_NEAR(qfrac.c[iH2Oc], 0.02 - qfrac.w[iH2O], 1e-8);
+  EXPECT_NEAR(qfrac.c[iNH3c], 0.1 - qfrac.w[iNH3], 1e-8);
+}
+
 int main(int argc, char *argv[]) {
   Application::Start(argc, argv);
 

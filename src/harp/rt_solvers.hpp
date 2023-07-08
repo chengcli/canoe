@@ -10,6 +10,9 @@
 // application
 #include <application/application.hpp>
 
+// pydisort
+// #include <pydisort/cppdisort.hpp>
+
 // harp
 #include "radiation_band.hpp"
 
@@ -51,6 +54,23 @@ class RadiationBand::RTSolverLambert : public RadiationBand::RTSolver {
 
   void CalBandRadiance(Direction const &rayInput, Real dist_au, int k, int j,
                        int il, int iu) override;
+};
+
+class RadiationBand::RTSolverDisort : public RadiationBand::RTSolver {
+ public:
+  explicit RTSolverDisort(RadiationBand *pmy_band)
+      : RTSolver(pmy_band, "Disort") {}
+
+  ~RTSolverDisort() {}
+
+  void CalBandFlux(Direction const &rayInput, Real dist_au, int k, int j,
+                   int il, int iu) override;
+
+  void CalBandRadiance(Direction const &rayInput, Real dist_au, int k, int j,
+                       int il, int iu) override;
+
+ protected:
+  // DisortWrapper disort_;
 };
 
 #endif  // SRC_HARP_RT_SOLVERS_HPP_

@@ -35,10 +35,13 @@ endif()
 # Setup for ICC compiler (version >= 10):
 #
 if(CMAKE_CXX_COMPILER_ID MATCHES "Intel")
-  message(FATAL_ERROR "\n" "Intel complier not implemented.\n\n")
-  # set(_flags ${CMAKE_SOURCE_DIR}/cmake/compiler_flags_intel.cmake)
-  # message(STATUS "Include ${_flags}") include(${_flags}) set(KNOWN_COMPILER
-  # TRUE)
+  set(CMAKE_CXX_FLAGS_RELEASE "-O3 -inline-forceinline -fopenmp -qopenmp-simd -qoverride-limits")
+  set(CMAKE_CXX_FLAGS_DEBUG "-g3")
+
+  set(CMAKE_C_FLAGS_RELEASE "-O3 -inline-forceinline -fopenmp -qopenmp-simd -qoverride-limits")
+  set(CMAKE_C_FLAGS_DEBUG "-g3")
+
+  set(KNOWN_COMPILER TRUE)
 endif()
 
 #

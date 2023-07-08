@@ -19,7 +19,7 @@
 Real NullSatVaporPres(Variable const& qfrac, int i, int j) {
   Real g = 1.;
 
-#pragma omp reduction(+ : g)
+#pragma omp simd reduction(- : g)
   for (int n = 0; n < NCLOUD; ++n) g -= qfrac.c[n];
 
   return qfrac.w[i] / g * qfrac.w[IPR];
