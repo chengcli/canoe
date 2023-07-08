@@ -35,10 +35,10 @@ endif()
 # Setup for ICC compiler (version >= 10):
 #
 if(CMAKE_CXX_COMPILER_ID MATCHES "Intel")
-  set(CMAKE_CXX_FLAGS_RELEASE "-O3 -ipo -inline-forceinline -fopenmp -qopenmp-simd")
+  set(CMAKE_CXX_FLAGS_RELEASE "-O3 -inline-forceinline -fopenmp -qopenmp-simd -qoverride-limits")
   set(CMAKE_CXX_FLAGS_DEBUG "-g3")
 
-  set(CMAKE_C_FLAGS_RELEASE "-O3 -ipo -inline-forceinline -fopenmp -qopenmp-simd")
+  set(CMAKE_C_FLAGS_RELEASE "-O3 -inline-forceinline -fopenmp -qopenmp-simd -qoverride-limits")
   set(CMAKE_C_FLAGS_DEBUG "-g3")
 
   set(KNOWN_COMPILER TRUE)
