@@ -182,6 +182,12 @@ Thermodynamics const* Thermodynamics::InitFromAthenaInput(ParameterInput* pin) {
     cv_ratio_mole[n] = cv_ratio_mass[n] * mu_ratio[n];
   }
 
+  // saturation adjustment parmaeters
+  mythermo_->sa_max_iter_ =
+      pin->GetOrAddReal("thermodynamics", "sa.max_iter", 10);
+  mythermo_->sa_relax_ = pin->GetOrAddReal("thermodynamics", "sa.relax", 0.8);
+  mythermo_->sa_ftol_ = pin->GetOrAddReal("thermodynamics", "sa.ftol", 1.e-4);
+
   return mythermo_;
 }
 
@@ -385,7 +391,7 @@ void Thermodynamics::getSaturationSurplus(Real dw[],
 }
 
 Real Thermodynamics::getInternalEnergyMole(Variable const& qfrac) const {
-  Real cvd = Rd_ / (GetGammad(qfrac) - 1.);
+  Real cvd = Constants::Rgas / (GetGammad(qfrac) - 1.);
   Real fsig = 1., LE = 0.;
 
   for (int i = 1; i <= NVAPOR; ++i) {
@@ -393,9 +399,9 @@ Real Thermodynamics::getInternalEnergyMole(Variable const& qfrac) const {
     fsig += (cv_ratio_mole_[i] - 1.) * qfrac.w[i];
 
     // clouds
-    for (int j = 0; j < cloud_index_set_[i].size(); ++j) {
-      int n = cloud_index_set_[i][j] + 1 + NVAPOR;
-      Real qc = qfrac.c[cloud_index_set_[i][j]];
+    for (auto j : cloud_index_set_[i]) {
+      int n = j + 1 + NVAPOR;
+      Real qc = qfrac.c[j];
 
       fsig += (cv_ratio_mole_[n] - 1.) * qc;
       LE += latent_energy_mole_[n] * qc;
@@ -407,7 +413,7 @@ Real Thermodynamics::getInternalEnergyMole(Variable const& qfrac) const {
 
 void Thermodynamics::updateTPConservingU(Variable* qfrac, Real rmole,
                                          Real umole) const {
-  Real cvd = Rd_ / (GetGammad(*qfrac) - 1.);
+  Real cvd = Constants::Rgas / (GetGammad(*qfrac) - 1.);
   Real fsig = 1., qgas = 1.;
 
   for (int i = 1; i <= NVAPOR; ++i) {
@@ -415,9 +421,9 @@ void Thermodynamics::updateTPConservingU(Variable* qfrac, Real rmole,
     fsig += (cv_ratio_mole_[i] - 1.) * qfrac->w[i];
 
     // clouds
-    for (int j = 0; j < cloud_index_set_[i].size(); ++j) {
-      int n = cloud_index_set_[i][j] + 1 + NVAPOR;
-      Real qc = qfrac->c[cloud_index_set_[i][j]];
+    for (auto j : cloud_index_set_[i]) {
+      int n = j + 1 + NVAPOR;
+      Real qc = qfrac->c[j];
 
       fsig += (cv_ratio_mole_[n] - 1.) * qc;
       umole += latent_energy_mole_[n] * qc;

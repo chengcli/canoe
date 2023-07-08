@@ -44,3 +44,7 @@ rcp2        = 0.078   0.16    0.16
 beta2       = 0.      23.67   23.67
 Ttriple2    = 195.4
 Ptriple2    = 6060.
+
+sa.max_iter = 10
+sa.releax   = 0.8
+sa.ftol     = 1.e-4

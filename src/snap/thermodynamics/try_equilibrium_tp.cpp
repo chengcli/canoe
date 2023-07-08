@@ -8,7 +8,7 @@
 #include "thermodynamics.hpp"
 
 std::vector<Real> Thermodynamics::TryEquilibriumTP(Variable const& qfrac, int i,
-                                                   Real l_over_cv,
+                                                   Real cv_hat,
                                                    bool misty) const {
   Real xv = qfrac.w[i];
   Real t = qfrac.w[IDN] / t3_[i];
@@ -32,14 +32,18 @@ std::vector<Real> Thermodynamics::TryEquilibriumTP(Variable const& qfrac, int i,
       continue;
     }
 
-    Real g = 1.;
-    for (int n = 0; n < NCLOUD; ++n) g -= qfrac.c[n];
+    Real g = 1., alpha = 0.;
+#pragma omp simd reduction(+ : g)
+    for (int n = 0; n < NCLOUD; ++n) g += -qfrac.c[n];
     g -= xv;
 
+    if (cv_hat > 0.) {
+      alpha = GetLatentEnergyMole(j + 1 + NVAPOR, qfrac.w[IDN]) / cv_hat;
+    }
+
     Real s1 = xs / (1. - xs);
-    Real rate =
-        (s1 * g - xv) /
-        (1. + l_over_cv * g * (beta_[j] / t - delta_[j]) * s1 / (1. - xs));
+    Real rate = (s1 * g - xv) /
+                (1. + alpha * g * (beta_[j] / t - delta_[j]) * s1 / (1. - xs));
 
     // condensate at most xv vapor
     if (rate < 0.) {

@@ -186,7 +186,7 @@ class Thermodynamics {
   //! \param L_ov_cv L/cv evaluated at current temperature
   //! \return molar fraction change of vapor to cloud
   std::vector<Real> TryEquilibriumTP(Variable const &qfrac, int ivapor,
-                                     Real l_over_cv = 0.,
+                                     Real cv_hat = 0.,
                                      bool misty = false) const;
 
   //! Construct an 1d atmosphere
@@ -375,6 +375,7 @@ class Thermodynamics {
 
   //! other parameters
   int sa_max_iter_ = 5;
+  Real sa_relax_ = 0.8;
   Real sa_ftol_ = 0.01;
 };
 
