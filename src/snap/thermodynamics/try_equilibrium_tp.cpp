@@ -7,18 +7,17 @@
 // snap
 #include "thermodynamics.hpp"
 
-std::vector<Real> Thermodynamics::TryEquilibriumTP(Variable const& qfrac,
-                                                   int ivapor, Real l_over_cv,
+std::vector<Real> Thermodynamics::TryEquilibriumTP(Variable const& qfrac, int i,
+                                                   Real l_over_cv,
                                                    bool misty) const {
-  Real xv = qfrac.w[ivapor];
-  Real t = qfrac.w[IDN] / t3_[ivapor];
-  std::vector<Real> rates(1 + cloud_index_set_[ivapor].size(), 0.);
+  Real xv = qfrac.w[i];
+  Real t = qfrac.w[IDN] / t3_[i];
+  std::vector<Real> rates(1 + cloud_index_set_[i].size(), 0.);
 
-  for (int n = 0; n < cloud_index_set_[ivapor].size(); ++n) {
-    int jcloud = cloud_index_set_[ivapor][n];
-    Real xs = svp_func_[ivapor][n](qfrac, ivapor, jcloud) / qfrac.w[IPR];
-
-    Real xc = qfrac.c[jcloud];
+  for (int n = 0; n < cloud_index_set_[i].size(); ++n) {
+    int j = cloud_index_set_[i][n];
+    Real xs = svp_func_[i][n](qfrac, i, j) / qfrac.w[IPR];
+    Real xc = qfrac.c[j];
 
     if (misty) {  // no cloud in variable
       rates[0] += xs - xv;
@@ -38,9 +37,9 @@ std::vector<Real> Thermodynamics::TryEquilibriumTP(Variable const& qfrac,
     g -= xv;
 
     Real s1 = xs / (1. - xs);
-    Real rate = (s1 * g - xv) /
-                (1. + l_over_cv * g * (beta_[jcloud] / t - delta_[jcloud]) *
-                          s1 / (1. - xs));
+    Real rate =
+        (s1 * g - xv) /
+        (1. + l_over_cv * g * (beta_[j] / t - delta_[j]) * s1 / (1. - xs));
 
     // condensate at most xv vapor
     if (rate < 0.) {

@@ -120,6 +120,7 @@ Thermodynamics const* Thermodynamics::InitFromAthenaInput(ParameterInput* pin) {
   auto& mu_ratio = mythermo_->mu_ratio_;
   auto& inv_mu_ratio = mythermo_->inv_mu_ratio_;
   auto& mu = mythermo_->mu_;
+  auto& inv_mu = mythermo_->inv_mu_;
 
   auto& cp_ratio_mole = mythermo_->cp_ratio_mole_;
   auto& cp_ratio_mass = mythermo_->cp_ratio_mass_;
@@ -142,6 +143,7 @@ Thermodynamics const* Thermodynamics::InitFromAthenaInput(ParameterInput* pin) {
   for (int n = 0; n < mu_ratio.size(); ++n) {
     inv_mu_ratio[n] = 1. / mu_ratio[n];
     mu[n] = mu[0] * mu_ratio[n];
+    inv_mu[n] = 1. / mu[n];
     cp_ratio_mole[n] = cp_ratio_mass[n] * mu_ratio[n];
   }
 
@@ -345,8 +347,8 @@ void Thermodynamics::Extrapolate(Variable* qfrac, Real dzORdlnp, Method method,
     qfrac->w[i] += rates[0];
 
     // cloud concentration rates
-    for (int n = 1; n < rates.size(); ++n)
-      qfrac->c[cloud_index_set_[i][n - 1]] += rates[n];
+    for (int j = 1; j < rates.size(); ++j)
+      qfrac->c[cloud_index_set_[i][j - 1]] += rates[j];
   }
 
   // RK4 integration
@@ -355,18 +357,6 @@ void Thermodynamics::Extrapolate(Variable* qfrac, Real dzORdlnp, Method method,
 #else
   rk4IntegrateZ(qfrac, dzORdlnp, method, grav, userp);
 #endif
-}
-
-void Thermodynamics::getSaturationSurplus(Real dw[],
-                                          Variable const& var) const {
-  for (int iv = 1; iv <= NVAPOR; ++iv) {
-    dw[iv] = var.w[iv];
-  }
-
-  for (int iv = 1; iv <= NVAPOR; ++iv) {
-    auto rates = TryEquilibriumTP(var, iv, 0., true);
-    dw[iv] *= rates[0] / var.w[iv];
-  }
 }
 
 Real Thermodynamics::GetLatentHeatMole(int i, std::vector<Real> const& rates,
@@ -382,20 +372,64 @@ Real Thermodynamics::GetLatentHeatMole(int i, std::vector<Real> const& rates,
   return heat / std::abs(rates[0]) + Constants::Rgas * temp;
 }
 
-Thermodynamics* Thermodynamics::mythermo_ = nullptr;
+void Thermodynamics::getSaturationSurplus(Real dw[],
+                                          Variable const& var) const {
+  for (int i = 1; i <= NVAPOR; ++i) {
+    dw[i] = var.w[i];
+  }
 
-/*void Thermodynamics::UpdateTPConservingU(Real q[], Real rho, Real uhat) const
-{
-  Real gamma = pmy_block_->peos->GetGamma();
-  Real cv = 1., qtol = 1., qeps = 1.;
-  for (int n = 1 + NVAPOR; n < NMASS; ++n) {
-    uhat += beta_[n]*t3_[n]*q[n];
-    qtol -= q[n];
+  for (int i = 1; i <= NVAPOR; ++i) {
+    auto rates = TryEquilibriumTP(var, i, 0., true);
+    dw[i] *= rates[0] / var.w[i];
   }
-  for (int n = 1; n < NMASS; ++n) {
-    cv += (cv_ratios_[n]*mu_ratios_[n] - 1.)*q[n];
-    qeps += q[n]*(mu_ratios_[n] - 1.);
+}
+
+Real Thermodynamics::getInternalEnergyMole(Variable const& qfrac) const {
+  Real cvd = Rd_ / (GetGammad(qfrac) - 1.);
+  Real fsig = 1., LE = 0.;
+
+  for (int i = 1; i <= NVAPOR; ++i) {
+    // vapor
+    fsig += (cv_ratio_mole_[i] - 1.) * qfrac.w[i];
+
+    // clouds
+    for (int j = 0; j < cloud_index_set_[i].size(); ++j) {
+      int n = cloud_index_set_[i][j] + 1 + NVAPOR;
+      Real qc = qfrac.c[cloud_index_set_[i][j]];
+
+      fsig += (cv_ratio_mole_[n] - 1.) * qc;
+      LE += latent_energy_mole_[n] * qc;
+    }
   }
-  q[IDN] = (gamma - 1.)*uhat/cv;
-  q[IPR] = rho*Rd_*q[IDN]*qtol/qeps;
-}*/
+
+  return cvd * qfrac.w[IDN] * fsig - LE;
+}
+
+void Thermodynamics::updateTPConservingU(Variable* qfrac, Real rmole,
+                                         Real umole) const {
+  Real cvd = Rd_ / (GetGammad(*qfrac) - 1.);
+  Real fsig = 1., qgas = 1.;
+
+  for (int i = 1; i <= NVAPOR; ++i) {
+    // vapor
+    fsig += (cv_ratio_mole_[i] - 1.) * qfrac->w[i];
+
+    // clouds
+    for (int j = 0; j < cloud_index_set_[i].size(); ++j) {
+      int n = cloud_index_set_[i][j] + 1 + NVAPOR;
+      Real qc = qfrac->c[cloud_index_set_[i][j]];
+
+      fsig += (cv_ratio_mole_[n] - 1.) * qc;
+      umole += latent_energy_mole_[n] * qc;
+    }
+  }
+
+  // vapor
+#pragma omp simd reduction(+ : qgas)
+  for (int n = 0; n < NCLOUD; ++n) qgas += -qfrac->c[n];
+
+  qfrac->w[IDN] = umole / (cvd * fsig);
+  qfrac->w[IPR] = rmole * qgas * Constants::Rgas * qfrac->w[IDN];
+}
+
+Thermodynamics* Thermodynamics::mythermo_ = nullptr;

@@ -119,12 +119,12 @@ void Variable::massFractionToMoleFraction() {
 
   // set molar mixing ratio
   Real sum = 1.;
-#pragma reduction(+ : sum)
+#pragma omp simd reduction(+ : sum)
   for (int n = 1; n <= NVAPOR; ++n) {
     sum += w[n] * (pthermo->GetInvMuRatio(n) - 1.);
   }
 
-#pragma omp simd
+#pragma omp simd reduction(* : w)
   for (int n = 1; n <= NVAPOR; ++n) {
     w[n] *= pthermo->GetInvMuRatio(n) / sum;
   }
@@ -140,12 +140,12 @@ void Variable::moleFractionToMassFraction() {
 
   // set mass mixing ratio
   Real sum = 1.;
-#pragma reduction(+ : sum)
+#pragma omp simd reduction(+ : sum)
   for (int n = 1; n <= NVAPOR; ++n) {
     sum += w[n] * (pthermo->GetMuRatio(n) - 1.);
   }
 
-#pragma omp simd
+#pragma omp simd reduction(* : w)
   for (int n = 1; n <= NVAPOR; ++n) {
     w[n] *= pthermo->GetMuRatio(n) / sum;
   }
@@ -161,14 +161,14 @@ void Variable::massConcentrationToMoleFraction() {
 
   Real rho = 0., feps = 0., fsig = 0.;
 
-#pragma reduction(+ : rho, feps, fsig)
+#pragma omp simd reduction(+ : rho, feps, fsig)
   for (int n = 0; n <= NVAPOR; ++n) {
     rho += w[n];
     feps += w[n] * pthermo->GetInvMuRatio(n);
     fsig += w[n] * pthermo->GetCvRatioMass(n);
   }
 
-#pragma omp simd
+#pragma omp simd reduction(* : w)
   for (int n = 0; n <= NVAPOR; ++n) {
     w[n] *= pthermo->GetInvMuRatio(n);
   }
@@ -185,8 +185,8 @@ void Variable::massConcentrationToMoleFraction() {
   w[IVY] *= di;
   w[IVZ] *= di;
 
-#pragma omp simd
-  for (int n = 1; n <= NVAPOR; ++n) w[n] /= feps;
+#pragma omp simd reduction(* : w)
+  for (int n = 1; n <= NVAPOR; ++n) w[n] *= 1. / feps;
 
   SetType(Type::MassFrac);
 }
@@ -197,7 +197,7 @@ void Variable::moleFractionToMassConcentration() {
   Real tem = w[IDN];
   Real sum = 1.;
 
-#pragma reduction(+ : sum)
+#pragma omp simd reduction(+ : sum)
   for (int n = 1; n <= NVAPOR; ++n) sum += w[n] * (pthermo->GetMuRatio(n) - 1.);
 
   Real rho = w[IPR] * sum / (pthermo->GetRd() * tem);
@@ -261,7 +261,7 @@ void Variable::massConcentrationToMassFraction() {
   Real di = 1. / rho;
 
   // mass mixing ratio
-#pragma omp simd
+#pragma omp simd reduction(* : w)
   for (int n = 1; n <= NVAPOR; ++n) w[n] *= di;
 
   // pressure

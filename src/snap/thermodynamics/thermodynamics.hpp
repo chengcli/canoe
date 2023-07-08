@@ -164,7 +164,7 @@ class Thermodynamics {
   //! $= L_{ij}^r - \delta_{ij}R_i(T - T^r)$
   //! \return $L_{ij}(T)$
   Real GetLatentEnergyMass(int n, Real temp) const {
-    return latent_energy_mass_[n] - delta_[n] * Rd_ / mu_ratio_[n] * temp;
+    return latent_energy_mass_[n] - delta_[n] * Rd_ * inv_mu_ratio_[n] * temp;
   }
 
   //! Temperature dependent specific latent energy [J/mol] of condensates at
@@ -179,7 +179,7 @@ class Thermodynamics {
 
   Real GetLatentHeatMass(int i, std::vector<Real> const &rates,
                          Real temp) const {
-    return GetLatentHeatMole(i, rates, temp) / mu_[i];
+    return GetLatentHeatMole(i, rates, temp) * inv_mu_[i];
   }
 
   //! Calculate the equilibrium mole transfer between vapor and cloud
@@ -193,6 +193,9 @@ class Thermodynamics {
   //! @param method choose from [reversible, pseudo, dry, isothermal]
   void Extrapolate(Variable *qfrac, Real dzORdlnp, Method method,
                    Real grav = 0., Real userp = 0.) const;
+
+  //! Adjust to the maximum saturation state conserving internal energy
+  void SaturationAdjustment(Variable *qfrac) const;
 
   //! Potential temperature
   //!$\theta = T(\frac{p_0}{p})^{\chi}$
@@ -268,6 +271,18 @@ class Thermodynamics {
   //! negative value represents saturation deficit
   void getSaturationSurplus(Real dw[], Variable const &v) const;
 
+  //! update T/P
+  void updateTPConservingU(Variable *qfrac, Real rmole, Real umole) const;
+
+  Real getInternalEnergyMole(Variable const &qfrac) const;
+
+  Real getDensityMole(Variable const &qfrac) const {
+    Real qgas = 1.;
+#pragma omp simd reduction(+ : qgas)
+    for (int n = 0; n < NCLOUD; ++n) qgas += -qfrac.c[n];
+    return qfrac.w[IPR] / (Constants::Rgas * qfrac.w[IDN] * qgas);
+  }
+
   void setTotalEquivalentVapor(Variable *qfrac, int i) const {
     for (auto &j : cloud_index_set_[i]) {
       qfrac->w[i] += qfrac->c[j];
@@ -305,6 +320,9 @@ class Thermodynamics {
 
   //! molecular weight [kg/mol]
   std::array<Real, Size> mu_;
+
+  //! inverse molecular weight [mol/kg]
+  std::array<Real, Size> inv_mu_;
 
   //! ratio of specific heat capacities [J/mol] at constant pressure
   std::array<Real, Size> cp_ratio_mole_;
@@ -354,6 +372,10 @@ class Thermodynamics {
 
   //! Pointer to the single Application instance
   static Thermodynamics *mythermo_;
+
+  //! other parameters
+  int sa_max_iter_ = 5;
+  Real sa_ftol_ = 0.01;
 };
 
 #endif  // SRC_SNAP_THERMODYNAMICS_THERMODYNAMICS_HPP_
