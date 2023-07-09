@@ -7,8 +7,9 @@
 // athena
 #include <athena/mesh/mesh.hpp>
 
-// snap
+// canoe
 #include <impl.hpp>
+#include <index_map.hpp>
 #include <variable.hpp>
 
 // harp
@@ -33,6 +34,9 @@ class TestMicrowaveOpacity : public testing::Test {
     pinput->LoadFromFile(infile);
     infile.Close();
 
+    IndexMap::InitFromAthenaInput(pinput);
+    Thermodynamics::InitFromAthenaInput(pinput);
+
     // set up mesh
     int restart = false;
     int mesh_only = false;
@@ -53,6 +57,8 @@ class TestMicrowaveOpacity : public testing::Test {
 
     delete pinput;
     delete pmesh;
+    Thermodynamics::Destroy();
+    IndexMap::Destroy();
   }
 };
 

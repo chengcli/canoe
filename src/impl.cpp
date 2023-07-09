@@ -32,12 +32,6 @@
 MeshBlock::Impl::Impl(MeshBlock *pmb, ParameterInput *pin) : pmy_block_(pmb) {
   du.NewAthenaArray(NHYDRO, pmb->ncells3, pmb->ncells2, pmb->ncells1);
 
-  // index map
-  IndexMap::InitFromAthenaInput(pin);
-
-  // thermodynamics
-  Thermodynamics::InitFromAthenaInput(pin);
-
   // decomposition
   pdec = std::make_shared<Decomposition>(pmb);
 
@@ -71,10 +65,7 @@ MeshBlock::Impl::Impl(MeshBlock *pmb, ParameterInput *pin) : pmy_block_(pmb) {
 #endif  // HYDROSTATIC
 }
 
-MeshBlock::Impl::~Impl() {
-  Thermodynamics::Destroy();
-  IndexMap::Destroy();
-}
+MeshBlock::Impl::~Impl() {}
 
 void MeshBlock::Impl::GatherFromPrimitive(Variable *var, int k, int j,
                                           int i) const {
@@ -103,7 +94,7 @@ void MeshBlock::Impl::GatherFromPrimitive(Variable *var, int k, int j,
 
 #pragma omp simd
   for (int n = 1; n <= NVAPOR; ++n) {
-    var->w[n] *= rhod * inv_rho;
+    var->w[n] *= var->w[IDN] * inv_rho;
   }
 
 #pragma omp simd

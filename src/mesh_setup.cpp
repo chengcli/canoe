@@ -9,8 +9,12 @@
 
 // canoe
 #include <configure.hpp>
-#include <impl.hpp>
-#include <index_map.hpp>
+
+#include "impl.hpp"
+#include "index_map.hpp"
+
+// snap
+#include "snap/thermodynamics/thermodynamics.hpp"
 
 // MPI headers
 #ifdef MPI_PARALLEL
@@ -93,6 +97,12 @@ void mesh_setup(ParameterInput*& pinput, Mesh*& pmesh) {
 #endif
     exit(0);
   }
+
+  // index map
+  IndexMap::InitFromAthenaInput(pinput);
+
+  // thermodynamics
+  Thermodynamics::InitFromAthenaInput(pinput);
 
   // set up additional components
   for (int b = 0; b < pmesh->nblocal; ++b) {

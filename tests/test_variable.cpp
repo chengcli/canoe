@@ -35,7 +35,8 @@ class TestVariable : public testing::Test {
 
     a.SetType(Variable::Type::MoleFrac);
 
-    std::fill(a.w, a.w + Variable::Size, 1. / (NVAPOR + NCLOUD + NCHEMISTRY));
+    std::fill(a.w, a.w + Variable::Size,
+              1. / (1 + NVAPOR + NCLOUD + NCHEMISTRY));
     std::fill(a.x, a.x + NTRACER, 2.);
 
     a.w[IDN] = 1.;
@@ -96,13 +97,13 @@ TEST_F(TestVariable, MoleFraction_MassFraction) {
   a.ConvertToMoleFraction();
 
   for (int n = 1; n <= NVAPOR; ++n)
-    EXPECT_DOUBLE_EQ(a.w[n], 1. / (NVAPOR + NCLOUD + NCHEMISTRY));
+    EXPECT_DOUBLE_EQ(a.w[n], 1. / (1 + NVAPOR + NCLOUD + NCHEMISTRY));
 
   for (int n = 0; n < NCLOUD; ++n)
-    EXPECT_DOUBLE_EQ(a.c[n], 1. / (NVAPOR + NCLOUD + NCHEMISTRY));
+    EXPECT_DOUBLE_EQ(a.c[n], 1. / (1 + NVAPOR + NCLOUD + NCHEMISTRY));
 
   for (int n = 0; n < NCHEMISTRY; ++n)
-    EXPECT_DOUBLE_EQ(a.q[n], 1. / (NVAPOR + NCLOUD + NCHEMISTRY));
+    EXPECT_DOUBLE_EQ(a.q[n], 1. / (1 + NVAPOR + NCLOUD + NCHEMISTRY));
 
   EXPECT_NEAR(a.w[IDN], 1., 1e-10);
   EXPECT_DOUBLE_EQ(a.w[IPR], 10.);
@@ -117,13 +118,13 @@ TEST_F(TestVariable, MoleFraction_MassConcentration) {
   a.ConvertToMoleFraction();
 
   for (int n = 1; n <= NVAPOR; ++n)
-    EXPECT_DOUBLE_EQ(a.w[n], 1. / (NVAPOR + NCLOUD + NCHEMISTRY));
+    EXPECT_NEAR(a.w[n], 1. / (1 + NVAPOR + NCLOUD + NCHEMISTRY), 1.e-10);
 
   for (int n = 0; n < NCLOUD; ++n)
-    EXPECT_DOUBLE_EQ(a.c[n], 1. / (NVAPOR + NCLOUD + NCHEMISTRY));
+    EXPECT_NEAR(a.c[n], 1. / (1 + NVAPOR + NCLOUD + NCHEMISTRY), 1.e-10);
 
   for (int n = 0; n < NCHEMISTRY; ++n)
-    EXPECT_DOUBLE_EQ(a.q[n], 1. / (NVAPOR + NCLOUD + NCHEMISTRY));
+    EXPECT_NEAR(a.q[n], 1. / (1 + NVAPOR + NCLOUD + NCHEMISTRY), 1.e-10);
 
   EXPECT_DOUBLE_EQ(a.w[IDN], 1.);
   EXPECT_NEAR(a.w[IPR], 10., 1e-10);
@@ -140,13 +141,13 @@ TEST_F(TestVariable, MassFraction_MassConcentration) {
   a.ConvertToMassFraction();
 
   for (int n = 1; n <= NVAPOR; ++n)
-    EXPECT_DOUBLE_EQ(a.w[n], 1. / (NVAPOR + NCLOUD + NCHEMISTRY));
+    EXPECT_DOUBLE_EQ(a.w[n], 1. / (1 + NVAPOR + NCLOUD + NCHEMISTRY));
 
   for (int n = 0; n < NCLOUD; ++n)
-    EXPECT_DOUBLE_EQ(a.c[n], 1. / (NVAPOR + NCLOUD + NCHEMISTRY));
+    EXPECT_DOUBLE_EQ(a.c[n], 1. / (1 + NVAPOR + NCLOUD + NCHEMISTRY));
 
   for (int n = 0; n < NCHEMISTRY; ++n)
-    EXPECT_DOUBLE_EQ(a.q[n], 1. / (NVAPOR + NCLOUD + NCHEMISTRY));
+    EXPECT_DOUBLE_EQ(a.q[n], 1. / (1 + NVAPOR + NCLOUD + NCHEMISTRY));
 
   EXPECT_DOUBLE_EQ(a.w[IDN], 1.);
   EXPECT_DOUBLE_EQ(a.w[IPR], 10.);

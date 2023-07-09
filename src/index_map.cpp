@@ -38,6 +38,10 @@ IndexMap const* IndexMap::GetInstance() {
 }
 
 IndexMap const* IndexMap::InitFromAthenaInput(ParameterInput* pin) {
+  if (myindex_map_ != nullptr) {
+    throw RuntimeError("IndexMap", "IndexMap has been initialized");
+  }
+
   Application::Logger app("canoe");
   app->Log("Initialize IndexMap");
 

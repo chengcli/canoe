@@ -29,9 +29,9 @@ std::ostream& operator<<(std::ostream& os, Variable const& var) {
   return os;
 }
 
-void Variable::ConvertTo(Variable::Type type) {
+Variable& Variable::ConvertTo(Variable::Type type) {
   if (type == mytype_) {
-    return;
+    return *this;
   }
 
   if (type == Type::MassFrac) {
@@ -45,11 +45,13 @@ void Variable::ConvertTo(Variable::Type type) {
   } else {
     throw RuntimeError("Variable", "Unknown variable type");
   }
+
+  return *this;
 }
 
-void Variable::ConvertToMassFraction() {
+Variable& Variable::ConvertToMassFraction() {
   if (mytype_ == Type::MassFrac) {
-    return;
+    return *this;
   }
 
   if (mytype_ == Type::MassConc) {
@@ -61,11 +63,13 @@ void Variable::ConvertToMassFraction() {
   } else {
     throw RuntimeError("Variable", "Unknown variable type");
   }
+
+  return *this;
 }
 
-void Variable::ConvertToMassConcentration() {
+Variable& Variable::ConvertToMassConcentration() {
   if (mytype_ == Type::MassConc) {
-    return;
+    return *this;
   }
 
   if (mytype_ == Type::MassFrac) {
@@ -77,11 +81,13 @@ void Variable::ConvertToMassConcentration() {
   } else {
     throw RuntimeError("Variable", "Unknown variable type");
   }
+
+  return *this;
 }
 
-void Variable::ConvertToMoleFraction() {
+Variable& Variable::ConvertToMoleFraction() {
   if (mytype_ == Type::MoleFrac) {
-    return;
+    return *this;
   }
 
   if (mytype_ == Type::MassFrac) {
@@ -93,11 +99,13 @@ void Variable::ConvertToMoleFraction() {
   } else {
     throw RuntimeError("Variable", "Unknown variable type");
   }
+
+  return *this;
 }
 
-void Variable::ConvertToMoleConcentration() {
+Variable& Variable::ConvertToMoleConcentration() {
   if (mytype_ == Type::MoleConc) {
-    return;
+    return *this;
   }
 
   if (mytype_ == Type::MassFrac) {
@@ -109,23 +117,25 @@ void Variable::ConvertToMoleConcentration() {
   } else {
     throw RuntimeError("Variable", "Unknown variable type");
   }
+
+  return *this;
 }
 
 void Variable::massFractionToMoleFraction() {
   auto pthermo = Thermodynamics::GetInstance();
-  Real g = 1.;
 
   // set molar mixing ratio
-  Real sum = 1.;
-#pragma omp simd reduction(+ : sum)
+  Real sum1 = 1.;
+#pragma omp simd reduction(+ : sum1)
   for (int n = 1; n <= NVAPOR; ++n) {
-    sum += w[n] * (pthermo->GetInvMuRatio(n) - 1.);
+    sum1 += w[n] * (pthermo->GetInvMuRatio(n) - 1.);
   }
 
+  Real sum = sum1;
 #pragma omp simd reduction(+ : sum, g)
   for (int n = 0; n < NCLOUD; ++n) {
     sum += c[n] * (pthermo->GetInvMuRatio(n + 1 + NVAPOR) - 1.);
-    g += -c[n];
+    sum1 += -c[n];
   }
 
 #pragma omp simd
@@ -139,7 +149,7 @@ void Variable::massFractionToMoleFraction() {
   }
 
   // set temperature
-  w[IDN] = w[IPR] / (w[IDN] * g * pthermo->GetRd() * sum);
+  w[IDN] = w[IPR] / (w[IDN] * pthermo->GetRd() * sum1);
 
   SetType(Type::MoleFrac);
 }
