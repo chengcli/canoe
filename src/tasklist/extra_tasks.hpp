@@ -39,8 +39,11 @@ class ImplicitHydroTasks : public TimeIntegratorTaskList {
 
   // implicit tasks
   TaskStatus IntegrateHydro(MeshBlock *pmb, int stage);
-  TaskStatus UpdateHydro(MeshBlock *pmb, int stage);
   TaskStatus AddSourceTerms(MeshBlock *pmb, int stage);
+
+  TaskStatus AddFluxToConserved(MeshBlock *pmb, int stage);
+  TaskStatus ImplicitCorrection(MeshBlock *pmb, int stage);
+  TaskStatus UpdateAllConserved(MeshBlock *pmb, int stage);
 
  protected:
   void AddTask(TaskID const &id, TaskID const &dep) override;
@@ -48,7 +51,9 @@ class ImplicitHydroTasks : public TimeIntegratorTaskList {
 
 //! This should track the largest task ID in the athena/task_list/task_list.hpp
 namespace HydroIntegratorTaskNames {
-const TaskID UPDATE_HYD(70);
-}
+const TaskID IMPLICIT_CORR(70);
+const TaskID ADD_FLX_CONS(71);
+const TaskID UPDATE_ALLCONS(72);
+}  // namespace HydroIntegratorTaskNames
 
 #endif  // SRC_TASKLIST_EXTRA_TASKS_HPP_

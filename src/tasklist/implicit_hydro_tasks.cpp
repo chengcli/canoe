@@ -11,9 +11,16 @@
 
 // canoe
 #include <impl.hpp>
+#include <variable.hpp>
 
-// implicit
+// snap
 #include <snap/implicit/implicit_solver.hpp>
+
+// harp
+#include <harp/radiation.hpp>
+
+// dusts
+#include <dusts/cloud.hpp>
 
 // tasklist
 #include "extra_tasks.hpp"
@@ -42,28 +49,46 @@ ImplicitHydroTasks::ImplicitHydroTasks(ParameterInput *pin, Mesh *pm)
   task_list_[itask].TaskFunc =
       static_cast<TaskFunction>(&ImplicitHydroTasks::AddSourceTerms);
 
-  // add UpdateHydro
-  AddTask(UPDATE_HYD, SRC_TERM);
+  // inject canoe tasks
+  // **ATHENA TASKS**: ... -> (CALC_HYDFLX | CALC_SCLRFLX) ->
+  // **CANOE TASKS** : ADD_FLX_CONS ->
+  // **ATHENA TASKS**: (INT_HYD | INT_SCLR) -> SRC_TERM ->
+  // **CANOE TASKS** : IMPLICIT_CORR -> UPDATE_ALLCONS ->
+  // **ATHENA TASKS**: SEND_HYD -> ...
+  AddTask(ADD_FLX_CONS, (CALC_HYDFLX | CALC_SCLRFLX));
+  AddTask(IMPLICIT_CORR, SRC_TERM);
+  AddTask(UPDATE_ALLCONS, IMPLICIT_CORR);
 
   // update dependency
   if (ORBITAL_ADVECTION) {
     itask = find_task(task_list_, ntasks, SEND_HYDORB);
-    task_list_[itask].dependency = UPDATE_HYD;
+    task_list_[itask].dependency = UPDATE_ALLCONS;
   } else {
     itask = find_task(task_list_, ntasks, SEND_HYD);
-    task_list_[itask].dependency = UPDATE_HYD;
+    task_list_[itask].dependency = UPDATE_ALLCONS;
 
     itask = find_task(task_list_, ntasks, SETB_HYD);
-    task_list_[itask].dependency = (RECV_HYD | UPDATE_HYD);
+    task_list_[itask].dependency = (RECV_HYD | UPDATE_ALLCONS);
+  }
+
+  if (pm->multilevel || SHEAR_PERIODIC) {  // SMR or AMR or shear periodic
+    itask = find_task(task_list_, ntasks, SEND_HYDFLX);
+    task_list_[itask].dependency = ADD_FLX_CONS;
+
+    itask = find_task(task_list_, ntasks, RECV_HYDFLX);
+    task_list_[itask].dependency = ADD_FLX_CONS;
+  } else {
+    itask = find_task(task_list_, ntasks, INT_HYD);
+    task_list_[itask].dependency = ADD_FLX_CONS;
   }
 
   if (NSCALARS > 0) {
     if (!ORBITAL_ADVECTION) {
       itask = find_task(task_list_, ntasks, SEND_SCLR);
-      task_list_[itask].dependency = UPDATE_HYD;
+      task_list_[itask].dependency = IMPLICIT_CORR;
 
       itask = find_task(task_list_, ntasks, SETB_SCLR);
-      task_list_[itask].dependency = (RECV_SCLR | UPDATE_HYD);
+      task_list_[itask].dependency = (RECV_SCLR | IMPLICIT_CORR);
     }
   }
 }
@@ -74,9 +99,17 @@ void ImplicitHydroTasks::AddTask(TaskID const &id, TaskID const &dep) {
 
   using namespace HydroIntegratorTaskNames;
 
-  if (id == UPDATE_HYD) {
+  if (id == ADD_FLX_CONS) {
     task_list_[ntasks].TaskFunc =
-        static_cast<TaskFunction>(&ImplicitHydroTasks::UpdateHydro);
+        static_cast<TaskFunction>(&ImplicitHydroTasks::AddFluxToConserved);
+    task_list_[ntasks].lb_time = true;
+  } else if (id == IMPLICIT_CORR) {
+    task_list_[ntasks].TaskFunc =
+        static_cast<TaskFunction>(&ImplicitHydroTasks::ImplicitCorrection);
+    task_list_[ntasks].lb_time = true;
+  } else if (id == UPDATE_ALLCONS) {
+    task_list_[ntasks].TaskFunc =
+        static_cast<TaskFunction>(&ImplicitHydroTasks::UpdateAllConserved);
     task_list_[ntasks].lb_time = true;
   } else {
     throw NotFoundError("AddTask", "Task ID");
@@ -171,7 +204,38 @@ TaskStatus ImplicitHydroTasks::AddSourceTerms(MeshBlock *pmb, int stage) {
   return TaskStatus::fail;
 }
 
-TaskStatus ImplicitHydroTasks::UpdateHydro(MeshBlock *pmb, int stage) {
+TaskStatus ImplicitHydroTasks::AddFluxToConserved(MeshBlock *pmb, int stage) {
+  int is = pmb->is, js = pmb->js, ks = pmb->ks;
+  int ie = pmb->ie, je = pmb->je, ke = pmb->ke;
+
+  auto prad = pmb->pimpl->prad;
+  auto pcloud = pmb->pimpl->pcloud;
+
+  if (stage <= nstages) {
+    if (stage_wghts[stage - 1].main_stage) {
+      for (int k = ks; k <= ke; ++k)
+        for (int j = js; j <= je; ++j) {
+          prad->AddRadiativeFlux(pmb->phydro, k, j, is, ie + 1);
+          // pcloud->AddSedimentationFlux(pmb->pscalar, k, j, is, ie+1);
+        }
+
+      if (stage == nstages) {           // last stage
+        if (prad->GetCounter() > 0.) {  // reuse previous flux
+          prad->DecrementCounter(pmb->pmy_mesh->dt);
+        } else {  // update radiative flux
+          prad->ResetCounter();
+          for (int k = ks; k <= ke; ++k)
+            for (int j = js; j <= je; ++j)
+              prad->CalRadiativeFlux(pmb->pmy_mesh->time, k, j, is, ie + 1);
+        }
+      }
+    }
+    return TaskStatus::next;
+  }
+  return TaskStatus::fail;
+}
+
+TaskStatus ImplicitHydroTasks::ImplicitCorrection(MeshBlock *pmb, int stage) {
   Hydro *ph = pmb->phydro;
   auto phevi = pmb->pimpl->phevi;
   Real dt = pmb->pmy_mesh->dt;
@@ -223,4 +287,31 @@ TaskStatus ImplicitHydroTasks::UpdateHydro(MeshBlock *pmb, int stage) {
     return TaskStatus::next;
   }
   return TaskStatus::fail;
+}
+
+TaskStatus ImplicitHydroTasks::UpdateAllConserved(MeshBlock *pmb, int stage) {
+  // only do at last rk step
+  if (stage != nstages) return TaskStatus::next;
+
+  int is = pmb->is, js = pmb->js, ks = pmb->ks;
+  int ie = pmb->ie, je = pmb->je, ke = pmb->ke;
+
+  auto pthermo = Thermodynamics::GetInstance();
+
+  Variable qfrac(Variable::Type::MoleFrac);
+
+  for (int k = ks; k <= ke; k++)
+    for (int j = js; j <= je; j++)
+      for (int i = is; i <= ie; i++) {
+        // add frictional heating
+        // pchem->AddFrictionalHeating(phydro);
+
+        pmb->pimpl->GatherFromConserved(&qfrac, k, j, i);
+
+        pthermo->SaturationAdjustment(&qfrac);
+
+        pmb->pimpl->DistributeToConserved(qfrac, k, j, i);
+      }
+
+  return TaskStatus::success;
 }
