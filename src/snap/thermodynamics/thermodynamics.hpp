@@ -86,9 +86,15 @@ class Thermodynamics {
 
   Real GetGammad(Variable const &var) const;
 
+  Real GetGammadRef() const { return gammad_ref_; }
+
   //! Molecular weight
   //! \return $\mu$
   Real GetMu(int n) const { return mu_[n]; }
+
+  //! Inverse molecular weight
+  //! \return $\mu$
+  Real GetInvMu(int n) const { return inv_mu_[n]; }
 
   //! Ratio of molecular weights
   //! \return $\epsilon_i=\mu_i/\mu_d$

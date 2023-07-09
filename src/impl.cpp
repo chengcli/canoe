@@ -83,9 +83,9 @@ void MeshBlock::Impl::GatherFromPrimitive(Variable *var, int k, int j,
 
   for (int n = 0; n < NCLOUD; ++n) var->c[n] = pcloud->w(n, k, j, i);
 
-  for (int n = 0; n < NTRACER; ++n) var->x[n] = ptracer->w(n, k, j, i);
-
   for (int n = 0; n < NCHEMISTRY; ++n) var->q[n] = pchem->w(n, k, j, i);
+
+  for (int n = 0; n < NTRACER; ++n) var->x[n] = ptracer->w(n, k, j, i);
 
   var->ConvertTo(mytype);
 }
@@ -100,9 +100,9 @@ void MeshBlock::Impl::GatherFromConserved(Variable *var, int k, int j,
 
   for (int n = 0; n < NCLOUD; ++n) var->c[n] = pcloud->u(n, k, j, i);
 
-  for (int n = 0; n < NTRACER; ++n) var->x[n] = ptracer->u(n, k, j, i);
-
   for (int n = 0; n < NCHEMISTRY; ++n) var->q[n] = pchem->u(n, k, j, i);
+
+  for (int n = 0; n < NTRACER; ++n) var->x[n] = ptracer->u(n, k, j, i);
 
   var->ConvertTo(mytype);
 }

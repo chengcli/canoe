@@ -116,6 +116,7 @@ void Variable::ConvertToMoleConcentration() {
 
 void Variable::massFractionToMoleFraction() {
   auto pthermo = Thermodynamics::GetInstance();
+  Real g = 1.;
 
   // set molar mixing ratio
   Real sum = 1.;
@@ -124,19 +125,31 @@ void Variable::massFractionToMoleFraction() {
     sum += w[n] * (pthermo->GetInvMuRatio(n) - 1.);
   }
 
-#pragma omp simd reduction(* : w)
+#pragma omp simd reduction(+ : sum, g)
+  for (int n = 0; n < NCLOUD; ++n) {
+    sum += c[n] * (pthermo->GetInvMuRatio(n + 1 + NVAPOR) - 1.);
+    g += -c[n];
+  }
+
+#pragma omp simd
   for (int n = 1; n <= NVAPOR; ++n) {
     w[n] *= pthermo->GetInvMuRatio(n) / sum;
   }
 
+#pragma omp simd
+  for (int n = 0; n < NCLOUD; ++n) {
+    c[n] *= pthermo->GetInvMuRatio(n + 1 + NVAPOR) / sum;
+  }
+
   // set temperature
-  w[IDN] = w[IPR] / (w[IDN] * pthermo->GetRd() * sum);
+  w[IDN] = w[IPR] / (w[IDN] * g * pthermo->GetRd() * sum);
 
   SetType(Type::MoleFrac);
 }
 
 void Variable::moleFractionToMassFraction() {
   auto pthermo = Thermodynamics::GetInstance();
+  Real g = 1.;
 
   // set mass mixing ratio
   Real sum = 1.;
@@ -145,13 +158,24 @@ void Variable::moleFractionToMassFraction() {
     sum += w[n] * (pthermo->GetMuRatio(n) - 1.);
   }
 
-#pragma omp simd reduction(* : w)
+#pragma omp simd reduction(+ : sum, g)
+  for (int n = 0; n < NCLOUD; ++n) {
+    sum += c[n] * (pthermo->GetMuRatio(n + 1 + NVAPOR) - 1.);
+    g += -c[n];
+  }
+
+#pragma omp simd
   for (int n = 1; n <= NVAPOR; ++n) {
     w[n] *= pthermo->GetMuRatio(n) / sum;
   }
 
+#pragma omp simd
+  for (int n = 0; n < NCLOUD; ++n) {
+    c[n] *= pthermo->GetMuRatio(n + 1 + NVAPOR) / sum;
+  }
+
   // set density
-  w[IDN] = sum * w[IPR] / (w[IDN] * pthermo->GetRd());
+  w[IDN] = sum * w[IPR] / (w[IDN] * g * pthermo->GetRd());
 
   SetType(Type::MassFrac);
 }
@@ -159,48 +183,65 @@ void Variable::moleFractionToMassFraction() {
 void Variable::massConcentrationToMoleFraction() {
   auto pthermo = Thermodynamics::GetInstance();
 
-  Real rho = 0., feps = 0., fsig = 0.;
+  Real rho = 0., sum = 0., cvt = 0., rhoR = 0.;
 
-#pragma omp simd reduction(+ : rho, feps, fsig)
+#pragma omp simd reduction(+ : rho, sum, cvt, rhoR)
   for (int n = 0; n <= NVAPOR; ++n) {
     rho += w[n];
-    feps += w[n] * pthermo->GetInvMuRatio(n);
-    fsig += w[n] * pthermo->GetCvRatioMass(n);
+    sum += w[n] * pthermo->GetInvMuRatio(n);
+    cvt += w[n] * pthermo->GetCvMassRef(n);
+    rhoR += w[n] * Constants::Rgas * pthermo->GetInvMu(n);
   }
 
-#pragma omp simd reduction(* : w)
-  for (int n = 0; n <= NVAPOR; ++n) {
-    w[n] *= pthermo->GetInvMuRatio(n);
+#pragma omp simd reduction(+ : rho, sum, cvt)
+  for (int n = 0; n < NCLOUD; ++n) {
+    rho += c[n];
+    sum += c[n] * pthermo->GetInvMuRatio(n + 1 + NVAPOR);
+    cvt += c[n] * pthermo->GetCvMassRef(n + 1 + NVAPOR);
+  }
+
+#pragma omp simd
+  for (int n = 1; n <= NVAPOR; ++n) {
+    w[n] *= pthermo->GetInvMuRatio(n) / sum;
+  }
+
+#pragma omp simd
+  for (int n = 0; n < NCLOUD; ++n) {
+    c[n] *= pthermo->GetInvMuRatio(n + 1 + NVAPOR) / sum;
   }
 
   Real di = 1. / rho;
 
   // TODO(cli): not true for cubed-sphere
   Real KE = 0.5 * (sqr(w[IM1]) + sqr(w[IM2]) + sqr(w[IM3])) * di;
-  Real gm1 = pthermo->GetGammad(*this) - 1.;
 
-  w[IPR] = gm1 * (w[IEN] - KE) * feps / fsig;
-  w[IDN] = w[IPR] / (feps * pthermo->GetRd());
+  w[IDN] = (w[IEN] - KE) / cvt;
+  w[IPR] = rhoR * w[IDN];
   w[IVX] *= di;
   w[IVY] *= di;
   w[IVZ] *= di;
 
-#pragma omp simd reduction(* : w)
-  for (int n = 1; n <= NVAPOR; ++n) w[n] *= 1. / feps;
-
-  SetType(Type::MassFrac);
+  SetType(Type::MoleFrac);
 }
 
 void Variable::moleFractionToMassConcentration() {
   auto pthermo = Thermodynamics::GetInstance();
 
   Real tem = w[IDN];
-  Real sum = 1.;
+  Real sum = 1., g = 1.;
 
 #pragma omp simd reduction(+ : sum)
-  for (int n = 1; n <= NVAPOR; ++n) sum += w[n] * (pthermo->GetMuRatio(n) - 1.);
+  for (int n = 1; n <= NVAPOR; ++n) {
+    sum += w[n] * (pthermo->GetMuRatio(n) - 1.);
+  }
 
-  Real rho = w[IPR] * sum / (pthermo->GetRd() * tem);
+#pragma omp simd reduction(+ : sum, g)
+  for (int n = 0; n < NCLOUD; ++n) {
+    sum += c[n] * (pthermo->GetMuRatio(n + 1 + NVAPOR) - 1.);
+    g += -c[n];
+  }
+
+  Real rho = w[IPR] * sum / (pthermo->GetRd() * tem * g);
 
   w[IDN] = rho;
 
@@ -210,10 +251,16 @@ void Variable::moleFractionToMassConcentration() {
   for (int n = 1; n <= NVAPOR; ++n) {
     w[n] *= rho * pthermo->GetMuRatio(n) / sum;
     w[IDN] -= w[n];
-    w[IEN] += w[n] * pthermo->GetCvMass(*this, n) * tem;
+    w[IEN] += w[n] * pthermo->GetCvMassRef(n) * tem;
   }
 
-  w[IEN] += w[IDN] * pthermo->GetCvMass(*this, 0) * tem;
+  for (int n = 0; n < NCLOUD; ++n) {
+    c[n] *= rho * pthermo->GetMuRatio(n + 1 + NVAPOR) / sum;
+    w[IDN] -= c[n];
+    w[IEN] += c[n] * pthermo->GetCvMassRef(n + 1 + NVAPOR) * tem;
+  }
+
+  w[IEN] += w[IDN] * pthermo->GetCvMassRef(0) * tem;
   w[IVX] *= rho;
   w[IVY] *= rho;
   w[IVZ] *= rho;
@@ -223,7 +270,7 @@ void Variable::moleFractionToMassConcentration() {
 
 void Variable::massFractionToMassConcentration() {
   auto pthermo = Thermodynamics::GetInstance();
-  Real igm1 = 1.0 / (pthermo->GetGammad(*this) - 1.0);
+  Real igm1 = 1.0 / (pthermo->GetGammadRef() - 1.0);
 
   // density
   Real rho = w[IDN], pres = w[IPR];
@@ -232,8 +279,15 @@ void Variable::massFractionToMassConcentration() {
     w[IDN] -= w[n];
   }
 
+  for (int n = 0; n < NCLOUD; ++n) {
+    c[n] *= rho;
+    w[IDN] -= c[n];
+  }
+
   // total energy
+  // TODO(cli): not true for cubed-sphere
   w[IEN] = 0.5 * rho * (sqr(w[IVX]) + sqr(w[IVY]) + sqr(w[IVZ]));
+
   Real fsig = 1., feps = 1.;
   // vapors
 #pragma omp simd reduction(+ : fsig, feps)
@@ -241,6 +295,13 @@ void Variable::massFractionToMassConcentration() {
     fsig += w[n] * (pthermo->GetCvRatioMass(n) - 1.);
     feps += w[n] * (pthermo->GetInvMuRatio(n) - 1.);
   }
+
+  // clouds
+#pragma omp simd reduction(+ : fsig)
+  for (int n = 0; n < NCLOUD; ++n) {
+    fsig += c[n] * (pthermo->GetCvRatioMass(n + 1 + NVAPOR) - 1.);
+  }
+
   w[IEN] += igm1 * pres * fsig / feps;
 
   // momentum
@@ -253,19 +314,29 @@ void Variable::massFractionToMassConcentration() {
 
 void Variable::massConcentrationToMassFraction() {
   auto pthermo = Thermodynamics::GetInstance();
-  Real gm1 = pthermo->GetGammad(*this) - 1.;
+  Real gm1 = pthermo->GetGammadRef() - 1.;
 
   Real rho = 0.;
+#pragma omp simd reduction(+ : rho)
   for (int n = 0; n <= NVAPOR; ++n) rho += w[n];
+
+#pragma omp simd reduction(+ : rho)
+  for (int n = 0; n < NCLOUD; ++n) rho += c[n];
+
   w[IDN] = rho;
   Real di = 1. / rho;
 
   // mass mixing ratio
-#pragma omp simd reduction(* : w)
+#pragma omp simd
   for (int n = 1; n <= NVAPOR; ++n) w[n] *= di;
 
+#pragma omp simd
+  for (int n = 0; n < NCLOUD; ++n) c[n] *= di;
+
   // pressure
+  // TODO(cli): not true for cubed-sphere
   Real KE = 0.5 * di * (sqr(w[IVX]) + sqr(w[IVY]) + sqr(w[IVZ]));
+
   Real fsig = 1., feps = 1.;
   // vapors
 #pragma omp simd reduction(+ : fsig, feps)
@@ -273,6 +344,12 @@ void Variable::massConcentrationToMassFraction() {
     fsig += w[n] * (pthermo->GetCvRatioMass(n) - 1.);
     feps += w[n] * (pthermo->GetInvMuRatio(n) - 1.);
   }
+
+#pragma omp simd reduction(+ : fsig)
+  for (int n = 0; n < NCLOUD; ++n) {
+    fsig += c[n] * (pthermo->GetCvRatioMass(n + 1 + NVAPOR) - 1.);
+  }
+
   w[IPR] = gm1 * (w[IEN] - KE) * feps / fsig;
 
   // velocity

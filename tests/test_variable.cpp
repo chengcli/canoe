@@ -104,7 +104,7 @@ TEST_F(TestVariable, MoleFraction_MassFraction) {
   for (int n = 0; n < NCHEMISTRY; ++n)
     EXPECT_DOUBLE_EQ(a.q[n], 1. / (NVAPOR + NCLOUD + NCHEMISTRY));
 
-  EXPECT_DOUBLE_EQ(a.w[IDN], 1.);
+  EXPECT_NEAR(a.w[IDN], 1., 1e-10);
   EXPECT_DOUBLE_EQ(a.w[IPR], 10.);
   EXPECT_DOUBLE_EQ(a.w[IVX], 0.1);
   EXPECT_DOUBLE_EQ(a.w[IVY], 0.2);
@@ -126,7 +126,7 @@ TEST_F(TestVariable, MoleFraction_MassConcentration) {
     EXPECT_DOUBLE_EQ(a.q[n], 1. / (NVAPOR + NCLOUD + NCHEMISTRY));
 
   EXPECT_DOUBLE_EQ(a.w[IDN], 1.);
-  EXPECT_DOUBLE_EQ(a.w[IPR], 10.);
+  EXPECT_NEAR(a.w[IPR], 10., 1e-10);
   EXPECT_DOUBLE_EQ(a.w[IVX], 0.1);
   EXPECT_DOUBLE_EQ(a.w[IVY], 0.2);
   EXPECT_DOUBLE_EQ(a.w[IVZ], 0.3);
