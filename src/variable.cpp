@@ -212,10 +212,7 @@ void Variable::massConcentrationToMoleFraction() {
 
   Real di = 1. / rho;
 
-  // TODO(cli): not true for cubed-sphere
-  Real KE = 0.5 * (sqr(w[IM1]) + sqr(w[IM2]) + sqr(w[IM3])) * di;
-
-  w[IDN] = (w[IEN] - KE) / cvt;
+  w[IDN] = w[IEN] / cvt;
   w[IPR] = rhoR * w[IDN];
   w[IVX] *= di;
   w[IVY] *= di;
@@ -244,9 +241,7 @@ void Variable::moleFractionToMassConcentration() {
   Real rho = w[IPR] * sum / (pthermo->GetRd() * tem * g);
 
   w[IDN] = rho;
-
-  // TODO(cli): not true for cubed-sphere
-  w[IEN] = 0.5 * rho * (sqr(w[IVX]) + sqr(w[IVY]) + sqr(w[IVZ]));
+  w[IEN] = 0.;
 
   for (int n = 1; n <= NVAPOR; ++n) {
     w[n] *= rho * pthermo->GetMuRatio(n) / sum;
@@ -284,10 +279,6 @@ void Variable::massFractionToMassConcentration() {
     w[IDN] -= c[n];
   }
 
-  // total energy
-  // TODO(cli): not true for cubed-sphere
-  w[IEN] = 0.5 * rho * (sqr(w[IVX]) + sqr(w[IVY]) + sqr(w[IVZ]));
-
   Real fsig = 1., feps = 1.;
   // vapors
 #pragma omp simd reduction(+ : fsig, feps)
@@ -302,7 +293,8 @@ void Variable::massFractionToMassConcentration() {
     fsig += c[n] * (pthermo->GetCvRatioMass(n + 1 + NVAPOR) - 1.);
   }
 
-  w[IEN] += igm1 * pres * fsig / feps;
+  // internal energy
+  w[IEN] = igm1 * pres * fsig / feps;
 
   // momentum
   w[IVX] *= rho;
@@ -333,10 +325,6 @@ void Variable::massConcentrationToMassFraction() {
 #pragma omp simd
   for (int n = 0; n < NCLOUD; ++n) c[n] *= di;
 
-  // pressure
-  // TODO(cli): not true for cubed-sphere
-  Real KE = 0.5 * di * (sqr(w[IVX]) + sqr(w[IVY]) + sqr(w[IVZ]));
-
   Real fsig = 1., feps = 1.;
   // vapors
 #pragma omp simd reduction(+ : fsig, feps)
@@ -350,7 +338,7 @@ void Variable::massConcentrationToMassFraction() {
     fsig += c[n] * (pthermo->GetCvRatioMass(n + 1 + NVAPOR) - 1.);
   }
 
-  w[IPR] = gm1 * (w[IEN] - KE) * feps / fsig;
+  w[IPR] = gm1 * w[IEN] * feps / fsig;
 
   // velocity
   w[IVX] *= di;

@@ -212,6 +212,7 @@ Real Thermodynamics::GetPres(MeshBlock* pmb, int k, int j, int i) const {
     feps += u(n, k, j, i) * inv_mu_ratio_[n];
   }
 
+  // TODO(cli): not correct for Cubed sphere
   Real KE =
       0.5 *
       (sqr(u(IM1, k, j, i)) + sqr(u(IM2, k, j, i)) + sqr(u(IM3, k, j, i))) /
