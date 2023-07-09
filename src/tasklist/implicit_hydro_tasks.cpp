@@ -1,4 +1,5 @@
 // athena
+#include <athena/athena.hpp>
 #include <athena/coordinates/coordinates.hpp>
 #include <athena/field/field.hpp>
 #include <athena/hydro/hydro.hpp>
@@ -55,7 +56,12 @@ ImplicitHydroTasks::ImplicitHydroTasks(ParameterInput *pin, Mesh *pm)
   // **ATHENA TASKS**: (INT_HYD | INT_SCLR) -> SRC_TERM ->
   // **CANOE TASKS** : IMPLICIT_CORR -> UPDATE_ALLCONS ->
   // **ATHENA TASKS**: SEND_HYD -> ...
-  AddTask(ADD_FLX_CONS, (CALC_HYDFLX | CALC_SCLRFLX));
+  if (NSCALARS > 0) {
+    AddTask(ADD_FLX_CONS, (CALC_HYDFLX | CALC_SCLRFLX));
+  } else {
+    AddTask(ADD_FLX_CONS, CALC_HYDFLX);
+  }
+
   AddTask(IMPLICIT_CORR, SRC_TERM);
   AddTask(UPDATE_ALLCONS, IMPLICIT_CORR);
 
