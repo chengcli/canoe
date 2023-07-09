@@ -4,9 +4,6 @@
 // canoe
 #include "variable.hpp"
 
-// climath
-#include <climath/core.h>
-
 // snap
 #include <snap/thermodynamics/thermodynamics.hpp>
 
