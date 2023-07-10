@@ -191,6 +191,7 @@ void Variable::massConcentrationToMoleFraction() {
   auto pthermo = Thermodynamics::GetInstance();
 
   Real rho = 0., sum = 0., cvt = 0., rhoR = 0.;
+  Real inv_rhod = 1. / w[IDN];
 
 #pragma omp simd reduction(+ : rho, sum, cvt, rhoR)
   for (int n = 0; n <= NVAPOR; ++n) {
@@ -224,6 +225,10 @@ void Variable::massConcentrationToMoleFraction() {
   w[IVX] *= di;
   w[IVY] *= di;
   w[IVZ] *= di;
+
+  // tracer
+#pragma omp simd
+  for (int n = 0; n < NTRACER; ++n) x[n] *= inv_rhod;
 
   SetType(Type::MoleFrac);
 }
@@ -267,6 +272,10 @@ void Variable::moleFractionToMassConcentration() {
   w[IVY] *= rho;
   w[IVZ] *= rho;
 
+  // tracer
+#pragma omp simd
+  for (int n = 0; n < NTRACER; ++n) x[n] *= w[IDN];
+
   SetType(Type::MassConc);
 }
 
@@ -308,6 +317,10 @@ void Variable::massFractionToMassConcentration() {
   w[IVY] *= rho;
   w[IVZ] *= rho;
 
+  // tracer
+#pragma omp simd
+  for (int n = 0; n < NTRACER; ++n) x[n] *= w[IDN];
+
   SetType(Type::MassConc);
 }
 
@@ -315,7 +328,7 @@ void Variable::massConcentrationToMassFraction() {
   auto pthermo = Thermodynamics::GetInstance();
   Real gm1 = pthermo->GetGammadRef() - 1.;
 
-  Real rho = 0.;
+  Real rho = 0., inv_rhod = w[IDN];
 #pragma omp simd reduction(+ : rho)
   for (int n = 0; n <= NVAPOR; ++n) rho += w[n];
 
@@ -351,6 +364,10 @@ void Variable::massConcentrationToMassFraction() {
   w[IVX] *= di;
   w[IVY] *= di;
   w[IVZ] *= di;
+
+  // tracer
+#pragma omp simd
+  for (int n = 0; n < NTRACER; ++n) x[n] *= inv_rhod;
 
   SetType(Type::MassFrac);
 }

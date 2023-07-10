@@ -36,10 +36,10 @@ class Variable {
   Real *x;
 
   //! static data
-  Real *s;
+  Real const *s;
 
   //! particle data
-  Real *d;
+  Real const *d;
 
   // constructor
   explicit Variable(Type type = Type::MoleFrac) : mytype_(type) {

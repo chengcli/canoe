@@ -103,8 +103,6 @@ TEST_F(TestImpl, GatherPrimitive) {
 
   int ks = pmb->ks, js = pmb->js, is = pmb->is;
   pimpl->GatherFromPrimitive(&var, ks, js, is);
-  std::cout << var << std::endl;
-  std::cout << var.ConvertToMassConcentration() << std::endl;
   pimpl->DistributeToPrimitive(var, ks, js, is);
 
   EXPECT_DOUBLE_EQ(phydro->w(IDN, ks, js, is), 1.);
@@ -135,25 +133,23 @@ TEST_F(TestImpl, GatherConserved) {
 
   int ks = pmb->ks, js = pmb->js, is = pmb->is;
   pimpl->GatherFromConserved(&var, ks, js, is);
-  std::cout << var << std::endl;
   pimpl->DistributeToConserved(var, ks, js, is);
 
   EXPECT_NEAR(phydro->u(IDN, ks, js, is), 0.818181818181, 1e-10);
   EXPECT_NEAR(phydro->u(IEN, ks, js, is), 24.98002735832, 1e-8);
+
   EXPECT_DOUBLE_EQ(phydro->u(IVX, ks, js, is), 0.1);
   EXPECT_DOUBLE_EQ(phydro->u(IVY, ks, js, is), 0.2);
   EXPECT_DOUBLE_EQ(phydro->u(IVZ, ks, js, is), 0.3);
 
-  EXPECT_NEAR(phydro->u(1, ks, js, is), 0.0909091, 1e-8);
-  EXPECT_NEAR(phydro->u(2, ks, js, is), 0.0909091, 1e-8);
+  for (int n = 1; n <= NVAPOR; ++n)
+    EXPECT_NEAR(phydro->u(n, ks, js, is), 0.0909091, 1e-8);
 
-  EXPECT_NEAR(pcloud->u(0, ks, js, is), 0.1487603305785, 1e-10);
-  EXPECT_NEAR(pcloud->u(1, ks, js, is), 0.1487603305785, 1e-10);
-  EXPECT_NEAR(pcloud->u(2, ks, js, is), 0.1487603305785, 1e-10);
-  EXPECT_NEAR(pcloud->u(3, ks, js, is), 0.1487603305785, 1e-10);
+  for (int n = 0; n < NCLOUD; ++n)
+    EXPECT_NEAR(pcloud->u(n, ks, js, is), 0.1487603305785, 1e-10);
 
   for (int n = 0; n < NTRACER; ++n)
-    EXPECT_DOUBLE_EQ(ptracer->u(n, ks, js, is), 2.);
+    EXPECT_NEAR(ptracer->u(n, ks, js, is), 1.6363636363636, 1e-10);
 };
 
 int main(int argc, char **argv) {
