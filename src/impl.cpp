@@ -142,10 +142,16 @@ void MeshBlock::Impl::GatherFromConserved(Variable *var, int k, int j,
       0.5 / rho * (sqr(var->w[IVX]) + sqr(var->w[IVY]) + sqr(var->w[IVZ]));
 
   Real tem = (var->w[IEN] - KE) / cvt;
+  Real vx = var->w[IVX] / rho;
+  Real vy = var->w[IVY] / rho;
+  Real vz = var->w[IVZ] / rho;
 
 #pragma omp simd reduction(+ : cvt)
   for (int n = 0; n < NCLOUD; ++n) {
     cvt += var->c[n] * pthermo->GetCvMassRef(n + 1 + NVAPOR);
+    var->w[IVX] += var->c[n] * vx;
+    var->w[IVY] += var->c[n] * vy;
+    var->w[IVZ] += var->c[n] * vz;
   }
 
   var->w[IEN] = cvt * tem;
@@ -231,30 +237,40 @@ void MeshBlock::Impl::DistributeToConserved(Variable const &var_in, int k,
 #pragma omp simd
   for (int n = 0; n < NHYDRO; ++n) phydro->u(n, k, j, i) = var->w[n];
 
-  Real rhog = 0., cvt = 0.;
-
 #pragma omp simd
-  for (int n = 0; n <= NVAPOR; ++n) {
-    rhog += var->w[n];
-    cvt += var->w[n] * pthermo->GetCvMassRef(n);
+  for (int n = 0; n < NCLOUD; ++n) pcloud->u(n, k, j, i) = var->c[n];
 
-    // TODO(cli): not correct for cubed sphere
-    phydro->u(IEN, k, j, i) +=
-        0.5 * var->w[n] * sqr(var->w[IVX] + var->w[IVY] + var->w[IVZ]);
+  Real rho = 0., cvt = 0.;
+
+#pragma omp simd reduction(+ : rho, cvt)
+  for (int n = 0; n <= NVAPOR; ++n) {
+    rho += var->w[n];
+    cvt += var->w[n] * pthermo->GetCvMassRef(n);
   }
 
-#pragma omp simd
+#pragma omp simd reduction(+ : rho, cvt)
   for (int n = 0; n < NCLOUD; ++n) {
-    pcloud->u(n, k, j, i) = var->c[n];
+    rho += var->c[n];
     cvt += var->c[n] * pthermo->GetCvMassRef(n + 1 + NVAPOR);
   }
 
   Real tem = var->w[IEN] / cvt;
+  Real vx = var->w[IVX] / rho;
+  Real vy = var->w[IVY] / rho;
+  Real vz = var->w[IVZ] / rho;
 
 #pragma omp simd
   for (int n = 0; n < NCLOUD; ++n) {
     phydro->u(IEN, k, j, i) -=
         var->c[n] * pthermo->GetCvMassRef(n + 1 + NVAPOR) * tem;
+    phydro->u(IVX, k, j, i) -= var->c[n] * vx;
+    phydro->u(IVY, k, j, i) -= var->c[n] * vy;
+    phydro->u(IVZ, k, j, i) -= var->c[n] * vz;
+  }
+
+  for (int n = 0; n <= NVAPOR; ++n) {
+    // TODO(cli): not correct for cubed sphere
+    phydro->u(IEN, k, j, i) += 0.5 * var->w[n] * (sqr(vx) + sqr(vy) + sqr(vz));
   }
 
 #pragma omp simd
