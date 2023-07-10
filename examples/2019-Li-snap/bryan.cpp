@@ -36,36 +36,32 @@
 #include <snap/thermodynamics/thermodynamics.hpp>
 #include "../utils/utils.hpp"
 
-int iH2O, iH2Oc;
+int iH2O;
 Real p0, grav;
 
 struct RootData {
   Real temp_v;
-  Real beta;
-  Real delta;
-  Real p3;
-  Real t3;
-  Real eps;
-  Real *qfrac;
+  Variable *qfrac;
 };
 
 Real root_func(Real temp, void *aux) {
+  auto pthermo = Thermodynamics::GetInstance();
+
   RootData *pd = static_cast<RootData*>(aux);
   Real& temp_v = pd->temp_v;
-  Real& beta = pd->beta;
-  Real& delta = pd->delta;
-  Real& p3 = pd->p3;
-  Real& t3 = pd->t3;
-  Real& eps = pd->eps;
-  Real *qfrac = pd->qfrac;
+  Variable* qfrac = pd->qfrac;
 
-  qfrac[IDN] = temp;
-  Real rate = GasCloudIdeal(qfrac, iH2O, iH2Oc, t3, p3, 0., beta, delta);
-  qfrac[iH2O] -= rate;
-  qfrac[iH2Oc] += rate;
-  Real f1 = 1. - qfrac[iH2Oc];
-  Real f2 = 1. + (qfrac[iH2O] + qfrac[iH2Oc])*(eps - 1.);
-  return temp*f1/f2 - temp_v;
+  qfrac->w[IDN] = temp;
+  auto rates = pthermo->TryEquilibriumTP(qfrac, iH2O);
+
+  // vapor condensation rate
+  qfrac->w[iH2O] += rates[0];
+
+  // cloud concentration rates
+  for (int j = 1; j < rates.size(); ++j) {
+    qfrac->c[cloud_index_set_[iH2O][j - 1]] += rates[j];
+
+  return thermo->VirtualTemp(qfrac) - temp_v;
 };
 
 void MeshBlock::InitUserMeshBlockData(ParameterInput *pin)
@@ -106,6 +102,9 @@ void Mesh::InitUserMeshData(ParameterInput *pin)
 
 void MeshBlock::ProblemGenerator(ParameterInput *pin)
 {
+  auto pthermo = Thermodynamics::GetInstance();
+
+  Real Ps = p0;
   Real Ts = pin->GetReal("problem", "Ts");
 
   Real xc = pin->GetReal("problem", "xc");
@@ -114,77 +113,53 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin)
   Real zr = pin->GetReal("problem", "zr");
   Real dT = pin->GetReal("problem", "dT");
   Real qt = pin->GetReal("problem", "qt");
+  Real dz = pcoord->dx1f(is);
 
   // index
   iH2O = pindex->GetVariableId("H2O");
   iH2Oc = pindex->GetVariableId("H2O(c)");
 
-  auto pthermo = Thermodynamics::GetInstance();
+  // index
+  auto pindex = IndexMap::GetInstance();
+  iH2O = pindex->GetVariableId("H2O");
 
-  RootData solver;
-  solver.p3 = pin->GetReal("thermodynamics", "Ptriple1");
-  solver.t3 = pin->GetReal("thermodynamics", "Ttriple1");
-  solver.eps = pthermo->GetMuRatio(iH2Oc);
-  solver.beta = pthermo->GetBeta(iH2Oc);
-  solver.delta = pthermo->GetDelta(iH2Oc);
+  Variable qfrac(Variable::Type::MoleFrac);
 
-  Real Rd = pthermo->GetRd();
-  Real gamma = peos->GetGamma();
-  Real cpd = gamma/(gamma - 1.)*Rd;
-
-  // construct a 1D pseudo-moist adiabat with given relative humidity
-  Real x1min = pmy_mesh->mesh_size.x1min;
-  Real x1max = pmy_mesh->mesh_size.x1max;
-  int nx1 = 2*pmy_mesh->mesh_size.nx1 + 1;
-  Real dz = (x1max - x1min)/(nx1 - 1);
-  Real **w1, *z1;
-  NewCArray(w1, nx1, NHYDRO);
-  z1 = new Real [nx1];
-
-  w1[0][iH2O] = qt;
-  Real Ps = p0;
-  pthermo->ConstructAtmosphere(w1, Ts, Ps, grav, dz, nx1, Adiabat::reversible);
-  z1[0] = x1min;
-  for (int i = 1; i < nx1; ++i)
-    z1[i] = z1[i-1] + dz;
-
-  auto pcloud = pimpl->cloudq[0];
-
-  for (int i = is; i <= ie; ++i) {
-    Real buf[Variable::Size];
-    interpn(buf, &pcoord->x1v(i), *w1, z1, &nx1, 1, Variable::Size);
+  // construct a reversible adiabat
+  for (int k = ks; k <= ke; ++k)
     for (int j = js; j <= je; ++j) {
-      for (int n = 0; n < NHYDRO; ++n)
-        phydro->w(n,j,i) = buf[n];
-      pcloud->r(iH2Oc - NHYDRO,j,i) = buf[iH2Oc];
-      phydro->w(IVX,j,i) = 0.;
-      phydro->w(IVY,j,i) = 0.;
-    }
-  }
-
-  // add temperature anomaly
-  Real qfrac[Variable::Size]; Real temp;
-  for (int j = js; j <= je; ++j)
-    for (int i = is; i <= ie; ++i) {
-      Real x1 = pcoord->x1v(i);
-      Real x2 = pcoord->x2v(j);
-      Real L = sqrt(sqr((x2 - xc)/xr) + sqr((x1 - zc)/zr));
-      if (L < 1.) {
-        pimpl->ToMolarFraction(qfrac, ks, j, i);
-        solver.qfrac = qfrac;
-        solver.temp_v = phydro->w(IPR,j,i)/(phydro->w(IDN,j,i)*Rd)*
-          (dT*sqr(cos(M_PI*L/2.))/300. + 1.);
-        int err = root(qfrac[IDN], qfrac[IDN] + dT, 1.E-8, &temp, root_func, &solver);
-        if (err) {
-          throw RuntimeError("pgen", "TVSolver doesn't converge");
-        } else {
-          root_func(temp, &solver);
-        }
-        pimpl->FromMolarFraction(qfrac, ks, j, i);
+      qfrac.w[iH2O] = qt;
+      qfrac.w[IPR] = Ps;
+      qfrac.w[IDN] = Ts;
+      for (int i = is; i <= ie; ++i) {
+        pimpl->DistributeToConserved(qfrac, k, j, i);
+        pthermo->Extrapolate(&qfrac, -dz, Thermodynamics::Method::ReversibleAdiabat);
       }
     }
-  peos->PrimitiveToConserved(phydro->w, pfield->bcc, phydro->u, pcoord, is, ie, js, je, ks, ke);
 
-  FreeCArray(w1);
-  delete[] z1;
+  // add temperature anomaly
+  Real temp, Rd = pthermo->GetRd();
+  RootData solver;
+
+  for (int k = ks; k <= ke; ++k)
+    for (int j = js; j <= je; ++j)
+      for (int i = is; i <= ie; ++i) {
+        Real x1 = pcoord->x1v(i);
+        Real x2 = pcoord->x2v(j);
+        Real L = sqrt(sqr((x2 - xc)/xr) + sqr((x1 - zc)/zr));
+
+        if (L < 1.) {
+          pimpl->GatherFromConserved(&qfrac, k, j, i);
+          solver.qfrac = &qfrac;
+          solver.temp_v = phydro->w(IPR,j,i)/(phydro->w(IDN,j,i)*Rd)*
+            (dT*sqr(cos(M_PI*L/2.))/300. + 1.);
+          int err = root(qfrac[IDN], qfrac[IDN] + dT, 1.E-8, &temp, root_func, &solver);
+          if (err) {
+            throw RuntimeError("pgen", "TVSolver doesn't converge");
+          } else {
+            root_func(temp, &solver);
+          }
+          pimpl->DistributeToConserved(qfrac, k, j, i);
+        }
+      }
 }

@@ -7,7 +7,7 @@
 
 // TODO(cli) : check
 void Thermodynamics::rk4IntegrateZ(Variable *qfrac, Real dz, Method method,
-                                   Real g_ov_Rd, Real adTdz) const {
+                                   Real grav, Real adTdz) const {
   Real step[] = {0.5, 0.5, 1.};
   Real temp = qfrac->w[IDN];
   Real pres = qfrac->w[IPR];
@@ -41,6 +41,8 @@ void Thermodynamics::rk4IntegrateZ(Variable *qfrac, Real dz, Method method,
         }
       }
     }
+
+    Real g_ov_Rd = grav / Rd_;
     Real R_ov_Rd = q_gas / q_eps;
 
     if (method == Method::ReversibleAdiabat ||
