@@ -12,6 +12,11 @@
 // canoe
 #include <configure.hpp>
 
+#include "index_map.hpp"
+
+// snap
+#include "snap/thermodynamics/thermodynamics.hpp"
+
 void mesh_destroy(ParameterInput *&pinput, Mesh *&pmesh, int mbcnt) {
   clock_t tstop = clock();
 
@@ -57,4 +62,7 @@ void mesh_destroy(ParameterInput *&pinput, Mesh *&pmesh, int mbcnt) {
 
   delete pinput;
   delete pmesh;
+
+  Thermodynamics::Destroy();
+  IndexMap::Destroy();
 }

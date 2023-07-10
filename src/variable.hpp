@@ -36,10 +36,10 @@ class Variable {
   Real *x;
 
   //! static data
-  Real *s;
+  Real const *s;
 
   //! particle data
-  Real *d;
+  Real const *d;
 
   // constructor
   explicit Variable(Type type = Type::MoleFrac) : mytype_(type) {
@@ -74,20 +74,18 @@ class Variable {
     return *this;
   }
 
-  void SetType(Type type) { 
-    mytype_ = type; 
-  }
+  void SetType(Type type) { mytype_ = type; }
 
   Type GetType() const { return mytype_; }
 
   void SetZero() { std::fill(data_.begin(), data_.end(), 0.0); }
 
-  void ConvertTo(Variable::Type type);
+  Variable &ConvertTo(Variable::Type type);
 
-  void ConvertToMassFraction();
-  void ConvertToMassConcentration();
-  void ConvertToMoleFraction();
-  void ConvertToMoleConcentration();
+  Variable &ConvertToMassFraction();
+  Variable &ConvertToMassConcentration();
+  Variable &ConvertToMoleFraction();
+  Variable &ConvertToMoleConcentration();
 
  protected:
   void massFractionToMassConcentration();

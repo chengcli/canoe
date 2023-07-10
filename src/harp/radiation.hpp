@@ -67,6 +67,11 @@ class Radiation {
 
   size_t LoadRestartData(char *psrc);
 
+  // timing
+  void ResetCounter() { current_ = cooldown_; }
+  void DecrementCounter(Real dt) { current_ -= dt; }
+  Real GetCounter() const { return current_; }
+
  protected:
   int test(uint64_t flag) const { return rflags_ & flag; }
   void set(uint64_t flag) { rflags_ |= flag; }

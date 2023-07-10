@@ -60,6 +60,10 @@ Thermodynamics const* Thermodynamics::GetInstance() {
 }
 
 Thermodynamics const* Thermodynamics::InitFromAthenaInput(ParameterInput* pin) {
+  if (mythermo_ != nullptr) {
+    throw RuntimeError("Thermodynamics", "Thermodynamics has been initialized");
+  }
+
   Application::Logger app("snap");
   app->Log("Initialize Thermodynamics");
 
@@ -73,10 +77,10 @@ Thermodynamics const* Thermodynamics::InitFromAthenaInput(ParameterInput* pin) {
     YAML::Node node = YAML::Load(stream);
     mythermo_ = new Thermodynamics(node);
   } else {  // legacy input
-    if (NCLOUD != 2 * NVAPOR) {
+    if (NCLOUD != (NPHASE - 1) * NVAPOR) {
       throw RuntimeError(
           "Thermodynamics",
-          "NCLOUD != 2*NVAPOR is not supported for legacy input");
+          "NCLOUD != (NPHASE-1)*NVAPOR is not supported for legacy input");
     }
 
     mythermo_ = new Thermodynamics();
@@ -212,6 +216,7 @@ Real Thermodynamics::GetPres(MeshBlock* pmb, int k, int j, int i) const {
     feps += u(n, k, j, i) * inv_mu_ratio_[n];
   }
 
+  // TODO(cli): not correct for Cubed sphere
   Real KE =
       0.5 *
       (sqr(u(IM1, k, j, i)) + sqr(u(IM2, k, j, i)) + sqr(u(IM3, k, j, i))) /

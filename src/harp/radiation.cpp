@@ -116,8 +116,6 @@ void Radiation::PopulateRadiationBands(ParameterInput *pin) {
 }
 
 void Radiation::CalRadiativeFlux(Real time, int k, int j, int il, int iu) {
-  Application::Logger app("harp");
-  app->Log("CalRadiativeFlux");
   Real dist = stellarDistance_au_;
 
   Coordinates *pcoord = pmy_block_->pcoord;
@@ -161,9 +159,6 @@ void Radiation::CalRadiance(Real time, int k, int j, int il, int iu) {
 
 void Radiation::AddRadiativeFlux(Hydro *phydro, int k, int j, int il,
                                  int iu) const {
-  Application::Logger app("harp");
-  app->Log("AddRadiativeFlux");
-
   // x1-flux divergence
   for (size_t b = 0; b < bands_.size(); ++b) {
 #pragma omp simd

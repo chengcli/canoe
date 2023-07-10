@@ -10,6 +10,7 @@
 // canoe
 #include <impl.hpp>
 #include <index_map.hpp>
+#include <variable.hpp>
 
 // harp
 #include <harp/absorber.hpp>
@@ -29,6 +30,9 @@ class TestRadiation : public testing::Test {
     pinput = new ParameterInput;
     pinput->LoadFromFile(infile);
     infile.Close();
+
+    IndexMap::InitFromAthenaInput(pinput);
+    Thermodynamics::InitFromAthenaInput(pinput);
 
     // set up mesh
     int restart = false;
@@ -50,6 +54,8 @@ class TestRadiation : public testing::Test {
 
     delete pinput;
     delete pmesh;
+    Thermodynamics::Destroy();
+    IndexMap::Destroy();
   }
 };
 

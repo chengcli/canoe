@@ -52,6 +52,7 @@ if (${NVAPOR} EQUAL 2)
   add_test_case(test_radiation.cpp)
   add_test_case(test_microwave_opacity.cpp)
   add_test_case(test_thermodynamics.cpp)
+  add_test_case(test_impl.cpp)
 endif()
 
 # copy yaml files
