@@ -48,10 +48,8 @@ void MeshBlock::UserWorkBeforeOutput(ParameterInput *pin) {
   for (int k = ks; k <= ke; ++k)
     for (int j = js; j <= je; ++j)
       for (int i = is; i <= ie; ++i) {
-        user_out_var(0, k, j, i) =
-            pthermo->GetTemp(this, k, j, i);
-        user_out_var(1, k, j, i) =
-            pthermo->PotentialTemp(this, P0, k, j, i);
+        user_out_var(0, k, j, i) = pthermo->GetTemp(this, k, j, i);
+        user_out_var(1, k, j, i) = pthermo->PotentialTemp(this, P0, k, j, i);
       }
 }
 
@@ -113,15 +111,15 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
 
   // set up an adiabatic atmosphere
   int max_iter = 200, iter = 0;
-  Real dlnp = pcoord->dx1f(is)/H0;
+  Real dlnp = pcoord->dx1f(is) / H0;
 
   Variable var(Variable::Type::MoleFrac);
 
   // estimate surface temperature and pressure
-  Real Ps = P0*exp(-x1min/H0);
-  Real Ts = T0*pow(Ps/P0, Rd/cp);
-  Real xH2O = pin->GetReal("problem", "qH2O.ppmv")/1.E6;
-  Real xNH3 = pin->GetReal("problem", "qNH3.ppmv")/1.E6;
+  Real Ps = P0 * exp(-x1min / H0);
+  Real Ts = T0 * pow(Ps / P0, Rd / cp);
+  Real xH2O = pin->GetReal("problem", "qH2O.ppmv") / 1.E6;
+  Real xNH3 = pin->GetReal("problem", "qNH3.ppmv") / 1.E6;
 
   while (iter++ < max_iter) {
     // read in vapors
@@ -132,13 +130,14 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
 
     // stop at just above P0
     for (int i = is; i <= ie; ++i) {
-      pthermo->Extrapolate(&var, -dlnp/2., Thermodynamics::Method::DryAdiabat);
+      pthermo->Extrapolate(&var, -dlnp / 2.,
+                           Thermodynamics::Method::DryAdiabat);
       if (var.w[IPR] < P0) break;
     }
 
     // extrapolate down to where var is
-    pthermo->Extrapolate(&var, log(P0/var.w[IPR]),
-        Thermodynamics::Method::DryAdiabat);
+    pthermo->Extrapolate(&var, log(P0 / var.w[IPR]),
+                         Thermodynamics::Method::DryAdiabat);
 
     // make up for the difference
     Ts += T0 - var.w[IDN];
@@ -168,7 +167,8 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
         if (var.w[IDN] < Tmin) break;
       }
 
-      // Replace adiabatic atmosphere with isothermal atmosphere if temperature is too low
+      // Replace adiabatic atmosphere with isothermal atmosphere if temperature
+      // is too low
       pthermo->Extrapolate(&var, dlnp, Thermodynamics::Method::DryAdiabat);
       for (; i <= ie; ++i) {
         pthermo->Extrapolate(&var, -dlnp, Thermodynamics::Method::Isothermal);
@@ -193,8 +193,8 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
 
         for (int i = ibegin; i < iend; ++i) {
           pthermo->Extrapolate(&var, -dlnp, Thermodynamics::Method::DryAdiabat,
-              0., adlnTdlnP);
-          pimpl->DistributeToPrimitive(var, k, j, i+1);
+                               0., adlnTdlnP);
+          pimpl->DistributeToPrimitive(var, k, j, i + 1);
         }
       }
   }

@@ -275,8 +275,7 @@ Real Thermodynamics::RovRd(MeshBlock* pmb, int k, int j, int i) const {
     feps += w(n, k, j, i) * (inv_mu_ratio_[n] - 1.);
 
 #pragma omp simd reduction(+ : feps)
-  for (int n = 0; n < NCLOUD; ++n)
-    feps += -c(n, k, j, i);
+  for (int n = 0; n < NCLOUD; ++n) feps += -c(n, k, j, i);
 
   return feps;
 }

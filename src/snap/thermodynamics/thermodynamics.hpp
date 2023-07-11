@@ -232,7 +232,7 @@ class Thermodynamics {
   //! \return $1/\mu$
   Real RovRd(MeshBlock *pmb, int k, int j, int i) const;
 
-  Real RovRd(Variable const& qfrac) const;
+  Real RovRd(Variable const &qfrac) const;
 
   //! Specific heat capacity [J/(kg K)] of the air parcel at constant volume
   //! c_v = c_{v,d}*(1 + \sum_i (q_i*(\hat{c}_{v,i} - 1.)))

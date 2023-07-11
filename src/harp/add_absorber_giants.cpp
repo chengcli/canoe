@@ -11,11 +11,11 @@
 #include <application/exceptions.hpp>
 
 // opacity
-#include <opacity/Giants/microwave/mwr_absorbers.hpp>
 #include <opacity/Giants/freedman.hpp>
 #include <opacity/Giants/hydrogen_cia.hpp>
-#include <opacity/hitran_absorber.hpp>
+#include <opacity/Giants/microwave/mwr_absorbers.hpp>
 #include <opacity/correlatedk_absorber.hpp>
+#include <opacity/hitran_absorber.hpp>
 
 // utils
 #include <utils/parameter_map.hpp>

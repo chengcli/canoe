@@ -107,8 +107,7 @@ void MeshBlock::Impl::GatherFromPrimitive(Variable *var, int k, int j,
     var->q[n] = pchem->w(n, k, j, i) * rhod * inv_rho;
 
 #pragma omp simd
-  for (int n = 0; n < NTRACER; ++n)
-    var->x[n] = ptracer->w(n, k, j, i);
+  for (int n = 0; n < NTRACER; ++n) var->x[n] = ptracer->w(n, k, j, i);
 
   var->w[IDN] = rho;
 
@@ -212,8 +211,7 @@ void MeshBlock::Impl::DistributeToPrimitive(Variable const &var_in, int k,
     pchem->w(n, k, j, i) = var->q[n] * rho * inv_rhod;
 
 #pragma omp simd
-  for (int n = 0; n < NTRACER; ++n)
-    ptracer->w(n, k, j, i) = var->x[n];
+  for (int n = 0; n < NTRACER; ++n) ptracer->w(n, k, j, i) = var->x[n];
 
   if (var_in.GetType() != Variable::Type::MassFrac) {
     delete var;

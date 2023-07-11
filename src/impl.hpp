@@ -62,8 +62,8 @@ class MeshBlock::Impl {
   void GatherFromPrimitive(Variable *prim, int k, int j, int i) const;
   void GatherFromConserved(Variable *cons, int k, int j, int i) const;
 
-  void DistributeToPrimitive(Variable const& prim, int k, int j, int i);
-  void DistributeToConserved(Variable const& cons, int k, int j, int i);
+  void DistributeToPrimitive(Variable const &prim, int k, int j, int i);
+  void DistributeToConserved(Variable const &cons, int k, int j, int i);
 
  private:
   MeshBlock *pmy_block_;
