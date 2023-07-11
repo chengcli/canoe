@@ -271,12 +271,12 @@ class Thermodynamics {
   //! \return $H$
   Real RelativeHumidity(MeshBlock *pmb, int n, int k, int j, int i) const;
 
- protected:
-  //! Saturation surplus for vapors can be both positive and negative
-  //! positive value represents supersaturation
-  //! negative value represents saturation deficit
-  void getSaturationSurplus(Real dw[], Variable const &v) const;
+  Real RelativeHumidity(Variable const &qfrac, int n) const {
+    auto rates = TryEquilibriumTP(qfrac, n, 0., true);
+    return qfrac.w[n] / (qfrac.w[n] + rates[0]);
+  }
 
+ protected:
   //! update T/P
   void updateTPConservingU(Variable *qfrac, Real rmole, Real umole) const;
 

@@ -166,6 +166,8 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin)
   Real xH2O = pin->GetReal("problem", "qH2O.ppmv")/1.E6;
   Real xNH3 = pin->GetReal("problem", "qNH3.ppmv")/1.E6;
 
+  Real rh_max_nh3 = pin->GetOrAddReal("problem", "rh_max.NH3", 1.);
+
   while (iter++ < max_iter) {
     // read in vapors
     var.w[iH2O] = xH2O;
@@ -206,8 +208,14 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin)
 
       int i = is;
       for (; i <= ie; ++i) {
+        // check relative humidity
+        Real rh = pthermo->RelativeHumidity(var, iNH3);
+        var.w[iNH3] *= std::min(rh_max_nh3/rh, 1.);
+
         pimpl->DistributeToPrimitive(var, k, j, i);
+
         pthermo->Extrapolate(&var, -dlnp, Thermodynamics::Method::DryAdiabat);
+
         if (var.w[IDN] < Tmin) break;
       }
 

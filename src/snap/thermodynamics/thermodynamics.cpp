@@ -338,14 +338,9 @@ Real Thermodynamics::GetMu(MeshBlock* pmb, int k, int j, int i) const {
 
 Real Thermodynamics::RelativeHumidity(MeshBlock* pmb, int n, int k, int j,
                                       int i) const {
-  Real dw[1 + NVAPOR];
-  auto& w = pmb->phydro->w;
-
-  Variable var(Variable::Type::MoleFrac);
-
-  pmb->pimpl->GatherFromPrimitive(&var, k, j, i);
-  getSaturationSurplus(dw, var);
-  return w(n, k, j, i) / (w(n, k, j, i) + dw[n]);
+  Variable qfrac(Variable::Type::MoleFrac);
+  pmb->pimpl->GatherFromPrimitive(&qfrac, k, j, i);
+  return RelativeHumidity(qfrac, n);
 }
 
 void Thermodynamics::Extrapolate(Variable* qfrac, Real dzORdlnp, Method method,
@@ -381,18 +376,6 @@ Real Thermodynamics::GetLatentHeatMole(int i, std::vector<Real> const& rates,
   }
 
   return heat / std::abs(rates[0]) + Constants::Rgas * temp;
-}
-
-void Thermodynamics::getSaturationSurplus(Real dw[],
-                                          Variable const& var) const {
-  for (int i = 1; i <= NVAPOR; ++i) {
-    dw[i] = var.w[i];
-  }
-
-  for (int i = 1; i <= NVAPOR; ++i) {
-    auto rates = TryEquilibriumTP(var, i, 0., true);
-    dw[i] *= rates[0] / var.w[i];
-  }
 }
 
 Real Thermodynamics::getInternalEnergyMole(Variable const& qfrac) const {
