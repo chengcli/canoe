@@ -228,7 +228,7 @@ Real Thermodynamics::GetPres(MeshBlock* pmb, int k, int j, int i) const {
 Real Thermodynamics::GetChi(MeshBlock* pmb, int k, int j, int i) const {
   Real gammad = pmb->peos->GetGamma();
   auto& w = pmb->phydro->w;
-  auto& c = pmb->pimpl->pcloud->c;
+  auto& c = pmb->pimpl->pcloud->w;
 
   Real qsig = 1., feps = 1.;
 #pragma omp simd reduction(+ : qsig, feps)
@@ -269,7 +269,7 @@ Real Thermodynamics::GetChi(Variable const& qfrac) const {
 Real Thermodynamics::GetGamma(MeshBlock* pmb, int k, int j, int i) const {
   Real gammad = pmb->peos->GetGamma();
   auto& w = pmb->phydro->w;
-  auto& c = pmb->pimpl->pcloud->c;
+  auto& c = pmb->pimpl->pcloud->w;
 
   Real fsig = 1., feps = 1.;
 #pragma omp simd reduction(+ : fsig, feps)
@@ -476,31 +476,33 @@ void Thermodynamics::updateTPConservingU(Variable* qfrac, Real rmole,
 Real Thermodynamics::EquivalentPotentialTemp(MeshBlock* pmb, Real p0, int v,
                                              int k, int j, int i) const {
   auto& w = pmb->phydro->w;
-  auto& c = pmb->pimpl->pcloud->c;
+  auto& c = pmb->pimpl->pcloud->w;
 
 #if (NVAPOR > 0)
   // get dry air mixing ratio
-  Real sum = 1.;
-#pragma omp simd reduction(+ : sum)
+  Real sum = 1., qd = 1.;
+#pragma omp simd reduction(+ : sum, qd)
   for (int n = 1; n <= NVAPOR; ++n) {
-    sum += w[n] * (pthermo->GetInvMuRatio(n) - 1.);
+    sum += w(n, k, j, i) * (inv_mu_ratio_[n] - 1.);
+    qd += -w(n, k, j, i);
   }
 
-#pragma omp simd reduction(+ : sum)
+#pragma omp simd reduction(+ : sum, qd)
   for (int n = 0; n < NCLOUD; ++n) {
-    sum += c[n] * (pthermo->GetInvMuRatio(n + 1 + NVAPOR) - 1.);
+    sum += c(n, k, j, i) * (inv_mu_ratio_[n + 1 + NVAPOR] - 1.);
+    qd += -c(n, k, j, i);
   }
 
   Real xg = 1.;
 #pragma omp simd reduction(+ : xg)
   for (int n = 1; n <= NVAPOR; ++n) {
-    xg += -w[n] * pthermo->GetInvMuRatio(n) / sum;
+    xg += -w(n, k, j, i) * inv_mu_ratio_[n] / sum;
   }
 
   Real xd = xg;
 #pragma omp simd reduction(+ : xd)
   for (int n = 0; n < NCLOUD; ++n) {
-    xd += -c[n] * pthermo->GetInvMuRatio(n + 1 + NVAPOR) / sum;
+    xd += -c(n, k, j, i) * inv_mu_ratio_[n + 1 + NVAPOR] / sum;
   }
 
   Real temp = GetTemp(pmb, k, j, i);
@@ -513,8 +515,8 @@ Real Thermodynamics::EquivalentPotentialTemp(MeshBlock* pmb, Real p0, int v,
   Real Rd = Rd_;
   Real Rv = Rd_ / mu_ratio_[v];
 
-  Real cpd = Rd_ * gammad_ / (gammad_ - 1.);
-  Real cl = cpd * cp_rasio_mass_[cloud_index_set_[v][0] + 1 + NVAPOR];
+  Real cpd = Rd_ * gammad_ref_ / (gammad_ref_ - 1.);
+  Real cl = cpd * cp_ratio_mass_[cloud_index_set_[v][0] + 1 + NVAPOR];
 
   std::vector<Real> rates{-1., 1.};
   Real lv = GetLatentHeatMass(v, rates, temp);

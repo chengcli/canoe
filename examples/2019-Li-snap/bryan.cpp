@@ -89,9 +89,8 @@ void MeshBlock::UserWorkBeforeOutput(ParameterInput *pin) {
         user_out_var(3, k, j, i) =
             pthermo->MoistStaticEnergy(this, grav * pcoord->x1v(i), k, j, i);
         // theta_e
-        // user_out_var(4,j,i) = pthermo->EquivalentPotentialTemp(this, p0, ks,
-        // j, i);
-        user_out_var(4, k, j, i) = pthermo->PotentialTemp(this, p0, k, j, i);
+        user_out_var(4, k, j, i) =
+            pthermo->EquivalentPotentialTemp(this, p0, iH2O, k, j, i);
         for (int n = 1; n <= NVAPOR; ++n)
           user_out_var(4 + n, k, j, i) =
               pthermo->RelativeHumidity(this, n, k, j, i);
@@ -150,7 +149,8 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
         if (L < 1.) {
           pimpl->GatherFromConserved(&qfrac, k, j, i);
           solver.qfrac = &qfrac;
-          solver.temp_v = phydro->w(IPR, j, i) / (phydro->w(IDN, j, i) * Rd) *
+          solver.temp_v = phydro->w(IPR, k, j, i) /
+                          (phydro->w(IDN, k, j, i) * Rd) *
                           (dT * sqr(cos(M_PI * L / 2.)) / 300. + 1.);
           int err = root(qfrac.w[IDN], qfrac.w[IDN] + dT, 1.E-8, &temp,
                          root_func, &solver);

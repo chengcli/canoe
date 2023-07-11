@@ -214,6 +214,12 @@ class Thermodynamics {
            pow(p0 / w(IPR, k, j, i), GetChi(pmb, k, j, i));
   }
 
+  //! Equivalent potential temperature
+  //! $\theta_e = T(\frac{p}{p_d})^{Rd/(cpd + cl r_t} \exp(\frac{L_v q_v}{c_p
+  //! T})$
+  Real EquivalentPotentialTemp(MeshBlock *pmb, Real p0, int v, int k, int j,
+                               int i) const;
+
   //! Temperature
   //!$T = p/(\rho R) = p/(\rho \frac{R}{R_d} Rd)
   //! \return $T$
