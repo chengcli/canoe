@@ -8,6 +8,10 @@ to create your own features. However, we understand that sometime a private fork
 The correct way of creating a private frok from a public repo is by duplicating the repo,
 which is formally documented [here](https://help.github.com/articles/duplicating-a-repository/) by Github.
 
+Make sure that you have at least git 2.39 and git lfs 3.2.
+Use `git --version` and `git lfs --version` to check your version. The method below does
+not work for lower version of git and git lfs.
+
 For the [canoe](https://github.com/chengcli/canoe) repo, the specific commands are:
 
  1. Create a bare clone of [canoe](https://github.com/chengcli/canoe).

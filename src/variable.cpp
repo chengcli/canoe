@@ -132,7 +132,7 @@ void Variable::massFractionToMoleFraction() {
   }
 
   Real sum = sum1;
-#pragma omp simd reduction(+ : sum, g)
+#pragma omp simd reduction(+ : sum, sum1)
   for (int n = 0; n < NCLOUD; ++n) {
     sum += c[n] * (pthermo->GetInvMuRatio(n + 1 + NVAPOR) - 1.);
     sum1 += -c[n];

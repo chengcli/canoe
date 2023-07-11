@@ -112,6 +112,8 @@ class Thermodynamics {
   //! \return $\hat{c}_{v,i}/\hat{c}_{v,d}$
   Real GetCvRatioMole(int n) const { return cv_ratio_mole_[n]; }
 
+  int GetCloudIndex(int i, int j) const { return cloud_index_set_[i][j]; }
+
   //! Specific heat capacity [J/(kg K)] at constant volume
   //! $c_{v,d} = \frac{R_d}{\gamma_d - 1}$ \n
   //! $c_{v,i} = \frac{c_{v,i}}{c_{v,d}}\times c_{v,d}$
@@ -212,6 +214,12 @@ class Thermodynamics {
            pow(p0 / w(IPR, k, j, i), GetChi(pmb, k, j, i));
   }
 
+  //! Equivalent potential temperature
+  //! $\theta_e = T(\frac{p}{p_d})^{Rd/(cpd + cl r_t} \exp(\frac{L_v q_v}{c_p
+  //! T})$
+  Real EquivalentPotentialTemp(MeshBlock *pmb, Real p0, int v, int k, int j,
+                               int i) const;
+
   //! Temperature
   //!$T = p/(\rho R) = p/(\rho \frac{R}{R_d} Rd)
   //! \return $T$
@@ -229,6 +237,8 @@ class Thermodynamics {
   //! $ \frac{R}{R_d} = \frac{\mu_d}{\mu}$
   //! \return $1/\mu$
   Real RovRd(MeshBlock *pmb, int k, int j, int i) const;
+
+  Real RovRd(Variable const &qfrac) const;
 
   //! Specific heat capacity [J/(kg K)] of the air parcel at constant volume
   //! c_v = c_{v,d}*(1 + \sum_i (q_i*(\hat{c}_{v,i} - 1.)))
@@ -271,12 +281,12 @@ class Thermodynamics {
   //! \return $H$
   Real RelativeHumidity(MeshBlock *pmb, int n, int k, int j, int i) const;
 
- protected:
-  //! Saturation surplus for vapors can be both positive and negative
-  //! positive value represents supersaturation
-  //! negative value represents saturation deficit
-  void getSaturationSurplus(Real dw[], Variable const &v) const;
+  Real RelativeHumidity(Variable const &qfrac, int n) const {
+    auto rates = TryEquilibriumTP(qfrac, n, 0., true);
+    return qfrac.w[n] / (qfrac.w[n] + rates[0]);
+  }
 
+ protected:
   //! update T/P
   void updateTPConservingU(Variable *qfrac, Real rmole, Real umole) const;
 

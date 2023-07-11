@@ -51,7 +51,7 @@ Real FreedmanSimple::GetAttenuation(Real wave1, Real wave2,
 
   Real dens = p * mu / (Constants::Rgas * T);  // kg/m^3
                                                //  if (p > 5e1)
-  return params_.at("scale") * dens * result;               // -> 1/m
+  return params_.at("scale") * dens * result;  // -> 1/m
   //  else
   //    return 0.;
 }
