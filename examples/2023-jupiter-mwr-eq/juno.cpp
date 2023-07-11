@@ -111,7 +111,6 @@ void Mesh::InitUserMeshData(ParameterInput *pin)
 }
 
 Real Thermodynamics::GetGammad(Variable const& qfrac) const {
-  //std::cout << "I'm here" << std::endl;
   Real T = qfrac.w[IDN], cp_h2, cp_he, cp_ch4;
   if (T < 300.) {
     cp_h2 = Hydrogen::cp_norm(T);
@@ -230,6 +229,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin)
   // if requested
   // modify atmospheric stability
   Real adlnTdlnP = pin->GetOrAddReal("problem", "adlnTdlnP", 0.);
+  Real adlnNH3dlnP = pin->GetOrAddReal("problem", "adlnNH3dlnP", 0.);
 
   if (adlnTdlnP != 0.) {
     Real pmin = pin->GetOrAddReal("problem", "adlnTdlnP.pmin", 1.);
@@ -245,6 +245,27 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin)
         for (int i = ibegin; i < iend; ++i) {
           pthermo->Extrapolate(&var, -dlnp, Thermodynamics::Method::DryAdiabat,
               0., adlnTdlnP);
+          pimpl->DistributeToPrimitive(var, k, j, i+1);
+        }
+      }
+  }
+
+  if (adlnNH3dlnP != 0.) {
+    Real pmin = pin->GetOrAddReal("problem", "adlnNH3dlnP.pmin", 1.);
+    Real pmax = pin->GetOrAddReal("problem", "adlnNH3dlnP.pmax", 20.);
+
+    for (int k = ks; k <= ke; ++k)
+      for (int j = js; j <= je; ++j) {
+        int ibegin = find_pressure_level_lesser(pmax, phydro->w, k, j, is, ie);
+        int iend = find_pressure_level_lesser(pmin, phydro->w, k, j, is, ie);
+
+        pimpl->GatherFromPrimitive(&var, k, j, ibegin);
+
+        for (int i = ibegin; i < iend; ++i) {
+          pthermo->Extrapolate(&var, -dlnp, Thermodynamics::Method::DryAdiabat);
+          var.w[iNH3] += adlnNH3dlnP*var.w[iNH3]*dlnp;
+          auto rates = pthermo->TryEquilibriumTP(var, iNH3);
+          var.w[iNH3] += rates[0];
           pimpl->DistributeToPrimitive(var, k, j, i+1);
         }
       }
