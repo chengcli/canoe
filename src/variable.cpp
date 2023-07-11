@@ -35,13 +35,13 @@ Variable& Variable::ConvertTo(Variable::Type type) {
   }
 
   if (type == Type::MassFrac) {
-    ConvertToMassFraction();
+    ToMassFraction();
   } else if (type == Type::MassConc) {
-    ConvertToMassConcentration();
+    ToMassConcentration();
   } else if (type == Type::MoleFrac) {
-    ConvertToMoleFraction();
+    ToMoleFraction();
   } else if (type == Type::MoleConc) {
-    ConvertToMoleConcentration();
+    ToMoleConcentration();
   } else {
     throw RuntimeError("Variable", "Unknown variable type");
   }
@@ -49,7 +49,7 @@ Variable& Variable::ConvertTo(Variable::Type type) {
   return *this;
 }
 
-Variable& Variable::ConvertToMassFraction() {
+Variable& Variable::ToMassFraction() {
   if (mytype_ == Type::MassFrac) {
     return *this;
   }
@@ -67,7 +67,7 @@ Variable& Variable::ConvertToMassFraction() {
   return *this;
 }
 
-Variable& Variable::ConvertToMassConcentration() {
+Variable& Variable::ToMassConcentration() {
   if (mytype_ == Type::MassConc) {
     return *this;
   }
@@ -85,7 +85,7 @@ Variable& Variable::ConvertToMassConcentration() {
   return *this;
 }
 
-Variable& Variable::ConvertToMoleFraction() {
+Variable& Variable::ToMoleFraction() {
   if (mytype_ == Type::MoleFrac) {
     return *this;
   }
@@ -103,7 +103,7 @@ Variable& Variable::ConvertToMoleFraction() {
   return *this;
 }
 
-Variable& Variable::ConvertToMoleConcentration() {
+Variable& Variable::ToMoleConcentration() {
   if (mytype_ == Type::MoleConc) {
     return *this;
   }

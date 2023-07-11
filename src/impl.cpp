@@ -172,7 +172,7 @@ void MeshBlock::Impl::DistributeToPrimitive(Variable const &var_in, int k,
 
   if (var_in.GetType() != Variable::Type::MassFrac) {
     var = new Variable(var_in);
-    var->ConvertToMassFraction();
+    var->ToMassFraction();
   } else {
     var = const_cast<Variable *>(&var_in);
   }
@@ -227,7 +227,7 @@ void MeshBlock::Impl::DistributeToConserved(Variable const &var_in, int k,
 
   if (var_in.GetType() != Variable::Type::MassConc) {
     var = new Variable(var_in);
-    var->ConvertToMassConcentration();
+    var->ToMassConcentration();
   } else {
     var = const_cast<Variable *>(&var_in);
   }

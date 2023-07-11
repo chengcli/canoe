@@ -82,10 +82,10 @@ class Variable {
 
   Variable &ConvertTo(Variable::Type type);
 
-  Variable &ConvertToMassFraction();
-  Variable &ConvertToMassConcentration();
-  Variable &ConvertToMoleFraction();
-  Variable &ConvertToMoleConcentration();
+  Variable &ToMassFraction();
+  Variable &ToMassConcentration();
+  Variable &ToMoleFraction();
+  Variable &ToMoleConcentration();
 
  protected:
   void massFractionToMassConcentration();
