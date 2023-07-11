@@ -26,6 +26,7 @@
 
 // canoe
 #include <impl.hpp>
+#include <index_map.hpp>
 
 // climath
 #include <climath/core.h>
@@ -34,7 +35,7 @@
 
 // snap
 #include <snap/thermodynamics/thermodynamics.hpp>
-#include "../utils/utils.hpp"
+//#include <utils/utils.hpp>
 
 int iH2O;
 Real p0, grav;
@@ -52,16 +53,16 @@ Real root_func(Real temp, void *aux) {
   Variable* qfrac = pd->qfrac;
 
   qfrac->w[IDN] = temp;
-  auto rates = pthermo->TryEquilibriumTP(qfrac, iH2O);
+  auto rates = pthermo->TryEquilibriumTP(*qfrac, iH2O);
 
   // vapor condensation rate
   qfrac->w[iH2O] += rates[0];
 
   // cloud concentration rates
-  for (int j = 1; j < rates.size(); ++j) {
-    qfrac->c[cloud_index_set_[iH2O][j - 1]] += rates[j];
+  for (int j = 1; j < rates.size(); ++j)
+    qfrac->c[pthermo->GetCloudIndex(iH2O,j-1)] += rates[j];
 
-  return thermo->VirtualTemp(qfrac) - temp_v;
+  return temp * pthermo->RovRd(*qfrac) - temp_v;
 };
 
 void MeshBlock::InitUserMeshBlockData(ParameterInput *pin)
@@ -79,19 +80,21 @@ void MeshBlock::UserWorkBeforeOutput(ParameterInput *pin)
 {
   auto pthermo = Thermodynamics::GetInstance();
 
-  for (int j = js; j <= je; ++j)
-    for (int i = is; i <= ie; ++i) {
-      user_out_var(0,j,i) = pthermo->GetTemp(this, ks, j, i);
-      user_out_var(1,j,i) = pthermo->PotentialTemp(this, p0, ks, j,i);
-      // theta_v
-      user_out_var(2,j,i) = user_out_var(1,j,i)*pthermo->RovRd(this, ks, j, i);
-      // msv
-      user_out_var(3,j,i) = pthermo->MoistStaticEnergy(this, grav*pcoord->x1v(i), ks, j, i);
-      // theta_e
-      user_out_var(4,j,i) = pthermo->EquivalentPotentialTemp(this, p0, ks, j, i);
-      for (int n = 1; n <= NVAPOR; ++n)
-        user_out_var(4+n,k,j,i) = pthermo->RelativeHumidity(this, n, ks, j, i);
-    }
+  for (int k = ks; k <= ke; ++k)
+    for (int j = js; j <= je; ++j)
+      for (int i = is; i <= ie; ++i) {
+        user_out_var(0,k,j,i) = pthermo->GetTemp(this, k, j, i);
+        user_out_var(1,k,j,i) = pthermo->PotentialTemp(this, p0, k, j,i);
+        // theta_v
+        user_out_var(2,k,j,i) = user_out_var(1,j,i)*pthermo->RovRd(this, k, j, i);
+        // msv
+        user_out_var(3,k,j,i) = pthermo->MoistStaticEnergy(this, grav*pcoord->x1v(i), k, j, i);
+        // theta_e
+        //user_out_var(4,j,i) = pthermo->EquivalentPotentialTemp(this, p0, ks, j, i);
+        user_out_var(4,k,j,i) = pthermo->PotentialTemp(this, p0, k, j, i);
+        for (int n = 1; n <= NVAPOR; ++n)
+          user_out_var(4+n,k,j,i) = pthermo->RelativeHumidity(this, n, k, j, i);
+      }
 }
 
 void Mesh::InitUserMeshData(ParameterInput *pin)
@@ -103,6 +106,7 @@ void Mesh::InitUserMeshData(ParameterInput *pin)
 void MeshBlock::ProblemGenerator(ParameterInput *pin)
 {
   auto pthermo = Thermodynamics::GetInstance();
+  auto pindex = IndexMap::GetInstance();
 
   Real Ps = p0;
   Real Ts = pin->GetReal("problem", "Ts");
@@ -116,12 +120,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin)
   Real dz = pcoord->dx1f(is);
 
   // index
-  iH2O = pindex->GetVariableId("H2O");
-  iH2Oc = pindex->GetVariableId("H2O(c)");
-
-  // index
-  auto pindex = IndexMap::GetInstance();
-  iH2O = pindex->GetVariableId("H2O");
+  iH2O = pindex->GetVaporId("H2O");
 
   Variable qfrac(Variable::Type::MoleFrac);
 
@@ -153,7 +152,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin)
           solver.qfrac = &qfrac;
           solver.temp_v = phydro->w(IPR,j,i)/(phydro->w(IDN,j,i)*Rd)*
             (dT*sqr(cos(M_PI*L/2.))/300. + 1.);
-          int err = root(qfrac[IDN], qfrac[IDN] + dT, 1.E-8, &temp, root_func, &solver);
+          int err = root(qfrac.w[IDN], qfrac.w[IDN] + dT, 1.E-8, &temp, root_func, &solver);
           if (err) {
             throw RuntimeError("pgen", "TVSolver doesn't converge");
           } else {

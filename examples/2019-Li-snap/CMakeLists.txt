@@ -5,7 +5,7 @@ string(TOUPPER ${CMAKE_BUILD_TYPE} buildu)
 
 #set(namel straka)
 
-foreach(namel straka robert)
+foreach(namel straka robert bryan)
   add_executable(${namel}.${buildl} ${namel}.cpp
     ${CMAKE_BINARY_DIR}/main_${TASK}.cpp)
 

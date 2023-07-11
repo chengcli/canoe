@@ -112,6 +112,8 @@ class Thermodynamics {
   //! \return $\hat{c}_{v,i}/\hat{c}_{v,d}$
   Real GetCvRatioMole(int n) const { return cv_ratio_mole_[n]; }
 
+  int GetCloudIndex(int i, int j) const { return cloud_index_set_[i][j]; }
+
   //! Specific heat capacity [J/(kg K)] at constant volume
   //! $c_{v,d} = \frac{R_d}{\gamma_d - 1}$ \n
   //! $c_{v,i} = \frac{c_{v,i}}{c_{v,d}}\times c_{v,d}$
@@ -229,6 +231,8 @@ class Thermodynamics {
   //! $ \frac{R}{R_d} = \frac{\mu_d}{\mu}$
   //! \return $1/\mu$
   Real RovRd(MeshBlock *pmb, int k, int j, int i) const;
+
+  Real RovRd(Variable const& qfrac) const;
 
   //! Specific heat capacity [J/(kg K)] of the air parcel at constant volume
   //! c_v = c_{v,d}*(1 + \sum_i (q_i*(\hat{c}_{v,i} - 1.)))

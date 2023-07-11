@@ -264,14 +264,39 @@ Real Thermodynamics::GetGamma(MeshBlock* pmb, int k, int j, int i) const {
   return 1. + (gammad - 1.) * feps / fsig;
 }
 
+// Eq.16 in Li19
 Real Thermodynamics::RovRd(MeshBlock* pmb, int k, int j, int i) const {
   auto& w = pmb->phydro->w;
+  auto& c = pmb->pimpl->pcloud->w;
 
   Real feps = 1.;
 #pragma omp simd reduction(+ : feps)
   for (int n = 1; n <= NVAPOR; ++n)
     feps += w(n, k, j, i) * (inv_mu_ratio_[n] - 1.);
+
+#pragma omp simd reduction(+ : feps)
+  for (int n = 0; n < NCLOUD; ++n)
+    feps += -c(n, k, j, i);
+
   return feps;
+}
+
+// Eq.94 in Li19
+Real Thermodynamics::RovRd(Variable const& qfrac) const {
+  Real fgas = 1., feps = 1.;
+
+#pragma omp simd reduction(+ : feps)
+  for (int n = 1; n <= NVAPOR; ++n) {
+    feps += qfrac.w[n] * (mu_ratio_[n] - 1.);
+  }
+
+#pragma omp simd reduction(+ : fgas, feps)
+  for (int n = 0; n < NCLOUD; ++n) {
+    fgas += -qfrac.c[n];
+    feps += qfrac.c[n] * (mu_ratio_[n] - 1.);
+  }
+
+  return fgas / feps;
 }
 
 Real Thermodynamics::MoistStaticEnergy(MeshBlock* pmb, Real gz, int k, int j,

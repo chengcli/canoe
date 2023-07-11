@@ -18,7 +18,9 @@ set(namel snap)
 string(TOUPPER ${namel} nameu)
 
 file(GLOB src_files
-    eos/*.cpp
+    eos/apply_vapor_limiter.cpp
+		eos/check_hydro_variables.cpp
+		eos/${EQUATION_OF_STATE}_hydro.cpp
     thermodynamics/*.cpp
     decomposition/*.cpp
     implicit/*.cpp
