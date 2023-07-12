@@ -373,7 +373,38 @@ void Variable::massConcentrationToMassFraction() {
 }
 
 void Variable::moleFractionToMoleConcentration() {
-  throw NotImplementedError("Variable::moleFractionToMoleConcentration");
+  auto pthermo = Thermodynamics::GetInstance();
+  Real tem = w[IDN];
+  Real pres = w[IPR];
+
+  // total gas moles / m^3
+  Real gmols = pres / (Constants::Rgas * tem);
+
+  Real xgas = 1.;
+
+#pragma omp simd reduction(+ : qgas)
+  for (int n = 0; n < NCLOUD; ++n) xgas += -c[n];
+
+  Real xd = xgas;
+#pragma omp simd reduction(+ : xd)
+  for (int n = 1; n <= NVAPOR; ++n) xd += -w[n];
+
+  Real tmols = gmols / qgas;
+
+  w[IDN] = tmols * xd;
+
+#pragma omp simd
+  for (int n = 1; n <= NVAPOR; ++n) w[n] *= tmols;
+
+#pragma omp simd
+  for (int n = 0; n < NCLOUD; ++n) c[n] *= tmols;
+
+  // tracer
+  Real pd = xd / xgas * pres;
+  Real rhod = pd / (tem * pthermo->GetRd());
+
+#pragma omp simd
+  for (int n = 0; n < NTRACER; ++n) x[n] *= rhod;
 }
 
 void Variable::moleConcentrationToMoleFraction() {
