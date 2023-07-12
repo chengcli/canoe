@@ -93,8 +93,8 @@ TEST(variable, assignment_operator) {
 
 TEST_F(TestVariable, MoleFraction_MassFraction) {
   // mole fraction to mass fraction
-  a.ConvertToMassFraction();
-  a.ConvertToMoleFraction();
+  a.ToMassFraction();
+  a.ToMoleFraction();
 
   for (int n = 1; n <= NVAPOR; ++n)
     EXPECT_DOUBLE_EQ(a.w[n], 1. / (1 + NVAPOR + NCLOUD + NCHEMISTRY));
@@ -114,8 +114,8 @@ TEST_F(TestVariable, MoleFraction_MassFraction) {
 
 TEST_F(TestVariable, MoleFraction_MassConcentration) {
   // mole fraction to mass concentration
-  a.ConvertToMassConcentration();
-  a.ConvertToMoleFraction();
+  a.ToMassConcentration();
+  a.ToMoleFraction();
 
   for (int n = 1; n <= NVAPOR; ++n)
     EXPECT_NEAR(a.w[n], 1. / (1 + NVAPOR + NCLOUD + NCHEMISTRY), 1.e-10);
@@ -137,8 +137,8 @@ TEST_F(TestVariable, MassFraction_MassConcentration) {
   a.SetType(Variable::Type::MassFrac);
 
   // mass fraction to mass concentration
-  a.ConvertToMassConcentration();
-  a.ConvertToMassFraction();
+  a.ToMassConcentration();
+  a.ToMassFraction();
 
   for (int n = 1; n <= NVAPOR; ++n)
     EXPECT_DOUBLE_EQ(a.w[n], 1. / (1 + NVAPOR + NCLOUD + NCHEMISTRY));
@@ -156,7 +156,25 @@ TEST_F(TestVariable, MassFraction_MassConcentration) {
   EXPECT_DOUBLE_EQ(a.w[IVZ], 0.3);
 }
 
-TEST_F(TestVariable, MoleFraction_MoleConcentration) {}
+TEST_F(TestVariable, MoleFraction_MoleConcentration) {
+  a.ToMoleConcentration();
+  a.ToMoleFraction();
+
+  for (int n = 1; n <= NVAPOR; ++n)
+    EXPECT_NEAR(a.w[n], 1. / (1 + NVAPOR + NCLOUD + NCHEMISTRY), 1.e-10);
+
+  for (int n = 0; n < NCLOUD; ++n)
+    EXPECT_NEAR(a.c[n], 1. / (1 + NVAPOR + NCLOUD + NCHEMISTRY), 1.e-10);
+
+  for (int n = 0; n < NCHEMISTRY; ++n)
+    EXPECT_NEAR(a.q[n], 1. / (1 + NVAPOR + NCLOUD + NCHEMISTRY), 1.e-10);
+
+  EXPECT_NEAR(a.w[IDN], 1., 1e-10);
+  EXPECT_NEAR(a.w[IPR], 10., 1e-10);
+  EXPECT_DOUBLE_EQ(a.w[IVX], 0.1);
+  EXPECT_DOUBLE_EQ(a.w[IVY], 0.2);
+  EXPECT_DOUBLE_EQ(a.w[IVZ], 0.3);
+}
 
 TEST_F(TestVariable, MassFraction_MoleConcentration) {}
 

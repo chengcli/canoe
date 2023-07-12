@@ -35,13 +35,13 @@ Variable& Variable::ConvertTo(Variable::Type type) {
   }
 
   if (type == Type::MassFrac) {
-    ConvertToMassFraction();
+    ToMassFraction();
   } else if (type == Type::MassConc) {
-    ConvertToMassConcentration();
+    ToMassConcentration();
   } else if (type == Type::MoleFrac) {
-    ConvertToMoleFraction();
+    ToMoleFraction();
   } else if (type == Type::MoleConc) {
-    ConvertToMoleConcentration();
+    ToMoleConcentration();
   } else {
     throw RuntimeError("Variable", "Unknown variable type");
   }
@@ -49,7 +49,7 @@ Variable& Variable::ConvertTo(Variable::Type type) {
   return *this;
 }
 
-Variable& Variable::ConvertToMassFraction() {
+Variable& Variable::ToMassFraction() {
   if (mytype_ == Type::MassFrac) {
     return *this;
   }
@@ -67,7 +67,7 @@ Variable& Variable::ConvertToMassFraction() {
   return *this;
 }
 
-Variable& Variable::ConvertToMassConcentration() {
+Variable& Variable::ToMassConcentration() {
   if (mytype_ == Type::MassConc) {
     return *this;
   }
@@ -85,7 +85,7 @@ Variable& Variable::ConvertToMassConcentration() {
   return *this;
 }
 
-Variable& Variable::ConvertToMoleFraction() {
+Variable& Variable::ToMoleFraction() {
   if (mytype_ == Type::MoleFrac) {
     return *this;
   }
@@ -103,7 +103,7 @@ Variable& Variable::ConvertToMoleFraction() {
   return *this;
 }
 
-Variable& Variable::ConvertToMoleConcentration() {
+Variable& Variable::ToMoleConcentration() {
   if (mytype_ == Type::MoleConc) {
     return *this;
   }
@@ -373,11 +373,100 @@ void Variable::massConcentrationToMassFraction() {
 }
 
 void Variable::moleFractionToMoleConcentration() {
-  throw NotImplementedError("Variable::moleFractionToMoleConcentration");
+  auto pthermo = Thermodynamics::GetInstance();
+  Real tem = w[IDN];
+  Real pres = w[IPR];
+
+  // total gas moles / m^3
+  Real gmols = pres / (Constants::Rgas * tem);
+
+  Real xgas = 1., fsig = 1., LE = 0.;
+#pragma omp simd reduction(+ : xgas, fsig, LE)
+  for (int n = 0; n < NCLOUD; ++n) {
+    xgas += -c[n];
+    fsig += (pthermo->GetCvRatioMole(n + 1 + NVAPOR) - 1.) * c[n];
+    LE += -c[n] * pthermo->GetLatentEnergyMole(n + 1 + NVAPOR);
+  }
+
+  Real xd = xgas;
+#pragma omp simd reduction(+ : xd, fsig)
+  for (int n = 1; n <= NVAPOR; ++n) {
+    xd += -w[n];
+    fsig += (pthermo->GetCvRatioMole(n) - 1.) * w[n];
+  }
+
+  Real tmols = gmols / xgas;
+
+  w[IDN] = tmols * xd;
+  w[IVX] *= tmols;
+  w[IVY] *= tmols;
+  w[IVZ] *= tmols;
+
+  Real cvd = Constants::Rgas / (pthermo->GetGammadRef() - 1.);
+  w[IEN] = tmols * (cvd * tem * fsig + LE);
+
+#pragma omp simd
+  for (int n = 1; n <= NVAPOR; ++n) w[n] *= tmols;
+
+#pragma omp simd
+  for (int n = 0; n < NCLOUD; ++n) c[n] *= tmols;
+
+  // tracer
+  Real pd = xd / xgas * pres;
+  Real rhod = pd / (tem * pthermo->GetRd());
+
+#pragma omp simd
+  for (int n = 0; n < NTRACER; ++n) x[n] *= rhod;
+
+  SetType(Type::MoleConc);
 }
 
 void Variable::moleConcentrationToMoleFraction() {
-  throw NotImplementedError("Variable::moleConcentrationToMoleFraction");
+  auto pthermo = Thermodynamics::GetInstance();
+  Real tmols = w[IDN], fsig = w[IDN], xgas = 1., LE = 0.;
+
+#pragma omp simd reduction(+ : tmols, fsig, LE)
+  for (int n = 0; n < NCLOUD; ++n) {
+    tmols += c[n];
+    fsig += pthermo->GetCvRatioMole(n + 1 + NVAPOR) * c[n];
+    LE += -pthermo->GetLatentEnergyMole(n + 1 + NVAPOR) * c[n];
+  }
+
+#pragma omp simd reduction(+ : tmols, fsig)
+  for (int n = 1; n <= NVAPOR; ++n) {
+    tmols += w[n];
+    fsig += pthermo->GetCvRatioMole(n) * w[n];
+  }
+
+#pragma omp simd
+  for (int n = 0; n < NCLOUD; ++n) {
+    c[n] /= tmols;
+    xgas += -c[n];
+  }
+
+  Real xd = xgas;
+#pragma omp simd
+  for (int n = 1; n <= NVAPOR; ++n) {
+    w[n] /= tmols;
+    xd += -w[n];
+  }
+
+  w[IVX] /= tmols;
+  w[IVY] /= tmols;
+  w[IVZ] /= tmols;
+
+  Real cvd = Constants::Rgas / (pthermo->GetGammadRef() - 1.);
+  w[IDN] = (w[IEN] - LE) / (cvd * fsig);
+  w[IPR] = xgas * tmols * Constants::Rgas * w[IDN];
+
+  // tracer
+  Real pd = xd / xgas * w[IPR];
+  Real inv_rhod = (w[IDN] * pthermo->GetRd()) / pd;
+
+#pragma omp simd
+  for (int n = 0; n < NTRACER; ++n) x[n] *= inv_rhod;
+
+  SetType(Type::MoleFrac);
 }
 
 void Variable::massFractionToMoleConcentration() {
