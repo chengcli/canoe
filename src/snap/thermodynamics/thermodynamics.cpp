@@ -464,7 +464,7 @@ void Thermodynamics::updateTPConservingU(Variable* qfrac, Real rmole,
     }
   }
 
-  // vapor
+  // clouds
 #pragma omp simd reduction(+ : qgas)
   for (int n = 0; n < NCLOUD; ++n) qgas += -qfrac->c[n];
 

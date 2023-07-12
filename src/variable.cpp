@@ -380,18 +380,30 @@ void Variable::moleFractionToMoleConcentration() {
   // total gas moles / m^3
   Real gmols = pres / (Constants::Rgas * tem);
 
-  Real xgas = 1.;
-
-#pragma omp simd reduction(+ : qgas)
-  for (int n = 0; n < NCLOUD; ++n) xgas += -c[n];
+  Real xgas = 1., fsig = 1., LE = 0.;
+#pragma omp simd reduction(+ : xgas, fsig, LE)
+  for (int n = 0; n < NCLOUD; ++n) {
+    xgas += -c[n];
+    fsig += (pthermo->GetCvRatioMole(n + 1 + NVAPOR) - 1.) * c[n];
+    LE += -c[n] * pthermo->GetLatentEnergyMole(n + 1 + NVAPOR);
+  }
 
   Real xd = xgas;
-#pragma omp simd reduction(+ : xd)
-  for (int n = 1; n <= NVAPOR; ++n) xd += -w[n];
+#pragma omp simd reduction(+ : xd, fsig)
+  for (int n = 1; n <= NVAPOR; ++n) {
+    xd += -w[n];
+    fsig += (pthermo->GetCvRatioMole(n) - 1.) * w[n];
+  }
 
-  Real tmols = gmols / qgas;
+  Real tmols = gmols / xgas;
 
   w[IDN] = tmols * xd;
+  w[IVX] *= tmols;
+  w[IVY] *= tmols;
+  w[IVZ] *= tmols;
+
+  Real cvd = Constants::Rgas / (pthermo->GetGammadRef() - 1.);
+  w[IEN] = tmols * (cvd * tem * fsig + LE);
 
 #pragma omp simd
   for (int n = 1; n <= NVAPOR; ++n) w[n] *= tmols;
@@ -405,10 +417,56 @@ void Variable::moleFractionToMoleConcentration() {
 
 #pragma omp simd
   for (int n = 0; n < NTRACER; ++n) x[n] *= rhod;
+
+  SetType(Type::MoleConc);
 }
 
 void Variable::moleConcentrationToMoleFraction() {
-  throw NotImplementedError("Variable::moleConcentrationToMoleFraction");
+  auto pthermo = Thermodynamics::GetInstance();
+  Real tmols = w[IDN], fsig = w[IDN], xgas = 1., LE = 0.;
+
+#pragma omp simd reduction(+ : tmols, fsig, LE)
+  for (int n = 0; n < NCLOUD; ++n) {
+    tmols += c[n];
+    fsig += pthermo->GetCvRatioMole(n + 1 + NVAPOR) * c[n];
+    LE += -pthermo->GetLatentEnergyMole(n + 1 + NVAPOR) * c[n];
+  }
+
+#pragma omp simd reduction(+ : tmols, fsig)
+  for (int n = 1; n <= NVAPOR; ++n) {
+    tmols += w[n];
+    fsig += pthermo->GetCvRatioMole(n) * w[n];
+  }
+
+#pragma omp simd
+  for (int n = 0; n < NCLOUD; ++n) {
+    c[n] /= tmols;
+    xgas += -c[n];
+  }
+
+  Real xd = xgas;
+#pragma omp simd
+  for (int n = 1; n <= NVAPOR; ++n) {
+    w[n] /= tmols;
+    xd += -w[n];
+  }
+
+  w[IVX] /= tmols;
+  w[IVY] /= tmols;
+  w[IVZ] /= tmols;
+
+  Real cvd = Constants::Rgas / (pthermo->GetGammadRef() - 1.);
+  w[IDN] = (w[IEN] - LE) / (cvd * fsig);
+  w[IPR] = xgas * tmols * Constants::Rgas * w[IDN];
+
+  // tracer
+  Real pd = xd / xgas * w[IPR];
+  Real inv_rhod = (w[IDN] * pthermo->GetRd()) / pd;
+
+#pragma omp simd
+  for (int n = 0; n < NTRACER; ++n) x[n] *= inv_rhod;
+
+  SetType(Type::MoleFrac);
 }
 
 void Variable::massFractionToMoleConcentration() {
