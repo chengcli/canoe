@@ -11,7 +11,7 @@
 #include <application/application.hpp>
 
 // pydisort
-// #include <pydisort/cppdisort.hpp>
+#include <pydisort/cppdisort.hpp>
 
 // harp
 #include "radiation_band.hpp"
@@ -70,7 +70,7 @@ class RadiationBand::RTSolverDisort : public RadiationBand::RTSolver {
                        int il, int iu) override;
 
  protected:
-  // DisortWrapper disort_;
+  DisortWrapper disort_;
 };
 
 #endif  // SRC_HARP_RT_SOLVERS_HPP_

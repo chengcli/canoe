@@ -34,7 +34,26 @@ set_target_properties(${namel}_${buildl}
     COMPILE_FLAGS ${CMAKE_CXX_FLAGS_${buildu}}
     )
 
-target_include_directories(${namel}_${buildl}
-    PRIVATE
-    ${NETCDF_INCLUDES}
-    )
+if(DISORT)
+  target_include_directories(${namel}_${buildl}
+      PRIVATE
+      ${NETCDF_INCLUDES}
+      ${TOMLPP_INCLUDE_DIR}
+      ${CDISORT_INCLUDE_DIR}
+      ${PYTHON_INCLUDE_DIR}
+      ${PYBIND11_INCLUDE_DIR}
+      ${PYDISORT_INCLUDE_DIR}
+      )
+
+  target_link_libraries(${namel}_${buildl}
+      ${NETCDF_LIBRARIES}
+      ${PYTHON_LIBRARIES}
+      ${CDISORT_LIBRARY_${buildu}}
+      ${PYDISORT_LIBRARY_${buildu}}
+      )
+else()
+  target_include_directories(${namel}_${buildl}
+      PRIVATE
+      ${NETCDF_INCLUDES}
+      )
+endif()

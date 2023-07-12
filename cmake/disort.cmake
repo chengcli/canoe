@@ -17,7 +17,7 @@ if(DISORT)
   FetchContent_Declare(
     pydisort
     DOWNLOAD_EXTRACT_TIMESTAMP TRUE
-    URL https://${ACCOUNT}:${TOKEN}@github.com/zoeyzyhu/pydisort/releases/tag/v0.4.0
+    URL https://${ACCOUNT}:${TOKEN}@github.com/zoeyzyhu/pydisort/archive/refs/tags/v0.4.0.tar.gz
   )
 
   FetchContent_MakeAvailable(pydisort)
