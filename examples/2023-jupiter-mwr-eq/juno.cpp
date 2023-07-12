@@ -13,6 +13,7 @@
 #include <athena/mesh/mesh.hpp>
 #include <athena/outputs/outputs.hpp>
 #include <athena/parameter_input.hpp>
+#include <athena/scalars/scalars.hpp>
 #include <athena/stride_iterator.hpp>
 
 // application
@@ -309,9 +310,14 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
             temp, ptracer->u(iNa, k, j, i), 5.14);
       }
 
-  // primitive to conserved conversion
+  // primitive to conserved conversion (hydro)
   peos->PrimitiveToConserved(phydro->w, pfield->bcc, phydro->u, pcoord, is, ie,
                              js, je, ks, ke);
+
+  // conserved to primitive conversion (tracer)
+  peos->PassiveScalarConservedToPrimitive(pscalars->s, phydro->u, pscalars->r,
+                                          pscalars->r, pcoord, is, ie, js, je,
+                                          ks, ke);
 
   // Microwave radiative transfer needs temperatures at cell interfaces, which
   // are interpolated from cell centered hydrodynamic variables. Normally, the
