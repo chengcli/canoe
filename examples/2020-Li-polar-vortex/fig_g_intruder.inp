@@ -1,0 +1,77 @@
+<comment>
+problem   = One layer shallow water model at the pole
+reference =
+configure = --prob=polar_vortex --eos=shallow_water --nghost=3 -mpi -pnetcdf --pnetcdf_path=${HOME}/opt --include=src/tools/
+
+<job>
+problem_id = data/intruder # problem ID: basename of output filenames
+
+<output0>
+file_type  = hst          # History data dump
+dt         = 1.E6         # time increment between outputs
+
+<output1>
+file_type  = rst          # restart dump
+dt         = 5.E6
+
+<output2>
+file_type  = pnetcdf      # netcdf data dump
+variable   = prim         # variables to be output
+dt         = 1.E6         # time increment between outputs
+
+<output3>
+file_type  = pnetcdf      # netcdf data dump
+variable   = uov          # variables to be output
+dt         = 1.E6         # time increment between outputs
+
+<time>
+cfl_number = 0.8          # The Courant, Friedrichs, & Lewy (CFL) Number
+nlim       = -1           # cycle limit
+tlim       = 1.72E7         # time limit
+xorder     = 5            # horizontal reconstruction order
+integrator = rk3          # integration method
+
+<mesh>
+nx1        = 256          # Number of zones in X1-direction (longitude)
+x1min      = -3.5E7       # minimum value of X1
+x1max      = 3.5E7        # maximum value of X1, 120 degree
+ix1_bc     = periodic     # inner-X1 boundary flag
+ox1_bc     = periodic     # inner-X1 boundary flag
+
+nx2        = 256          # Number of zones in X2-direction (latitude)
+x2min      = -3.5E7       # minimum value of X2
+x2max      = 3.5E7        # maximum value of X2, 70 degree
+ix2_bc     = periodic     # inner-X2 boundary flag
+ox2_bc     = periodic     # inner-X2 boundary flag
+
+nx3        = 1            # Number of zones in X3-direction (height)
+x3min      = 0.           # minimum value of X3
+x3max      = 1.           # maximum value of X3
+ix3_bc     = periodic     # inner-X3 boundary flag
+ox3_bc     = periodic     # inner-X3 boundary flag
+
+<hydro>
+gamma      = 1.4
+
+<meshblock>
+nx1       = 64
+nx2       = 64
+nx3       = 1
+
+<problem>
+vrad    = 1.E6
+vphi    = 80
+vfile   = intruder_85.txt
+
+vis = 0.
+interval = 9E9
+
+phi0    = 5.26E5
+phi1    = 0.
+lambda  = 3.E6
+alpha   = 2
+omega   = 1.74E-4
+radius  = 7.14E7
+
+sponge_lat = 65.
+sponge_tau = 2.5E2

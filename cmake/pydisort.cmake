@@ -11,14 +11,14 @@ endmacro()
 set_if_empty(ACCOUNT $ENV{GH_ACCOUNT})
 set_if_empty(TOKEN $ENV{GH_TOKEN})
 
-option(RFM "Build RFM" OFF)
+option(DISORT "Build DISORT" OFF)
 
-if(RFM)
+if(DISORT)
   FetchContent_Declare(
-    rfm
+    pydisort
     DOWNLOAD_EXTRACT_TIMESTAMP TRUE
-    URL https://${ACCOUNT}:${TOKEN}@github.com/luminoctum/rfm/archive/refs/tags/v4.33.1.tar.gz
+    URL https://${ACCOUNT}:${TOKEN}@github.com/zoeyzyhu/pydisort/releases/tag/v0.4.0
   )
 
-  FetchContent_MakeAvailable(rfm)
+  FetchContent_MakeAvailable(pydisort)
 endif()
