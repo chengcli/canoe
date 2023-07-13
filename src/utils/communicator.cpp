@@ -1,13 +1,6 @@
-/** @file communicator.cpp
- * @brief
- *
- * @author Cheng Li (chengcli@umich.edu)
- * @date Thursday Apr 14, 2022 11:48:11 EDT
- * @bug No known bugs.
- */
-
 // C/C++
 #include <iostream>
+#include <mutex>
 
 // athena
 #include <athena/globals.hpp>
@@ -19,26 +12,35 @@
 // utils
 #include "communicator.hpp"
 
-Communicator::Communicator(MeshBlock *pmb) : pmy_block_(pmb) {
-  pmb->pdebug->Enter("Communicator");
-  color_ = new int[Globals::nranks];
-  brank_ = new int[Globals::nranks];
+static std::mutex comm_mutex;
+
+Communicator::Communicator() {
+  color_.resize(Globals::nranks);
+  brank_.resize(Globals::nranks);
+
 #ifdef MPI_PARALLEL
   comm_ = MPI_COMM_WORLD;
 #endif
-  pmb->pdebug->Leave();
 }
 
 Communicator::~Communicator() {
-  delete[] color_;
-  delete[] brank_;
-
 #ifdef MPI_PARALLEL
   if (comm_ != MPI_COMM_WORLD) MPI_Comm_free(&comm_);
 #endif
 }
 
-int Communicator::getRank(CoordinateDirection dir) const {
+Communicator *Communicator::GetInstance() {
+  // RAII
+  std::unique_lock<std::mutex> lock(comm_mutex);
+
+  if (mycomm_ == nullptr) {
+    mycomm_ = new Communicator();
+  }
+
+  return mycomm_;
+}
+
+int Communicator::GetRank(MeshBlock *pmb, CoordinateDirection dir) const {
   int r = 0;
   int b = brank_[Globals::my_rank];
   while (b != -1) {
@@ -48,7 +50,7 @@ int Communicator::getRank(CoordinateDirection dir) const {
   return r;
 }
 
-void Communicator::gatherData(Real *send, Real *recv, int size) const {
+void Communicator::GatherData(Real *send, Real *recv, int size) const {
 #ifdef MPI_PARALLEL
   MPI_Allgather(send, size, MPI_ATHENA_REAL, recv, size, MPI_ATHENA_REAL,
                 comm_);
@@ -58,14 +60,13 @@ void Communicator::gatherData(Real *send, Real *recv, int size) const {
 }
 
 //! \warning this function is unstable to some system.
-void Communicator::gatherDataInPlace(Real *recv, int size) const {
+void Communicator::GatherDataInPlace(Real *recv, int size) const {
 #ifdef MPI_PARALLEL
   MPI_Allgather(MPI_IN_PLACE, 0, 0, recv, size, MPI_ATHENA_REAL, comm_);
 #endif
 }
 
-NeighborBlock const *Communicator::findBotNeighbor() const {
-  MeshBlock *pmb = pmy_block_;
+NeighborBlock const *Communicator::FindBotNeighbor(MeshBlock *pmb) const {
   NeighborBlock *pbot = nullptr;
   for (int n = 0; n < pmb->pbval->nneighbor; ++n) {
     NeighborBlock *nb = pmb->pbval->neighbor + n;
@@ -74,8 +75,7 @@ NeighborBlock const *Communicator::findBotNeighbor() const {
   return pbot;
 }
 
-NeighborBlock const *Communicator::findTopNeighbor() const {
-  MeshBlock *pmb = pmy_block_;
+NeighborBlock const *Communicator::FindTopNeighbor(MeshBlock *pmb) const {
   NeighborBlock *ptop = nullptr;
   for (int n = 0; n < pmb->pbval->nneighbor; ++n) {
     NeighborBlock *nb = pmb->pbval->neighbor + n;
@@ -84,8 +84,7 @@ NeighborBlock const *Communicator::findTopNeighbor() const {
   return ptop;
 }
 
-NeighborBlock const *Communicator::findLeftNeighbor() const {
-  MeshBlock *pmb = pmy_block_;
+NeighborBlock const *Communicator::FindLeftNeighbor(MeshBlock *pmb) const {
   NeighborBlock *pleft = nullptr;
   for (int n = 0; n < pmb->pbval->nneighbor; ++n) {
     NeighborBlock *nb = pmb->pbval->neighbor + n;
@@ -95,8 +94,7 @@ NeighborBlock const *Communicator::findLeftNeighbor() const {
   return pleft;
 }
 
-NeighborBlock const *Communicator::findRightNeighbor() const {
-  MeshBlock *pmb = pmy_block_;
+NeighborBlock const *Communicator::FindRightNeighbor(MeshBlock *pmb) const {
   NeighborBlock *pright = nullptr;
   for (int n = 0; n < pmb->pbval->nneighbor; ++n) {
     NeighborBlock *nb = pmb->pbval->neighbor + n;
@@ -106,8 +104,7 @@ NeighborBlock const *Communicator::findRightNeighbor() const {
   return pright;
 }
 
-NeighborBlock const *Communicator::findBackNeighbor() const {
-  MeshBlock *pmb = pmy_block_;
+NeighborBlock const *Communicator::FindBackNeighbor(MeshBlock *pmb) const {
   NeighborBlock *pback = nullptr;
   for (int n = 0; n < pmb->pbval->nneighbor; ++n) {
     NeighborBlock *nb = pmb->pbval->neighbor + n;
@@ -117,8 +114,7 @@ NeighborBlock const *Communicator::findBackNeighbor() const {
   return pback;
 }
 
-NeighborBlock const *Communicator::findFrontNeighbor() const {
-  MeshBlock *pmb = pmy_block_;
+NeighborBlock const *Communicator::FindFrontNeighbor(MeshBlock *pmb) const {
   NeighborBlock *pfront = nullptr;
   for (int n = 0; n < pmb->pbval->nneighbor; ++n) {
     NeighborBlock *nb = pmb->pbval->neighbor + n;
@@ -128,10 +124,9 @@ NeighborBlock const *Communicator::findFrontNeighbor() const {
   return pfront;
 }
 
-void Communicator::setColor(CoordinateDirection dir) {
-  MeshBlock *pmb = pmy_block_;
+void Communicator::SetColor(MeshBlock *pmb, CoordinateDirection dir) {
   NeighborBlock bblock, tblock;
-  pmb->FindNeighbors(dir, bblock, tblock);
+  find_neighbors(pmb, dir, &bblock, &tblock);
 
   if (dir == X1DIR) {
     if (pmb->block_size.x1min <= pmb->pmy_mesh->mesh_size.x1min) {
@@ -163,13 +158,13 @@ void Communicator::setColor(CoordinateDirection dir) {
   }
 
 #ifdef MPI_PARALLEL
-  MPI_Allgather(&bblock.snb.rank, 1, MPI_INT, brank_, 1, MPI_INT,
+  MPI_Allgather(&bblock.snb.rank, 1, MPI_INT, brank_.data(), 1, MPI_INT,
                 MPI_COMM_WORLD);
 #else
   brank_[0] = -1;
 #endif
 
-  std::fill(color_, color_ + Globals::nranks, -1);
+  std::fill(color_.begin(), color_.end(), -1);
   int c = 0;
   for (int i = 0; i < Globals::nranks; ++i) {
     // color[i] = brank_[i] == -1 ? color[i] : color[brank_[i]];
@@ -185,3 +180,5 @@ void Communicator::setColor(CoordinateDirection dir) {
                  &comm_);
 #endif
 }
+
+Communicator *Communicator::mycomm_ = nullptr;

@@ -114,6 +114,7 @@ class RadiationBand {
   // bin data
   // 2d
   AthenaArray<Real> tau_, ssa_, toa_;
+  AthenaArray<Real> flxup_, flxdn_;
   // 3d
   AthenaArray<Real> pmom_;
   // 1d

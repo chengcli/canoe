@@ -3,14 +3,21 @@
 #include <iostream>
 
 // athena
+#include <athena/coordinates/coordinates.hpp>
 #include <athena/mesh/mesh.hpp>
-
-// climath
-#include <climath/special.h>
 
 // application
 #include <application/application.hpp>
 #include <application/exceptions.hpp>
+
+// canoe
+#include <impl.hpp>
+
+// climath
+#include <climath/special.h>
+
+// utils
+#include <utils/communicator.hpp>
 
 // harp
 #include "radiation.hpp"
@@ -19,30 +26,50 @@
 void RadiationBand::RTSolverDisort::CalBandFlux(Direction const &rayInput,
                                                 Real dist, int k, int j, int il,
                                                 int iu) {
-  MeshBlock *pmb = pmy_rad->pmy_block;
-  std::stringstream msg;
+  auto pcomm = Communicator::GetInstance();
+  auto pmb = pmy_band_->pmy_block_;
+  auto pcoord = pmb->pcoord;
+  auto planet = pmb->pimpl->prad->GetPlanet();
+
+  auto &bflxup = pmy_band_->bflxup;
+  auto &bflxdn = pmy_band_->bflxdn;
+  auto &bpmom = pmy_band_->bpmom;
+
+  auto &bflags = pmy_band_->bflags_;
+  auto &temf = pmy_band_->temf_;
+
+  auto &wmin = pmy_band_->wmin_;
+  auto &wmax = pmy_band_->wmax_;
+  auto &spec = pmy_band_->spec_;
+
+  auto &tau = pmy_band_->tau_;
+  auto &ssa = pmy_band_->ssa_;
+  auto &pmom = pmy_band_->pmom_;
+
   if (ds.flag.ibcnd != 0) {
     throw ValuError("RTSolverDisort::CalRadtranFlux", "ibcnd", ds.flag.ibcnd,
                     0);
   }
-  pmb->pcomm->setColor(X1DIR);
+  pcomm->SetColor(pmb, X1DIR);
 
   int nblocks = pmb->pmy_mesh->mesh_size.nx1 / pmb->block_size.nx1;
   Real *bufrecv = new Real[(iu - il) * nblocks * (ds.nmom_nstr + 3)];
 
   if (ds.flag.planck) {
-    pmb->pcomm->gatherData(temf_ + il, bufrecv, iu - il + 1);
+    pcomm->GatherData(temf_ + il, bufrecv, iu - il + 1);
+
     for (int i = 0; i < (iu - il + 1) * nblocks; ++i) {
       int m = i / (iu - il + 1);
       ds.temper[m * (iu - il) + i % (iu - il + 1)] = bufrecv[i];
     }
+
     std::reverse(ds.temper, ds.temper + ds.nlyr + 1);
   }
   // for (int i = 0; i <= ds.nlyr; ++i)
   //   std::cout << ds.temper[i] << std::endl;
 
-  ds.bc.umu0 = ray.mu > 1.E-3 ? ray.mu : 1.E-3;
-  ds.bc.phi0 = ray.phi;
+  ds.bc.umu0 = rayInput.mu > 1.E-3 ? rayInput.mu : 1.E-3;
+  ds.bc.phi0 = rayInput.phi;
   if (ds.flag.planck) {
     ds.bc.btemp = ds.temper[ds.nlyr];
     ds.bc.ttemp = ds.temper[0];
@@ -51,8 +78,6 @@ void RadiationBand::RTSolverDisort::CalBandFlux(Direction const &rayInput,
   // reset flx of this column
   for (int i = il; i <= iu; ++i) bflxup(k, j, i) = bflxdn(k, j, i) = 0.;
 
-  auto pcoord = pmy_rad->pmy_block->pcoord;
-
   AthenaArray<Real> farea(iu + 1), vol(iu + 1);
   pcoord->Face1Area(k, j, il, iu, farea);
   pcoord->CellVolume(k, j, il, iu, vol);
@@ -60,33 +85,34 @@ void RadiationBand::RTSolverDisort::CalBandFlux(Direction const &rayInput,
   if (bflags & RadiationFlags::CorrelatedK) {
     // stellar source function
     if (bflags & RadiationFlags::Star)
-      ds.bc.fbeam = pmy_rad->planet->ParentInsolationFlux(wmin, wmax, dist_au);
+      ds.bc.fbeam = planet->ParentInsolationFlux(wmin, wmax, dist_au);
     // planck source function
     ds.wvnmlo = wmin;
     ds.wvnmhi = wmax;
   }
 
-  int r = pmb->pcomm->getRank(X1DIR);
+  int r = pcomm->GetRank(pmb, X1DIR);
+
   int npmom = bpmom.GetDim4() - 1;
   int dsize = (npmom + 3) * (iu - il);
   Real *bufsend = new Real[dsize];
 
   // loop over bins in the band
-  for (int n = 0; n < num_bins; ++n) {
+  for (int n = 0; n < pmy_band_->GetNumBins(); ++n) {
     if (!(bflags & RadiationFlags::CorrelatedK)) {
       // stellar source function
       if (bflags & RadiationFlags::Star)
-        ds.bc.fbeam = pmy_rad->planet->ParentInsolationFlux(
-            spec[n].wav1, spec[n].wav2, dist_au);
+        ds.bc.fbeam =
+            planet->ParentInsolationFlux(spec[n].wav1, spec[n].wav2, dist_au);
       // planck source function
       ds.wvnmlo = spec[n].wav1;
       ds.wvnmhi = spec[n].wav2;
     }
 
     // pack data
-    packSpectralProperties(bufsend, tau_[n] + il, ssa_[n] + il, pmom_[n][il],
+    packSpectralProperties(bufsend, &tau(n, il), &ssa(n, il), &pmom(n, il, 0),
                            iu - il, npmom + 1);
-    pmb->pcomm->gatherData(bufsend, bufrecv, dsize);
+    pcomm->GatherData(bufsend, bufrecv, dsize);
     unpackSpectralProperties(ds.dtauc, ds.ssalb, ds.pmom, bufrecv, iu - il,
                              npmom + 1, nblocks, ds.nmom_nstr + 1);
 
@@ -126,15 +152,15 @@ void RadiationBand::RTSolverDisort::CalBandFlux(Direction const &rayInput,
        * farea(il)/farea(i)
        */
       // flux up
-      flxup_[n][i] = ds_out.rad[m].flup;
+      flxup_(n, i) = ds_out.rad[m].flup;
 
       /*! \bug does not work for spherical geomtry, need to scale area using
        * farea(il)/farea(i)
        */
       // flux down
-      flxdn_[n][i] = ds_out.rad[m].rfldir + ds_out.rad[m].rfldn;
-      bflxup(k, j, i) += spec[n].wght * flxup_[n][i];
-      bflxdn(k, j, i) += spec[n].wght * flxdn_[n][i];
+      flxdn_(n, i) = ds_out.rad[m].rfldir + ds_out.rad[m].rfldn;
+      bflxup(k, j, i) += spec[n].wght * flxup_(n, i);
+      bflxdn(k, j, i) += spec[n].wght * flxdn_(n, i);
     }
 
     // spherical correction by XIZ
@@ -156,6 +182,7 @@ void RadiationBand::RTSolverDisort::CalBandFlux(Direction const &rayInput,
       bflxdn(k, j, i) = (bflxdn(k, j, i + 1) * farea(i + 1) - volh) / farea(i);
     }
   }
+
   delete[] bufsend;
   delete[] bufrecv;
 }

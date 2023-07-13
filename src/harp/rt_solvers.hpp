@@ -56,7 +56,8 @@ class RadiationBand::RTSolverLambert : public RadiationBand::RTSolver {
                        int il, int iu) override;
 };
 
-class RadiationBand::RTSolverDisort : public RadiationBand::RTSolver {
+class RadiationBand::RTSolverDisort : public RadiationBand::RTSolver,
+                                      public DisortWrapper {
  public:
   explicit RTSolverDisort(RadiationBand *pmy_band)
       : RTSolver(pmy_band, "Disort") {}
@@ -68,9 +69,6 @@ class RadiationBand::RTSolverDisort : public RadiationBand::RTSolver {
 
   void CalBandRadiance(Direction const &rayInput, Real dist_au, int k, int j,
                        int il, int iu) override;
-
- protected:
-  DisortWrapper disort_;
 };
 
 #endif  // SRC_HARP_RT_SOLVERS_HPP_
