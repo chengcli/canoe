@@ -44,13 +44,6 @@ if(DISORT)
       ${PYBIND11_INCLUDE_DIR}
       ${PYDISORT_INCLUDE_DIR}
       )
-
-  target_link_libraries(${namel}_${buildl}
-      ${NETCDF_LIBRARIES}
-      ${PYTHON_LIBRARIES}
-      ${CDISORT_LIBRARY_${buildu}}
-      ${PYDISORT_LIBRARY_${buildu}}
-      )
 else()
   target_include_directories(${namel}_${buildl}
       PRIVATE

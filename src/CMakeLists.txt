@@ -71,7 +71,9 @@ set(CANOE_LIBRARY_${buildu}
   "tracer_${buildl}"
   "tasklist_${buildl}"
   "yaml-cpp"
-  ${NETCDF_LIBRARIES}
+  "cdisort_${buildl}"
+  "pydisort_${buildl}"
+  ${PYTHON_LIBRARY_RELEASE}
   ${CFITSIO_LIBRARY}
   CACHE INTERNAL "canoe library")
 
