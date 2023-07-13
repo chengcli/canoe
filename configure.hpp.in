@@ -22,6 +22,9 @@ enum {
 // HYDROSTATIC option (HYDROSTATIC or NOT_HYDROSTATIC)
 #define @HYDROSTATIC_OPTION@
 
+// DISORT option (RT_DISORT or NOT_RT_DISORT)
+#define @DISORT_OPTION@
+
 // MPI parallelization (MPI_PARALLEL or NOT_MPI_PARALLEL)
 #define @MPI_OPTION@
 

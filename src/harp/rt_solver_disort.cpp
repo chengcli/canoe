@@ -11,6 +11,7 @@
 #include <application/exceptions.hpp>
 
 // canoe
+#include <configure.hpp>
 #include <impl.hpp>
 
 // climath
@@ -23,6 +24,8 @@
 #include "radiation.hpp"
 #include "radiation_utils.hpp"
 #include "rt_solvers.hpp"
+
+#ifdef RT_DISORT
 
 void RadiationBand::RTSolverDisort::CalBandFlux(Direction const &rayInput,
                                                 Real dist_au, int k, int j,
@@ -195,3 +198,5 @@ void RadiationBand::RTSolverDisort::CalBandRadiance(Direction const &rayInput,
                                                     int il, int iu) {
   throw NotImplementedError("RTSolverDisort::CalBandRadiance");
 }
+
+#endif  // RT_DISORT

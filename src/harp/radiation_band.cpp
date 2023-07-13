@@ -138,8 +138,10 @@ RadiationBand::RadiationBand(MeshBlock *pmb, ParameterInput *pin,
   if (my["rt-solver"]) {
     if (my["rt-solver"].as<std::string>() == "Lambert") {
       psolver = std::make_shared<RTSolverLambert>(this);
+#ifdef RT_DISORT
     } else if (my["rt-solver"].as<std::string>() == "Disort") {
       psolver = std::make_shared<RTSolverDisort>(this);
+#endif
     } else {
       throw RuntimeError("RadiationBand", my["rt-solver"].as<std::string>());
     }
