@@ -7,13 +7,13 @@
 #
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
   set(CMAKE_CXX_FLAGS_RELEASE
-      "-O2 -funroll-loops -funroll-all-loops -fstrict-aliasing")
+      "-O2 -funroll-loops -funroll-all-loops -fstrict-aliasing -fPIC")
 
-  set(CMAKE_CXX_FLAGS_DEBUG "-g3")
+  set(CMAKE_CXX_FLAGS_DEBUG "-g3 -fPIC")
   set(CMAKE_C_FLAGS_RELEASE
-      "-O2 -funroll-loops -funroll-all-loops -fstrict-aliasing")
+      "-O2 -funroll-loops -funroll-all-loops -fstrict-aliasing -fPIC")
 
-  set(CMAKE_C_FLAGS_DEBUG "-g3")
+  set(CMAKE_C_FLAGS_DEBUG "-g3 -fPIC")
 
   # set(CMAKE_Fortran_FLAGS_RELEASE "-O3" )
   set(KNOWN_COMPILER TRUE)

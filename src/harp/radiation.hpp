@@ -60,6 +60,8 @@ class Radiation {
 
   size_t GetNumOutgoingRays() const;
 
+  CelestrialBodyPtr GetPlanet() const { return planet_; }
+
   // restart functions
   size_t GetRestartDataSizeInBytes() const;
 

@@ -25,7 +25,6 @@ macro(add_test_case test)
     )
 
   target_link_libraries(${name}.${buildl} gtest_main
-    ${ATHENAPP_LIBRARY_${buildu}}
     ${CANOE_LIBRARY_${buildu}}
     ${NETCDF_LIBRARIES}
     ${PNETCDF_LIBRARY}

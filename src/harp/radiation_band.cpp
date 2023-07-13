@@ -99,6 +99,12 @@ RadiationBand::RadiationBand(MeshBlock *pmb, ParameterInput *pin,
   pmom_.NewAthenaArray(spec_.size(), ncells1, npmom + 1);
   pmom_.ZeroClear();
 
+  flxup_.NewAthenaArray(spec_.size(), ncells1);
+  flxup_.ZeroClear();
+
+  flxdn_.NewAthenaArray(spec_.size(), ncells1);
+  flxdn_.ZeroClear();
+
   // band properties
   btau.NewAthenaArray(ncells3, ncells2, ncells1);
   bssa.NewAthenaArray(ncells3, ncells2, ncells1);
@@ -132,6 +138,10 @@ RadiationBand::RadiationBand(MeshBlock *pmb, ParameterInput *pin,
   if (my["rt-solver"]) {
     if (my["rt-solver"].as<std::string>() == "Lambert") {
       psolver = std::make_shared<RTSolverLambert>(this);
+#ifdef RT_DISORT
+    } else if (my["rt-solver"].as<std::string>() == "Disort") {
+      psolver = std::make_shared<RTSolverDisort>(this);
+#endif
     } else {
       throw RuntimeError("RadiationBand", my["rt-solver"].as<std::string>());
     }

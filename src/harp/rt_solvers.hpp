@@ -10,8 +10,13 @@
 // application
 #include <application/application.hpp>
 
+// canoe
+#include <configure.hpp>
+
 // pydisort
-// #include <pydisort/cppdisort.hpp>
+#ifdef RT_DISORT
+#include <pydisort/cppdisort.hpp>
+#endif
 
 // harp
 #include "radiation_band.hpp"
@@ -56,7 +61,9 @@ class RadiationBand::RTSolverLambert : public RadiationBand::RTSolver {
                        int il, int iu) override;
 };
 
-class RadiationBand::RTSolverDisort : public RadiationBand::RTSolver {
+#ifdef RT_DISORT
+class RadiationBand::RTSolverDisort : public RadiationBand::RTSolver,
+                                      public DisortWrapper {
  public:
   explicit RTSolverDisort(RadiationBand *pmy_band)
       : RTSolver(pmy_band, "Disort") {}
@@ -68,9 +75,7 @@ class RadiationBand::RTSolverDisort : public RadiationBand::RTSolver {
 
   void CalBandRadiance(Direction const &rayInput, Real dist_au, int k, int j,
                        int il, int iu) override;
-
- protected:
-  // DisortWrapper disort_;
 };
+#endif
 
 #endif  // SRC_HARP_RT_SOLVERS_HPP_

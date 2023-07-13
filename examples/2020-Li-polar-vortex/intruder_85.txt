@@ -1,0 +1,10 @@
+# Positions of polar vortices
+# Size range 0.50 - 1.50
+#    Lat      Lon     Size Polarity
+   85.      288.      1.00    1
+   85.      216.      1.00    1
+   85.      144.      1.00    1
+   85.      72.       1.00    1
+   85.      0.        1.00    1
+   90.      0.        1.00    1
+   75.      0.        1.00    1
