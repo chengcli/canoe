@@ -25,7 +25,7 @@ target_link_libraries(kcoeff.release
   ${NETCDF_LIBRARIES}
   )
 
-add_executable(hitbin.release hitbin.f)
+add_executable(hitbin.release hitbin.f90)
 
 set_target_properties(hitbin.release
   PROPERTIES

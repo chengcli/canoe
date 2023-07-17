@@ -17,7 +17,7 @@ if(RFM)
   FetchContent_Declare(
     rfm
     DOWNLOAD_EXTRACT_TIMESTAMP TRUE
-    URL https://${ACCOUNT}:${TOKEN}@github.com/luminoctum/rfm/archive/refs/tags/v4.33.1.tar.gz
+    URL https://${ACCOUNT}:${TOKEN}@github.com/luminoctum/rfm/archive/refs/tags/v5.20.tar.gz
   )
 
   FetchContent_MakeAvailable(rfm)
