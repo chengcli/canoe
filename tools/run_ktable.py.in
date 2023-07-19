@@ -12,7 +12,7 @@ run_rfm = f"{cmake_binary_dir}/bin/run_rfm.py"
 kcoeff  = f"{cmake_binary_dir}/bin/kcoeff.release"
 cktable = f"{cmake_binary_dir}/bin/run_cktable.py"
 
-hitran  = f"{cmake_source_dir}/data/HITRAN2012.par"
+hitran  = f"{cmake_source_dir}/data/HITRAN2020.par"
 hitfile = ""
 
 # number of threads
