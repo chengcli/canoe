@@ -151,6 +151,9 @@ jobs:
           git lfs install
           git lfs pull
 
+      - name: set up libraries
+        run: sudo apt install cmake nco libnetcdf-dev libpnetcdf-dev
+
       - name: create build directory
         # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
         # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
@@ -259,7 +262,7 @@ jobs:
 
       - name: Build
         # Build your program with the given configuration
-        run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} -- -j8
+        run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} -- -j4
 
       - name: run simulation
         run: cd ${{github.workspace}}/build/bin && mpiexec -n 4 ./shallow_xy.release -i shallow_water.inp
