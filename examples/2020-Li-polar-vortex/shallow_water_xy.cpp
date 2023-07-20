@@ -8,9 +8,7 @@
 
 // Athena++ headers
 #include <athena/athena.hpp>
-#include <athena/athena_arrays.hpp>
 #include <athena/coordinates/coordinates.hpp>
-#include <athena/globals.hpp>
 #include <athena/hydro/hydro.hpp>
 #include <athena/mesh/mesh.hpp>
 #include <athena/parameter_input.hpp>
