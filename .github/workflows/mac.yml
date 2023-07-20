@@ -93,3 +93,36 @@ jobs:
           ${{github.workspace}}/examples/2019-Li-snap/test_robert.py
           ${{github.workspace}}/build/bin/robert-test-main.nc
           ${{github.workspace}}/examples/2019-Li-snap/robert3d_output.nc
+
+  shallow-xy:
+    if: github.event.pull_request.draft == false
+    runs-on: [self-hosted, Linux, 16core]
+    needs: build-non-hydrostatic
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: set up git lfs
+        run: |
+          git lfs install
+          git lfs pull
+
+      - name: create build directory
+        # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
+        # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
+        run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DEOS=shallow_xy -DNETCDF=ON -DMPI=ON -DNUMBER_GHOST_CELLS=3
+
+      - name: Build
+        # Build your program with the given configuration
+        run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} -- -j8
+
+      - name: run simulation
+        run: cd ${{github.workspace}}/build/bin && mpiexec -n 4 ./shallow_xy.release -i shallow_water.inp
+
+      - name: combile outputs
+        run: cd ${{github.workspace}}/build/bin && ./combine.py -o test
+
+      - name: compare result
+        run: >
+          python3 ${{github.workspace}}/examples/2020-Li-polar-vortex/test_shallow.py
+          ${{github.workspace}}/build/bin/sw-test-main.nc
+          ${{github.workspace}}/examples/2020-Li-polar-vortex/swxy_output.nc
