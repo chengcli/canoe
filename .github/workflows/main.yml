@@ -141,7 +141,7 @@ jobs:
 
   straka-2d:
     if: github.event.pull_request.draft == false
-    runs-on: [self-hosted, linux, 4core]
+    runs-on: ubuntu-latest
     needs: build-non-hydrostatic
     steps:
       - uses: actions/checkout@v3
@@ -242,7 +242,7 @@ jobs:
 
   shallow-xy:
     if: github.event.pull_request.draft == false
-    runs-on: [self-hosted, Linux, 16core]
+    runs-on: [self-hosted, Linux, 4core]
     needs: build-non-hydrostatic
     steps:
       - uses: actions/checkout@v3
