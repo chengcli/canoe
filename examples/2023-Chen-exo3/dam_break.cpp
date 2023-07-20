@@ -1,8 +1,14 @@
+// C/C++
+#include <cmath>
+
+// Athena
+#include <athena/coordinates/coordinates.hpp>
+#include <athena/hydro/hydro.hpp>
+#include <athena/mesh/mesh.hpp>
+#include <athena/parameter_input.hpp>
+
+// canoe
 #include <configure.hpp>
-#include <coordinates/coordinates.hpp>
-#include <hydro/hydro.hpp>
-#include <mesh/mesh.hpp>
-#include <parameter_input.hpp>
 
 void MeshBlock::ProblemGenerator(ParameterInput *pin) {
   Real phi = pin->GetReal("problem", "phi");
@@ -17,8 +23,8 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
       // else
       //   phydro->u(IM2,k,j,is) = uphi;
 #ifdef AFFINE
-      Real x1_car = pcoord->x2v(j) + pcoord->x3v(k) * cos(PI / 3.0);
-      Real x2_car = pcoord->x3v(k) * sin(PI / 3.0);
+      Real x1_car = pcoord->x2v(j) + pcoord->x3v(k) * cos(M_PI / 3.0);
+      Real x2_car = pcoord->x3v(k) * sin(M_PI / 3.0);
       Real rad = sqrt(x1_car * x1_car + x2_car * x2_car);
 #else
       Real rad = sqrt(pcoord->x3v(k) * pcoord->x3v(k) +
