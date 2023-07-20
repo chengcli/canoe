@@ -3,7 +3,7 @@
 
 // athena
 #include <athena/athena.hpp>
-#include <athena/coordiantes/coordinates.hpp>
+#include <athena/coordinates/coordinates.hpp>
 
 class MeshBlock;
 class ParameterInput;
