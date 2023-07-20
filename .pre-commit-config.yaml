@@ -4,9 +4,9 @@ repos:
     hooks:
       - id: requirements-txt-fixer
       - id: trailing-whitespace
-        exclude: ^data/
+        exclude: ^(data|patches)/.*$
       - id: end-of-file-fixer
-        exclude: ^data/
+        exclude: ^(data|patches)/.*$
       - id: check-yaml
         exclude: ^data/
 

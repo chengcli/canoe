@@ -22,3 +22,5 @@ index 29a06d19..c465d93c 100644
 +  } else if (std::strcmp(COORDINATE_SYSTEM, "affine_coordinate") == 0) {
 +    pcoord = new AffineCoordinate(this, pin, false);
    }
+
+
