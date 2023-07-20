@@ -45,15 +45,6 @@ NetcdfOutput::NetcdfOutput(OutputParameters oparams) : OutputType(oparams) {}
 //         MeshBlock per file
 
 void NetcdfOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) {
-  // find out total number of blocks
-  //  int nbtotal;
-  // #ifdef MPI_PARALLEL
-  //  MPI_Allreduce(&pm->nbtotal, &nbtotal, 1, MPI_ATHENA_REAL, MPI_SUM,
-  //  MPI_COMM_WORLD);
-  // #else
-  //  nbtotal = pm->nbtotal;
-  // #endif
-
   // Loop over MeshBlocks
   for (int b = 0; b < pm->nblocal; ++b) {
     MeshBlock *pmb = pm->my_blocks(b);

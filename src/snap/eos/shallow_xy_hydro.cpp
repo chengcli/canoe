@@ -1,17 +1,17 @@
-//! \file shallow_water.cpp
+//! \file shallow_xy.cpp
 //  \brief implements functions in class EquationOfState for shallow water
 //  hydrodynamics
 
-// C/C++ headers
+// C/C++
 #include <cmath>  // sqrt()
 
-// Athena++ headers
-#include "../athena.hpp"
-#include "../field/field.hpp"
-#include "../hydro/hydro.hpp"
-#include "../mesh/mesh.hpp"
-#include "../parameter_input.hpp"
-#include "eos.hpp"
+// athena
+#include <athena/athena.hpp>
+#include <athena/eos/eos.hpp>
+#include <athena/field/field.hpp>
+#include <athena/hydro/hydro.hpp>
+#include <athena/mesh/mesh.hpp>
+#include <athena/parameter_input.hpp>
 
 // EquationOfState constructor
 //
@@ -90,11 +90,10 @@ Real EquationOfState::SoundSpeed(const Real prim[NHYDRO]) {
 
 void EquationOfState::ApplyPrimitiveFloors(AthenaArray<Real> &prim, int k,
                                            int j, int i) {
-  //! \bug FIXME: this should be prim(IDN,k,j,i)
-  // Real& w_d  = prim(IDN,i);
+  Real &w_d = prim(IDN, i);
 
   // apply density floor
-  // w_d = (w_d > density_floor_) ?  w_d : density_floor_;
+  w_d = (w_d > density_floor_) ? w_d : density_floor_;
 
   return;
 }

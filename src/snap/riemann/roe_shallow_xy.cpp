@@ -1,15 +1,15 @@
-//! \file  roe_shallow_water.cpp
+//! \file  roe_shallow_xy.cpp
 //  \brief Roe's linearized Riemann solver for shallow water model
 
-// C/C++ headers
+// C/C++
 #include <algorithm>  // min()
 #include <cmath>      // sqrt()
 #include <iostream>
 
-// Athena++ headers
-#include "../../../athena.hpp"
-#include "../../../athena_arrays.hpp"
-#include "../../hydro.hpp"
+// athena
+#include <athena/athena.hpp>
+#include <athena/athena_arrays.hpp>
+#include <athena/hydro/hydro.hpp>
 
 void Hydro::RiemannSolver(int const k, int const j, int const il, int const iu,
                           int const ivx, AthenaArray<Real> &wl,

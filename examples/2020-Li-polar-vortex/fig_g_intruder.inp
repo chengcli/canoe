@@ -61,7 +61,7 @@ nx3       = 1
 <problem>
 vrad    = 1.E6
 vphi    = 80
-vfile   = intruder_85.txt
+vfile   = intruder_85.dat
 
 vis = 0.
 interval = 9E9

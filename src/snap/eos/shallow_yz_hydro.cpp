@@ -1,17 +1,17 @@
-//! \file shallow_water.cpp
+//! \file shallow_yz.cpp
 //  \brief implements functions in class EquationOfState for shallow water
 //  hydrodynamics
 
-// C/C++ headers
+// C/C++
 #include <cmath>  // sqrt()
 
-// Athena++ headers
-#include <eos/eos.hpp>
-// #include <hydro/hydro.hpp>
-#include <athena.hpp>
-#include <field/field.hpp>
-#include <mesh/mesh.hpp>
-#include <parameter_input.hpp>
+// athena
+#include <athena/athena.hpp>
+#include <athena/eos/eos.hpp>
+#include <athena/field/field.hpp>
+#include <athena/hydro/hydro.hpp>
+#include <athena/mesh/mesh.hpp>
+#include <athena/parameter_input.hpp>
 
 // EquationOfState constructor
 //
