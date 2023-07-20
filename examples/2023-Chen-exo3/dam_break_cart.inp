@@ -1,0 +1,59 @@
+<comment>
+problem   = One layer shallow water model
+reference =
+configure = --prob=shallow_water --eos=shallow_water --nghost=3 -netcdf -mpi
+
+<job>
+problem_id = dam    # problem ID: basename of output filenames
+
+<output1>
+file_type  = hst       # History data dump
+dt         = 2.0      # time increment between outputs
+
+<output2>
+file_type  = netcdf    # netcdf data dump
+variable   = prim      # variables to be output
+dt         = 0.001       # time increment between outputs
+
+<time>
+cfl_number = 0.9       # The Courant, Friedrichs, & Lewy (CFL) Number
+nlim       = -1        # cycle limit
+tlim       = 0.2      # time limit
+xorder     = 5         # horizontal reconstruction order
+integrator = rk3       # integration method
+
+<mesh>
+nx1        = 3          # Number of zones in X1-direction
+x1min      = -0.5       # minimum value of X1
+x1max      = 0.5        # maximum value of X1
+ix1_bc     = periodic   # inner-X1 boundary flag
+ox1_bc     = periodic   # inner-X1 boundary flag
+
+nx2        = 1024       # Number of zones in X2-direction
+x2min      = -5.0      # minimum value of X2
+x2max      =  5.0      # maximum value of X2
+ix2_bc     = periodic   # inner-X2 boundary flag
+ox2_bc     = periodic   # inner-X2 boundary flag
+
+nx3        = 1024        # Number of zones in X3-direction
+x3min      = -5.0        # minimum value of X3
+x3max      = 5.0         # maximum value of X3
+ix3_bc     = periodic   # inner-X3 boundary flag
+ox3_bc     = periodic   # inner-X3 boundary flag
+
+ReferencePressure = 1.
+PressureScaleHeight = 1.
+
+<hydro>
+gamma       = 1.4
+multi_layer_coupling = true
+
+<meshblock>
+nx1       = 3
+nx2       = 256
+nx3       = 256
+
+<problem>
+phi       = 10.
+uphi      = 0.
+dphi      = 2.

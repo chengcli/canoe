@@ -152,7 +152,7 @@ jobs:
           git lfs pull
 
       - name: set up libraries
-        run: sudo apt install cmake nco libnetcdf-dev libpnetcdf-dev
+        run: sudo apt-get install -y cmake nco libnetcdf-dev libpnetcdf-dev
 
       - name: set up python libraries
         run: pip3 install -r requirements.txt

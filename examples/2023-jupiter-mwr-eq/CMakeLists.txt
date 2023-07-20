@@ -26,6 +26,7 @@ target_include_directories(${namel}.${buildl}
     PRIVATE
     ${CMAKE_BINARY_DIR}
     ${CMAKE_SOURCE_DIR}/src
+    ${MPI_CXX_INCLUDE_PATH}
     )
 
 # 1. Copy input file to run directory
