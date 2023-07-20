@@ -19,7 +19,22 @@ set_if_empty(NTRACER 0)
 
 set_if_empty(NSTATIC 0)
 
-set_if_empty(EQUATION_OF_STATE "ideal_moist")
+set_if_empty(EOS "ideal_moist")
+
+if(EOS STREQUAL "shallow_water_xy")
+  set(NVAPOR -1)
+  set(NON_BAROTROPIC_EOS 0)
+  set_if_empty(RSOLVER "roe_shallow_water_xy")
+elseif(EOS STREQUAL "shallow_water_yz")
+  set(NVAPOR -1)
+  set(NON_BAROTROPIC_EOS 0)
+  set_if_empty(RSOLVER "roe_shallow_water_yz")
+elseif(EOS STREQUAL "ideal_moist")
+  set(NON_BAROTROPIC_EOS 1)
+else()
+  message(FATAL_ERROR "Unknown EquationOfState (EOS) : ${EOS}")
+endif()
+set(EQUATION_OF_STATE ${EOS})
 
 set_if_empty(TASKLIST TimeIntegratorTaskList)
 

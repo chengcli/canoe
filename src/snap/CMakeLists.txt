@@ -23,6 +23,7 @@ file(GLOB src_files
 		eos/${EQUATION_OF_STATE}_hydro.cpp
     thermodynamics/*.cpp
     decomposition/*.cpp
+    riemann/${RSOLVER}.cpp
     implicit/*.cpp
     )
 
