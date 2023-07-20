@@ -10,6 +10,9 @@ enum {
 
 #define PLANET  "@PLANET@"
 
+// Affine option (AFFINE or NOT_AFFINE)
+#define @AFFINE_OPTION@
+
 // NetCDF output (NETCDFOUTPUT or NO_NETCDFOUTPUT)
 #define @NETCDF_OPTION@
 
