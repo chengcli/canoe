@@ -67,6 +67,11 @@ Thermodynamics const* Thermodynamics::InitFromAthenaInput(ParameterInput* pin) {
   Application::Logger app("snap");
   app->Log("Initialize Thermodynamics");
 
+  if (NVAPOR <= 0) {
+    mythermo_ = new Thermodynamics();
+    return mythermo_;
+  }
+
   if (pin->DoesParameterExist("thermodynamics", "control_file")) {
     std::string filename = pin->GetString("thermodynamics", "control_file");
     std::ifstream stream(filename);
@@ -77,7 +82,7 @@ Thermodynamics const* Thermodynamics::InitFromAthenaInput(ParameterInput* pin) {
     YAML::Node node = YAML::Load(stream);
     mythermo_ = new Thermodynamics(node);
   } else {  // legacy input
-    if (NVAPOR > 0 && NCLOUD != (NPHASE - 1) * NVAPOR) {
+    if (NCLOUD != (NPHASE - 1) * NVAPOR) {
       throw RuntimeError(
           "Thermodynamics",
           "NCLOUD != (NPHASE-1)*NVAPOR is not supported for legacy input");
