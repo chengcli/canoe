@@ -40,6 +40,13 @@ set_if_empty(TASKLIST TimeIntegratorTaskList)
 
 set_if_empty(PLANET "UNKNOWN")
 
+if(NOT AFFINE OR NOT DEFINED AFFINE)
+  set(AFFINE_OPTION "NOT_AFFINE")
+else()
+  set(AFFINE_OPTION "AFFINE")
+  set(COORDINATE_SYSTEM "affine_coordinate")
+endif()
+
 if(NOT NETCDF OR NOT DEFINED NETCDF)
   set(NETCDF_OPTION "NO_NETCDFOUTPUT")
 else()

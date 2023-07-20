@@ -53,6 +53,7 @@ add_subdirectory(dusts)
 add_subdirectory(c3m)
 add_subdirectory(tracer)
 add_subdirectory(tasklist)
+add_subdirectory(exo3)
 
 set(CANOE_LIBRARY_${buildu}
   "canoe_${buildl}"
@@ -70,6 +71,7 @@ set(CANOE_LIBRARY_${buildu}
   "c3m_${buildl}"
   "tracer_${buildl}"
   "tasklist_${buildl}"
+  "exo3_${buildl}"
   "yaml-cpp"
   ${CDISORT_LIBRARY_${buildu}}
   ${PYDISORT_LIBRARY_${buildu}}

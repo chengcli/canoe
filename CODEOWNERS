@@ -11,4 +11,5 @@
 #   https://help.github.com/articles/about-codeowners/
 
 
-* chengcli@umich.edu
+* @chengcli
+src/exo3 @cshsgy

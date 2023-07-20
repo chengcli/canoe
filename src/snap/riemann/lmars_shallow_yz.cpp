@@ -1,16 +1,19 @@
-//! \file  lmars_shallow_water.cpp
+//! \file  lmars_shallow_yz.cpp
 //  \brief
 
-// C/C++ headers
+// C/C++
 #include <algorithm>  // min()
 #include <cmath>      // sqrt()
 #include <iostream>
 
-// Athena++ headers
+// Athena++
 #include <athena.hpp>
 #include <coordinates/coordinates.hpp>
 #include <hydro/hydro.hpp>
 #include <mesh/mesh.hpp>
+
+// canoe
+#include <configure.hpp>
 
 void Hydro::RiemannSolver(int const k, int const j, int const il, int const iu,
                           int const ivx, AthenaArray<Real> &wl,
