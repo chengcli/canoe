@@ -17,7 +17,7 @@ void WriteHeatingRate(std::string fname, AthenaArray<Real> const& flux,
 void read_radiation_directions(std::vector<Direction> *ray, std::string str);
 void set_radiation_flags(uint64_t *flags, std::string str);
 
-void getPhaseHenyeyGreenstein(Real *pmom, int iphas, Real gg, int npmom);
+void get_phase_momentum(Real *pmom, int iphas, Real gg, int npmom);
 void packSpectralProperties(Real *buf, Real const *tau, Real const *ssa,
                             Real const *pmom, int nlayer, int npmom);
 void unpackSpectralProperties(Real *tau, Real *ssa, Real *pmom, Real const *buf,

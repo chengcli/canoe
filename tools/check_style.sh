@@ -24,6 +24,9 @@ done
 # harp
 cpplint --filter=${filters} --recursive src/harp
 
+# opacity
+cpplint --filter=${filters} src/opacity/*.cpp
+
 # inversion
 cpplint --filter=${filters} --recursive src/inversion
 

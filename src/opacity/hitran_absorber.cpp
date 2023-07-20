@@ -8,16 +8,14 @@
 
 // canoe
 #include <configure.hpp>
+#include <constants.hpp>
+#include <variable.hpp>
 
 // climath
 #include <climath/interpolation.h>
 
 // athena
 #include <athena/athena.hpp>
-
-// snap
-#include <constants.hpp>
-#include <variable.hpp>
 
 // harp
 #include "hitran_absorber.hpp"

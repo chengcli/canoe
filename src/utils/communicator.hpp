@@ -5,8 +5,8 @@
  * \date Thursday Apr 14, 2022 11:39:35 EDT
  */
 
-#ifndef SRC_UTILS_COMMUNICATOR_HPP
-#define SRC_UTILS_COMMUNICATOR_HPP
+#ifndef SRC_UTILS_COMMUNICATOR_HPP_
+#define SRC_UTILS_COMMUNICATOR_HPP_
 
 // C/C++
 #include <vector>
@@ -63,4 +63,4 @@ class Communicator {
 #endif
 };
 
-#endif  // SRC_UTILS_COMMUNICATOR_HPP
+#endif  // SRC_UTILS_COMMUNICATOR_HPP_
