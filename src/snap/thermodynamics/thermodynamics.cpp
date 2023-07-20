@@ -67,11 +67,6 @@ Thermodynamics const* Thermodynamics::InitFromAthenaInput(ParameterInput* pin) {
   Application::Logger app("snap");
   app->Log("Initialize Thermodynamics");
 
-  if (NVAPOR <= 0) {
-    mythermo_ = new Thermodynamics();
-    return mythermo_;
-  }
-
   if (pin->DoesParameterExist("thermodynamics", "control_file")) {
     std::string filename = pin->GetString("thermodynamics", "control_file");
     std::ifstream stream(filename);
