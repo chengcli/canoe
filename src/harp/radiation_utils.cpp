@@ -252,7 +252,7 @@ void set_radiation_flags(uint64_t *flags, std::string str) {
   }
 }
 
-void getPhaseHenyeyGreenstein(Real *pmom, int iphas, Real gg, int npmom) {
+void get_phase_momentum(Real *pmom, int iphas, Real gg, int npmom) {
   pmom[0] = 1.;
   for (int k = 1; k < npmom; k++) pmom[k] = 0.;
 
