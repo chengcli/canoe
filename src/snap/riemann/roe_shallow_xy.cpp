@@ -1,4 +1,4 @@
-//! \file  roe_shallow_water_xy.cpp
+//! \file  roe_shallow_xy.cpp
 //  \brief Roe's linearized Riemann solver for shallow water model
 
 // C/C++

@@ -1,4 +1,4 @@
-//! \file shallow_water.cpp
+//! \file shallow_xy.cpp
 //  \brief implements functions in class EquationOfState for shallow water
 //  hydrodynamics
 
@@ -90,11 +90,10 @@ Real EquationOfState::SoundSpeed(const Real prim[NHYDRO]) {
 
 void EquationOfState::ApplyPrimitiveFloors(AthenaArray<Real> &prim, int k,
                                            int j, int i) {
-  //! \bug FIXME: this should be prim(IDN,k,j,i)
-  // Real& w_d  = prim(IDN,i);
+  Real &w_d = prim(IDN, i);
 
   // apply density floor
-  // w_d = (w_d > density_floor_) ?  w_d : density_floor_;
+  w_d = (w_d > density_floor_) ? w_d : density_floor_;
 
   return;
 }

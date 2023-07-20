@@ -96,8 +96,7 @@ jobs:
 
   shallow-xy:
     if: github.event.pull_request.draft == false
-    runs-on: [self-hosted, Linux, 16core]
-    needs: build-non-hydrostatic
+    runs-on: macos-13
     steps:
       - uses: actions/checkout@v3
 
