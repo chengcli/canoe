@@ -29,27 +29,11 @@ Real NullSatVaporPres1(Variable const& qfrac, int i, int j) {
   return qfrac.w[i] / g * qfrac.w[IPR];
 }
 
-void Thermodynamics::enrollVaporFunctions(ParameterInput* pin) {
-  if (NVAPOR == 0 && NCLOUD == 0) return;
-
-  if (strcmp(PLANET, "Earth") == 0) {
-    enrollVaporFunctionsEarth();
-  } else if (strcmp(PLANET, "Jupiter") == 0) {
-    enrollVaporFunctionsGiants();
-  } else {
-    throw RuntimeError("Thermodynamics",
-                       "Unknown planet: " + std::string(PLANET));
-  }
-}
-
-void Thermodynamics::enrollVaporFunctionsGiants() {
-  enrollVaporFunctionsJupiterJuno();
-}
-
-void Thermodynamics::enrollVaporFunctionsJupiterJuno() {
+// water svp:
+void Thermodynamics::enrollVaporFunctionH2O() {
   auto pindex = IndexMap::GetInstance();
+  if (!pindex->HasVapor("H2O")) return;
 
-  // water svp:
   int iH2O = pindex->GetVaporId("H2O");
   for (int n = 0; n < cloud_index_set_[iH2O].size(); ++n) {
     int j = cloud_index_set_[iH2O][n];
@@ -61,8 +45,13 @@ void Thermodynamics::enrollVaporFunctionsJupiterJuno() {
       svp_func1_[iH2O][n] = NullSatVaporPres1;
     }
   }
+}
 
-  // ammonia svp:
+// ammonia svp:
+void Thermodynamics::enrollVaporFunctionNH3() {
+  auto pindex = IndexMap::GetInstance();
+  if (!pindex->HasVapor("NH3")) return;
+
   int iNH3 = pindex->GetVaporId("NH3");
   for (int n = 0; n < cloud_index_set_[iNH3].size(); ++n) {
     int j = cloud_index_set_[iNH3][n];
@@ -74,8 +63,13 @@ void Thermodynamics::enrollVaporFunctionsJupiterJuno() {
       svp_func1_[iNH3][n] = NullSatVaporPres1;
     }
   }
+}
 
-  // hydrogen sulfide svp:
+// hydrogen sulfide svp:
+void Thermodynamics::enrollVaporFunctionH2S() {
+  auto pindex = IndexMap::GetInstance();
+  if (!pindex->HasVapor("H2S")) return;
+
   int iH2S = pindex->GetVaporId("H2S");
   for (int n = 0; n < cloud_index_set_[iH2S].size(); ++n) {
     int j = cloud_index_set_[iH2S][n];
@@ -87,17 +81,41 @@ void Thermodynamics::enrollVaporFunctionsJupiterJuno() {
       svp_func1_[iH2S][n] = NullSatVaporPres1;
     }
   }
+}
+
+void Thermodynamics::enrollVaporFunctionNH4SH() {
+  auto pindex = IndexMap::GetInstance();
+  if (!pindex->HasVapor("NH3") || !pindex->HasVapor("H2S") ||
+      !pindex->HasCloud("NH4SH(s)"))
+    return;
 
   // ammonium hydrosulfide svp
+  int iNH3 = pindex->GetVaporId("NH3");
+  int iH2S = pindex->GetVaporId("H2S");
   int iNH4SH = pindex->GetCloudId("NH4SH(s)");
+
   auto ij = std::minmax(iNH3, iH2S);
   svp_func2_[ij] = [](Variable const& qfrac, int, int, int) {
     return sat_vapor_p_NH4SH_Lewis(qfrac.w[IDN]);
   };
+
   cloud_reaction_map_[ij] = std::make_pair<ReactionIndx, ReactionStoi>(
       {iNH3, iH2S, iNH4SH}, {1, 1, 1});
 }
 
-void Thermodynamics::enrollVaporFunctionsEarth() {
-  throw NotImplementedError("Thermodynamics::enrollVaporFunctionsEarth");
+void Thermodynamics::enrollVaporFunctionsGiants() {
+  enrollVaporFunctionH2O();
+  enrollVaporFunctionNH3();
+  enrollVaporFunctionH2S();
+  enrollVaporFunctionNH4SH();
+}
+
+void Thermodynamics::enrollVaporFunctionsEarth() { enrollVaporFunctionH2O(); }
+
+void Thermodynamics::enrollVaporFunctionsMars() {
+  throw NotImplementedError("Thermodynamics::enrollVaporFunctionsMars");
+}
+
+void Thermodynamics::enrollVaporFunctionsVenus() {
+  throw NotImplementedError("Thermodynamics::enrollVaporFunctionsVenus");
 }

@@ -114,8 +114,26 @@ Thermodynamics const* Thermodynamics::InitFromAthenaInput(ParameterInput* pin) {
 
     mythermo_->Rd_ = pin->GetOrAddReal("thermodynamics", "Rd", 1.);
     mythermo_->gammad_ref_ = pin->GetReal("hydro", "gamma");
+  }
 
-    mythermo_->enrollVaporFunctions(pin);
+  // enroll vapor functions
+  if (strcmp(PLANET, "Earth") == 0) {
+    mythermo_->enrollVaporFunctionsEarth();
+  } else if (strcmp(PLANET, "Mars") == 0) {
+    mythermo_->enrollVaporFunctionsEarth();
+  } else if (strcmp(PLANET, "Venus") == 0) {
+    mythermo_->enrollVaporFunctionsEarth();
+  } else if (strcmp(PLANET, "Jupiter") == 0) {
+    mythermo_->enrollVaporFunctionsGiants();
+  } else if (strcmp(PLANET, "Saturn") == 0) {
+    mythermo_->enrollVaporFunctionsGiants();
+  } else if (strcmp(PLANET, "Uranus") == 0) {
+    mythermo_->enrollVaporFunctionsGiants();
+  } else if (strcmp(PLANET, "Neptune") == 0) {
+    mythermo_->enrollVaporFunctionsGiants();
+  } else {
+    throw RuntimeError("Thermodynamics",
+                       "Unknown planet: " + std::string(PLANET));
   }
 
   // alias

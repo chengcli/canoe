@@ -328,10 +328,16 @@ class Thermodynamics {
   void rk4IntegrateZ(Variable *qfrac, Real dlnp, Method method, Real grav,
                      Real adlnTdlnP) const;
 
-  void enrollVaporFunctions(ParameterInput *pin);
   void enrollVaporFunctionsEarth();
+  void enrollVaporFunctionsMars();
+  void enrollVaporFunctionsVenus();
   void enrollVaporFunctionsGiants();
-  void enrollVaporFunctionsJupiterJuno();
+
+  void enrollVaporFunctionH2O();
+  void enrollVaporFunctionNH3();
+  void enrollVaporFunctionH2S();
+  void enrollVaporFunctionCO2();
+  void enrollVaporFunctionNH4SH();
 
  private:
   //! ideal gas constant of dry air in J/kg
@@ -404,7 +410,7 @@ class Thermodynamics {
   //! reaction information map
   std::map<IndexPair, ReactionInfo> cloud_reaction_map_;
 
-  //! Pointer to the single Application instance
+  //! pointer to the single Thermodynamics instance
   static Thermodynamics *mythermo_;
 
   //! other parameters
