@@ -14,7 +14,7 @@
 #include <variable.hpp>
 
 // snap
-#include <snap/thermodynamics/thermodynamics.hpp>
+#include "thermodynamics.hpp"
 
 void Thermodynamics::SaturationAdjustment(Variable *qfrac) const {
   // return if there's no vapor

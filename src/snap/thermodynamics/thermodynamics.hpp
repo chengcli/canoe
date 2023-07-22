@@ -7,6 +7,7 @@
 #include <iosfwd>
 #include <memory>
 #include <set>
+#include <utility>
 
 // external
 #include <yaml-cpp/yaml.h>
@@ -24,10 +25,17 @@
 class MeshBlock;
 class ParameterInput;
 
-using CloudIndexSet = std::vector<int>;
-using SatVaporPresFunc = Real (*)(Variable const &, int i, int j);
+using IndexPair = std::pair<int, int>;
+using IndexSet = std::vector<int>;
 
-Real NullSatVaporPres(Variable const &, int, int);
+using RealArray3 = std::array<Real, 3>;
+using RealArrayX = std::vector<Real>;
+
+using SatVaporPresFunc1 = Real (*)(Variable const &, int i, int j);
+using SatVaporPresFunc2 = Real (*)(Variable const &, IndexPair ij);
+
+Real NullSatVaporPres1(Variable const &, int, int);
+Real NullSatVaporPres2(Variable const &, IndexPair, int);
 
 void read_thermo_property(Real var[], char const name[], int len, Real v0,
                           ParameterInput *pin);
@@ -53,12 +61,18 @@ class Thermodynamics {
  protected:
   enum { NPHASE = 3 };
 
+  enum { MAX_REACTANT = 3 };
+
   //! Constructor for class sets up the initial conditions
   //! Protected ctor access thru static member function Instance
   Thermodynamics() {}
   explicit Thermodynamics(YAML::Node &node);
 
  public:
+  using ReactionIndx = std::array<int, MAX_REACTANT>;
+  using ReactionStoi = std::array<int, MAX_REACTANT>;
+  using ReactionInfo = std::pair<ReactionIndx, ReactionStoi>;
+
   enum { Size = 1 + NVAPOR + NCLOUD };
 
   enum class Method {
@@ -197,9 +211,12 @@ class Thermodynamics {
   //! Calculate the equilibrium mole transfer between vapor and cloud
   //! \param L_ov_cv L/cv evaluated at current temperature
   //! \return molar fraction change of vapor to cloud
-  std::vector<Real> TryEquilibriumTP(Variable const &qfrac, int ivapor,
-                                     Real cv_hat = 0.,
-                                     bool misty = false) const;
+  RealArrayX TryEquilibriumTP(Variable const &qfrac, int ivapor,
+                              Real cv_hat = 0., bool misty = false) const;
+
+  RealArray3 TryEquilibriumTP_VaporVaporCloud(Variable const &air, IndexPair ij,
+                                              Real cv_hat = 0.,
+                                              bool misty = false) const;
 
   //! Construct an 1d atmosphere
   //! @param method choose from [reversible, pseudo, dry, isothermal]
@@ -384,11 +401,15 @@ class Thermodynamics {
   //! triple point pressure [pa]
   std::array<Real, 1 + NVAPOR> p3_;
 
-  //! saturation vapor pressure function
-  std::vector<std::vector<SatVaporPresFunc>> svp_func_;
+  //! saturation vapor pressure function: Vapor -> Cloud
+  std::vector<std::vector<SatVaporPresFunc1>> svp_func1_;
 
   //! cloud index set
-  std::vector<CloudIndexSet> cloud_index_set_;
+  std::vector<IndexSet> cloud_index_set_;
+
+  //! saturation vapor pressure function: Vapor + Vapor -> Cloud
+  std::map<IndexPair, SatVaporPresFunc2> svp_func2_;
+  std::map<IndexPair, ReactionInfo> cloud_reaction_map_;
 
   //! Pointer to the single Application instance
   static Thermodynamics *mythermo_;

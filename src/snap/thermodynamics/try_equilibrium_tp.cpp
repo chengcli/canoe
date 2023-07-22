@@ -7,16 +7,15 @@
 // snap
 #include "thermodynamics.hpp"
 
-std::vector<Real> Thermodynamics::TryEquilibriumTP(Variable const& qfrac, int i,
-                                                   Real cv_hat,
-                                                   bool misty) const {
+RealArrayX Thermodynamics::TryEquilibriumTP(Variable const& qfrac, int i,
+                                            Real cv_hat, bool misty) const {
   Real xv = qfrac.w[i];
   Real t = qfrac.w[IDN] / t3_[i];
   std::vector<Real> rates(1 + cloud_index_set_[i].size(), 0.);
 
   for (int n = 0; n < cloud_index_set_[i].size(); ++n) {
     int j = cloud_index_set_[i][n];
-    Real xs = svp_func_[i][n](qfrac, i, j) / qfrac.w[IPR];
+    Real xs = svp_func1_[i][n](qfrac, i, j) / qfrac.w[IPR];
     Real xc = qfrac.c[j];
 
     if (misty) {  // no cloud in variable
