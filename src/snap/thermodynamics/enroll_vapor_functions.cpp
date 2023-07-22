@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <fstream>
 #include <iostream>
+#include <utility>
 
 // application
 #include <application/application.hpp>
@@ -80,7 +81,7 @@ void Thermodynamics::enrollVaporFunctionsJupiterJuno() {
     int j = cloud_index_set_[iH2S][n];
     if (n == 0) {
       svp_func1_[iH2S][n] = [](Variable const& qfrac, int, int) {
-        return sat_vapor_p_H2S_BriggsS(qfrac.w[IDN]);
+        return sat_vapor_p_H2S_Antoine(qfrac.w[IDN]);
       };
     } else {
       svp_func1_[iH2S][n] = NullSatVaporPres1;
@@ -90,10 +91,11 @@ void Thermodynamics::enrollVaporFunctionsJupiterJuno() {
   // ammonium hydrosulfide svp
   int iNH4SH = pindex->GetCloudId("NH4SH(s)");
   auto ij = std::minmax(iNH3, iH2S);
-  svp_func2_[ij] = [](Variable const& qfrac, IndexPair _ij) {
-    return sat_vapor_p_NH4SH(qfrac.w[IDN]);
+  svp_func2_[ij] = [](Variable const& qfrac, int, int, int) {
+    return sat_vapor_p_NH4SH_Lewis(qfrac.w[IDN]);
   };
-  cloud_reaction_map_[ij] = std::make_pair({iNH3, iH2S, iNH4SH}, {1, 1, 1});
+  cloud_reaction_map_[ij] = std::make_pair<ReactionIndx, ReactionStoi>(
+      {iNH3, iH2S, iNH4SH}, {1, 1, 1});
 }
 
 void Thermodynamics::enrollVaporFunctionsEarth() {

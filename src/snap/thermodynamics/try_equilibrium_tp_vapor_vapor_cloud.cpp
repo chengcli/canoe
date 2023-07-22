@@ -10,6 +10,11 @@
 // canoe
 #include <variable.hpp>
 
+// climath
+#include <climath/core.h>
+
+#include <climath/root.hpp>
+
 // snap
 #include "thermodynamics.hpp"
 
@@ -19,9 +24,11 @@
 // Example phase equilibrium:
 // NH3 + H2S -> NH4SH
 //
-RealArray3 Thermodynamics::TryEquilibriumTP_VaporVaporCloud(
-    Variable const& air, IndexPair const& ij) const {
-  auto& info = cloud_reaction_map_[ij];
+RealArray3 Thermodynamics::TryEquilibriumTP_VaporVaporCloud(Variable const& air,
+                                                            IndexPair ij,
+                                                            Real cv_hat,
+                                                            bool misty) const {
+  auto& info = cloud_reaction_map_.at(ij);
 
   int j1 = info.first[0];
   int j2 = info.first[1];
@@ -40,8 +47,8 @@ RealArray3 Thermodynamics::TryEquilibriumTP_VaporVaporCloud(
   Real x0 = a * air.c[j3] + air.w[j1], y0 = b * air.c[j3] + air.w[j2], z0 = 0.,
        pp1 = x0 / (x0 + y0 + gmol) * ptol, pp2 = y0 / (x0 + y0 + gmol) * ptol;
 
-  Real mol0 = air.w[j1], mol1 = air.[j2];
-  Real svp = svp_func2_[j1][j2](temp);
+  Real mol0 = air.w[j1], mol1 = air.w[j2];
+  Real svp = svp_func2_.at(ij)(air, j1, j2, j3);
 
   if (pp1 * pp2 > svp) {
     Real zeta = svp / (ptol * ptol), rh;
@@ -49,17 +56,17 @@ RealArray3 Thermodynamics::TryEquilibriumTP_VaporVaporCloud(
     int error;
 
     if (a * y0 > b * x0) {
-      error = _root(0., 1., 1.E-8, &rh, [a, b, x0, y0, gmol, zeta](double r) {
+      error = root(0., 1., 1.E-8, &rh, [a, b, x0, y0, gmol, zeta](double r) {
         Real x = r * x0, y = y0 - b / a * (x0 - x);
-        return (x * y) / _sqr(x + y + gmol) - zeta;
+        return (x * y) / sqr(x + y + gmol) - zeta;
       });
       y0 -= b / a * (1. - rh) * x0;
       z0 = (1. - rh) * x0 / a;
       x0 *= rh;
     } else {
-      error = _root(0., 1., 1.E-8, &rh, [a, b, x0, y0, gmol, zeta](double r) {
+      error = root(0., 1., 1.E-8, &rh, [a, b, x0, y0, gmol, zeta](double r) {
         Real y = r * y0, x = x0 - a / b * (y0 - y);
-        return (x * y) / _sqr(x + y + gmol) - zeta;
+        return (x * y) / sqr(x + y + gmol) - zeta;
       });
       x0 -= a / b * (1. - rh) * y0;
       z0 = (1. - rh) * y0 / b;

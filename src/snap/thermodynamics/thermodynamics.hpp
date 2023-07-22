@@ -32,10 +32,10 @@ using RealArray3 = std::array<Real, 3>;
 using RealArrayX = std::vector<Real>;
 
 using SatVaporPresFunc1 = Real (*)(Variable const &, int i, int j);
-using SatVaporPresFunc2 = Real (*)(Variable const &, IndexPair ij);
+using SatVaporPresFunc2 = Real (*)(Variable const &, int i, int j, int k);
 
 Real NullSatVaporPres1(Variable const &, int, int);
-Real NullSatVaporPres2(Variable const &, IndexPair, int);
+Real NullSatVaporPres2(Variable const &, int, int, int);
 
 void read_thermo_property(Real var[], char const name[], int len, Real v0,
                           ParameterInput *pin);
@@ -409,6 +409,8 @@ class Thermodynamics {
 
   //! saturation vapor pressure function: Vapor + Vapor -> Cloud
   std::map<IndexPair, SatVaporPresFunc2> svp_func2_;
+
+  //! reaction information map
   std::map<IndexPair, ReactionInfo> cloud_reaction_map_;
 
   //! Pointer to the single Application instance
