@@ -1,0 +1,9 @@
+# Galileo proble radio signal, Folkner, Woo, 98
+pressure,   NH3 mixing ratio,   Error       
+1.59,       3.24E-6,            3.03E-4
+4.40,       2.90E-4,            1.07E-4
+5.87,       3.74E-4,            1.13E-4
+7.58,       7.16E-4,            1.25E-4
+9.67,       7.52E-4,            0.99E-4
+12.2,       7.03E-4,            0.94E-4
+14.8,       6.36E-4,            0.94E-4
