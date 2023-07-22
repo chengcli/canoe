@@ -110,7 +110,7 @@ outdir       = (0,) (15,) (30,) (45,)
 use_temperature_dependent_cp = true
 use_fletcher16_cirs = false
 
-qH2O.ppmv   = 2500.
+qH2O.ppmv   = 23000.
 qNH3.ppmv   = 200.
 qH2S.ppmv   = 300.
 qCH4.ppmv   = 23000.

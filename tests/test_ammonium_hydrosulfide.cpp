@@ -14,14 +14,14 @@
 #include <snap/thermodynamics/vapors/ammonia_vapors.hpp>
 #include <snap/thermodynamics/vapors/water_vapors.hpp>
 
-class TestThermodynamics : public testing::Test {
+class TestAmmoniumHydrosulfide : public testing::Test {
  protected:
   ParameterInput *pinput;
 
   virtual void SetUp() {
     // code here will execute just before the test ensues
     IOWrapper infile;
-    infile.Open("test_thermodynamics.inp", IOWrapper::FileMode::read);
+    infile.Open("test_ammonium_hydrosulfide.inp", IOWrapper::FileMode::read);
 
     pinput = new ParameterInput;
     pinput->LoadFromFile(infile);
@@ -40,13 +40,6 @@ class TestThermodynamics : public testing::Test {
     delete pinput;
   }
 };
-
-TEST_F(TestThermodynamics, dry) {
-  auto pthermo = Thermodynamics::GetInstance();
-
-  EXPECT_NEAR(pthermo->GetRd(), 3777., 1e-8);
-  EXPECT_NEAR(pthermo->GetMu(0), 0.00220134, 1e-8);
-}
 
 TEST_F(TestThermodynamics, water_vapor) {
   auto pthermo = Thermodynamics::GetInstance();
