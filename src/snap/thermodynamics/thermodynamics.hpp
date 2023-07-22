@@ -314,19 +314,9 @@ class Thermodynamics {
 
   Real getInternalEnergyMole(Variable const &qfrac) const;
 
-  Real getDensityMole(Variable const &qfrac) const {
-    Real qgas = 1.;
-#pragma omp simd reduction(+ : qgas)
-    for (int n = 0; n < NCLOUD; ++n) qgas += -qfrac.c[n];
-    return qfrac.w[IPR] / (Constants::Rgas * qfrac.w[IDN] * qgas);
-  }
+  Real getDensityMole(Variable const &qfrac) const;
 
-  void setTotalEquivalentVapor(Variable *qfrac, int i) const {
-    for (auto &j : cloud_index_set_[i]) {
-      qfrac->w[i] += qfrac->c[j];
-      qfrac->c[j] = 0.;
-    }
-  }
+  void setTotalEquivalentVapor(Variable *qfrac, int i) const;
 
   //! Calculate moist adiabatic temperature gradient
   //! $\Gamma_m = (\frac{d\ln T}{d\ln P})_m$
