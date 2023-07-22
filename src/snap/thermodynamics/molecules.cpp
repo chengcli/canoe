@@ -2,11 +2,15 @@
 #include <cassert>
 #include <sstream>
 
-#include "Constants.h"
-#include "io_funcs.h"
-#include "utils.h"
+// application
+#include <application/exceptions.hpp>
+
+// utils
+#include <utils/fileio.hpp>
 
 // climath
+#include <climath/interpolation.h>
+
 #include <climath/root.hpp>
 
 // snap
@@ -29,7 +33,7 @@ std::ostream& operator<<(std::ostream& os, Molecule const& mol) {
 }
 
 void Molecule::load_chem_file(std::string chemfile) {
-  std::stringstream inp(decomment(chemfile));
+  std::stringstream inp(DecommentFile(chemfile));
   double junk;
 
   inp >> m_name >> m_mu >> m_entropy >> m_enthalpy >> m_gibbs >> m_cp >> m_tr >>
@@ -47,7 +51,7 @@ void Molecule::load_chem_file(std::string chemfile) {
 }
 
 double Molecule::cp(double T) const {
-  int i = _locate(m_shomate_sp.data(), T, m_nshomate + 1);
+  int i = locate(m_shomate_sp.data(), T, m_nshomate + 1);
   if (i == m_nshomate) i = m_nshomate - 1;
   if (i < 0) i = 0;
 
@@ -62,7 +66,7 @@ double Molecule::cp(double T) const {
 }
 
 double Molecule::enthalpy(double T) const {
-  int i = _locate(m_shomate_sp.data(), T, m_nshomate + 1);
+  int i = locate(m_shomate_sp.data(), T, m_nshomate + 1);
   if (i == m_nshomate) i = m_nshomate - 1;
   if (i < 0) i = 0;
 
@@ -78,7 +82,7 @@ double Molecule::enthalpy(double T) const {
 }
 
 double Molecule::entropy(double T) const {
-  int i = _locate(m_shomate_sp.data(), T, m_nshomate + 1);
+  int i = locate(m_shomate_sp.data(), T, m_nshomate + 1);
   if (i == m_nshomate) i = m_nshomate - 1;
   if (i < 0) i = 0;
 
@@ -107,17 +111,17 @@ double Molecule::isat_vapor_p(double P) const {
   int error = root(Tmin, Tmax, PRECISION, &Tsat,
                    [this, P](double T) { return this->sat_vapor_p(T) - P; });
   if (error) {
-    std::cerr << "Inverting saturation vapor pressure is not sucessfull"
-              << std::endl;
-    std::cerr << "Pressure = " << P << " Pa" << std::endl;
-    std::cerr << "Tmin = " << Tmin << std::endl;
-    std::cerr << "Tmax = " << Tmax << std::endl;
-    std::cerr << "Saturation vapor pressure at Tmin = " << sat_vapor_p(Tmin)
-              << std::endl;
-    std::cerr << "Saturation vapor pressure at Tmax = " << sat_vapor_p(Tmax)
-              << std::endl;
-    std::cerr << *this << std::endl;
-    assert(0);
+    std::stringstream msg;
+    msg << "Inverting saturation vapor pressure is not sucessfull" << std::endl;
+    msg << "Pressure = " << P << " Pa" << std::endl;
+    msg << "Tmin = " << Tmin << std::endl;
+    msg << "Tmax = " << Tmax << std::endl;
+    msg << "Saturation vapor pressure at Tmin = " << sat_vapor_p(Tmin)
+        << std::endl;
+    msg << "Saturation vapor pressure at Tmax = " << sat_vapor_p(Tmax)
+        << std::endl;
+    msg << *this << std::endl;
+    throw RuntimeError("Molecule", msg.str());
   }
 
   return Tsat;
