@@ -202,6 +202,8 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
       var.SetZero();
       var.w[iH2O] = xH2O;
       var.w[iNH3] = xNH3;
+      var.w[iH2S] = xH2S;
+      var.w[iCH4] = xCH4;
       var.w[IPR] = Ps;
       var.w[IDN] = Ts;
 
