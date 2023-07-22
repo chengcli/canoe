@@ -1,6 +1,7 @@
 #ifndef SRC_SNAP_THERMODYNAMICS_VAPORS_AMMONIA_VAPORS_HPP_
 #define SRC_SNAP_THERMODYNAMICS_VAPORS_AMMONIA_VAPORS_HPP_
 
+// C/C++
 #include <cmath>
 
 inline double svpnh3(double t, double p, double beta, double gamma) {

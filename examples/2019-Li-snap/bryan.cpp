@@ -52,7 +52,7 @@ Real root_func(Real temp, void *aux) {
   Variable *qfrac = pd->qfrac;
 
   qfrac->w[IDN] = temp;
-  auto rates = pthermo->TryEquilibriumTP(*qfrac, iH2O);
+  auto rates = pthermo->TryEquilibriumTP_VaporCloud(*qfrac, iH2O);
 
   // vapor condensation rate
   qfrac->w[iH2O] += rates[0];

@@ -1,0 +1,10 @@
+# Niemann, Atreya 98, 02
+species,    mixing ratio,   error,      pressure
+H2S,        1E-6,           <,          3.6
+H2S,        0.7E-5,         ,           8.7
+H2S,        7.7E-5,         0.5E-5,     16.
+H2O,        8.E-7,          <,          3.6
+H2O,        5.6E-5,         2.5E-5,     12.
+H2O,        6.E-4,          3E-4,       19.
+NH3,        7.1E-4,         3.2E-4,     8.6-12.0
+PH3,        6.E-6,          <,          16.

@@ -1,15 +1,3 @@
-/**************************************************************************
-
-                    =====  JUNO codes  =====
-
-   Copyright (C) 2019 California Institute of Technology (Caltech)
-   All rights reserved.
-
-   Written by Fabiano Oyafuso (fabiano@jpl.nasa.gov)
-   Adapted by Cheng Li (cli@gps.caltech.edu) to canoe structure
-
-**************************************************************************/
-
 // C/C++ headers
 #include <cmath>
 
@@ -25,8 +13,8 @@ static double const Lo_mks =
 static double const c_cgs = 2.99792458e+10;  // speed of light
 // end
 
-double absorption_coefficient_CIA(double freq, double P, double T, double XH2,
-                                  double XHe, double XCH4, double mix) {
+double attenuation_CIA(double freq, double P, double T, double XH2, double XHe,
+                       double XCH4, double mix) {
   double const factor = Pa_from_bar(P) / (kBoltz_mks * T) / Lo_mks;
   double const amagat_he = XHe * factor;
   double const amagat_h2 = XH2 * factor;

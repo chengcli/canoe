@@ -15,25 +15,41 @@ class IndexMap {
  public:
   ~IndexMap();
 
-  static IndexMap const *GetInstance();
+  static IndexMap const* GetInstance();
 
-  static IndexMap const *InitFromAthenaInput(ParameterInput *pin);
+  static IndexMap const* InitFromAthenaInput(ParameterInput* pin);
 
   static void Destroy();
 
-  size_t GetVaporId(std::string name) const {
+  bool HasVapor(std::string const& name) const {
+    return vapor_index_map_.find(name) != vapor_index_map_.end();
+  }
+
+  size_t GetVaporId(std::string const& name) const {
     return vapor_index_map_.at(name);
   }
 
-  size_t GetCloudId(std::string name) const {
+  bool HasCloud(std::string const& name) const {
+    return cloud_index_map_.find(name) != cloud_index_map_.end();
+  }
+
+  size_t GetCloudId(std::string const& name) const {
     return cloud_index_map_.at(name);
   }
 
-  size_t GetChemistryId(std::string name) const {
+  bool HasChemistry(std::string const& name) const {
+    return chemistry_index_map_.find(name) != chemistry_index_map_.end();
+  }
+
+  size_t GetChemistryId(std::string const& name) const {
     return chemistry_index_map_.at(name);
   }
 
-  size_t GetTracerId(std::string name) const {
+  bool HasTracer(std::string const& name) const {
+    return tracer_index_map_.find(name) != tracer_index_map_.end();
+  }
+
+  size_t GetTracerId(std::string const& name) const {
     return tracer_index_map_.at(name);
   }
 
@@ -47,8 +63,8 @@ class IndexMap {
   std::map<std::string, size_t> static_index_map_;
   std::map<std::string, size_t> particle_index_map_;
 
-  //! Pointer to the single Application instance
-  static IndexMap *myindex_map_;
+  //! Pointer to the single IndexMap instance
+  static IndexMap* myindex_map_;
 };
 
 #endif  // SRC_INDEX_MAP_HPP_

@@ -14,7 +14,7 @@
 #include <variable.hpp>
 
 // snap
-#include <snap/thermodynamics/thermodynamics.hpp>
+#include "thermodynamics.hpp"
 
 void Thermodynamics::SaturationAdjustment(Variable *qfrac) const {
   // return if there's no vapor
@@ -42,7 +42,7 @@ void Thermodynamics::SaturationAdjustment(Variable *qfrac) const {
 
     // condensation
     for (int i = 1; i <= NVAPOR; ++i) {
-      auto rates = TryEquilibriumTP(*qfrac, i, cvd * fsig);
+      auto rates = TryEquilibriumTP_VaporCloud(*qfrac, i, cvd * fsig);
 
       // vapor condensation rate
       qfrac->w[i] += rates[0];

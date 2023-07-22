@@ -7,6 +7,7 @@
 #include <iosfwd>
 #include <memory>
 #include <set>
+#include <utility>
 
 // external
 #include <yaml-cpp/yaml.h>
@@ -24,10 +25,17 @@
 class MeshBlock;
 class ParameterInput;
 
-using CloudIndexSet = std::vector<int>;
-using SatVaporPresFunc = Real (*)(Variable const &, int i, int j);
+using IndexPair = std::pair<int, int>;
+using IndexSet = std::vector<int>;
 
-Real NullSatVaporPres(Variable const &, int, int);
+using RealArray3 = std::array<Real, 3>;
+using RealArrayX = std::vector<Real>;
+
+using SatVaporPresFunc1 = Real (*)(Variable const &, int i, int j);
+using SatVaporPresFunc2 = Real (*)(Variable const &, int i, int j, int k);
+
+Real NullSatVaporPres1(Variable const &, int, int);
+Real NullSatVaporPres2(Variable const &, int, int, int);
 
 void read_thermo_property(Real var[], char const name[], int len, Real v0,
                           ParameterInput *pin);
@@ -53,12 +61,18 @@ class Thermodynamics {
  protected:
   enum { NPHASE = 3 };
 
+  enum { MAX_REACTANT = 3 };
+
   //! Constructor for class sets up the initial conditions
   //! Protected ctor access thru static member function Instance
   Thermodynamics() {}
   explicit Thermodynamics(YAML::Node &node);
 
  public:
+  using ReactionIndx = std::array<int, MAX_REACTANT>;
+  using ReactionStoi = std::array<int, MAX_REACTANT>;
+  using ReactionInfo = std::pair<ReactionIndx, ReactionStoi>;
+
   enum { Size = 1 + NVAPOR + NCLOUD };
 
   enum class Method {
@@ -197,9 +211,13 @@ class Thermodynamics {
   //! Calculate the equilibrium mole transfer between vapor and cloud
   //! \param L_ov_cv L/cv evaluated at current temperature
   //! \return molar fraction change of vapor to cloud
-  std::vector<Real> TryEquilibriumTP(Variable const &qfrac, int ivapor,
-                                     Real cv_hat = 0.,
-                                     bool misty = false) const;
+  RealArrayX TryEquilibriumTP_VaporCloud(Variable const &qfrac, int ivapor,
+                                         Real cv_hat = 0.,
+                                         bool misty = false) const;
+
+  RealArray3 TryEquilibriumTP_VaporVaporCloud(Variable const &air, IndexPair ij,
+                                              Real cv_hat = 0.,
+                                              bool misty = false) const;
 
   //! Construct an 1d atmosphere
   //! @param method choose from [reversible, pseudo, dry, isothermal]
@@ -286,7 +304,7 @@ class Thermodynamics {
   Real RelativeHumidity(MeshBlock *pmb, int n, int k, int j, int i) const;
 
   Real RelativeHumidity(Variable const &qfrac, int n) const {
-    auto rates = TryEquilibriumTP(qfrac, n, 0., true);
+    auto rates = TryEquilibriumTP_VaporCloud(qfrac, n, 0., true);
     return qfrac.w[n] / (qfrac.w[n] + rates[0]);
   }
 
@@ -296,19 +314,9 @@ class Thermodynamics {
 
   Real getInternalEnergyMole(Variable const &qfrac) const;
 
-  Real getDensityMole(Variable const &qfrac) const {
-    Real qgas = 1.;
-#pragma omp simd reduction(+ : qgas)
-    for (int n = 0; n < NCLOUD; ++n) qgas += -qfrac.c[n];
-    return qfrac.w[IPR] / (Constants::Rgas * qfrac.w[IDN] * qgas);
-  }
+  Real getDensityMole(Variable const &qfrac) const;
 
-  void setTotalEquivalentVapor(Variable *qfrac, int i) const {
-    for (auto &j : cloud_index_set_[i]) {
-      qfrac->w[i] += qfrac->c[j];
-      qfrac->c[j] = 0.;
-    }
-  }
+  void setTotalEquivalentVapor(Variable *qfrac, int i) const;
 
   //! Calculate moist adiabatic temperature gradient
   //! $\Gamma_m = (\frac{d\ln T}{d\ln P})_m$
@@ -320,10 +328,21 @@ class Thermodynamics {
   void rk4IntegrateZ(Variable *qfrac, Real dlnp, Method method, Real grav,
                      Real adlnTdlnP) const;
 
-  void enrollVaporFunctions(ParameterInput *pin);
   void enrollVaporFunctionsEarth();
-  void enrollVaporFunctionsGiants();
-  void enrollVaporFunctionsJupiterJuno();
+  void enrollVaporFunctionsMars();
+  void enrollVaporFunctionsVenus();
+  void enrollVaporFunctionsTitan();
+  void enrollVaporFunctionsGasGiants();
+  void enrollVaporFunctionsIceGiants();
+  void enrollVaporFunctionsHotJupiter();
+  void enrollVaporFunctionsLavaWorld();
+
+  void enrollVaporFunctionH2O();
+  void enrollVaporFunctionNH3();
+  void enrollVaporFunctionH2S();
+  void enrollVaporFunctionCH4();
+  void enrollVaporFunctionCO2();
+  void enrollVaporFunctionNH4SH();
 
  private:
   //! ideal gas constant of dry air in J/kg
@@ -384,13 +403,19 @@ class Thermodynamics {
   //! triple point pressure [pa]
   std::array<Real, 1 + NVAPOR> p3_;
 
-  //! saturation vapor pressure function
-  std::vector<std::vector<SatVaporPresFunc>> svp_func_;
+  //! saturation vapor pressure function: Vapor -> Cloud
+  std::vector<std::vector<SatVaporPresFunc1>> svp_func1_;
 
   //! cloud index set
-  std::vector<CloudIndexSet> cloud_index_set_;
+  std::vector<IndexSet> cloud_index_set_;
 
-  //! Pointer to the single Application instance
+  //! saturation vapor pressure function: Vapor + Vapor -> Cloud
+  std::map<IndexPair, SatVaporPresFunc2> svp_func2_;
+
+  //! reaction information map
+  std::map<IndexPair, ReactionInfo> cloud_reaction_map_;
+
+  //! pointer to the single Thermodynamics instance
   static Thermodynamics *mythermo_;
 
   //! other parameters

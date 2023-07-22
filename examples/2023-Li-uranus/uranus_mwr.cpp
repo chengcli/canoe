@@ -54,7 +54,7 @@
 #include <inversion/profile_inversion.hpp>
 
 Real grav, P0, T0, Tmin, clat;
-Real xHe, xCH4, xH2S, xNa, xKCl, metallicity;
+Real xHe, xNa, xKCl, metallicity;
 
 void MeshBlock::InitUserMeshBlockData(ParameterInput *pin) {
   AllocateUserOutputVariables(4 + NVAPOR);
@@ -96,8 +96,6 @@ void Mesh::InitUserMeshData(ParameterInput *pin) {
   Tmin = pin->GetReal("problem", "Tmin");
   clat = pin->GetOrAddReal("problem", "clat", 0.);
 
-  xH2S = pin->GetReal("problem", "xH2S");
-
   metallicity = pin->GetOrAddReal("problem", "metallicity", 0.);
 
   xNa = pin->GetReal("problem", "xNa");
@@ -107,8 +105,6 @@ void Mesh::InitUserMeshData(ParameterInput *pin) {
   xKCl *= pow(10., metallicity);
 
   xHe = pin->GetReal("problem", "xHe");
-
-  xCH4 = pin->GetReal("problem", "xCH4");
 }
 
 Real Thermodynamics::GetGammad(Variable const &qfrac) const {
@@ -121,7 +117,7 @@ Real Thermodynamics::GetGammad(Variable const &qfrac) const {
   cp_he = Helium::cp_nist(T);
   cp_ch4 = Methane::cp_nist(T);
 
-  Real cp_real = (1. - xHe - xCH4) * cp_h2 + xHe * cp_he + xCH4 * cp_ch4;
+  Real cp_real = (1. - xHe) * cp_h2 + xHe * cp_he;
   return cp_real / (cp_real - Constants::Rgas);
 }
 
@@ -149,9 +145,8 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
   auto pindex = IndexMap::GetInstance();
   int iH2O = pindex->GetVaporId("H2O");
   int iNH3 = pindex->GetVaporId("NH3");
-
-  app->Log("index of H2O", iH2O);
-  app->Log("index of NH3", iNH3);
+  int iH2S = pindex->GetVaporId("H2S");
+  int iCH4 = pindex->GetVaporId("CH4");
 
   // set up an adiabatic atmosphere
   int max_iter = 200, iter = 0;
@@ -164,6 +159,8 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
   Real Ts = T0 * pow(Ps / P0, Rd / cp);
   Real xH2O = pin->GetReal("problem", "qH2O.ppmv") / 1.E6;
   Real xNH3 = pin->GetReal("problem", "qNH3.ppmv") / 1.E6;
+  Real xH2S = pin->GetReal("problem", "qH2S.ppmv") / 1.E6;
+  Real xCH4 = pin->GetReal("problem", "qCH4.ppmv") / 1.E6;
 
   Real rh_max_nh3 = pin->GetOrAddReal("problem", "rh_max.NH3", 1.);
 
@@ -171,6 +168,8 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
     // read in vapors
     var.w[iH2O] = xH2O;
     var.w[iNH3] = xNH3;
+    var.w[iH2S] = xH2S;
+    var.w[iCH4] = xCH4;
     var.w[IPR] = Ps;
     var.w[IDN] = Ts;
 
@@ -203,6 +202,8 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
       var.SetZero();
       var.w[iH2O] = xH2O;
       var.w[iNH3] = xNH3;
+      var.w[iH2S] = xH2S;
+      var.w[iCH4] = xCH4;
       var.w[IPR] = Ps;
       var.w[IDN] = Ts;
 
@@ -300,7 +301,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
     for (int j = js; j <= je; ++j)
       for (int i = is; i <= ie; ++i) {
         Real temp = pthermo->GetTemp(this, k, j, i);
-        Real pH2S = xH2S * phydro->w(IPR, k, j, i);
+        Real pH2S = phydro->w(iH2S, k, j, i) * phydro->w(IPR, k, j, i);
         Real pNa = xNa * phydro->w(IPR, k, j, i);
         Real svp = sat_vapor_p_Na_H2S_Visscher(temp, pH2S);
         pNa = std::min(svp, pNa);

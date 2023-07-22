@@ -102,11 +102,11 @@ Thermodynamics const* Thermodynamics::InitFromAthenaInput(ParameterInput* pin) {
     read_thermo_property(mythermo_->p3_.data(), "Ptriple", 1, 0., pin);
 
     mythermo_->cloud_index_set_.resize(1 + NVAPOR);
-    mythermo_->svp_func_.resize(1 + NVAPOR);
+    mythermo_->svp_func1_.resize(1 + NVAPOR);
 
     for (int i = 1; i <= NVAPOR; ++i) {
       mythermo_->cloud_index_set_[i].resize(NPHASE - 1);
-      mythermo_->svp_func_[i].resize(NPHASE - 1);
+      mythermo_->svp_func1_[i].resize(NPHASE - 1);
       for (int j = 1; j < NPHASE; ++j) {
         mythermo_->cloud_index_set_[i][j - 1] = (j - 1) * NVAPOR + (i - 1);
       }
@@ -114,8 +114,19 @@ Thermodynamics const* Thermodynamics::InitFromAthenaInput(ParameterInput* pin) {
 
     mythermo_->Rd_ = pin->GetOrAddReal("thermodynamics", "Rd", 1.);
     mythermo_->gammad_ref_ = pin->GetReal("hydro", "gamma");
+  }
 
-    mythermo_->enrollVaporFunctions(pin);
+  // enroll vapor functions
+  if (strcmp(PLANET, "Earth") == 0) {
+    mythermo_->enrollVaporFunctionsEarth();
+  } else if (strcmp(PLANET, "Mars") == 0) {
+    mythermo_->enrollVaporFunctionsMars();
+  } else if (strcmp(PLANET, "Venus") == 0) {
+    mythermo_->enrollVaporFunctionsVenus();
+  } else if (strcmp(PLANET, "Jupiter") == 0 || strcmp(PLANET, "Saturn") == 0) {
+    mythermo_->enrollVaporFunctionsGasGiants();
+  } else if (strcmp(PLANET, "Uranus") == 0 || strcmp(PLANET, "Neptune") == 0) {
+    mythermo_->enrollVaporFunctionsIceGiants();
   }
 
   // alias
@@ -393,7 +404,7 @@ void Thermodynamics::Extrapolate(Variable* qfrac, Real dzORdlnp, Method method,
                                  Real grav, Real userp) const {
   // equilibrate vapor with clouds
   for (int i = 1; i <= NVAPOR; ++i) {
-    auto rates = TryEquilibriumTP(*qfrac, i);
+    auto rates = TryEquilibriumTP_VaporCloud(*qfrac, i);
 
     // vapor condensation rate
     qfrac->w[i] += rates[0];
@@ -422,54 +433,6 @@ Real Thermodynamics::GetLatentHeatMole(int i, std::vector<Real> const& rates,
   }
 
   return heat / std::abs(rates[0]) + Constants::Rgas * temp;
-}
-
-Real Thermodynamics::getInternalEnergyMole(Variable const& qfrac) const {
-  Real cvd = Constants::Rgas / (GetGammad(qfrac) - 1.);
-  Real fsig = 1., LE = 0.;
-
-  for (int i = 1; i <= NVAPOR; ++i) {
-    // vapor
-    fsig += (cv_ratio_mole_[i] - 1.) * qfrac.w[i];
-
-    // clouds
-    for (auto j : cloud_index_set_[i]) {
-      int n = j + 1 + NVAPOR;
-      Real qc = qfrac.c[j];
-
-      fsig += (cv_ratio_mole_[n] - 1.) * qc;
-      LE += latent_energy_mole_[n] * qc;
-    }
-  }
-
-  return cvd * qfrac.w[IDN] * fsig - LE;
-}
-
-void Thermodynamics::updateTPConservingU(Variable* qfrac, Real rmole,
-                                         Real umole) const {
-  Real cvd = Constants::Rgas / (GetGammad(*qfrac) - 1.);
-  Real fsig = 1., qgas = 1.;
-
-  for (int i = 1; i <= NVAPOR; ++i) {
-    // vapor
-    fsig += (cv_ratio_mole_[i] - 1.) * qfrac->w[i];
-
-    // clouds
-    for (auto j : cloud_index_set_[i]) {
-      int n = j + 1 + NVAPOR;
-      Real qc = qfrac->c[j];
-
-      fsig += (cv_ratio_mole_[n] - 1.) * qc;
-      umole += latent_energy_mole_[n] * qc;
-    }
-  }
-
-  // clouds
-#pragma omp simd reduction(+ : qgas)
-  for (int n = 0; n < NCLOUD; ++n) qgas += -qfrac->c[n];
-
-  qfrac->w[IDN] = umole / (cvd * fsig);
-  qfrac->w[IPR] = rmole * qgas * Constants::Rgas * qfrac->w[IDN];
 }
 
 // Eq.4.5.11 in Emanuel (1994)
@@ -530,6 +493,68 @@ Real Thermodynamics::EquivalentPotentialTemp(MeshBlock* pmb, Real p0, int v,
 #else
   return PotentialTemp(pmb, p0, k, j, i);
 #endif
+}
+
+void Thermodynamics::updateTPConservingU(Variable* qfrac, Real rmole,
+                                         Real umole) const {
+  Real cvd = Constants::Rgas / (GetGammad(*qfrac) - 1.);
+  Real fsig = 1., qgas = 1.;
+
+  for (int i = 1; i <= NVAPOR; ++i) {
+    // vapor
+    fsig += (cv_ratio_mole_[i] - 1.) * qfrac->w[i];
+
+    // clouds
+    for (auto j : cloud_index_set_[i]) {
+      int n = j + 1 + NVAPOR;
+      Real qc = qfrac->c[j];
+
+      fsig += (cv_ratio_mole_[n] - 1.) * qc;
+      umole += latent_energy_mole_[n] * qc;
+    }
+  }
+
+  // clouds
+#pragma omp simd reduction(+ : qgas)
+  for (int n = 0; n < NCLOUD; ++n) qgas += -qfrac->c[n];
+
+  qfrac->w[IDN] = umole / (cvd * fsig);
+  qfrac->w[IPR] = rmole * qgas * Constants::Rgas * qfrac->w[IDN];
+}
+
+Real Thermodynamics::getInternalEnergyMole(Variable const& qfrac) const {
+  Real cvd = Constants::Rgas / (GetGammad(qfrac) - 1.);
+  Real fsig = 1., LE = 0.;
+
+  for (int i = 1; i <= NVAPOR; ++i) {
+    // vapor
+    fsig += (cv_ratio_mole_[i] - 1.) * qfrac.w[i];
+
+    // clouds
+    for (auto j : cloud_index_set_[i]) {
+      int n = j + 1 + NVAPOR;
+      Real qc = qfrac.c[j];
+
+      fsig += (cv_ratio_mole_[n] - 1.) * qc;
+      LE += latent_energy_mole_[n] * qc;
+    }
+  }
+
+  return cvd * qfrac.w[IDN] * fsig - LE;
+}
+
+Real Thermodynamics::getDensityMole(Variable const& qfrac) const {
+  Real qgas = 1.;
+#pragma omp simd reduction(+ : qgas)
+  for (int n = 0; n < NCLOUD; ++n) qgas += -qfrac.c[n];
+  return qfrac.w[IPR] / (Constants::Rgas * qfrac.w[IDN] * qgas);
+}
+
+void Thermodynamics::setTotalEquivalentVapor(Variable* qfrac, int i) const {
+  for (auto& j : cloud_index_set_[i]) {
+    qfrac->w[i] += qfrac->c[j];
+    qfrac->c[j] = 0.;
+  }
 }
 
 Thermodynamics* Thermodynamics::mythermo_ = nullptr;
