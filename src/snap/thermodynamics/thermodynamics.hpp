@@ -331,11 +331,13 @@ class Thermodynamics {
   void enrollVaporFunctionsEarth();
   void enrollVaporFunctionsMars();
   void enrollVaporFunctionsVenus();
-  void enrollVaporFunctionsGiants();
+  void enrollVaporFunctionsGasGiants();
+  void enrollVaporFunctionsIceGiants();
 
   void enrollVaporFunctionH2O();
   void enrollVaporFunctionNH3();
   void enrollVaporFunctionH2S();
+  void enrollVaporFunctionCH4();
   void enrollVaporFunctionCO2();
   void enrollVaporFunctionNH4SH();
 

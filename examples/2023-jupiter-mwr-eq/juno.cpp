@@ -266,7 +266,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
         for (int i = ibegin; i < iend; ++i) {
           pthermo->Extrapolate(&var, -dlnp, Thermodynamics::Method::DryAdiabat);
           var.w[iNH3] += adlnNH3dlnP * var.w[iNH3] * dlnp;
-          auto rates = pthermo->TryEquilibriumTP(var, iNH3);
+          auto rates = pthermo->TryEquilibriumTP_VaporCloud(var, iNH3);
           var.w[iNH3] += rates[0];
           pimpl->DistributeToPrimitive(var, k, j, i + 1);
         }

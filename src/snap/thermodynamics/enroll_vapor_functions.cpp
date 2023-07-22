@@ -29,7 +29,7 @@ Real NullSatVaporPres1(Variable const& qfrac, int i, int j) {
   return qfrac.w[i] / g * qfrac.w[IPR];
 }
 
-// water svp:
+// water svp
 void Thermodynamics::enrollVaporFunctionH2O() {
   auto pindex = IndexMap::GetInstance();
   if (!pindex->HasVapor("H2O")) return;
@@ -47,7 +47,7 @@ void Thermodynamics::enrollVaporFunctionH2O() {
   }
 }
 
-// ammonia svp:
+// ammonia svp
 void Thermodynamics::enrollVaporFunctionNH3() {
   auto pindex = IndexMap::GetInstance();
   if (!pindex->HasVapor("NH3")) return;
@@ -65,7 +65,7 @@ void Thermodynamics::enrollVaporFunctionNH3() {
   }
 }
 
-// hydrogen sulfide svp:
+// hydrogen sulfide svp
 void Thermodynamics::enrollVaporFunctionH2S() {
   auto pindex = IndexMap::GetInstance();
   if (!pindex->HasVapor("H2S")) return;
@@ -83,6 +83,25 @@ void Thermodynamics::enrollVaporFunctionH2S() {
   }
 }
 
+// methane svp
+void Thermodynamics::enrollVaporFunctionCH4() {
+  auto pindex = IndexMap::GetInstance();
+  if (!pindex->HasVapor("CH4")) return;
+
+  int iCH4 = pindex->GetVaporId("CH4");
+  for (int n = 0; n < cloud_index_set_[iCH4].size(); ++n) {
+    int j = cloud_index_set_[iCH4][n];
+    if (n == 0) {
+      svp_func1_[iCH4][n] = [](Variable const& qfrac, int, int) {
+        return sat_vapor_p_CH4_Antoine(qfrac.w[IDN]);
+      };
+    } else {
+      svp_func1_[iCH4][n] = NullSatVaporPres1;
+    }
+  }
+}
+
+// ammonium hydrosulfide svp
 void Thermodynamics::enrollVaporFunctionNH4SH() {
   auto pindex = IndexMap::GetInstance();
   if (!pindex->HasVapor("NH3") || !pindex->HasVapor("H2S") ||
@@ -103,10 +122,17 @@ void Thermodynamics::enrollVaporFunctionNH4SH() {
       {iNH3, iH2S, iNH4SH}, {1, 1, 1});
 }
 
-void Thermodynamics::enrollVaporFunctionsGiants() {
+void Thermodynamics::enrollVaporFunctionsGasGiants() {
   enrollVaporFunctionH2O();
   enrollVaporFunctionNH3();
   enrollVaporFunctionH2S();
+  enrollVaporFunctionNH4SH();
+}
+
+void Thermodynamics::enrollVaporFunctionsIceGiants() {
+  enrollVaporFunctionNH3();
+  enrollVaporFunctionH2S();
+  enrollVaporFunctionCH4();
   enrollVaporFunctionNH4SH();
 }
 
