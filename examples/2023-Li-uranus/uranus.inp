@@ -86,17 +86,17 @@ beta2       = 0.      23.67   23.67
 Ttriple2    = 195.4
 Ptriple2    = 6060.
 
-eps3        = 7.335    7.335    7.335
+eps3        = 14.67   14.67   14.67
 rcp3        = 0.078   0.16    0.16
 beta3       = 0.      23.67   23.67
-Ttriple3    = 195.4
-Ptriple3    = 6060.
+Ttriple3    = 187.7
+Ptriple3    = 23200.
 
-eps4        = 7.335    7.335    7.335
+eps4        = 6.9    6.9    6.9
 rcp4        = 0.078   0.16    0.16
-beta4       = 0.      23.67   23.67
-Ttriple4    = 195.4
-Ptriple4    = 6060.
+beta4       = 0.      10.15   10.15
+Ttriple4    = 90.67
+Ptriple4    = 11690.
 
 <radiation>
 control_file = mwr_channels.yaml
@@ -113,7 +113,7 @@ use_fletcher16_cirs = false
 qH2O.ppmv   = 2500.
 qNH3.ppmv   = 200.
 qH2S.ppmv   = 300.
-qCH4.ppmv   = 30.
+qCH4.ppmv   = 23000.
 
 atm_file    = jupiter.yaml
 clat        = 0.
