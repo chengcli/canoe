@@ -8,10 +8,10 @@ endmacro()
 
 # athena variables
 set_if_empty(NUMBER_GHOST_CELLS 2)
-set_if_empty(NVAPOR 3)
+set_if_empty(NVAPOR 4)
 
 # canoe variables
-set_if_empty(NCLOUD 5)
+set_if_empty(NCLOUD 8)
 set_if_empty(NTRACER 2)
 
 # canoe task set(TASKLIST InversionTasks)

@@ -41,7 +41,7 @@ inline double Lineshape_BR(double obsfreq, double linefreq, double gamma,
   return (u1 / u2) * c / 1.0e9;
 }
 
-double absorption_coefficient_H2S(double freq, double P, double T, double XH2,
+double attenuation_H2S_Hofstadter(double freq, double P, double T, double XH2,
                                   double XHe, double XH2S) {
   /*
     code adpated from Mark Hofstadter.

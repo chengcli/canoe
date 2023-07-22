@@ -19,10 +19,10 @@ Real MwrAbsorberH2S::GetAttenuation(Real wave1, Real wave2,
   Real XHe = params_.at("xHe") * xdry;
   Real XH2S = var.w[imols_[0]];
   Real XH2 = xdry - XHe;
+  Real wave = (wave1 + wave2) / 2.;
 
   // 1/cm -> 1/m
-  return 100. *
-         absorption_coefficient_H2S((wave1 + wave2) / 2., P, T, XH2, XHe, XH2S);
+  return 100. * attenuation_H2S_Hofstadter(wave, P, T, XH2, XHe, XH2S);
 }
 
 }  // namespace GiantPlanets

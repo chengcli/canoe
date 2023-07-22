@@ -18,6 +18,7 @@
 #include "vapors/ammonia_vapors.hpp"
 #include "vapors/ammonium_hydrosulfide_vapors.hpp"
 #include "vapors/hydrogen_sulfide_vapors.hpp"
+#include "vapors/methane_vapors.hpp"
 #include "vapors/water_vapors.hpp"
 
 Real NullSatVaporPres1(Variable const& qfrac, int i, int j) {
@@ -144,4 +145,16 @@ void Thermodynamics::enrollVaporFunctionsMars() {
 
 void Thermodynamics::enrollVaporFunctionsVenus() {
   throw NotImplementedError("Thermodynamics::enrollVaporFunctionsVenus");
+}
+
+void Thermodynamics::enrollVaporFunctionsTitan() {
+  throw NotImplementedError("Thermodynamics::enrollVaporFunctionsTitan");
+}
+
+void Thermodynamics::enrollVaporFunctionsHotJupiter() {
+  throw NotImplementedError("Thermodynamics::enrollVaporFunctionsHotJupiter");
+}
+
+void Thermodynamics::enrollVaporFunctionsLavaWorld() {
+  throw NotImplementedError("Thermodynamics::enrollVaporFunctionsLavaWorld");
 }

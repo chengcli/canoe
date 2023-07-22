@@ -40,7 +40,7 @@ Real MwrAbsorberCIA::GetAttenuation(Real wave1, Real wave2,
   Real wave = (wave1 + wave2) / 2.;
 
   // 1/cm -> 1/m
-  return 100. * absorption_coefficient_CIA(wave, P, T, XH2, XHe, XCH4, mix);
+  return 100. * attenuation_CIA(wave, P, T, XH2, XHe, XCH4, mix);
 }
 
 }  // namespace GiantPlanets
