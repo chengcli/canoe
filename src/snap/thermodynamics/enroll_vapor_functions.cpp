@@ -152,6 +152,7 @@ void Thermodynamics::enrollVaporFunctionsIceGiants() {
   Application::Logger app("snap");
   app->Log("Enrolling vapor functions for ice giants");
 
+  enrollVaporFunctionH2O();
   enrollVaporFunctionNH3();
   enrollVaporFunctionH2S();
   enrollVaporFunctionCH4();

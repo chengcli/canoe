@@ -1,9 +1,9 @@
 <comment>
-problem   = Juno mwr observation simulator and inversion package
-configure = mkdir build-juno && cmake .. -DTASK=Juno
+problem   = Uranus mwr observation simulator and inversion package
+configure = mkdir build-uranus && cmake .. -DTASK=uranus_mwr
 
 <job>
-problem_id  = juno_mwr    # problem ID: basename of output filenames
+problem_id  = uranus_mwr    # problem ID: basename of output filenames
 
 #<output1>
 #file_type   = fits        # Binary data dump
@@ -25,10 +25,10 @@ file_type   = netcdf
 variable    = radtoa
 dt          = 1.E-9
 
-#<output5>
-#file_type   = netcdf
-#variable    = radtau
-#dt          = 1.E-9
+<output5>
+file_type   = netcdf
+variable    = radtau
+dt          = 1.E-9
 
 <time>
 cfl_number  = 1.
