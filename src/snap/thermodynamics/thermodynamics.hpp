@@ -66,7 +66,8 @@ class Thermodynamics {
   //! Constructor for class sets up the initial conditions
   //! Protected ctor access thru static member function Instance
   Thermodynamics() {}
-  explicit Thermodynamics(YAML::Node &node);
+  static Thermodynamics *fromLegacyInput(ParameterInput *pin);
+  static Thermodynamics *fromYAMLInput(YAML::Node node);
 
  public:
   using ReactionIndx = std::array<int, MAX_REACTANT>;
@@ -82,6 +83,9 @@ class Thermodynamics {
     Isothermal = 3,
     NeutralStability = 4
   };
+
+  static constexpr Real RefTemp = 300.;
+  static constexpr Real RefPres = 1.e5;
 
   // member functions
   ~Thermodynamics();

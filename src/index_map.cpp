@@ -31,7 +31,7 @@ IndexMap const* IndexMap::GetInstance() {
   std::unique_lock<std::mutex> lock(imap_mutex);
 
   if (myindex_map_ == nullptr) {
-    myindex_map_ = new IndexMap();
+    throw RuntimeError("IndexMap", "IndexMap has not been initialized");
   }
 
   return myindex_map_;
@@ -161,6 +161,13 @@ void IndexMap::Destroy() {
     delete IndexMap::myindex_map_;
     IndexMap::myindex_map_ = nullptr;
   }
+}
+
+std::string IndexMap::GetCloudName(size_t i) const {
+  for (auto const& [name, id] : cloud_index_map_) {
+    if (id == i) return name;
+  }
+  throw NotFoundError("GetCloudName", "Cloud id " + std::to_string(i));
 }
 
 IndexMap* IndexMap::myindex_map_ = nullptr;
