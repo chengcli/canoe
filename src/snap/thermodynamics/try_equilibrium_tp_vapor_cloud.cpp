@@ -7,8 +7,15 @@
 // snap
 #include "thermodynamics.hpp"
 
-RealArrayX Thermodynamics::TryEquilibriumTP(Variable const& qfrac, int i,
-                                            Real cv_hat, bool misty) const {
+// Calculates phase equilibrium of
+// Vapor <=> Cloud
+//
+// Example phase equilibrium:
+// H2O -> H2O(l)
+//
+RealArrayX Thermodynamics::TryEquilibriumTP_VaporCloud(Variable const& qfrac,
+                                                       int i, Real cv_hat,
+                                                       bool misty) const {
   Real xv = qfrac.w[i];
   Real t = qfrac.w[IDN] / t3_[i];
   std::vector<Real> rates(1 + cloud_index_set_[i].size(), 0.);

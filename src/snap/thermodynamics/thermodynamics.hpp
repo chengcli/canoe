@@ -211,8 +211,9 @@ class Thermodynamics {
   //! Calculate the equilibrium mole transfer between vapor and cloud
   //! \param L_ov_cv L/cv evaluated at current temperature
   //! \return molar fraction change of vapor to cloud
-  RealArrayX TryEquilibriumTP(Variable const &qfrac, int ivapor,
-                              Real cv_hat = 0., bool misty = false) const;
+  RealArrayX TryEquilibriumTP_VaporCloud(Variable const &qfrac, int ivapor,
+                                         Real cv_hat = 0.,
+                                         bool misty = false) const;
 
   RealArray3 TryEquilibriumTP_VaporVaporCloud(Variable const &air, IndexPair ij,
                                               Real cv_hat = 0.,
@@ -303,7 +304,7 @@ class Thermodynamics {
   Real RelativeHumidity(MeshBlock *pmb, int n, int k, int j, int i) const;
 
   Real RelativeHumidity(Variable const &qfrac, int n) const {
-    auto rates = TryEquilibriumTP(qfrac, n, 0., true);
+    auto rates = TryEquilibriumTP_VaporCloud(qfrac, n, 0., true);
     return qfrac.w[n] / (qfrac.w[n] + rates[0]);
   }
 

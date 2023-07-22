@@ -19,10 +19,10 @@
 #include "thermodynamics.hpp"
 
 // Calculates phase equilibrium of
-// a * Vapor1 + b * Vapor2 = c * Cloud
+// a * Vapor1 + b * Vapor2 <=> c * Cloud
 //
 // Example phase equilibrium:
-// NH3 + H2S -> NH4SH
+// NH3 + H2S -> NH4SH(s)
 //
 RealArray3 Thermodynamics::TryEquilibriumTP_VaporVaporCloud(Variable const& air,
                                                             IndexPair ij,

@@ -23,7 +23,7 @@ void Thermodynamics::rk4IntegrateZ(Variable *qfrac, Real dz, Method method,
 
     Real q_gas = 1., q_eps = 1.;
     for (int iv = 1; iv <= NVAPOR; ++iv) {
-      auto rates = TryEquilibriumTP(*qfrac, iv);
+      auto rates = TryEquilibriumTP_VaporCloud(*qfrac, iv);
 
       // saturation indicator
       latent[iv] = GetLatentHeatMole(iv, rates, qfrac->w[IDN]);
@@ -80,7 +80,7 @@ void Thermodynamics::rk4IntegrateZ(Variable *qfrac, Real dz, Method method,
   // recondensation
   for (int iv = 1; iv <= NVAPOR; ++iv) {
     setTotalEquivalentVapor(qfrac, iv);
-    auto rates = TryEquilibriumTP(*qfrac, iv);
+    auto rates = TryEquilibriumTP_VaporCloud(*qfrac, iv);
 
     // vapor condensation rate
     qfrac->w[iv] += rates[0];

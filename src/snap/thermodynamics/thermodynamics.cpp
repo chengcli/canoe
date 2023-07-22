@@ -393,7 +393,7 @@ void Thermodynamics::Extrapolate(Variable* qfrac, Real dzORdlnp, Method method,
                                  Real grav, Real userp) const {
   // equilibrate vapor with clouds
   for (int i = 1; i <= NVAPOR; ++i) {
-    auto rates = TryEquilibriumTP(*qfrac, i);
+    auto rates = TryEquilibriumTP_VaporCloud(*qfrac, i);
 
     // vapor condensation rate
     qfrac->w[i] += rates[0];
