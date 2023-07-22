@@ -207,12 +207,18 @@ Thermodynamics const* Thermodynamics::InitFromAthenaInput(ParameterInput* pin) {
     mol.LoadThermodynamicFile(pindex->GetCloudName(n) + ".thermo");
 
     int j = 1 + NVAPOR + n;
+    mu[j] = mol.mu();
+    inv_mu[j] = 1. / mu[j];
+
     mu_ratio[j] = mol.mu() / mu[0];
     inv_mu_ratio[j] = 1. / mu_ratio[j];
+
     cp_ratio_mass[j] = mol.cp() / (mol.mu() * mythermo_->GetCpMassRef(0));
     cp_ratio_mole[j] = cp_ratio_mass[j] * mu_ratio[j];
+
     latent_energy_mole[j] = mol.latent();
     latent_energy_mass[j] = mol.latent() / mol.mu();
+
     beta[j] = mol.latent() / (Constants::Rgas * Thermodynamics::RefTemp);
     delta[j] = 0.;
   }

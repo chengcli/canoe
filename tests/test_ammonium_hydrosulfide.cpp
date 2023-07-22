@@ -10,7 +10,6 @@
 #include <variable.hpp>
 
 // snap
-#include <snap/thermodynamics/molecules.hpp>
 #include <snap/thermodynamics/thermodynamics.hpp>
 #include <snap/thermodynamics/vapors/ammonia_vapors.hpp>
 #include <snap/thermodynamics/vapors/water_vapors.hpp>
@@ -43,13 +42,26 @@ class TestAmmoniumHydrosulfide : public testing::Test {
 };
 
 TEST_F(TestAmmoniumHydrosulfide, molecule) {
+  auto pindex = IndexMap::GetInstance();
   auto pthermo = Thermodynamics::GetInstance();
 
-  Molecule mol;
-  mol.LoadThermodynamicFile("NH4SH.chem");
+  int iNH4SH = pindex->GetCloudId("NH4SH(s)");
+  int j = iNH4SH + 1 + NVAPOR;
 
-  EXPECT_DOUBLE_EQ(mol.mu(), 0.051111);
+  EXPECT_DOUBLE_EQ(pthermo->GetMuRatio(j), 0.051111 / pthermo->GetMu(0));
+  EXPECT_DOUBLE_EQ(pthermo->GetMu(j), 0.051111);
+  EXPECT_DOUBLE_EQ(pthermo->GetInvMu(j), 1. / 0.051111);
+
+  EXPECT_DOUBLE_EQ(pthermo->GetCpMassRef(j), 0.);
+  EXPECT_DOUBLE_EQ(pthermo->GetCpRatioMass(j), 0.);
+  EXPECT_DOUBLE_EQ(pthermo->GetCpRatioMole(j), 0.);
+
+  EXPECT_DOUBLE_EQ(pthermo->GetCvMassRef(j), 0.);
+  EXPECT_DOUBLE_EQ(pthermo->GetCvRatioMass(j), 0.);
+  EXPECT_DOUBLE_EQ(pthermo->GetCvRatioMole(j), 0.);
 }
+
+TEST_F(TestAmmoniumHydrosulfide, equilibrium) {}
 
 int main(int argc, char *argv[]) {
   Application::Start(argc, argv);

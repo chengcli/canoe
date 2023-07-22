@@ -31,7 +31,7 @@ IndexMap const* IndexMap::GetInstance() {
   std::unique_lock<std::mutex> lock(imap_mutex);
 
   if (myindex_map_ == nullptr) {
-    throw RuntimeError("IndexMap", "IndexMap has not been initialized");
+    myindex_map_ = new IndexMap();
   }
 
   return myindex_map_;
