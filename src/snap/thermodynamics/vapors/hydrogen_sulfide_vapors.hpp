@@ -4,9 +4,9 @@
 // C/C++
 #include <cmath>
 
-double Pcgs_from_torr(double P) { return (1013250.0 / 760.0) * P; }
+inline double Pcgs_from_torr(double P) { return (1013250.0 / 760.0) * P; }
 
-double sat_vapor_p_H2S_solid_UMich(double T) {
+inline double sat_vapor_p_H2S_solid_UMich(double T) {
   //  Vapor of H2S over H2S liquid, T > 188 K, over H2S ice for T < 188 K
   double x;
   double log10T = log10(T);
@@ -21,7 +21,7 @@ double sat_vapor_p_H2S_solid_UMich(double T) {
 }
 
 //   best fit in [138.8K; 349.5K] (webbook.nist.gov)
-double sat_vapor_p_H2S_Antoine(double T) {
+inline double sat_vapor_p_H2S_Antoine(double T) {
   double result;
   if (T < 212.8)
     result = pow(10., 4.43681 - (829.439 / (T - 25.412)));
@@ -32,7 +32,7 @@ double sat_vapor_p_H2S_Antoine(double T) {
 }
 
 // best fit in [120K; 190K]
-double sat_vapor_p_H2S_solid_Hubner(double T) {
+inline double sat_vapor_p_H2S_solid_Hubner(double T) {
   double A, B, C, D;
   double log10T = log10(T);
   A = 6.96156;
@@ -45,7 +45,7 @@ double sat_vapor_p_H2S_solid_Hubner(double T) {
 }
 
 // best fit in [110K; 187.57K]
-double sat_vapor_p_H2S_solid_Fray(double T) {
+inline double sat_vapor_p_H2S_solid_Fray(double T) {
   double a[7], x;
   x = 0.;
   if (T > 127) {
