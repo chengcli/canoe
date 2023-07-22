@@ -77,10 +77,10 @@ Thermodynamics const* Thermodynamics::InitFromAthenaInput(ParameterInput* pin) {
     YAML::Node node = YAML::Load(stream);
     mythermo_ = new Thermodynamics(node);
   } else {  // legacy input
-    if (NCLOUD != (NPHASE - 1) * NVAPOR) {
+    if (NCLOUD < (NPHASE - 1) * NVAPOR) {
       throw RuntimeError(
           "Thermodynamics",
-          "NCLOUD != (NPHASE-1)*NVAPOR is not supported for legacy input");
+          "NCLOUD < (NPHASE-1)*NVAPOR is not supported for legacy input");
     }
 
     mythermo_ = new Thermodynamics();

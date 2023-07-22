@@ -3,6 +3,7 @@
 #include <sstream>
 
 // application
+#include <application/application.hpp>
 #include <application/exceptions.hpp>
 
 // utils
@@ -32,8 +33,11 @@ std::ostream& operator<<(std::ostream& os, Molecule const& mol) {
   return os;
 }
 
-void Molecule::load_chem_file(std::string chemfile) {
-  std::stringstream inp(DecommentFile(chemfile));
+void Molecule::LoadThermodynamicFile(std::string chemfile) {
+  auto app = Application::GetInstance();
+  auto full_path = app->FindInputFile(chemfile);
+
+  std::stringstream inp(DecommentFile(full_path));
   double junk;
 
   inp >> m_name >> m_mu >> m_entropy >> m_enthalpy >> m_gibbs >> m_cp >> m_tr >>

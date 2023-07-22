@@ -86,7 +86,7 @@ class Molecule {
 
   virtual ~Molecule() {}
 
-  void load_chem_file(std::string chemfile);
+  void LoadThermodynamicFile(std::string chemfile);
 
   virtual double cp(double T) const;
 

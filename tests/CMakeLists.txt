@@ -5,10 +5,12 @@
 string(TOLOWER ${CMAKE_BUILD_TYPE} buildl)
 string(TOUPPER ${CMAKE_BUILD_TYPE} buildu)
 
+configure_file(globals.cpp.in globals.cpp @ONLY)
+
 macro(add_test_case test)
   get_filename_component(name ${test} NAME_WE)
 
-  add_executable(${name}.${buildl} ${name}.cpp)
+  add_executable(${name}.${buildl} ${name}.cpp globals.cpp)
 
   set_target_properties(
     ${name}.${buildl}
@@ -47,11 +49,15 @@ if (${NVAPOR} EQUAL 0)
 endif()
 
 if (${NVAPOR} EQUAL 2)
-  add_test_case(test_variable.cpp)
   add_test_case(test_radiation.cpp)
   add_test_case(test_microwave_opacity.cpp)
   add_test_case(test_thermodynamics.cpp)
-  add_test_case(test_impl.cpp)
+  if (${NCLOUD} EQUAL 4)
+    add_test_case(test_impl.cpp)
+    add_test_case(test_variable.cpp)
+  elseif (${NCLOUD} EQUAL 5)
+    add_test_case(test_ammonium_hydrosulfide.cpp)
+  endif()
 endif()
 
 # copy yaml files
