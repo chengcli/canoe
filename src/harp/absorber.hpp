@@ -26,13 +26,13 @@
 class Variable;
 
 using ParameterMap = std::map<std::string, Real>;
+using SpeciesNames = std::vector<std::string>;
 
 class Absorber {
  public:
   explicit Absorber(std::string name);
 
-  Absorber(std::string name, std::vector<std::string> species,
-           ParameterMap params);
+  Absorber(std::string name, SpeciesNames const& names, ParameterMap params);
 
   std::string GetName() const { return name_; }
 

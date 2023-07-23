@@ -152,7 +152,7 @@ Real FuWaterIceCloud::getSingleScatteringAlbedo1(Real wave,
   wi = 1. - (bp[iband - 1][0] + bp[iband - 1][1] * fw1 +
              bp[iband - 1][2] * fw2 + bp[iband - 1][3] * fw3);
 
-  // if (prim[id_[0]]<2e-19){
+  // if (prim[imols_[0]]<2e-19){
   //   return 0.0;
   // }else{
   return wi;
@@ -183,7 +183,7 @@ void FuWaterIceCloud::getPhaseMomentum1(Real* pp, Real wave,
        cpir[iband - 1][2] * fw2 + cpir[iband - 1][3] * fw3;
 
   // std::cout<<"pde "<<pde<<" "<<T<<" "<<gg<<"ice"<<std::endl;
-  // if (prim[id_[0]]<2e-19){
+  // if (prim[imols_[0]]<2e-19){
   //   GetMom(0, 0.0, np, pp); // 0 for HENYEY_GREENSTEIN
   // }else{
   get_phase_momentum(pp, 0, gg, np);

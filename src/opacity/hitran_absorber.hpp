@@ -13,11 +13,11 @@ class HitranAbsorber : public Absorber {
   // friend HitranAbsorber const& MakeCKAbsorber<>(HitranAbsorber const& albl,
   //   int const *ck_axis, Real const *ck_wave, int nbins);
  public:
-  HitranAbsorber(std::string name, std::vector<std::string> species,
+  HitranAbsorber(std::string name, SpeciesNames const& species,
                  ParameterMap params)
       : Absorber(name, species, params) {}
   virtual ~HitranAbsorber() {}
-  void LoadCoefficient(std::string fname, int bid);
+  void LoadCoefficient(std::string fname, size_t bid) override;
   Real GetAttenuation(Real wave1, Real wave2, Variable const& var) const;
 
  protected:
