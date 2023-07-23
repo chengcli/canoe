@@ -61,8 +61,10 @@ jobs:
     runs-on: ubuntu-20.04
     needs: style-checker
     steps:
-      - name: install netcdf4
-        run: sudo apt-get install -y libnetcdf-dev
+      - name: install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libnetcdf-dev
 
       - uses: actions/checkout@v3
 
@@ -135,8 +137,10 @@ jobs:
     runs-on: ubuntu-latest
     needs: style-checker
     steps:
-      - name: install netcdf4
-        run: sudo apt-get install -y libnetcdf-dev
+      - name: install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libnetcdf-dev
 
       - uses: actions/checkout@v3
 
@@ -174,8 +178,10 @@ jobs:
           git lfs install
           git lfs pull
 
-      - name: set up libraries
-        run: sudo apt-get install -y cmake nco libnetcdf-dev libpnetcdf-dev
+      - name: install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake nco libnetcdf-dev libpnetcdf-dev
 
       - name: set up python libraries
         run: pip3 install -r requirements.txt
