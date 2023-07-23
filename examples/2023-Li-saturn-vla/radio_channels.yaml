@@ -1,0 +1,68 @@
+name: Saturn radio channel opacity file
+
+opacity-sources:
+  - name: radio-CIA
+    long-name: "Hydrogen/Helium collisional induced absorption"
+    parameters: {xHe: 0.135, xCH4: 2.04E-3, mix: 0.}
+
+  - name: radio-NH3
+    long-name: "Ammonia line absorption"
+    model: Hanley09
+    dependent-species: [vapor.NH3, vapor.H2O]
+    parameters: {xHe: 0.135, power: 0.}
+
+  - name: radio-H2O
+    long-name: "H2O line absorption"
+    model: Karpowicz
+    dependent-species: [vapor.H2O]
+    parameters: {xHe: 0.135, scale: 0.}
+
+  - name: radio-Electron
+    long-name: "Electron absorption"
+    model: AppletonHartree
+    dependent-species: [tracer.e-]
+
+bands: [CH1, CH2, CH3, CH4, CH5, CH6]
+
+CH1:
+  type: radio
+  rt-solver: Lambert
+  unit: GHz
+  wavenumber-range: [0.6, 0.6]
+  opacity: [CIA, NH3, H2O, Electron]
+  paramters: {alpha: 0.0}
+
+CH2:
+  type: radio
+  rt-solver: Lambert
+  unit: GHz
+  wavenumber-range: [1.25, 1.25]
+  opacity: [CIA, NH3, H2O]
+
+CH3:
+  type: radio
+  rt-solver: Lambert
+  unit: GHz
+  wavenumber-range: [2.6, 2.6]
+  opacity: [CIA, NH3, H2O]
+
+CH4:
+  type: radio
+  rt-solver: Lambert
+  unit: GHz
+  wavenumber-range: [5.2, 5.2]
+  opacity: [CIA, NH3, H2O]
+
+CH5:
+  type: radio
+  rt-solver: Lambert
+  unit: GHz
+  wavenumber-range: [10., 10.]
+  opacity: [CIA, NH3, H2O]
+
+CH6:
+  type: radio
+  rt-solver: Lambert
+  unit: GHz
+  wavenumber-range: [22., 22.]
+  opacity: [CIA, NH3, H2O]

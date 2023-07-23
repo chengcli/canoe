@@ -1,0 +1,111 @@
+<job>
+problem_id  = saturn_vla  # problem ID: basename of output filenames
+
+<output1>
+file_type   = fits        # Binary data dump
+variable    = mcmc        # variables to be output
+dt          = 1.E-9       # time increment between outputs
+
+<output2>
+file_type   = netcdf    # netcdf data dump
+variable    = prim      # primitive variables
+dt          = 1.E-9      # time increment between outputs
+
+<output3>
+file_type   = netcdf    # netcddf data dump
+variable    = uov       # user defined variables
+dt          = 1.E-9      # time increment between outputs
+
+<output4>
+file_type   = netcdf    # netcdf data dump
+variable    = radtoa    # radiance
+dt          = 1.E-9      # time increment between outputs
+
+<output5>
+file_type   = netcdf    # netcdf data dump
+variable    = radtau    # optical thickness
+dt          = 1.E-9      # time increment between outputs
+
+<time>
+cfl_number  = 1.0       # The Courant, Friedrichs, & Lewy (CFL) Number
+nlim        = 0         # cycle limit
+tlim        = 0.25      # time limit
+ncycle_out  = 1         # interval for stdout summary info
+
+<mesh>
+nx1         = 1600        # Number of zones in X1-direction
+x1min       = -340.E3   # minimum value of X1
+x1max       = 100.E3     # maximum value of X1
+ix1_bc      = outflow   # Inner-X1 boundary condition flag
+ox1_bc      = outflow   # Outer-X1 boundary condition flag
+
+nx2         = 2         # Number of zones in X2-direction
+x2min       = -0.5      # minimum value of X2
+x2max       = 0.5       # maximum value of X2
+ix2_bc      = periodic  # Inner-X2 boundary condition flag
+ox2_bc      = periodic  # Outer-X2 boundary condition flag
+
+nx3         = 2         # Number of zones in X3-direction
+x3min       = -0.5      # minimum value of X3
+x3max       = 0.5       # maximum value of X3
+ix3_bc      = periodic  # Inner-X3 boundary condition flag
+ox3_bc      = periodic  # Outer-X3 boundary condition flag
+
+<hydro>
+gamma       = 1.4   # gamma = C_p/C_v
+grav_acc1   = -10.44
+
+<thermodynamics>
+Rd          = 3615.   # mu = 2.3 g/mol
+eps1        = 8.18    8.18    8.18
+beta1       = 0.      24.845  24.845
+rcp1        = 0.15    0.33    0.33
+Ttriple1    = 273.16
+Ptriple1    = 611.7
+
+eps2        = 7.72    7.72    7.72
+rcp2        = 0.078   0.16    0.16
+beta2       = 0.      23.67   23.67
+Ttriple2    = 195.4
+Ptriple2    = 6060.
+
+<radiation>
+flags       = lbl,normalize,write_bin_radiance
+b1          = 3.3   3000.   999
+b1.outdir   = (48.2,)
+b2          = 0.3   3.3   100
+b2.outdir   = (48.2,)
+
+b1.absorbers = mw_CIA mw_H2O mw_NH3
+b2.absorbers = mw_CIA mw_H2O mw_NH3
+
+<inversion>
+tasks           = VLAProfileInversion
+print           = 1
+
+#obsfile        = saturn_vla.obs
+differential    = false
+
+profile.logfile     = saturn_vla.log
+
+profile.tem.std     = 5.
+profile.tem.corr.km = 30
+
+profile.qvapor2.std.gkg = 1.5
+profile.qvapor2.corr.km = 30
+
+profile.variables   = 2
+profile.PrSample    =      20.00       9.56       4.57       2.19       1.05       0.50
+profile.Pmin        = 0.3
+profile.Pmax        = 40.
+
+<problem>
+use_lindal92  = true
+T0            = 134.8
+Tmin          = 82.
+qH2O.gkg      = 100
+qNH3.gkg      = 1.6
+xHe           = 0.135
+xCH4          = 2.04E-3
+
+profile.qvapor2a.gkg     = 0. 0. 0. 0. 0. 0.
