@@ -5,6 +5,7 @@
 if(${HYDROSTATIC})
   #add_subdirectory(1d-rad-jupiter)
   add_subdirectory(2023-jupiter-mwr-eq)
+  add_subdirectory(2023-Li-saturn-vla)
   add_subdirectory(2023-Li-uranus)
   if(${EQUATION_OF_STATE} STREQUAL "shallow_yz")
     add_subdirectory(2023-Chen-exo3)
