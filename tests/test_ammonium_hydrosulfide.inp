@@ -33,17 +33,17 @@ cloud = NH3(l), NH3(s), H2S(l), H2S(s), NH4SH(s)
 
 <thermodynamics>
 Rd          = 3777.   # mu = 2.3175 g/mol
-eps1        = 8.18    8.18    8.18
-beta1       = 0.      24.845  24.845
-rcp1        = 0.15    0.33    0.33
-Ttriple1    = 273.16
-Ptriple1    = 611.7
+eps1        = 7.72    7.72    7.72
+rcp1        = 0.078   0.16    0.16
+beta1       = 0.      23.67   23.67
+Ttriple1    = 195.4
+Ptriple1    = 6060.
 
-eps2        = 7.72    7.72    7.72
+eps2        = 14.67   14.67   14.67
 rcp2        = 0.078   0.16    0.16
 beta2       = 0.      23.67   23.67
-Ttriple2    = 195.4
-Ptriple2    = 6060.
+Ttriple2    = 187.7
+Ptriple2    = 23200.
 
 sa.max_iter = 10
 sa.releax   = 0.8

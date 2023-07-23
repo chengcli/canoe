@@ -1,3 +1,6 @@
+// C/C++
+#include <algorithm>
+
 // external
 #include <gtest/gtest.h>
 
@@ -61,7 +64,53 @@ TEST_F(TestAmmoniumHydrosulfide, molecule) {
   EXPECT_DOUBLE_EQ(pthermo->GetCvRatioMole(j), 0.);
 }
 
-TEST_F(TestAmmoniumHydrosulfide, equilibrium) {}
+TEST_F(TestAmmoniumHydrosulfide, equilibrium) {
+  auto pindex = IndexMap::GetInstance();
+  auto pthermo = Thermodynamics::GetInstance();
+
+  int iNH3 = pindex->GetVaporId("NH3");
+  int iH2S = pindex->GetVaporId("H2S");
+
+  Variable qfrac(Variable::Type::MoleFrac);
+  qfrac.SetZero();
+
+  qfrac.w[IDN] = 160.;
+  qfrac.w[IPR] = 7.E4;
+  qfrac.w[iNH3] = 0.02;
+  qfrac.w[iH2S] = 0.01;
+
+  IndexPair ij(std::minmax(iNH3, iH2S));
+
+  auto rates = pthermo->TryEquilibriumTP_VaporVaporCloud(qfrac, ij);
+
+  EXPECT_NEAR(rates[0], -0.01, 1e-6);
+  EXPECT_NEAR(rates[1], -0.01, 1e-6);
+  EXPECT_NEAR(rates[2], 0.01, 1e-6);
+}
+
+TEST_F(TestAmmoniumHydrosulfide, equilibrium2) {
+  auto pindex = IndexMap::GetInstance();
+  auto pthermo = Thermodynamics::GetInstance();
+
+  int iNH3 = pindex->GetVaporId("NH3");
+  int iH2S = pindex->GetVaporId("H2S");
+
+  Variable qfrac(Variable::Type::MoleFrac);
+  qfrac.SetZero();
+
+  qfrac.w[IDN] = 250.;
+  qfrac.w[IPR] = 1.E5;
+  qfrac.w[iNH3] = 0.01;
+  qfrac.w[iH2S] = 0.02;
+
+  IndexPair ij(std::minmax(iNH3, iH2S));
+
+  auto rates = pthermo->TryEquilibriumTP_VaporVaporCloud(qfrac, ij);
+
+  EXPECT_NEAR(rates[0], -0.00376944377451, 1e-6);
+  EXPECT_NEAR(rates[1], -0.00376944377451, 1e-6);
+  EXPECT_NEAR(rates[2], 0.00376944377451, 1e-6);
+}
 
 int main(int argc, char *argv[]) {
   Application::Start(argc, argv);
