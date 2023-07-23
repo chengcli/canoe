@@ -56,6 +56,7 @@ class MeshBlock::Impl {
   std::shared_ptr<Tracer> ptracer;
   std::shared_ptr<TurbulenceModel> pturb;
   std::shared_ptr<CelestrialBody> planet;
+  std::shared_ptr<CubedSphere> pexo3;
 
   // StaticVariablePtr pstatic;
 

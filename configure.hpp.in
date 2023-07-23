@@ -19,6 +19,9 @@ enum {
 // Affine option (AFFINE or NOT_AFFINE)
 #define @AFFINE_OPTION@
 
+// Cubed Sphere option (CUBED_SPHERE or NOT_CUBED_SPHERE)
+#define @CUBED_SPHERE_OPTION@
+
 // NetCDF output (NETCDFOUTPUT or NO_NETCDFOUTPUT)
 #define @NETCDF_OPTION@
 
