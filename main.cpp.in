@@ -20,6 +20,18 @@
 #include <application/application.hpp>
 #include <application/exceptions.hpp>
 
+namespace Globals {
+
+const char* search_paths = "@CMAKE_SOURCE_DIR@/src/snap/thermodynamics/chemdata/";
+
+const char* banner =
+    "\
+######################################################\n\
+##              CANOE MODEL STARTS                  ##\n\
+######################################################";
+
+}  // namespace Globals
+
 void mesh_setup(ParameterInput* &pin, Mesh* &mesh);
 void mesh_destroy(ParameterInput* &pin, Mesh* &mesh, int mbcnt);
 

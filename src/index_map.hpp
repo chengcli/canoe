@@ -37,6 +37,8 @@ class IndexMap {
     return cloud_index_map_.at(name);
   }
 
+  std::string GetCloudName(size_t i) const;
+
   bool HasChemistry(std::string const& name) const {
     return chemistry_index_map_.find(name) != chemistry_index_map_.end();
   }

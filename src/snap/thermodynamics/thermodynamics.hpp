@@ -66,7 +66,8 @@ class Thermodynamics {
   //! Constructor for class sets up the initial conditions
   //! Protected ctor access thru static member function Instance
   Thermodynamics() {}
-  explicit Thermodynamics(YAML::Node &node);
+  static Thermodynamics *fromLegacyInput(ParameterInput *pin);
+  static Thermodynamics *fromYAMLInput(YAML::Node node);
 
  public:
   using ReactionIndx = std::array<int, MAX_REACTANT>;
@@ -82,6 +83,9 @@ class Thermodynamics {
     Isothermal = 3,
     NeutralStability = 4
   };
+
+  static constexpr Real RefTemp = 300.;
+  static constexpr Real RefPres = 1.e5;
 
   // member functions
   ~Thermodynamics();
@@ -224,6 +228,9 @@ class Thermodynamics {
   void Extrapolate(Variable *qfrac, Real dzORdlnp, Method method,
                    Real grav = 0., Real userp = 0.) const;
 
+  //! Thermodnamic equilibrium at current TP
+  void EquilibrateTP(Variable *qfrac) const;
+
   //! Adjust to the maximum saturation state conserving internal energy
   void SaturationAdjustment(Variable *qfrac) const;
 
@@ -316,7 +323,7 @@ class Thermodynamics {
 
   Real getDensityMole(Variable const &qfrac) const;
 
-  void setTotalEquivalentVapor(Variable *qfrac, int i) const;
+  void setTotalEquivalentVapor(Variable *qfrac) const;
 
   //! Calculate moist adiabatic temperature gradient
   //! $\Gamma_m = (\frac{d\ln T}{d\ln P})_m$

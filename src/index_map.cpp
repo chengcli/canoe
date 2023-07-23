@@ -163,4 +163,11 @@ void IndexMap::Destroy() {
   }
 }
 
+std::string IndexMap::GetCloudName(size_t i) const {
+  for (auto const& [name, id] : cloud_index_map_) {
+    if (id == i) return name;
+  }
+  throw NotFoundError("GetCloudName", "Cloud id " + std::to_string(i));
+}
+
 IndexMap* IndexMap::myindex_map_ = nullptr;

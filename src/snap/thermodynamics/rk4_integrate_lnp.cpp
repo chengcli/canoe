@@ -14,34 +14,19 @@ void Thermodynamics::rk4IntegrateLnp(Variable *qfrac, Real dlnp, Method method,
   Real latent[1 + NVAPOR];
 
   for (int rk = 0; rk < 4; ++rk) {
-    // reset vapor and cloud
-    for (int iv = 1; iv <= NVAPOR; ++iv) {
-      setTotalEquivalentVapor(qfrac, iv);
-      latent[iv] = 0;
-    }
+    EquilibrateTP(qfrac);
+    if (method != Method::ReversibleAdiabat)
+      for (int j = 0; j < NCLOUD; ++j) qfrac->c[j] = 0;
 
-    for (int iv = 1; iv <= NVAPOR; ++iv) {
-      auto rates = TryEquilibriumTP_VaporCloud(*qfrac, iv);
-
-      // saturation indicator
-      latent[iv] = GetLatentHeatMole(iv, rates, qfrac->w[IDN]);
-
-      // vapor condensation rate
-      qfrac->w[iv] += rates[0];
-
-      // cloud concentration rates
-      if (method == Method::ReversibleAdiabat) {
-        for (int n = 1; n < rates.size(); ++n)
-          qfrac->c[cloud_index_set_[iv][n - 1]] += rates[n];
-      }
-    }
+    // TODO(cli) : latent heat was diasabled now
+    for (int i = 1; i <= NVAPOR; ++i) latent[i] = 0;
 
     // calculate tendency
     if (method == Method::ReversibleAdiabat ||
         method == Method::PseudoAdiabat) {
       chi[rk] = calDlnTDlnP(*qfrac, latent);
     } else if (method == Method::DryAdiabat) {
-      for (int iv = 1; iv <= NVAPOR; ++iv) latent[iv] = 0;
+      for (int i = 1; i <= NVAPOR; ++i) latent[i] = 0;
       chi[rk] = calDlnTDlnP(*qfrac, latent);
     } else {  // isothermal
       chi[rk] = 0.;
@@ -60,17 +45,7 @@ void Thermodynamics::rk4IntegrateLnp(Variable *qfrac, Real dlnp, Method method,
   }
 
   // recondensation
-  for (int iv = 1; iv <= NVAPOR; ++iv) {
-    setTotalEquivalentVapor(qfrac, iv);
-    auto rates = TryEquilibriumTP_VaporCloud(*qfrac, iv);
-
-    // vapor condensation rate
-    qfrac->w[iv] += rates[0];
-
-    // cloud concentration rates
-    if (method == Method::ReversibleAdiabat) {
-      for (int n = 1; n < rates.size(); ++n)
-        qfrac->c[cloud_index_set_[iv][n - 1]] += rates[n];
-    }
-  }
+  EquilibrateTP(qfrac);
+  if (method != Method::ReversibleAdiabat)
+    for (int j = 0; j < NCLOUD; ++j) qfrac->c[j] = 0;
 }

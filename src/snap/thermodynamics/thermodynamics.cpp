@@ -26,12 +26,14 @@
 #include <configure.hpp>
 #include <constants.hpp>
 #include <impl.hpp>
+#include <index_map.hpp>
 #include <variable.hpp>
 
 // climath
 #include <climath/core.h>
 
 // snap
+#include "molecules.hpp"
 #include "thermodynamics.hpp"
 
 static std::mutex thermo_mutex;
@@ -46,7 +48,53 @@ Thermodynamics::~Thermodynamics() {
   app->Log("Destroy Thermodynamics");
 }
 
-Thermodynamics::Thermodynamics(YAML::Node& node) {}
+Thermodynamics* Thermodynamics::fromYAMLInput(YAML::Node node) {
+  mythermo_ = new Thermodynamics();
+
+  return mythermo_;
+}
+
+Thermodynamics* Thermodynamics::fromLegacyInput(ParameterInput* pin) {
+  if (NCLOUD < (NPHASE - 1) * NVAPOR) {
+    throw RuntimeError(
+        "Thermodynamics",
+        "NCLOUD < (NPHASE-1)*NVAPOR is not supported for legacy input");
+  }
+
+  mythermo_ = new Thermodynamics();
+
+  // Read molecular weight ratios
+  read_thermo_property(mythermo_->mu_ratio_.data(), "eps", NPHASE, 1., pin);
+
+  // Read cp ratios
+  read_thermo_property(mythermo_->cp_ratio_mass_.data(), "rcp", NPHASE, 1.,
+                       pin);
+
+  // Read beta parameter
+  read_thermo_property(mythermo_->beta_.data(), "beta", NPHASE, 0., pin);
+
+  // Read triple point temperature
+  read_thermo_property(mythermo_->t3_.data(), "Ttriple", 1, 0., pin);
+
+  // Read triple point pressure
+  read_thermo_property(mythermo_->p3_.data(), "Ptriple", 1, 0., pin);
+
+  mythermo_->cloud_index_set_.resize(1 + NVAPOR);
+  mythermo_->svp_func1_.resize(1 + NVAPOR);
+
+  for (int i = 1; i <= NVAPOR; ++i) {
+    mythermo_->cloud_index_set_[i].resize(NPHASE - 1);
+    mythermo_->svp_func1_[i].resize(NPHASE - 1);
+    for (int j = 1; j < NPHASE; ++j) {
+      mythermo_->cloud_index_set_[i][j - 1] = (j - 1) * NVAPOR + (i - 1);
+    }
+  }
+
+  mythermo_->Rd_ = pin->GetOrAddReal("thermodynamics", "Rd", 1.);
+  mythermo_->gammad_ref_ = pin->GetReal("hydro", "gamma");
+
+  return mythermo_;
+}
 
 Thermodynamics const* Thermodynamics::GetInstance() {
   // RAII
@@ -67,53 +115,17 @@ Thermodynamics const* Thermodynamics::InitFromAthenaInput(ParameterInput* pin) {
   Application::Logger app("snap");
   app->Log("Initialize Thermodynamics");
 
-  if (pin->DoesParameterExist("thermodynamics", "control_file")) {
-    std::string filename = pin->GetString("thermodynamics", "control_file");
+  if (pin->DoesParameterExist("thermodynamics", "thermo_file")) {
+    std::string filename = pin->GetString("thermodynamics", "thermo_file");
     std::ifstream stream(filename);
     if (stream.good() == false) {
       throw RuntimeError("Thermodynamics",
                          "Cannot open thermodynamic file: " + filename);
     }
-    YAML::Node node = YAML::Load(stream);
-    mythermo_ = new Thermodynamics(node);
+
+    mythermo_ = fromYAMLInput(YAML::Load(stream));
   } else {  // legacy input
-    if (NCLOUD != (NPHASE - 1) * NVAPOR) {
-      throw RuntimeError(
-          "Thermodynamics",
-          "NCLOUD != (NPHASE-1)*NVAPOR is not supported for legacy input");
-    }
-
-    mythermo_ = new Thermodynamics();
-
-    // Read molecular weight ratios
-    read_thermo_property(mythermo_->mu_ratio_.data(), "eps", NPHASE, 1., pin);
-
-    // Read cp ratios
-    read_thermo_property(mythermo_->cp_ratio_mass_.data(), "rcp", NPHASE, 1.,
-                         pin);
-
-    // Read beta parameter
-    read_thermo_property(mythermo_->beta_.data(), "beta", NPHASE, 0., pin);
-
-    // Read triple point temperature
-    read_thermo_property(mythermo_->t3_.data(), "Ttriple", 1, 0., pin);
-
-    // Read triple point pressure
-    read_thermo_property(mythermo_->p3_.data(), "Ptriple", 1, 0., pin);
-
-    mythermo_->cloud_index_set_.resize(1 + NVAPOR);
-    mythermo_->svp_func1_.resize(1 + NVAPOR);
-
-    for (int i = 1; i <= NVAPOR; ++i) {
-      mythermo_->cloud_index_set_[i].resize(NPHASE - 1);
-      mythermo_->svp_func1_[i].resize(NPHASE - 1);
-      for (int j = 1; j < NPHASE; ++j) {
-        mythermo_->cloud_index_set_[i][j - 1] = (j - 1) * NVAPOR + (i - 1);
-      }
-    }
-
-    mythermo_->Rd_ = pin->GetOrAddReal("thermodynamics", "Rd", 1.);
-    mythermo_->gammad_ref_ = pin->GetReal("hydro", "gamma");
+    mythermo_ = fromLegacyInput(pin);
   }
 
   // enroll vapor functions
@@ -186,6 +198,31 @@ Thermodynamics const* Thermodynamics::InitFromAthenaInput(ParameterInput* pin) {
     }
   }
 
+  // set up extra clouds
+  auto pindex = IndexMap::GetInstance();
+
+  for (int n = (NPHASE - 1) * NVAPOR; n < NCLOUD; ++n) {
+    Molecule mol;
+    mol.LoadThermodynamicFile(pindex->GetCloudName(n) + ".thermo");
+
+    int j = 1 + NVAPOR + n;
+    mu[j] = mol.mu();
+    inv_mu[j] = 1. / mu[j];
+
+    mu_ratio[j] = mol.mu() / mu[0];
+    inv_mu_ratio[j] = 1. / mu_ratio[j];
+
+    cp_ratio_mass[j] = mol.cp() / (mol.mu() * mythermo_->GetCpMassRef(0));
+    cp_ratio_mole[j] = cp_ratio_mass[j] * mu_ratio[j];
+
+    latent_energy_mole[j] = mol.latent();
+    latent_energy_mass[j] = mol.latent() / mol.mu();
+
+    beta[j] = mol.latent() / (Constants::Rgas * Thermodynamics::RefTemp);
+    delta[j] = 0.;
+  }
+
+  // finally, set up cv ratio
   // calculate cv_ratio = $\sigma_i + (1. - \gamma)/\epsilon_i$
   for (int n = 0; n <= NVAPOR; ++n) {
     cv_ratio_mass[n] = gammad * cp_ratio_mass[n] + (1. - gammad) / mu_ratio[n];
@@ -550,10 +587,23 @@ Real Thermodynamics::getDensityMole(Variable const& qfrac) const {
   return qfrac.w[IPR] / (Constants::Rgas * qfrac.w[IDN] * qgas);
 }
 
-void Thermodynamics::setTotalEquivalentVapor(Variable* qfrac, int i) const {
-  for (auto& j : cloud_index_set_[i]) {
-    qfrac->w[i] += qfrac->c[j];
-    qfrac->c[j] = 0.;
+void Thermodynamics::setTotalEquivalentVapor(Variable* qfrac) const {
+  // vpaor <=> cloud
+  for (int i = 1; i <= NVAPOR; ++i)
+    for (auto& j : cloud_index_set_[i]) {
+      qfrac->w[i] += qfrac->c[j];
+      qfrac->c[j] = 0.;
+    }
+
+  // vapor + vapor <=> cloud
+  for (auto const& [ij, info] : cloud_reaction_map_) {
+    auto& indx = info.first;
+    auto& stoi = info.second;
+
+    qfrac->w[indx[0]] += stoi[0] / stoi[2] * qfrac->c[indx[2]];
+    qfrac->c[indx[2]] = 0.;
+    qfrac->w[indx[1]] += stoi[1] / stoi[2] * qfrac->c[indx[2]];
+    qfrac->c[indx[2]] = 0.;
   }
 }
 

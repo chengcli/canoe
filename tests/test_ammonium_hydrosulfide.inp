@@ -1,0 +1,50 @@
+<time>
+cfl_number  = 1
+tlim        = 0.1
+
+<mesh>
+nx1         = 4         # Number of zones in X1-direction
+x1min       = -0.5      # minimum value of X1
+x1max       = 0.5       # maximum value of X1
+ix1_bc      = outflow   # Inner-X1 boundary condition flag
+ox1_bc      = outflow   # Outer-X1 boundary condition flag
+
+nx2         = 2         # Number of zones in X2-direction
+x2min       = -0.5      # minimum value of X2
+x2max       = 0.5       # maximum value of X2
+ix2_bc      = periodic  # Inner-X2 boundary condition flag
+ox2_bc      = periodic  # Outer-X2 boundary condition flag
+
+nx3         = 1         # Number of zones in X3-direction
+x3min       = -0.5      # minimum value of X3
+x3max       = 0.5       # maximum value of X3
+ix3_bc      = periodic  # Inner-X3 boundary condition flag
+ox3_bc      = periodic  # Outer-X3 boundary condition flag
+
+ReferencePressure = 1.E5
+PressureScaleHeight = 30.E3
+
+<hydro>
+gamma       = 1.4
+
+<species>
+vapor = NH3, H2S
+cloud = NH3(l), NH3(s), H2S(l), H2S(s), NH4SH(s)
+
+<thermodynamics>
+Rd          = 3777.   # mu = 2.3175 g/mol
+eps1        = 7.72    7.72    7.72
+rcp1        = 0.078   0.16    0.16
+beta1       = 0.      23.67   23.67
+Ttriple1    = 195.4
+Ptriple1    = 6060.
+
+eps2        = 14.67   14.67   14.67
+rcp2        = 0.078   0.16    0.16
+beta2       = 0.      23.67   23.67
+Ttriple2    = 187.7
+Ptriple2    = 23200.
+
+sa.max_iter = 10
+sa.releax   = 0.8
+sa.ftol     = 1.e-4

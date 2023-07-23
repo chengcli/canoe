@@ -1,8 +1,6 @@
-// C/C++
-
 namespace Globals {
 
-const char* search_paths = ".";
+const char* search_paths = "@CMAKE_SOURCE_DIR@/src/snap/thermodynamics/chemdata/";
 
 const char* banner =
     "\

@@ -143,7 +143,7 @@ TEST_F(TestThermodynamics, equilibrium_water) {
 
   // water
   Real svp = sat_vapor_p_H2O_BriggsS(qfrac.w[IDN]);
-  auto rates = pthermo->TryEquilibriumTP(qfrac, iH2O);
+  auto rates = pthermo->TryEquilibriumTP_VaporCloud(qfrac, iH2O);
 
   EXPECT_NEAR(rates[0], svp / qfrac.w[IPR] - qfrac.w[iH2O], 1e-3);
   EXPECT_NEAR(rates[1], 0.19592911846053, 1e-8);
@@ -166,7 +166,7 @@ TEST_F(TestThermodynamics, equilibrium_ammonia) {
 
   // ammonia
   Real svp = sat_vapor_p_NH3_BriggsS(qfrac.w[IDN]);
-  auto rates = pthermo->TryEquilibriumTP(qfrac, iNH3);
+  auto rates = pthermo->TryEquilibriumTP_VaporCloud(qfrac, iNH3);
 
   EXPECT_NEAR(rates[0], svp / qfrac.w[IPR] - qfrac.w[iNH3], 1e-3);
   EXPECT_NEAR(rates[1], 0.0088517945331865, 1e-8);
