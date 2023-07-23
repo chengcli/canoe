@@ -8,7 +8,14 @@ set(patch_command
     ${CMAKE_CURRENT_SOURCE_DIR}/patches/23.meshblock.patch
     ${CMAKE_CURRENT_SOURCE_DIR}/patches/24.time_integrator.patch
     ${CMAKE_CURRENT_SOURCE_DIR}/patches/25.constant_acc.patch
-    ${CMAKE_CURRENT_SOURCE_DIR}/patches/26.scalars_flux.patch)
+    ${CMAKE_CURRENT_SOURCE_DIR}/patches/26.scalars_flux.patch
+    ${CMAKE_CURRENT_SOURCE_DIR}/patches/25.cs_meshblock.patch
+    ${CMAKE_CURRENT_SOURCE_DIR}/patches/26.cs_adiabatic_hydro.patch
+    ${CMAKE_CURRENT_SOURCE_DIR}/patches/27.cs_coordinates.patch
+    ${CMAKE_CURRENT_SOURCE_DIR}/patches/28.cs_bvals_cc.patch
+    ${CMAKE_CURRENT_SOURCE_DIR}/patches/29.cs_bvals_var.patch
+    ${CMAKE_CURRENT_SOURCE_DIR}/patches/30.cs_bvals_base.patch
+    ${CMAKE_CURRENT_SOURCE_DIR}/patches/31.cs_calculate_fluxes.patch)
 
 FetchContent_Declare(
   athenapp

@@ -26,7 +26,7 @@ void Hydro::RiemannSolver(int const k, int const j, int const il, int const iu,
   Real ubar, vbar, cbar, delh, delu, delv, hbar, a1, a2, a3;
 
   AthenaArray<Real> empty{};  // placeholder for unused electric/magnetic fields
-#ifdef AFFINE                 // need of projection
+#if defined(AFFINE) || defined(CUBED_SPHERE)  // need of projection
   {
     switch (ivx) {
       case IVY:
@@ -37,7 +37,7 @@ void Hydro::RiemannSolver(int const k, int const j, int const il, int const iu,
         break;
     }
   }
-#endif  // AFFINE
+#endif  // AFFINE or CUBED_SPHERE
 
   for (int i = il; i <= iu; ++i) {
     for (int n = 0; n < NHYDRO; ++n) {
@@ -89,7 +89,7 @@ void Hydro::RiemannSolver(int const k, int const j, int const il, int const iu,
     }
   }
 
-#ifdef AFFINE  // need of deprojection
+#if defined(AFFINE) || defined(CUBED_SPHERE)  // need of deprojection
   {
     // check if this is correct
     switch (ivx) {
@@ -103,5 +103,5 @@ void Hydro::RiemannSolver(int const k, int const j, int const il, int const iu,
         break;
     }
   }
-#endif  // AFFINE
+#endif  // AFFINE or CUBED_SPHERE
 }

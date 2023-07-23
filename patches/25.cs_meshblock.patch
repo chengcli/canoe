@@ -1,0 +1,26 @@
+diff --git a/src/mesh/meshblock.cpp b/src/mesh/meshblock.cpp
+index 29a06d19..c465d93c 100644
+--- a/src/mesh/meshblock.cpp
++++ b/src/mesh/meshblock.cpp
+@@ -45,6 +45,10 @@
+ #include "mesh_refinement.hpp"
+ #include "meshblock_tree.hpp"
+
++// exo3 injection
++#include <exo3/affine_coordinate.hpp>
++#include <exo3/gnomonic_equiangle.hpp>
++
+ //----------------------------------------------------------------------------------------
+ //! MeshBlock constructor: constructs coordinate, boundary condition, hydro, field
+ //!                        and mesh refinement objects.
+@@ -124,6 +128,10 @@ MeshBlock::MeshBlock(int igid, int ilid, LogicalLocation iloc, RegionSize input_
+     pcoord = new KerrSchild(this, pin, false);
+   } else if (std::strcmp(COORDINATE_SYSTEM, "gr_user") == 0) {
+     pcoord = new GRUser(this, pin, false);
++  } else if (std::strcmp(COORDINATE_SYSTEM, "gnomonic_equiangle") == 0) {
++    pcoord = new GnomonicEquiangle(this, pin, false);
++  } else if (std::strcmp(COORDINATE_SYSTEM, "affine_coordinate") == 0) {
++    pcoord = new AffineCoordinate(this, pin, false);
+   }
+
+

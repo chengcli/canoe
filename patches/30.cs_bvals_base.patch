@@ -1,0 +1,114 @@
+diff --git a/src/bvals/bvals_base.cpp b/src/bvals/bvals_base.cpp
+index 70f2d2f3..55b34df7 100644
+--- a/src/bvals/bvals_base.cpp
++++ b/src/bvals/bvals_base.cpp
+@@ -26,6 +26,9 @@
+ #include "../utils/buffer_utils.hpp"
+ #include "bvals.hpp"
+ 
++#include <configure.hpp>
++#include <exo3/cubed_sphere.hpp>
++
+ // required definitions of static data members of BoundaryBase outside class definition
+ // (zero-initialization is performed for all static storage duration variables)
+ // scalar types: integral constant 0 is explicitly converted to type
+@@ -367,8 +370,18 @@ void BoundaryBase::SearchAndSetNeighbors(MeshBlockTree &tree, int *ranklist,
+   if (block_size_.nx2 == 1) return;
+ 
+   // x2 face
++  // variables for the cubed sphere implementation right now we only care about 
++  // the same level
+   for (int n=-1; n<=1; n+=2) {
++#ifdef CUBED_SPHERE
++    int tmp_ox2, tmp_ox3, tmp_tox2, tmp_tox3;
++    tmp_ox2 = n;
++    tmp_ox3 = 0;
++    CubedSphere::TransformOX(&tmp_ox2, &tmp_ox3, &tmp_tox2, &tmp_tox3, loc);
++    neibt = tree.FindNeighbor(loc, 0, tmp_ox2, tmp_ox3, block_bcs);
++#else
+     neibt = tree.FindNeighbor(loc, 0, n, 0, block_bcs);
++#endif
+     if (neibt == nullptr) { bufid += nf1*nf2; continue;}
+     if (neibt->pleaf_ != nullptr) { // neighbor at finer level
+       int fface = 1 - (n + 1)/2; // 0 for BoundaryFace::outer_x2, 1 for inner_x2
+@@ -378,7 +391,11 @@ void BoundaryBase::SearchAndSetNeighbors(MeshBlockTree &tree, int *ranklist,
+           MeshBlockTree* nf = neibt->GetLeaf(f1, fface, f2);
+           int fid = nf->gid_;
+           int nlevel = nf->loc_.level;
++#ifdef CUBED_SPHERE
++          int tbid = FindBufferID(0, tmp_tox2, tmp_tox3, 0, 0);
++#else
+           int tbid = FindBufferID(0, -n, 0, 0, 0);
++#endif
+           neighbor[nneighbor].SetNeighbor(
+               ranklist[fid], nlevel, fid, fid-nslist[ranklist[fid]], 0, n, 0,
+               NeighborConnect::face, bufid, tbid, false, false, f1, f2);
+@@ -396,9 +413,17 @@ void BoundaryBase::SearchAndSetNeighbors(MeshBlockTree &tree, int *ranklist,
+             || (n == 1 && block_bcs[BoundaryFace::outer_x2] == BoundaryFlag::polar)) {
+           polar = true; // neighbor is across top or bottom pole
+         }
++#ifdef CUBED_SPHERE
++        tbid = FindBufferID(0, tmp_tox2, tmp_tox3, 0, 0);
++#else
+         tbid = FindBufferID(0, polar ? n : -n, 0, 0, 0);
++#endif
+       } else { // neighbor at coarser level
++#ifdef CUBED_SPHERE
++        tbid = FindBufferID(0, tmp_tox2, tmp_tox3, myfx1, myfx3);
++#else
+         tbid = FindBufferID(0, -n, 0, myfx1, myfx3);
++#endif
+       }
+       neighbor[nneighbor].SetNeighbor(
+           ranklist[nid], nlevel, nid, nid-nslist[ranklist[nid]], 0, n, 0,
+@@ -410,7 +435,15 @@ void BoundaryBase::SearchAndSetNeighbors(MeshBlockTree &tree, int *ranklist,
+   // x3 face
+   if (block_size_.nx3 > 1) {
+     for (int n=-1; n<=1; n+=2) {
++#ifdef CUBED_SPHERE
++      int tmp_ox2, tmp_ox3, tmp_tox2, tmp_tox3;
++      tmp_ox2 = 0;
++      tmp_ox3 = n;
++      CubedSphere::TransformOX(&tmp_ox2, &tmp_ox3, &tmp_tox2, &tmp_tox3, loc);
++      neibt = tree.FindNeighbor(loc, 0, tmp_ox2, tmp_ox3, block_bcs);
++#else
+       neibt=tree.FindNeighbor(loc, 0, 0, n, block_bcs);
++#endif
+       if (neibt == nullptr) { bufid += nf1*nf2; continue;}
+       if (neibt->pleaf_ != nullptr) { // neighbor at finer level
+         int fface = 1 - (n + 1)/2; // 0 for BoundaryFace::outer_x3, 1 for inner_x3
+@@ -420,7 +453,12 @@ void BoundaryBase::SearchAndSetNeighbors(MeshBlockTree &tree, int *ranklist,
+             MeshBlockTree* nf = neibt->GetLeaf(f1, f2, fface);
+             int fid = nf->gid_;
+             int nlevel = nf->loc_.level;
+-            int tbid = FindBufferID(0, 0,  -n, 0, 0);
++#ifdef CUBED_SPHERE
++          int tbid = FindBufferID(0, tmp_tox2, tmp_tox3, 0, 0);
++#else
++          int tbid = FindBufferID(0, 0, -n, 0, 0);
++#endif
++            
+             neighbor[nneighbor].SetNeighbor(
+                 ranklist[fid], nlevel, fid, fid-nslist[ranklist[fid]], 0, 0, n,
+                 NeighborConnect::face, bufid, tbid, false, false, f1, f2);
+@@ -433,9 +471,18 @@ void BoundaryBase::SearchAndSetNeighbors(MeshBlockTree &tree, int *ranklist,
+         nblevel[n+1][1][1] = nlevel;
+         int tbid;
+         if (nlevel == loc.level) { // neighbor at same level
+-          tbid = FindBufferID(0, 0, -n, 0, 0);
++#ifdef CUBED_SPHERE
++        tbid = FindBufferID(0, tmp_tox2, tmp_tox3, 0, 0);
++#else
++        tbid = FindBufferID(0, 0, -n, 0, 0);
++#endif
+         } else { // neighbor at coarser level
+-          tbid = FindBufferID(0, 0, -n, myfx1, myfx2);
++#ifdef CUBED_SPHERE
++        tbid = FindBufferID(0, tmp_tox2, tmp_tox3, myfx1, myfx2);
++#else
++        tbid = FindBufferID(0, 0, -n, myfx1, myfx2);
++#endif
++          
+         }
+         neighbor[nneighbor].SetNeighbor(
+             ranklist[nid], nlevel, nid, nid-nslist[ranklist[nid]], 0, 0, n,
