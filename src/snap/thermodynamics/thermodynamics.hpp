@@ -228,6 +228,9 @@ class Thermodynamics {
   void Extrapolate(Variable *qfrac, Real dzORdlnp, Method method,
                    Real grav = 0., Real userp = 0.) const;
 
+  //! Thermodnamic equilibrium at current TP
+  void EquilibrateTP(Variable *qfrac) const;
+
   //! Adjust to the maximum saturation state conserving internal energy
   void SaturationAdjustment(Variable *qfrac) const;
 
@@ -320,7 +323,7 @@ class Thermodynamics {
 
   Real getDensityMole(Variable const &qfrac) const;
 
-  void setTotalEquivalentVapor(Variable *qfrac, int i) const;
+  void setTotalEquivalentVapor(Variable *qfrac) const;
 
   //! Calculate moist adiabatic temperature gradient
   //! $\Gamma_m = (\frac{d\ln T}{d\ln P})_m$

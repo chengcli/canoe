@@ -588,10 +588,23 @@ Real Thermodynamics::getDensityMole(Variable const& qfrac) const {
   return qfrac.w[IPR] / (Constants::Rgas * qfrac.w[IDN] * qgas);
 }
 
-void Thermodynamics::setTotalEquivalentVapor(Variable* qfrac, int i) const {
-  for (auto& j : cloud_index_set_[i]) {
-    qfrac->w[i] += qfrac->c[j];
-    qfrac->c[j] = 0.;
+void Thermodynamics::setTotalEquivalentVapor(Variable* qfrac) const {
+  // vpaor <=> cloud
+  for (int i = 1; i <= NVAPOR; ++i)
+    for (auto& j : cloud_index_set_[i]) {
+      qfrac->w[i] += qfrac->c[j];
+      qfrac->c[j] = 0.;
+    }
+
+  // vapor + vapor <=> cloud
+  for (auto const& [ij, info] : cloud_reaction_map_) {
+    auto& indx = info.first;
+    auto& stoi = info.second;
+
+    qfrac->w[indx[0]] += stoi[0] / stoi[2] * qfrac->c[indx[2]];
+    qfrac->c[indx[2]] = 0.;
+    qfrac->w[indx[1]] += stoi[1] / stoi[2] * qfrac->c[indx[2]];
+    qfrac->c[indx[2]] = 0.;
   }
 }
 

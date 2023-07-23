@@ -58,7 +58,7 @@ jobs:
 
   build-hydrostatic:
     if: github.event.pull_request.draft == false
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     needs: style-checker
     steps:
       - name: install netcdf4
@@ -109,7 +109,7 @@ jobs:
 
   build-vapor2-cloud5:
     if: github.event.pull_request.draft == false
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     needs: style-checker
 
     steps:
