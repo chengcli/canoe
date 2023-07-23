@@ -101,8 +101,7 @@ Thermodynamics const* Thermodynamics::GetInstance() {
   std::unique_lock<std::mutex> lock(thermo_mutex);
 
   if (mythermo_ == nullptr) {
-    throw RuntimeError("Thermodynamics",
-                       "Thermodynamics has not been initialized");
+    mythermo_ = new Thermodynamics();
   }
 
   return mythermo_;

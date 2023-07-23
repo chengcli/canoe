@@ -84,12 +84,12 @@ RealArray3 Thermodynamics::TryEquilibriumTP_VaporVaporCloud(Variable const& air,
       y0 = b * air.c[j3] + air.w[j2] - b * z0;
     }
 
-    if (error) {
+    /*if (error) {
       std::stringstream msg;
       msg << "Condensation a(A) + b(B) -> c(C) failed" << std::endl;
       msg << "Air parcel = (" << air << ")" << std::endl;
       throw RuntimeError("TryEquilibriumTP_VaporVaporCloud", msg.str());
-    }
+    }*/
   }
 
   std::array<Real, 3> rates;

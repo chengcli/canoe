@@ -69,7 +69,7 @@ sfloor      = 0.
 
 <species>
 vapor = H2O, NH3, H2S, CH4
-cloud = H2O(s), H2O(l), NH3(s), NH3(l), H2S(s), H2S(l), CH4(s), CH4(l)
+cloud = H2O(s), H2O(l), NH3(s), NH3(l), H2S(s), H2S(l), CH4(s), CH4(l), NH4SH(s)
 tracer = e-, Na
 
 <thermodynamics>
