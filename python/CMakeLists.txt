@@ -7,6 +7,10 @@ string(TOUPPER ${CMAKE_BUILD_TYPE} buildu)
 # global library
 add_library(search_path OBJECT ${CMAKE_BINARY_DIR}/tests/globals.cpp)
 
+# python site
+get_filename_component(PYTHON_PARENT_DIR ${Python_SITELIB} DIRECTORY)
+get_filename_component(PYTHON_VERSION_DIR ${PYTHON_PARENT_DIR} NAME)
+
 macro(add_python_module namel)
   # set module targets
   pybind11_add_module(${namel} MODULE ${namel}.cpp)
@@ -29,15 +33,13 @@ macro(add_python_module namel)
     PROPERTIES
     PREFIX "${PYTHON_MODULE_PREFIX}"
     SUFFIX "${PYTHON_MODULE_EXTENSION}")
+
+  # Install configuration
+  install(
+    TARGETS ${namel}
+    DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/site-packages)
 endmacro()
 
 # add python modules
 add_python_module(pyathena)
 add_python_module(pyharp)
-
-# Install configuration
-
-install(
-  TARGETS ${namel}
-  COMPONENT python
-  LIBRARY DESTINATION ${namel})
