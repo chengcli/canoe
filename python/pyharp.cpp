@@ -7,7 +7,7 @@
 
 namespace py = pybind11;
 
-PYBIND11_MODULE(pyharp, m) {
+PYBIND11_MODULE(xelnaga, m) {
   py::class_<Radiation>(m, "radiation")
       .def_read("radiance", &Radiation::radiance)
       .def_read("fluxup", &Radiation::flxup)

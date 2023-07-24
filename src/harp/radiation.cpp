@@ -26,8 +26,6 @@
 #include "radiation_utils.hpp"  // setRadiationFlags
 #include "rt_solvers.hpp"
 
-Radiation::Radiation(ParameterInput *pin) { loadAllRadiationBands(pin); }
-
 Radiation::Radiation(MeshBlock *pmb, ParameterInput *pin)
     : rflags_(0LL), pmy_block_(pmb) {
   Application::Logger app("harp");
@@ -203,7 +201,7 @@ size_t Radiation::LoadRestartData(char *psrc) {
   return GetRestartDataSizeInBytes();
 }
 
-Radiation::loadAllRadiationBands(ParameterInput *pin) {
+Radiation::LoadAllRadiationBands(ParameterInput *pin) {
   if (pin->DoesParameterExist("radiation", "ir_bands"))
     PopulateRadiationBands(pin, "ir_bands");
 

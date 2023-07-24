@@ -40,11 +40,13 @@ class Radiation {
   AthenaArray<Real> flxup, flxdn;
 
   // functions
-  Radiation(ParameterInput *pin);
+  Radiation() {}
 
   Radiation(MeshBlock *pmb, ParameterInput *pin);
 
   ~Radiation();
+
+  void LoadAllRadiationBands(ParameterInput *pin);
 
   size_t GetNumBands() const { return bands_.size(); }
 
@@ -77,8 +79,6 @@ class Radiation {
   Real GetCounter() const { return current_; }
 
  protected:
-  void loadAllRadiationBands(ParameterInput *pin);
-
   int test(uint64_t flag) const { return rflags_ & flag; }
   void set(uint64_t flag) { rflags_ |= flag; }
 

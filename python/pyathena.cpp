@@ -9,7 +9,7 @@
 
 namespace py = pybind11;
 
-PYBIND11_MODULE(pyathena, m) {
+PYBIND11_MODULE(xelnaga, m) {
   py::enum_<IOWrapper::FileMode>(m, "FileMode")
       .value("read", IOWrapper::FileMode::read)
       .value("write", IOWrapper::FileMode::write)
