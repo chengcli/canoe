@@ -26,6 +26,8 @@
 #include "radiation_utils.hpp"  // setRadiationFlags
 #include "rt_solvers.hpp"
 
+Radiation::Radiation(ParameterInput *pin) { loadAllRadiationBands(pin); }
+
 Radiation::Radiation(MeshBlock *pmb, ParameterInput *pin)
     : rflags_(0LL), pmy_block_(pmb) {
   Application::Logger app("harp");
@@ -39,8 +41,7 @@ Radiation::Radiation(MeshBlock *pmb, ParameterInput *pin)
   app->Log("Stellar distance = " + std::to_string(stellarDistance_au_) + " au");
 
   // radiation bands
-  if (pin->DoesParameterExist("radiation", "control_file"))
-    PopulateRadiationBands(pin);
+  loadAllRadiationBands(pin);
 
   // incoming radiation direction (mu,phi) in degree
   std::string str = pin->GetOrAddString("radiation", "indir", "(0.,0.)");
@@ -92,11 +93,11 @@ RadiationBand *Radiation::GetBand(std::string const &name) const {
   throw NotFoundError("GetBand", "Band " + name);
 }
 
-void Radiation::PopulateRadiationBands(ParameterInput *pin) {
+void Radiation::PopulateRadiationBands(ParameterInput *pin, std::string key) {
   Application::Logger app("harp");
   app->Log("Populate Radiation bands");
 
-  std::string filename = pin->GetString("radiation", "control_file");
+  std::string filename = pin->GetString("radiation", key);
 
   std::ifstream stream(filename);
   if (stream.good() == false) {
@@ -200,4 +201,15 @@ size_t Radiation::LoadRestartData(char *psrc) {
   offset += flxdn.GetSizeInBytes();
 
   return GetRestartDataSizeInBytes();
+}
+
+Radiation::loadAllRadiationBands(ParameterInput *pin) {
+  if (pin->DoesParameterExist("radiation", "ir_bands"))
+    PopulateRadiationBands(pin, "ir_bands");
+
+  if (pin->DoesParameterExist("radiation", "vis_bands"))
+    PopulateRadiationBands(pin, "vis_bands");
+
+  if (pin->DoesParameterExist("radiation", "radio_bands"))
+    PopulateRadiationBands(pin, "radio_bands");
 }
