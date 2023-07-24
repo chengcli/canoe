@@ -6,7 +6,10 @@
 #include <stdexcept>
 #include <vector>
 
-// harp header
+// application
+#include <application/exceptions.hpp>
+
+// utils header
 #include "fileio.hpp"
 #include "vectorize.hpp"
 
@@ -27,9 +30,7 @@ bool IsBlankLine(std::string const& line) { return IsBlankLine(line.c_str()); }
 std::string DecommentFile(std::string fname) {
   std::stringstream msg;
   if (!FileExists(fname)) {
-    msg << "### FATAL ERROR in DecommentFile. File " << fname
-        << " doesn't exist." << std::endl;
-    throw std::runtime_error(msg.str().c_str());
+    throw NotFoundError("DecommentFile", fname);
   }
 
   std::ifstream file(fname.c_str(), std::ios::in);
@@ -67,19 +68,6 @@ int GetNumRows(std::string fname) {
   return rows;
 }
 
-template <>
-std::vector<std::string> Vectorize(const char* cstr, const char* delimiter) {
-  std::vector<std::string> arr;
-  char str[1028], *p;
-  snprintf(str, sizeof(str), "%s", cstr);
-  p = std::strtok(str, delimiter);
-  while (p != NULL) {
-    arr.push_back(p);
-    p = std::strtok(NULL, delimiter);
-  }
-  return arr;
-}
-
 void replaceChar(char* buf, char c_old, char c_new) {
   int len = strlen(buf);
   for (int i = 0; i < len; ++i)
@@ -109,4 +97,39 @@ char* NextLine(char* line, int num, FILE* stream) {
     if (strlen(p) > 0) break;
   }
   return p;
+}
+
+DataVector read_data_vector(std::string fname) {
+  DataVector amap;
+
+  std::ifstream input(fname.c_str(), std::ios::in);
+  std::stringstream ss, msg;
+  std::string line, sbuffer;
+  std::vector<std::string> field;
+
+  if (!input.is_open()) {
+    throw NotFoundError("read_data_vector", fname);
+  }
+
+  getline(input, line);
+  ss.str(line);
+  while (!ss.eof()) {
+    ss >> sbuffer;
+    field.push_back(sbuffer);
+  }
+  ss.clear();
+
+  while (getline(input, line)) {
+    if (line.empty()) continue;
+    ss.str(line);
+    for (std::vector<std::string>::iterator f = field.begin(); f != field.end();
+         ++f) {
+      double value;
+      ss >> value;
+      amap[*f].push_back(value);
+    }
+    ss.clear();
+  }
+
+  return amap;
 }
