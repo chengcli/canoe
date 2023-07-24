@@ -70,8 +70,8 @@ Real XuWaterIceCloud::getAttenuation1(Real wave, Variable const& air) const {
   return result;
 }
 
-Real XuWaterIceCloud::getSingleScateringAlbedo1(Real wave,
-                                                Variable const& air) const {
+Real XuWaterIceCloud::getSingleScatteringAlbedo1(Real wave,
+                                                 Variable const& air) const {
   Real T1, re, kk;
   // calculate ice cloud size
   T1 = air.w[IDN] - 273.15;  // K to C
@@ -90,8 +90,8 @@ Real XuWaterIceCloud::getSingleScateringAlbedo1(Real wave,
   //}
 }
 
-void XuWaterIceCloud::getPhaseMomentum(Real* pp, Real wave, Variable const& air,
-                                       int np) const {
+void XuWaterIceCloud::getPhaseMomentum1(Real* pp, Real wave,
+                                        Variable const& air, int np) const {
   Real T1, re, gg;
   // calculate ice cloud size
   T1 = air.w[IDN] - 273.15;  // K to C

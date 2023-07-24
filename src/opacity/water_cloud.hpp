@@ -78,10 +78,26 @@ class XuWaterIceCloud : public Absorber {
 
   void LoadCoefficient(std::string fname, size_t bid) override;
 
+  Real GetAttenuation(Real wave1, Real wave2,
+                      Variable const& var) const override {
+    return getAttenuation1((wave1 + wave2) / 2, var);
+  }
+
+  Real GetSingleScatteringAlbedo(Real wave1, Real wave2,
+                                 Variable const& var) const override {
+    return getSingleScatteringAlbedo1((wave1 + wave2) / 2., var);
+  }
+
+  void GetPhaseMomentum(Real* pp, Real wave1, Real wave2, Variable const& var,
+                        int np) const override {
+    getPhaseMomentum1(pp, (wave1 + wave2) / 2., var, np);
+  }
+
  protected:
   Real getAttenuation1(Real wave, Variable const& var) const;
-  Real getSingleScateringAlbedo1(Real wave, Variable const& var) const;
-  void getPhaseMomentum(Real* pp, Real wave, Variable const& var, int np) const;
+  Real getSingleScatteringAlbedo1(Real wave, Variable const& var) const;
+  void getPhaseMomentum1(Real* pp, Real wave, Variable const& var,
+                         int np) const;
 
  protected:
   size_t len_[2];
