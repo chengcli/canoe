@@ -59,7 +59,7 @@ class RadiationBand {
 
   std::string GetName() { return name_; }
 
-  std::string GetType() { return type_; }
+  std::string GetCategory() { return category_; }
 
   Real GetCosinePolarAngle(int n) const { return rayOutput_[n].mu; }
 
@@ -86,10 +86,10 @@ class RadiationBand {
   void setWavelengthGrid(YAML::Node &my);
 
   void addAbsorberGiants(ParameterInput *pin, YAML::Node &node);
-  void addAbsorberGiantsRADIO(YAML::Node &node);
-  void addAbsorberGiantsIR(YAML::Node &node);
-  void addAbsorberGiantsVIS(YAML::Node &node);
-  void addAbsorberGiantsUV(YAML::Node &node);
+  void addAbsorberGiantsRadio(YAML::Node &node);
+  void addAbsorberGiantsInfrared(YAML::Node &node);
+  void addAbsorberGiantsVisible(YAML::Node &node);
+  void addAbsorberGiantsUltraviolet(YAML::Node &node);
 
   void addAbsorberEarth(ParameterInput *pin, YAML::Node &node);
   void addAbsorberVenus(ParameterInput *pin, YAML::Node &node);
@@ -103,7 +103,7 @@ class RadiationBand {
 
   // data
   std::string name_;
-  std::string type_;
+  std::string category_;
   uint64_t bflags_;
 
   // spectra

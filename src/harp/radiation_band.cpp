@@ -43,11 +43,14 @@ RadiationBand::RadiationBand(MeshBlock *pmb, ParameterInput *pin,
     throw NotFoundError("RadiationBand", name_);
   }
 
+  if (!node["category"]) {
+    throw NotFoundError("RadiationBand", "category");
+  }
+
+  category_ = node["category"].as<std::string>();
   auto my = node[name_];
 
   if (my["parameters"]) params_ = ToParameterMap(my["parameters"]);
-
-  type_ = my["type"] ? my["type"].as<std::string>() : "unknown";
 
   // number of Legendre moments
   int npmom = my["moments"] ? my["moments"].as<int>() : 1;
@@ -78,37 +81,39 @@ RadiationBand::RadiationBand(MeshBlock *pmb, ParameterInput *pin,
     read_radiation_directions(&rayOutput_, str);
   }
 
-  // allocate memory
-  int ncells1 = pmb->ncells1;
-  int ncells2 = pmb->ncells2;
-  int ncells3 = pmb->ncells3;
+  if (pmb != nullptr) {
+    // allocate memory
+    int ncells1 = pmb->ncells1;
+    int ncells2 = pmb->ncells2;
+    int ncells3 = pmb->ncells3;
 
-  // spectral properties
-  tem_.NewAthenaArray(ncells1);
-  temf_.NewAthenaArray(ncells1 + 1);
+    // spectral properties
+    tem_.NewAthenaArray(ncells1);
+    temf_.NewAthenaArray(ncells1 + 1);
 
-  tau_.NewAthenaArray(spec_.size(), ncells1);
-  tau_.ZeroClear();
+    tau_.NewAthenaArray(spec_.size(), ncells1);
+    tau_.ZeroClear();
 
-  ssa_.NewAthenaArray(spec_.size(), ncells1);
-  ssa_.ZeroClear();
+    ssa_.NewAthenaArray(spec_.size(), ncells1);
+    ssa_.ZeroClear();
 
-  toa_.NewAthenaArray(spec_.size(), rayOutput_.size());
-  toa_.ZeroClear();
+    toa_.NewAthenaArray(spec_.size(), rayOutput_.size());
+    toa_.ZeroClear();
 
-  pmom_.NewAthenaArray(spec_.size(), ncells1, npmom + 1);
-  pmom_.ZeroClear();
+    pmom_.NewAthenaArray(spec_.size(), ncells1, npmom + 1);
+    pmom_.ZeroClear();
 
-  flxup_.NewAthenaArray(spec_.size(), ncells1);
-  flxup_.ZeroClear();
+    flxup_.NewAthenaArray(spec_.size(), ncells1);
+    flxup_.ZeroClear();
 
-  flxdn_.NewAthenaArray(spec_.size(), ncells1);
-  flxdn_.ZeroClear();
+    flxdn_.NewAthenaArray(spec_.size(), ncells1);
+    flxdn_.ZeroClear();
 
-  // band properties
-  btau.NewAthenaArray(ncells3, ncells2, ncells1);
-  bssa.NewAthenaArray(ncells3, ncells2, ncells1);
-  bpmom.NewAthenaArray(npmom + 1, ncells3, ncells2, ncells1);
+    // band properties
+    btau.NewAthenaArray(ncells3, ncells2, ncells1);
+    bssa.NewAthenaArray(ncells3, ncells2, ncells1);
+    bpmom.NewAthenaArray(npmom + 1, ncells3, ncells2, ncells1);
+  }
 
   //! \note btoa, bflxup, bflxdn are shallow slices to Radiation variables
 
@@ -117,8 +122,7 @@ RadiationBand::RadiationBand(MeshBlock *pmb, ParameterInput *pin,
     for (auto aname : my["opacity"]) {
       bool found = false;
       for (auto absorber : node["opacity-sources"]) {
-        if (type_ + "-" + aname.as<std::string>() ==
-            absorber["name"].as<std::string>()) {
+        if (aname.as<std::string>() == absorber["name"].as<std::string>()) {
           AddAbsorber(pin, absorber);
           found = true;
           break;
@@ -143,7 +147,7 @@ RadiationBand::RadiationBand(MeshBlock *pmb, ParameterInput *pin,
       psolver = std::make_shared<RTSolverDisort>(this);
 #endif
     } else {
-      throw RuntimeError("RadiationBand", my["rt-solver"].as<std::string>());
+      throw NotFoundError("RadiationBand", my["rt-solver"].as<std::string>());
     }
   } else {
     psolver = std::make_shared<RTSolver>(this, "Null");

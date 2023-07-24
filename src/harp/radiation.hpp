@@ -95,7 +95,7 @@ class Radiation {
   Real stellarDistance_au_;
 
   // connections
-  MeshBlock *pmy_block_;
+  MeshBlock *pmy_block_ = nullptr;
   CelestrialBodyPtr planet_;
 };
 

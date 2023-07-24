@@ -18,6 +18,7 @@ set_if_empty(NTRACER 0)
 
 # canoe configure
 set(PLANET "Uranus")
+set(CMAKE_INSTALL_PREFIX "$ENV{HOME}/opt/")
 set(HYDROSTATIC ON)
 set(RFM ON)
 set(NETCDF ON)

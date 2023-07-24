@@ -42,23 +42,23 @@ void RadiationBand::addAbsorberGiants(ParameterInput *pin, YAML::Node &node) {
     node["model"] = "unspecified";
   }
 
-  if (type_ == "radio") {
-    addAbsorberGiantsRADIO(node);
-  } else if (type_ == "ir") {
-    addAbsorberGiantsIR(node);
-  } else if (type_ == "vis") {
-    addAbsorberGiantsVIS(node);
-  } else if (type_ == "uv") {
-    addAbsorberGiantsUV(node);
+  if (category_ == "radio") {
+    addAbsorberGiantsRadio(node);
+  } else if (category_ == "infrared") {
+    addAbsorberGiantsInfrared(node);
+  } else if (category_ == "visible") {
+    addAbsorberGiantsVisible(node);
+  } else if (category_ == "ultraviolet") {
+    addAbsorberGiantsUltraviolet(node);
   } else {
-    throw NotFoundError("addAbsorberGiants", "Band " + type_);
+    throw NotFoundError("addAbsorberGiants", "Category: " + category_);
   }
 
   absorbers_.back()->SetModel(node["model"].as<std::string>());
 }
 
-void RadiationBand::addAbsorberGiantsRADIO(YAML::Node &node) {
-  auto name = extract_second(node["name"].as<std::string>());
+void RadiationBand::addAbsorberGiantsRadio(YAML::Node &node) {
+  auto name = node["name"].as<std::string>();
   auto params = ToParameterMap(node["parameters"]);
 
   std::vector<std::string> species;
@@ -90,12 +90,12 @@ void RadiationBand::addAbsorberGiantsRADIO(YAML::Node &node) {
 
     absorbers_.push_back(std::move(ab));
   } else {
-    throw NotFoundError("addAbsorberGiantsRADIO", "Absorber " + name);
+    throw NotFoundError("addAbsorberGiantsRadio", "Absorber " + name);
   }
 }
 
-void RadiationBand::addAbsorberGiantsIR(YAML::Node &node) {
-  auto name = extract_second(node["name"].as<std::string>());
+void RadiationBand::addAbsorberGiantsInfrared(YAML::Node &node) {
+  auto name = node["name"].as<std::string>();
   auto params = ToParameterMap(node["parameters"]);
 
   std::vector<std::string> species;
@@ -144,10 +144,10 @@ void RadiationBand::addAbsorberGiantsIR(YAML::Node &node) {
   }
 }
 
-void RadiationBand::addAbsorberGiantsVIS(YAML::Node &node) {
-  throw NotImplementedError("addAbsorberGiantsVIS");
+void RadiationBand::addAbsorberGiantsVisible(YAML::Node &node) {
+  throw NotImplementedError("addAbsorberGiantsVisible");
 }
 
-void RadiationBand::addAbsorberGiantsUV(YAML::Node &node) {
+void RadiationBand::addAbsorberGiantsUltraviolet(YAML::Node &node) {
   throw NotImplementedError("addAbsorberGiantsUV");
 }

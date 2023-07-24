@@ -24,7 +24,7 @@ PYBIND11_MODULE(pyharp, m) {
 
       .def(py::init())
 
-      .def("load_all_radiation_bands", &Radiation::LoadRadiationBands)
+      .def("load_all_radiation_bands", &Radiation::LoadAllRadiationBands)
       .def("load_radiation_bands", &Radiation::LoadRadiationBands)
       .def("get_num_bands", &Radiation::GetNumBands)
       .def("get_band", &Radiation::GetBand)
@@ -45,5 +45,6 @@ PYBIND11_MODULE(pyharp, m) {
       .def("get_parameter", &RadiationBand::GetParameter)
       .def("get_num_absorbers", &RadiationBand::GetNumAbsorbers)
       .def("get_absorber", &RadiationBand::GetAbsorber)
-      .def("get_absorber_by_name", &RadiationBand::GetAbsorberByName);
+      .def("get_absorber_by_name", &RadiationBand::GetAbsorberByName)
+      .def("get_name", &RadiationBand::GetName);
 }
