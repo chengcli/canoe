@@ -163,11 +163,25 @@ void IndexMap::Destroy() {
   }
 }
 
+std::string IndexMap::GetVaporName(size_t i) const {
+  for (auto const& [name, id] : vapor_index_map_) {
+    if (id == i) return name;
+  }
+  throw NotFoundError("GetVaporName", "Vapor id " + std::to_string(i));
+}
+
 std::string IndexMap::GetCloudName(size_t i) const {
   for (auto const& [name, id] : cloud_index_map_) {
     if (id == i) return name;
   }
   throw NotFoundError("GetCloudName", "Cloud id " + std::to_string(i));
+}
+
+std::string IndexMap::GetTracerName(size_t i) const {
+  for (auto const& [name, id] : tracer_index_map_) {
+    if (id == i) return name;
+  }
+  throw NotFoundError("GetTracerName", "Tracer id " + std::to_string(i));
 }
 
 IndexMap* IndexMap::myindex_map_ = nullptr;

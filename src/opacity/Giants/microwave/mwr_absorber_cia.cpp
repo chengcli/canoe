@@ -11,8 +11,7 @@
 
 namespace GiantPlanets {
 
-MwrAbsorberCIA::MwrAbsorberCIA(std::vector<std::string> species,
-                               ParameterMap params)
+MwrAbsorberCIA::MwrAbsorberCIA(SpeciesNames const& species, ParameterMap params)
     : Absorber("radio-CIA", species, params) {
   if (!params_.count("xHe")) {
     throw NotFoundError("MwrAbsorberCIA", "parameter 'xHe'");

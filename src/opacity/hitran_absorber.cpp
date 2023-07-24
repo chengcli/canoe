@@ -80,7 +80,7 @@ Real HitranAbsorber::getRefTemp(Real pres) const {
   return result;
 }
 
-void HitranAbsorber::LoadCoefficient(std::string fname, int bid) {
+void HitranAbsorber::LoadCoefficient(std::string fname, size_t bid) {
 #ifdef NETCDFOUTPUT
   int fileid, dimid, varid, err;
   char tname[80];

@@ -16,15 +16,15 @@ Absorber::Absorber(std::string name) : name_(name) {
   app->Log("Create Absorber " + name_);
 }
 
-Absorber::Absorber(std::string name, std::vector<std::string> species,
-                   std::map<std::string, Real> params)
+Absorber::Absorber(std::string name, SpeciesNames const& names,
+                   ParameterMap params)
     : name_(name), params_(params) {
   Application::Logger app("harp");
   app->Log("Create Absorber " + name_);
 
   auto pindex = IndexMap::GetInstance();
 
-  for (auto s : species) {
+  for (auto s : names) {
     imols_.push_back(pindex->GetSpeciesId(s));
   }
 

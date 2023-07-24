@@ -13,7 +13,7 @@
 
 class FuWaterLiquidCloud : public Absorber {
  public:
-  FuWaterLiquidCloud(std::vector<std::string> species, ParameterMap params)
+  FuWaterLiquidCloud(SpeciesNames const& species, ParameterMap params)
       : Absorber("H2O(l)", species, params) {}
 
   Real GetAttenuation(Real wave1, Real wave2,
@@ -40,7 +40,7 @@ class FuWaterLiquidCloud : public Absorber {
 
 class FuWaterIceCloud : public Absorber {
  public:
-  FuWaterIceCloud(std::vector<std::string> species, ParameterMap params)
+  FuWaterIceCloud(SpeciesNames const& species, ParameterMap params)
       : Absorber("H2O(s)", species, params) {}
 
   Real GetAttenuation(Real wave1, Real wave2,
@@ -65,7 +65,42 @@ class FuWaterIceCloud : public Absorber {
                          int np) const;
 
  protected:
-  int len_[2];
+  size_t len_[2];
+  std::vector<Real> axis_;
+  std::vector<Real> ssalb_;
+  std::vector<Real> gg_;
+};
+
+class XuWaterIceCloud : public Absorber {
+ public:
+  XuWaterIceCloud(SpeciesNames const& species, ParameterMap params)
+      : Absorber("H2O(s)", species, params) {}
+
+  void LoadCoefficient(std::string fname, size_t bid) override;
+
+  Real GetAttenuation(Real wave1, Real wave2,
+                      Variable const& var) const override {
+    return getAttenuation1((wave1 + wave2) / 2, var);
+  }
+
+  Real GetSingleScatteringAlbedo(Real wave1, Real wave2,
+                                 Variable const& var) const override {
+    return getSingleScatteringAlbedo1((wave1 + wave2) / 2., var);
+  }
+
+  void GetPhaseMomentum(Real* pp, Real wave1, Real wave2, Variable const& var,
+                        int np) const override {
+    getPhaseMomentum1(pp, (wave1 + wave2) / 2., var, np);
+  }
+
+ protected:
+  Real getAttenuation1(Real wave, Variable const& var) const;
+  Real getSingleScatteringAlbedo1(Real wave, Variable const& var) const;
+  void getPhaseMomentum1(Real* pp, Real wave, Variable const& var,
+                         int np) const;
+
+ protected:
+  size_t len_[2];
   std::vector<Real> axis_;
   std::vector<Real> ssalb_;
   std::vector<Real> gg_;

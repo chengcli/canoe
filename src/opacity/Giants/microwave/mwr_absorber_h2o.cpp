@@ -11,8 +11,7 @@
 
 namespace GiantPlanets {
 
-MwrAbsorberH2O::MwrAbsorberH2O(std::vector<std::string> species,
-                               ParameterMap params)
+MwrAbsorberH2O::MwrAbsorberH2O(SpeciesNames const& species, ParameterMap params)
     : Absorber("radio-H2O", species, params) {
   if (!params_.count("xHe")) {
     throw NotFoundError("MwrAbsorberH2O", "parameter 'xHe'");

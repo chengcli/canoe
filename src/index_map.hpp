@@ -29,6 +29,8 @@ class IndexMap {
     return vapor_index_map_.at(name);
   }
 
+  std::string GetVaporName(size_t i) const;
+
   bool HasCloud(std::string const& name) const {
     return cloud_index_map_.find(name) != cloud_index_map_.end();
   }
@@ -54,6 +56,8 @@ class IndexMap {
   size_t GetTracerId(std::string const& name) const {
     return tracer_index_map_.at(name);
   }
+
+  std::string GetTracerName(size_t i) const;
 
   size_t GetSpeciesId(std::string category_name) const;
 

@@ -1,5 +1,41 @@
-Article from
-[github](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/removing-sensitive-data-from-a-repository)
+## Large file storage
+
+This repo uses Git Large File (lfs) Storage to store benchmark data.
+To install lfs for this repo, use
+```
+git lfs install
+```
+Sometimes, you will run into a authentication issue with git lfs.
+Run the following command to check your environment:
+```
+git lfs env
+```
+If you find that the output looks like this
+```
+Endpoint=https://chengcli@github.com/chengcli/canoe.git/info/lfs (auth=none)
+```
+then you have encountered an authentication problem. Use the following step
+to fix it:
+```
+git config --global lfs.https://github.com/chengcli/canoe.git/info/lfs.access basic
+```
+This command changes the autentication method from `none` to `basic`.
+
+To pull files from lfs, use
+```
+git lfs pull
+```
+
+To check what files are stored in lfs, use
+```
+git lfs ls-files
+```
+
+To track large data file, use
+```
+git lfs track <file>
+```
+
 
 # Using git filter-repo
 
@@ -90,3 +126,6 @@ To illustrate how git filter-repo works, we'll show you how to remove your file 
   > To https://github.com/YOUR-USERNAME/YOUR-REPOSITORY.git
   >  + 48dc599...051452f main -> main (forced update)
   ```
+
+### Resources
+[github](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/removing-sensitive-data-from-a-repository)
