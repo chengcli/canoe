@@ -240,7 +240,7 @@ void RadiationBand::setWavelengthGrid(YAML::Node &my) {
   throw NotImplementedError("setWavelengthGrid");
 }
 
-Absorber *RadiationBand::GetAbsorber(std::string const &name) {
+Absorber *RadiationBand::GetAbsorberByName(std::string const &name) {
   for (auto &absorber : absorbers_) {
     if (absorber->GetName() == name) {
       return absorber.get();

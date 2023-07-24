@@ -9,7 +9,10 @@
 
 namespace py = pybind11;
 
-PYBIND11_MODULE(xelnaga, m) {
+PYBIND11_MODULE(pyathena, m) {
+  m.attr("__name__") = "pyathena";
+  m.doc() = "Python bindings for Athena++";
+
   py::enum_<IOWrapper::FileMode>(m, "FileMode")
       .value("read", IOWrapper::FileMode::read)
       .value("write", IOWrapper::FileMode::write)

@@ -48,13 +48,13 @@ class Radiation {
 
   void LoadAllRadiationBands(ParameterInput *pin);
 
+  void LoadRadiationBands(ParameterInput *pin, std::string key);
+
   size_t GetNumBands() const { return bands_.size(); }
 
   RadiationBand *GetBand(int i) const { return bands_[i].get(); }
 
-  RadiationBand *GetBand(std::string const &name) const;
-
-  void PopulateRadiationBands(ParameterInput *pin, std::string key);
+  RadiationBand *GetBandByName(std::string const &name) const;
 
   void CalRadiativeFlux(Real time, int k, int j, int il, int iu);
 

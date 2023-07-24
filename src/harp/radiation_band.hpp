@@ -36,6 +36,8 @@ class RadiationBand {
   AthenaArray<Real> btoa;
 
   // functions
+  RadiationBand() {}
+
   RadiationBand(MeshBlock *pmb, ParameterInput *pin, YAML::Node &node,
                 std::string name);
 
@@ -51,7 +53,7 @@ class RadiationBand {
 
   Absorber *GetAbsorber(int i) { return absorbers_[i].get(); }
 
-  Absorber *GetAbsorber(std::string const &name);
+  Absorber *GetAbsorberByName(std::string const &name);
 
   size_t GetNumOutgoingRays() { return rayOutput_.size(); }
 

@@ -65,6 +65,6 @@ class Absorber {
   ParameterMap params_;
 };
 
-using AbsorberPtr = std::unique_ptr<Absorber>;
+using AbsorberPtr = std::shared_ptr<Absorber>;
 
 #endif  // SRC_HARP_ABSORBER_HPP_
