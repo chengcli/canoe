@@ -1,0 +1,94 @@
+opacity-sources:
+  - name: H2-H2-CIA
+    long-name: "Hydrogen-Hydrogen collisional absorption"
+    model: xiz
+
+  - name: H2-He-CIA
+    long-name: "Hydrogen-Helium collisional absorption"
+    model: xiz
+
+  - name: CH4
+    long-name: "Methane line absorption"
+    data: 'kcoeff.<min>-<max>-<res>.nc'
+
+  - name: C2H2
+    long-name: "Acetylene line absorption"
+    data: 'kcoeff.<min>-<max>-<res>.nc'
+
+  - name: C2H4
+    long-name: "Ethylene line absorption"
+    data: 'kcoeff.<min>-<max>-<res>.nc'
+
+  - name: C2H6
+    long-name: "Ethane line absorption"
+    data: 'kcoeff.<min>-<max>-<res>.nc'
+
+B1:
+  rt-solver: disort
+  unit: cm-1
+  wavenumber-range: [10., 200.]
+  resolution: 0.01
+  opacity: [C2H2]
+
+B2:
+  rt-solver: disort
+  unit: cm-1
+  wavenumber-range: [200., 400.]
+  resolution: 0.01
+  opacity: [C2H2]
+
+B3:
+  rt-solver: disort
+  unit: cm-1
+  wavenumber-range: [400., 600.]
+  resolution: 0.01
+  opacity: [C2H2]
+
+B4:
+  rt-solver: disort
+  unit: cm-1
+  wavenumber-range: [600., 700.]
+  resolution: 0.01
+  opacity: [C2H2, C2H6]
+
+B5:
+  rt-solver: disort
+  unit: cm-1
+  wavenumber-range: [700., 860.]
+  resolution: 0.01
+  opacity: [C2H2, C2H6]
+
+B6:
+  rt-solver: disort
+  unit: cm-1
+  wavenumber-range: [860., 960.]
+  resolution: 0.01
+  opacity: [C2H2, C2H6]
+
+B7:
+  rt-solver: disort
+  unit: cm-1
+  wavenumber-range: [960., 1200.]
+  resolution: 0.01
+  opacity: [C2H2, C2H6]
+
+B8:
+  rt-solver: disort
+  unit: cm-1
+  wavenumber-range: [1200., 1400.]
+  resolution: 0.01
+  opacity: [C2H2, C2H6]
+
+B9:
+  rt-solver: disort
+  unit: cm-1
+  wavenumber-range: [1400., 1700.]
+  resolution: 0.01
+  opacity: [C2H2, C2H6]
+
+B10:
+  rt-solver: disort
+  unit: cm-1
+  wavenumber-range: [1700., 2100.]
+  resolution: 0.01
+  opacity: [C2H2]

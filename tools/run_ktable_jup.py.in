@@ -12,7 +12,7 @@ run_rfm = f"{cmake_binary_dir}/bin/run_rfm.py"
 kcoeff  = f"{cmake_binary_dir}/bin/kcoeff.release"
 cktable = f"{cmake_binary_dir}/bin/run_cktable.py"
 
-hitran  = f"{cmake_source_dir}/data/HITRAN2012.par"
+hitran  = f"{cmake_source_dir}/data/MidIR_HITRAN_0-2500_H2broaden_C2H2_C2H6_AIRbroaden.par"
 hitfile = ""
 
 # number of threads
@@ -28,7 +28,7 @@ temp    = "-5 5 3"
 # flags
 generate_tab = True
 generate_nc  = True
-generate_cktable = False
+generate_cktable = True
 
 # continuum absorption
 cia     = "H2-H2-eq H2-He-eq"
