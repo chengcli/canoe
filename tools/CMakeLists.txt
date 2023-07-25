@@ -45,5 +45,4 @@ endforeach()
 file(COPY clean_rfm_runs.sh DESTINATION ${CMAKE_BINARY_DIR}/bin)
 
 configure_file(run_ktable.py.in ${CMAKE_BINARY_DIR}/bin/run_ktable.py @ONLY)
-configure_file(run_ktable_jup.py.in ${CMAKE_BINARY_DIR}/bin/run_ktable_jup.py @ONLY)
 configure_file(cktable.py.in ${CMAKE_BINARY_DIR}/bin/cktable.py @ONLY)
