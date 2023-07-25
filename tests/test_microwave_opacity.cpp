@@ -75,6 +75,10 @@ TEST_F(TestMicrowaveOpacity, Absorbers) {
   var.w[2] = 1.E-2;
 
   // NH3 absorption
+  auto radio = prad->GetBandByName("radio");
+  for (int i = 0; i < 3; ++i) {
+    std::cout << radio->GetAbsorber(i)->GetName() << std::endl;
+  }
   auto ab = prad->GetBandByName("radio")->GetAbsorberByName("NH3");
   EXPECT_NEAR(ab->GetAttenuation(0.6, 0.6, var), 7.9161198e-07, 1.E-10);
 

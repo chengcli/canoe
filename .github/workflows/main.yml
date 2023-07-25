@@ -11,6 +11,7 @@ env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Release
   ACCOUNT: chengcli
+  HOME: ${{ vars.HOME }}
 
 jobs:
   style-checker:
@@ -150,11 +151,17 @@ jobs:
       - name: create build directory
         # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
         # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
-        run: cmake -DRFM=ON -DNETCDF=ON -DACCOUNT=${{env.ACCOUNT}} -DTOKEN=${{secrets.ACCESS_TOKEN}} -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -B ${{github.workspace}}/build-netcdf
+        run: >
+          cmake -DRFM=ON -DNETCDF=ON -DACCOUNT=${{env.ACCOUNT}} -DTOKEN=${{secrets.ACCESS_TOKEN}}
+            -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -B ${{github.workspace}}/build-netcdf
+            -DCMAKE_INSTALL_PREFIX=$${env.HOME}}
 
       - name: build
         # Build your program with the given configuration
         run: cmake --build ${{github.workspace}}/build-netcdf --config ${{env.BUILD_TYPE}} -- -j2
+
+      - name: install
+        run: cd ${{github.workspace}}/build-netcdf && make install
 
       - name: test generating ktable
         working-directory: ${{github.workspace}}/build-netcdf

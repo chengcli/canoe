@@ -65,7 +65,7 @@ class MwrAbsorberNH3 : public Absorber {
 class MwrAbsorberPH3 : public Absorber {
  public:
   MwrAbsorberPH3(SpeciesNames const& species, ParameterMap params)
-      : Absorber("radio-PH3", species, params) {}
+      : Absorber("PH3", species, params) {}
 
   MwrAbsorberPH3& SetModelRadtran() {
     model_name_ = "Radtran";
@@ -107,7 +107,7 @@ class MwrAbsorberH2O : public Absorber {
 class MwrAbsorberH2S : public Absorber {
  public:
   MwrAbsorberH2S(SpeciesNames const& species, ParameterMap params)
-      : Absorber("radio-H2S", species, params) {}
+      : Absorber("H2S", species, params) {}
 
   Real GetAttenuation(Real wave1, Real wave2, Variable const& var) const;
 };
@@ -115,7 +115,7 @@ class MwrAbsorberH2S : public Absorber {
 class MwrAbsorberElectron : public Absorber {
  public:
   MwrAbsorberElectron(SpeciesNames const& species, ParameterMap params)
-      : Absorber("radio-Electron", species, params) {}
+      : Absorber("Electron", species, params) {}
 
   MwrAbsorberElectron& SetModelAppletonHartree() {
     model_name_ = "AppletonHartree";
