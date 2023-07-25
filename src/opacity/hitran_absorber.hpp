@@ -20,7 +20,7 @@ class HitranAbsorber : public Absorber {
   }
 
   virtual ~HitranAbsorber() {}
-  void LoadCoefficient(std::string fname, size_t bid) override;
+  void LoadCoefficient(std::string fname, size_t bid = 0) override;
   Real GetAttenuation(Real wave1, Real wave2,
                       Variable const& var) const override;
 

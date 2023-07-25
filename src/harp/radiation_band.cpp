@@ -21,6 +21,7 @@
 #include <application/exceptions.hpp>
 
 // utils
+#include <utils/extract_substring.hpp>
 #include <utils/fileio.hpp>
 #include <utils/ndarrays.hpp>
 #include <utils/parameter_map.hpp>
@@ -48,6 +49,9 @@ RadiationBand::RadiationBand(MeshBlock *pmb, ParameterInput *pin,
   }
 
   category_ = node["category"].as<std::string>();
+  myfile_ =
+      extract_first(pin->GetString("radiation", category_ + "_bands"), ".");
+
   auto my = node[name_];
 
   if (my["parameters"]) params_ = ToParameterMap(my["parameters"]);

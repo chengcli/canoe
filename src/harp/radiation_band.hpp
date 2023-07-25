@@ -111,6 +111,7 @@ class RadiationBand {
 
   // data
   std::string name_;
+  std::string myfile_;
   std::string category_;
   uint64_t bflags_;
 

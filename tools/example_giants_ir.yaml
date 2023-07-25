@@ -1,0 +1,28 @@
+category: infrared
+
+opacity-sources:
+  - name: H2-H2-CIA
+    long-name: "Hydrogen-Hydrogen collisional absorption"
+
+  - name: H2-He-CIA
+    long-name: "Hydrogen-Helium collisional absorption"
+
+  - name: CH4
+    long-name: "Methane line absorption"
+
+  - name: C2H2
+    long-name: "Acetylene line absorption"
+
+  - name: C2H4
+    long-name: "Ethylene line absorption"
+
+  - name: C2H6
+    long-name: "Ethane line absorption"
+
+bands: [B4]
+
+B4:
+  unit: cm-1
+  wavenumber-range: [600., 700.]
+  resolution: 0.01
+  opacity: [C2H2, C2H6]

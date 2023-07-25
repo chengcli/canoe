@@ -12,22 +12,18 @@ opacity-sources:
   - name: CH4
     long-name: "Methane line absorption"
     dependent-species: [tracer.CH4]
-    data: 'kcoeff.<min>-<max>-<res>.nc'
 
   - name: C2H2
     long-name: "Acetylene line absorption"
     dependent-species: [tracer.C2H2]
-    data: 'kcoeff.<min>-<max>-<res>.nc'
 
   - name: C2H4
     long-name: "Ethylene line absorption"
     dependent-species: [tracer.C2H4]
-    data: 'kcoeff.<min>-<max>-<res>.nc'
 
   - name: C2H6
     long-name: "Ethane line absorption"
     dependent-species: [tracer.C2H6]
-    data: 'kcoeff.<min>-<max>-<res>.nc'
 
 bands: [B1, B2, B3, B4, B5, B6, B7, B8, B9, B10]
 
