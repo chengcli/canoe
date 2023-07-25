@@ -1,0 +1,501 @@
+#!/usr/bin/env python3
+"""
+Created on Jul 16 13:34:11 2017
+@author: thl, cli
+"""
+from netCDF4 import *
+from pylab import *
+import argparse, glob
+
+cmake_source_dir = '@CMAKE_SOURCE_DIR@'
+cmake_binary_dir = '@CMAKE_BINARY_DIR@'
+cia_folder = f'{cmake_source_dir}/data/'
+
+# prepare parse and add argument
+parser = argparse.ArgumentParser()
+parser.add_argument('--input',
+  default = 'kcoeff.inp',
+  help = 'input file'
+  )
+parser.add_argument('--kcoeff',
+  help = 'netcdf file'
+  )
+parser.add_argument('--atm',
+  help = 'atmosphere file'
+  )
+parser.add_argument('--nbins',
+  default = '3',
+  )
+parser.add_argument('--points',
+  #default = '80',
+  default = '50',
+  #default = '16',
+  )
+parser.add_argument('--cia',
+  default = '',
+  help = 'cia absorber'
+  )
+
+parser.add_argument('--solar',
+  default = f'{cmake_source_dir}/data/solar.txt',
+  help = 'solar file'
+  )
+
+parser.add_argument('--dist',
+  default = '1.',
+  help = 'distance between sun and planet'
+  )
+
+parser.add_argument('--output')
+
+# parse command-line inputs
+args = vars(parser.parse_args())
+
+Rgas = 8.3144621                # ideal gas constant    J/(K mol)
+kBoltz = 1.3806504e-23          # Boltzman constant     J/K
+Lo     = 2.68719e25             # Loschmidt number      mol/m^3 at STP
+
+
+ilayer =  50
+#ilayer =  90
+def BinarySearch(array,t):
+    low = 0
+    height = len(array)-1
+    while low+1<height:
+        mid = (low+height) // 2
+        if array[mid] <=t:
+            low = mid
+
+        elif array[mid] >t:
+            height = mid
+    return low
+
+
+def Math_GaussLegendre(n):
+    p, w = np.polynomial.legendre.leggauss(n) # range is -1 to 1
+
+    # now change it to 0 to 1
+
+    return (p+1.)/2., w/2.
+
+def load_data(ncfile, AbsorberNames):
+    data = Dataset(ncfile, 'r')
+    pres = data.variables['Pressure'][:]
+    temp = data.variables['Temperature'][:]
+    temp_grid = {}
+    for gas in AbsorberNames:
+        temp_grid[gas] = data.variables['T_' + gas][:]
+
+    wn = data.variables['Wavenumber'][:]
+
+    kcoeff = {}
+    for gas in AbsorberNames:
+        kcoeff[gas] = data.variables[gas][:, :, :]
+
+    return pres, temp, wn, temp_grid, kcoeff
+
+
+def calc_solar(sfile,wave):
+    # load sfile
+    data = genfromtxt(sfile)
+    saxis = data[:,0] # solar file axis (wavenumber in cm-1)
+    sdata = data[:,1] # solar radiacne data
+
+    N = len(wave)
+    solar = np.zeros(N)
+
+    for i in range(N):
+      m = BinarySearch(saxis,wave[i])
+
+      xm = wave[i]-saxis[m]
+      xn = saxis[m+1]-wave[i]
+
+      xm /= saxis[m+1]-saxis[m]
+      xn /= saxis[m+1]-saxis[m]
+
+      solar[i] = xn*sdata[m] + xm*sdata[m+1]
+
+      if wave[i] < saxis[0]:
+          solar[i] = sdata[0]
+
+      if wave[i] > saxis[-1]:
+          solar[i] = sdata[-1]
+    return solar
+
+def load_mixr(atm_file):
+    data = genfromtxt(atm_file, names = True)
+    #pres = data[:,2]
+    #temp = data[:,3]
+    #return pres, temp
+
+
+    return data
+
+# read xiz cia txt file to get cia kcoeff
+
+def load_xiz_cia(CIA_names,w1,w2,dw):
+    kcoeff = {}
+    t_grid = {}
+    for cia in CIA_names:
+       if cia == 'H2-H2-nm':
+           inp = f'{cia_folder}/H2-H2-nm.xiz.txt'
+       elif cia == 'H2-He-nm':
+           inp = f'{cia_folder}/H2-He-nm.xiz.txt'
+       elif cia == 'H2-H2-eq':
+           inp = f'{cia_folder}/H2-H2-eq.xiz.txt'
+       elif cia == 'H2-He-eq':
+           inp = f'{cia_folder}/H2-He-eq.xiz.txt'
+       print("--Load xiz cia data from ", inp)
+
+       data =genfromtxt(inp)
+
+       t_grid[cia] = data[0,:][1:len(data[0,:])]
+
+       M, N  = data.shape
+
+       cia_wn = data[:,0][1:M]
+
+       cia_kcoeff = data[1:M,1:N]
+
+       len_wn = int((w2-w1)/dw) +1
+       wn = np.zeros(len_wn)
+       kcoeff[cia] = np.zeros((len_wn,len(t_grid[cia])))
+
+       for i in range(len_wn):
+           wn[i] = w1 + dw*i
+
+           m = BinarySearch(cia_wn, wn[i])
+
+           xm = wn[i] - cia_wn[m]
+           xn = cia_wn[m+1] - wn[i]
+
+           xm /= cia_wn[m+1] - cia_wn[m]
+           xn /= cia_wn[m+1] - cia_wn[m]
+
+           kcoeff[cia][i,:] = -(xn*cia_kcoeff[m,:] + xm*cia_kcoeff[m+1,:])
+
+    return t_grid, kcoeff
+
+
+
+def get_kcoeff1(p, n, T, temp, mixr, kcoeff):
+   # p is the order in wn[]
+   # n is the order in pres[]
+
+   # find the loc of T in array temp[]
+   m = BinarySearch(temp,T)
+
+   xm = T-temp[m]
+   xn = temp[m+1]-T
+
+   xm /= temp[m+1]-temp[m]
+   xn /= temp[m+1]-temp[m]
+
+   lnkcoeff = xn*kcoeff[p,n,m] + xm*kcoeff[p,n,m+1]
+
+   return 1e-5 * exp(lnkcoeff) * mixr * 1e-6    # 1e-6 for ppmv to mixing ratio
+
+
+def get_kcoeff2(p,n,T,temp,mixr1, mixr2, kcoeff):
+   # for CIA gas
+
+   m = BinarySearch(temp,T)
+
+   xm = T-temp[m]
+   xn = temp[m+1]-T
+   #print temp[m], T, temp[m+1]
+
+   xm /= temp[m+1]-temp[m]
+   xn /= temp[m+1]-temp[m]
+
+
+   lnkcoeff = xn*kcoeff[p,m] + xm*kcoeff[p,m+1]
+   #lnkcoeff = xn*kcoeff[m,p] + xm*kcoeff[m+1,p]
+
+   return  exp(lnkcoeff) * mixr1 * mixr2 * 1e-12
+
+
+def make_ck_axis(AbsorberNames,CIA_names, mixr, kcoeff_gas, kcoeff_cia, temp, temp_grid,temp_grid_cia,wn, n_g_p, g_n):
+    #n = 110
+    #n = int(len(temp)/2)
+    print("------- Make ck axis ------")
+    #print "Use level", n, "to sort"
+
+    kc = np.zeros((len(wn),len(temp)))
+    for gas in AbsorberNames:
+        print("Add Absorber: ---", gas , " ---")
+        #print dens
+        for k in range(len(temp)):
+            dens = mixr['PRE'][len(temp)-k-1] *1e2/(Rgas*temp[k])               # 1e2 for mb to pa
+            for p in range(len(wn)):
+                #print "k ", k, "temp[k]: ", temp[k]
+                kc[p,k] += get_kcoeff1(p,k, temp[k], temp[k] + temp_grid[gas]
+                        ,mixr[gas][len(temp)-k-1],kcoeff_gas[gas]) *dens
+
+              #print temp[n], mixr['TEM'][len(temp)-n-1]
+
+    for cia in CIA_names:
+        print("Add CIA: ---", cia , " ---")
+        cia_gas = cia.split('-')
+        #print cia_gas[0], cia_gas[1]
+       # print amagat
+        for k in range(len(temp)):
+            amagat = mixr['PRE'][len(temp)-k-1]*1e2/(kBoltz * Lo * temp[k])
+            for p in range(len(wn)):
+                kc[p,k] += get_kcoeff2(p, k, temp[k], temp_grid_cia[cia],
+                    mixr[cia_gas[0]][len(temp)-k-1], mixr[cia_gas[1]][len(temp)-k-1], kcoeff_cia[cia]) *amagat * amagat
+
+    # save the wavenumber array after sorting
+    #print kc[822], kc[823]
+
+    sort_wn = np.zeros((len(wn),len(temp)))
+    for j in range(len(temp)):
+        #for i in range(len(wn)):
+            sort_wn[:,j] = wn[argsort(kc[:,j])[:]]
+            #sort_wn[i,j] = wn[argsort(kc[:,j])[i]]
+            #sort_wn[argsort(kc)[i]] = wn[i]
+
+    #print sort_wn[:,0], sort_wn[:,110]
+    #print argsort(kc[:,100])
+
+    #for i in range(len(kc)):
+    #    if kc[i] == min(kc):
+    #        print i
+
+    #for i in range(len(sort_wn)):
+    #    print i , " ", sort_wn[i]
+
+    print("------- Sort done ------")
+    print("")
+    print("")
+    print("---- Choose", g_n, "Gaussian points--")
+    g = np.zeros(n_g_p*g_n)
+    w = np.zeros(n_g_p*g_n)
+    gg, ww = Math_GaussLegendre(g_n)
+
+    g_p = np.zeros(n_g_p+1)
+    g_p[0] = 0.
+    g_p[n_g_p] = 1.
+
+
+    # ln (tau) to find g_n
+
+    #ilayer = int(len(temp)/2)
+    #ilayer =  70
+
+    print("Use layer", ilayer, "find g_n")
+    tau_max = max(kc[:,ilayer])
+    tau_min = min(kc[:,ilayer])
+
+    for i in range(n_g_p-1):
+        lnaa = log(tau_min)+(log(tau_max)-log(tau_min))/(n_g_p)*(i+1)
+        tau_value = exp(lnaa)
+        #print log(tau_min), log(tau_max),lnaa
+
+        #print log(sort(kc[:,ilayer])[9999])
+        g_p[i+1] = float(np.searchsorted(sort(kc[:,ilayer]),tau_value))/len(kc[:,ilayer])
+
+    print("g_p is ", g_p)
+
+
+    #g[0:g_n] = g_p * gg
+    #w[0:g_n] = g_p * ww
+
+    for i in range(n_g_p):
+        g[i*g_n : (i+1)*g_n] = g_p[i] + (g_p[i+1]-g_p[i])*gg
+        w[i*g_n : (i+1)*g_n] = (g_p[i+1] - g_p[i]) *ww
+
+
+    #g[g_n:2*g_n] = g_p + (1-g_p) *gg
+    #w[g_n:2*g_n] = ww*(1-g_p)
+
+    g_wn = np.zeros((n_g_p*g_n,len(temp)))
+
+    for k in range(len(temp)):
+        for i in range(n_g_p*g_n):
+            order = int(g[i] *len(wn))
+
+
+            g_wn[i,k]  = sort_wn[order,k]
+      #      if k>0:
+      #       print "i: ",i, "k: ",k, "g_wn ",g_wn[i,k],g_wn[i,k-1],g_wn[i,k]-g_wn[i,k-1],"pres[k]",mixr['PRE'][len(temp)-k-1]
+
+
+    #print g_wn[:,100]
+
+
+    # gg_wn , average of g_wn
+    min_wn = wn[0]
+    max_wn = wn[-1]
+    d_wn = wn[1] - wn[0]
+
+    gg_wn = np.zeros(len(g_wn[:,ilayer]))
+    ggg = np.zeros(len(g)+2)
+    ggg[0] = 0
+    ggg[-1] = int((max_wn-min_wn)/d_wn) + 1
+    for ii in range(len(g)):
+      ggg[1+ii] = int((g[ii]*(max_wn-min_wn)/d_wn)+1)
+    for tt in range(len(g)):
+      i1 = int(ggg[tt])
+      i2 = int(ggg[tt+2])
+
+      gg_wn[tt] = sum(sort_wn[i1:i2+1,ilayer])
+      gg_wn[tt] /= i2-i1+1.0
+
+
+
+
+    # calculate solar radiance for those g point in ilayer
+    print("calculate solar")
+    dist = double(args['dist'])
+    #solar = calc_solar(args['solar'], g_wn[:,ilayer])/(dist*dist)
+    solar = calc_solar(args['solar'], gg_wn)/(dist*dist)
+
+    print("")
+    print("")
+    print("------- ck axis done ------")
+    print(gg_wn)
+
+    return sort_wn,  g_wn, gg_wn, g, w, solar
+
+def write_ck_table(AbsorberNames,CIA_names, temp, temp_grid, temp_grid_cia, pres,
+  kcoeff_gas, kcoeff_cia,wn, sort_wn, g_wn, gg_wn, g,w,solar,outfile):
+    print("")
+    print("------ Create cktable file ------")
+    min_wn = wn[0]
+    max_wn = wn[-1]
+    d_wn = wn[1] - wn[0]
+
+    ncfile = Dataset(outfile, 'w')
+
+    # dimension variable
+
+
+
+    ncfile.createDimension('g_wn', len(gg_wn))
+    dim = ncfile.createVariable('g_wn', 'f8', ('g_wn',))
+    #dim[:] = g_wn[:,ilayer]
+    dim[:] = gg_wn[:]
+    dim.long_name = 'ilayer sort_wavenumber'
+    dim.units      = 'cm-1'
+    '''
+    ncfile.createDimension('g_wn', len(g_wn))
+    dim = ncfile.createVariable('g_wn', 'f8', ('g_wn',))
+    dim[:] = g_wn
+    dim.long_name = 'gaussian wavenumber'
+    dim.units = 'cm-1'
+    '''
+
+    wrange = np.zeros(2)
+    wrange[0] = min_wn
+    wrange[1] = max_wn
+    ncfile.createDimension('Waverange', len(wrange))
+    dim = ncfile.createVariable('Waverange', 'f8', ('Waverange',))
+    dim[:] = wrange
+    dim.long_name = 'wmin wmax'
+    dim.units = 'cm-1'
+
+    ncfile.createDimension('Wavenumber', len(g))
+    dim = ncfile.createVariable('Wavenumber', 'f8', ('Wavenumber',))
+    dim[:] = g
+    dim.long_name = 'ck g value'
+    dim.units = ''
+
+    ncfile.createDimension('Weight', len(w))
+    dim = ncfile.createVariable('Weight', 'f8', ('Weight',))
+    dim[:] = w
+    dim.long_name = 'ck g weight'
+    dim.units = ''
+
+    ncfile.createDimension('Solar', len(solar))
+    dim = ncfile.createVariable('Solar', 'f8', ('Solar',))
+    dim[:] = solar
+    dim.long_name = 'ilayer g points solar radiance'
+    dim.units = 'w/m2/cm'
+
+    ncfile.createDimension('Pressure', len(pres))
+    dim = ncfile.createVariable('Pressure', 'f8', ('Pressure',))
+    dim[:] = pres
+    dim.long_name   = 'Pressure'
+    dim.units       = 'mb'
+
+    ncfile.createDimension('Temperature', len(temp))
+    dim = ncfile.createVariable('Temperature', 'f8', ('Temperature',))
+    dim[:] = temp
+    dim.long_name   = 'Temperature'
+    dim.units       = 'K'
+
+    if len(AbsorberNames) != 0:
+
+      for gas in AbsorberNames:
+          ncfile.createDimension('T_'+gas, len(temp_grid[gas]))
+          dim = ncfile.createVariable('T_'+gas, 'f8', ('T_'+gas,))
+          dim[:] = temp_grid[gas]
+          dim.long_name = 'Relative Temperature'
+          dim.units = 'K'
+
+          dim_k_name = ('Wavenumber','Pressure','T_'+gas)
+          dim_k = (len(g), len(pres),len(temp_grid))
+
+          var = ncfile.createVariable(gas, 'f8', dim_k_name)
+          for k in range(len(temp)):
+            for i in range(len(g)):
+              order = (g_wn[i,k]-min_wn)/d_wn
+              order = int(order+0.5)
+              var[i,k,:] = kcoeff_gas[gas][order,k,:]
+          var.long_name = gas+ ' absorption coefficients'
+          var.units = 'ln(m^2/kmol)'
+
+    if len(CIA_names) != 0:
+       for cia in CIA_names:
+           ncfile.createDimension('T_'+cia, len(temp_grid_cia[cia]))
+           dim = ncfile.createVariable('T_'+cia, 'f8', ('T_'+cia,))
+           dim[:] = temp_grid_cia[cia]
+           dim.long_name = 'CIA temperature grid'
+           dim.units = 'K'
+
+           #dim_k_name = ('T_'+cia,'Wavenumber')
+           #dim_k = (len(temp_grid[cia]),len(g))
+           dim_k_name = ('Wavenumber','Pressure','T_'+cia)
+           dim_k = (len(g),len(pres),len(temp_grid_cia[cia]))
+
+           var = ncfile.createVariable(cia, 'f8', dim_k_name)
+           for k in range(len(temp)):
+             for i in range(len(g)):
+              order = (g_wn[i,k] - min_wn)/d_wn
+              order = int(order+0.5)
+
+              var[i,k,:] = kcoeff_cia[cia][order,:]
+              #var[i,:] = -kcoeff[cia][:,order]
+           var.long_name = cia+' absorption coefficients'
+           var.units = 'ln(cm Amagat^2)'
+
+    ncfile.close()
+    print("------ Done  -----")
+    print("output file written into ", outfile)
+
+if __name__ == '__main__':
+  cias  = args['cia'].split()
+  nbins  = int(args['nbins'])
+  points= int(args['points'])
+
+  with open(args['input'], 'r') as file:
+    a = file.readlines()
+
+  for i in range(len(a)):
+    if a[i] == '# Molecular absorber\n':
+      AbsorberNames= a[i+2].split()
+    elif a[i] == '# Wavenumber range\n':
+      b = a[i+1].strip('\n')
+      b = b.split()
+      min_wn = double(b[0])
+      max_wn = double(b[1])
+      n_wn   = int(b[2])
+      dw     = (max_wn-min_wn)/(n_wn-1)
+      outfile = "cktable." + b[0] +'-' + b[1] + '.nc'
+
+  a,b,c,d,e = load_data(args['kcoeff'],AbsorberNames)
+  mixr = load_mixr(args['atm'])
+  tg, cia_k  = load_xiz_cia(cias, min_wn,max_wn,dw)
+  ff, gg, ggwn, hh, ww, ss= make_ck_axis(AbsorberNames,cias, mixr,e, cia_k, b, d, tg,c, nbins, points)
+  write_ck_table(AbsorberNames,cias, b, d, tg, a, e, cia_k, c, ff, gg, ggwn, hh, ww, ss,outfile)

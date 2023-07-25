@@ -11,8 +11,8 @@ Brewfile.lock.json
 *.par
 
 # datafile
-data/[^(CMakeLists)]*.txt
-data/[^(CMakeLists)]*.hit
+data/*.txt
+data/*.hit
 
 # tmp file
 *.tmp

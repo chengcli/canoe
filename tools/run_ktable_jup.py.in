@@ -1,6 +1,15 @@
-#! python3
+#! /usr/bin/env python3
+from pyathena import FileMode, io_wrapper, parameter_input
+from pyharp import radiation, init_index_map
 from multiprocessing import Pool, cpu_count
-import os, re, subprocess
+import os, re, subprocess, argparse
+
+# prepare parse and add argument
+parser = argparse.ArgumentParser()
+
+parser.add_argument('-i', '--input')
+
+args = vars(parser.parse_args())
 
 cmake_source_dir = '@CMAKE_SOURCE_DIR@'
 cmake_binary_dir = '@CMAKE_BINARY_DIR@'
@@ -10,10 +19,10 @@ hitbin  = f"{cmake_binary_dir}/bin/hitbin.release"
 rfm     = f"{cmake_binary_dir}/bin/rfm.release"
 run_rfm = f"{cmake_binary_dir}/bin/run_rfm.py"
 kcoeff  = f"{cmake_binary_dir}/bin/kcoeff.release"
-cktable = f"{cmake_binary_dir}/bin/run_cktable.py"
+cktable = f"{cmake_binary_dir}/bin/cktable.py"
 
-hitran  = f"{cmake_source_dir}/data/MidIR_HITRAN_0-2500_H2broaden_C2H2_C2H6_AIRbroaden.par"
-hitfile = ""
+hitfile = f"{cmake_source_dir}/data/MidIR_HITRAN_0-2500_H2broaden_C2H2_C2H6_AIRbroaden.hit"
+inpfile = args['input']
 
 # number of threads
 max_threads = cpu_count()//2
@@ -34,37 +43,42 @@ generate_cktable = True
 cia     = "H2-H2-eq H2-He-eq"
 
 # spectral bands
-band= []
-band.append("10 200 0.01")
-band.append("200 400 0.01")
-band.append("400 600 0.01")
-band.append("600 700 0.01")
-band.append("700 860 0.01")
-band.append("860 960 0.01")
-band.append("960 1200 0.01")
-band.append("1200 1400 0.01")
-band.append("1400 1700 0.01")
-band.append("1700 2100 0.01")
-band.append("2100 3450 0.01")
-band.append("3450 4800 0.01")
-band.append("4800 6300 0.01")
-band.append("6300 7800 0.01")
-band.append("7800 9300 0.01")
+file = io_wrapper()
+pin = parameter_input()
+
+file.open(f"{inpfile}.inp", FileMode.read)
+pin.load_from_file(file)
+file.close()
+
+init_index_map(pin)
+
+rad = radiation()
+rad.load_all_radiation_bands(pin)
+
+bands_info = []
+for i in range(rad.get_num_bands()):
+    band = rad.get_band(i)
+    name = band.get_name()
+    wmin = band.get_wavenumber_min()
+    wmax = band.get_wavenumber_max()
+    wres = band.get_wavenumber_res()
+    bands_info.append([name, wmin, wmax, wres])
 
 # number of parallel threads
-nthreads = min(max_threads, len(band))
+nthreads = min(max_threads, len(bands_info))
 
 # run ktable in single thread
-def RunSingleKtable(wave):
-  wname = re.sub(' ', '-', wave)
-  print("working on band %s ..." % wname)
-  wmin, wmax, dw = map(float, wave.split())
-  tab_folder = str(wmin) + "-" + str(wmax)
-  kinp = 'kcoeff.inp-'+wname
-  kncfile = "kcoeff." + wname +".nc"
+def RunSingleKtable(info):
+  bname = info[0]
+  print(f"working on band {bname} ...")
+  wmin, wmax, dw = info[1], info[2], info[3]
+  wave = f'{wmin} {wmax} {wres}'
+  tab_folder = f'{wmin}-{wmax}'
+  kinp = f'kcoeff.inp-{bname}'
+  kncfile = f'kcoeff.{inpfile}-{bname}.nc'
   # create tab files and kcoeff.inp
   if generate_tab:
-    script = ['python', run_rfm,'--hitbin',hitbin,'--rfm',rfm,'--par',hitran,'--hit',hitfile,
+    script = ['python', run_rfm,'--hitbin',hitbin,'--rfm',rfm,'--hit',hitfile,
                       '--atm',atm,'--wave',wave,'--temp',temp,
                       '--molecule',mol,'--output',kinp,'--rundir',tab_folder]
     out, err = subprocess.Popen(script,
@@ -76,7 +90,7 @@ def RunSingleKtable(wave):
 
   # run kcoeff
   if generate_nc:
-    script = [kcoeff,'-i',kinp,'-o','kcoeff.%s.nc' % wname]
+    script = [kcoeff,'-i',kinp,'-o',kncfile]
     out, err = subprocess.Popen(script,
         stdout = subprocess.PIPE,
         stderr = subprocess.PIPE).communicate()
@@ -87,7 +101,8 @@ def RunSingleKtable(wave):
 
   # create correlated-K table
   if generate_cktable:
-    script = [cktable,'--kcoeff',kncfile,'--atm',atm,'--cia',cia,'--input', inpfile]
+    script = [cktable,'--kcoeff',kncfile,'--atm',atm,'--cia',cia,
+              '--input', kinp, '--output', f'{inpfile}-{bname}']
     out, err = subprocess.Popen(script,
         stdout = subprocess.PIPE,
         stderr = subprocess.PIPE).communicate()
@@ -97,4 +112,4 @@ def RunSingleKtable(wave):
 if __name__ == '__main__':
 # parallel on spectral bands
     pool = Pool(nthreads)
-    pool.map(RunSingleKtable, band)
+    pool.map(RunSingleKtable, bands_info)
