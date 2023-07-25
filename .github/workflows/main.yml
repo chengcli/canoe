@@ -150,10 +150,7 @@ jobs:
       - name: create build directory
         # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
         # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
-        run: >
-          cmake -DRFM=ON -DNETCDF=ON -DACCOUNT=${{env.ACCOUNT}} -DTOKEN=${{secrets.ACCESS_TOKEN}}
-            -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -B ${{github.workspace}}/build-netcdf
-            -DCMAKE_INSTALL_PREFIX=${HOME}/opt/
+        run: cmake -DRFM=ON -DNETCDF=ON -DACCOUNT=${{env.ACCOUNT}} -DTOKEN=${{secrets.ACCESS_TOKEN}} -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -B ${{github.workspace}}/build-netcdf -DCMAKE_INSTALL_PREFIX=${HOME}/opt/
 
       - name: build
         # Build your program with the given configuration
