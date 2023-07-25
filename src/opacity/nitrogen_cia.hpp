@@ -11,7 +11,10 @@
 class N2N2CIA : public Absorber {
  public:
   N2N2CIA(SpeciesNames const& species, ParameterMap params)
-      : Absorber("N2-N2", species, params) {}
+      : Absorber("N2-N2", species, params) {
+    category_ = "cia";
+  }
+
   virtual ~N2N2CIA() {}
 
   void LoadCoefficient(std::string fname, size_t bid) override;

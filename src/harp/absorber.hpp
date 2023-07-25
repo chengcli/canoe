@@ -36,6 +36,8 @@ class Absorber {
 
   std::string GetName() const { return name_; }
 
+  std::string GetCategory() const { return category_; }
+
   void SetModel(std::string name) { model_name_ = name; }
 
   virtual ~Absorber();
@@ -54,6 +56,9 @@ class Absorber {
  protected:
   //! absorber name
   std::string name_;
+
+  //! absorber category
+  std::string category_;
 
   //! absorption model model
   std::string model_name_;
