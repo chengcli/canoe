@@ -40,7 +40,7 @@ PYBIND11_MODULE(pyharp, m) {
       .def("cal_radiance", &Radiation::CalRadiance);
 
   // RadiationBand
-  py::class_<RadiationBand>(m, "radband")
+  py::class_<RadiationBand, std::shared_ptr<RadiationBand>>(m, "radband")
       .def_readonly("btau", &RadiationBand::btau)
       .def_readonly("bssa", &RadiationBand::bssa)
       .def_readonly("bpmom", &RadiationBand::bpmom)
