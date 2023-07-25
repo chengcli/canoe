@@ -8,6 +8,7 @@
 
 // canoe
 #include <index_map.hpp>
+#include <variable.hpp>
 
 // harp
 #include <harp/absorber.hpp>
@@ -40,7 +41,7 @@ PYBIND11_MODULE(pyharp, m) {
       .def("cal_radiance", &Radiation::CalRadiance);
 
   // RadiationBand
-  py::class_<RadiationBand, std::shared_ptr<RadiationBand>>(m, "radiation_band")
+  py::class_<RadiationBand, RadiationBandPtr>(m, "radiation_band")
       .def_readonly("btau", &RadiationBand::btau)
       .def_readonly("bssa", &RadiationBand::bssa)
       .def_readonly("bpmom", &RadiationBand::bpmom)
@@ -59,4 +60,11 @@ PYBIND11_MODULE(pyharp, m) {
       .def("get_absorber", &RadiationBand::GetAbsorber)
       .def("get_absorber_by_name", &RadiationBand::GetAbsorberByName)
       .def("get_name", &RadiationBand::GetName);
+
+  // Absorber
+  py::class_<Absorber, AbsorberPtr>(m, "absorber")
+      .def("get_category", &Absorber::GetCategory)
+      .def("get_name", &Absorber::GetName)
+      .def("get_attenuation", &Absorber::GetAttenuation)
+      .def("get_single_scattering_albedo", &Absorber::GetAttenuation);
 }

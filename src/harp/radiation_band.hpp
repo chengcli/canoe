@@ -59,9 +59,9 @@ class RadiationBand {
 
   size_t GetNumAbsorbers() const { return absorbers_.size(); }
 
-  Absorber *GetAbsorber(int i) { return absorbers_[i].get(); }
+  AbsorberPtr GetAbsorber(int i) { return absorbers_[i]; }
 
-  Absorber *GetAbsorberByName(std::string const &name);
+  AbsorberPtr GetAbsorberByName(std::string const &name);
 
   size_t GetNumOutgoingRays() { return rayOutput_.size(); }
 

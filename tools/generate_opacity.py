@@ -19,4 +19,11 @@ for i in range(rad.get_num_bands()):
     wmin = band.get_wavenumber_min()
     wmax = band.get_wavenumber_max()
     wres = band.get_wavenumber_res()
-    print(name, wmin, wmax, wres)
+    cia_list, hitran_list = [], []
+    #print(band.get_num_absorbers())
+    for j in range(band.get_num_absorbers()):
+        if band.get_absorber(j).get_category() == "cia":
+            cia_list.append(band.get_absorber(j).get_name())
+        if band.get_absorber(j).get_category() == "hitran":
+            hitran_list.append(band.get_absorber(j).get_name())
+    print(name, wmin, wmax, wres, cia_list, hitran_list)
