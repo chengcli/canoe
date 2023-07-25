@@ -66,7 +66,7 @@ TEST_F(TestMicrowaveOpacity, Absorbers) {
   auto prad = pmesh->my_blocks(0)->pimpl->prad;
 
   EXPECT_EQ(prad->GetNumBands(), 3);
-  EXPECT_EQ(prad->GetBand("radio")->GetNumAbsorbers(), 3);
+  EXPECT_EQ(prad->GetBandByName("radio")->GetNumAbsorbers(), 3);
 
   Variable var;
   var.w[IDN] = 300.;
@@ -75,15 +75,15 @@ TEST_F(TestMicrowaveOpacity, Absorbers) {
   var.w[2] = 1.E-2;
 
   // NH3 absorption
-  auto ab = prad->GetBand("radio")->GetAbsorber("radio-NH3");
+  auto ab = prad->GetBandByName("radio")->GetAbsorber("NH3");
   EXPECT_NEAR(ab->GetAttenuation(0.6, 0.6, var), 7.9161198e-07, 1.E-10);
 
   // H2O absorption
-  ab = prad->GetBand("radio")->GetAbsorber("radio-H2O");
+  ab = prad->GetBandByName("radio")->GetAbsorber("H2O");
   EXPECT_NEAR(ab->GetAttenuation(0.6, 0.6, var), 1.21548e-08, 1.E-10);
 
   // electron absorption
-  ab = prad->GetBand("radio")->GetAbsorber("radio-Electron");
+  ab = prad->GetBandByName("radio")->GetAbsorber("Electron");
 };
 
 int main(int argc, char *argv[]) {
