@@ -67,7 +67,7 @@ for i in range(rad.get_num_bands()):
             cia_list.append(band.get_absorber(j).get_name())
         if band.get_absorber(j).get_category() == "hitran":
             hitran_list.append(band.get_absorber(j).get_name())
-    info['cia'] = ' '.join(cia_list)
+    info['cia'] = '\"' + ' '.join(cia_list) + '\"'
     info['hitran'] = ' '.join(hitran_list)
     bands_info.append(info)
 
@@ -110,14 +110,18 @@ def RunSingleKtable(info):
   # create correlated-K table
   if generate_cktable:
     script = [cktable,'--kcoeff',kncfile,'--atm',atm,'--cia',info['cia'],
-              '--input', kinp, '--output', f'{inpfile}-{bname}']
-    out, err = subprocess.Popen(script,
-        stdout = subprocess.PIPE,
-        stderr = subprocess.PIPE).communicate()
-    print(out.decode(), err.decode())
+              '--input', kinp, '--output', f'{inpfile}-{bname}',
+              f' > log.cktable-{inpfile}-{bname} &']
+    with open('run_cktable.sh', 'a') as f:
+      f.write(' '.join(script))
+      f.write('\n\n')
   print("band %s finishes." % wave)
 
 if __name__ == '__main__':
+    if generate_cktable:
+        with open('run_cktable.sh', 'w') as f:
+            f.write('#!/bin/bash\n')
+
 # parallel on spectral bands
     pool = Pool(nthreads)
     pool.map(RunSingleKtable, bands_info)

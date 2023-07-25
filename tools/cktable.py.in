@@ -492,7 +492,7 @@ if __name__ == '__main__':
       max_wn = double(b[1])
       n_wn   = int(b[2])
       dw     = (max_wn-min_wn)/(n_wn-1)
-      outfile = "cktable." + b[0] +'-' + b[1] + '.nc'
+      outfile = 'cktable.%s.nc' % args['output']
 
   a,b,c,d,e = load_data(args['kcoeff'],AbsorberNames)
   mixr = load_mixr(args['atm'])
