@@ -1,6 +1,7 @@
 // C/C++
 #include <cstring>
 #include <string>
+#include <vector>
 
 // utils header
 #include "vectorize.hpp"
