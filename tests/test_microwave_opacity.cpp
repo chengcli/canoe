@@ -75,15 +75,15 @@ TEST_F(TestMicrowaveOpacity, Absorbers) {
   var.w[2] = 1.E-2;
 
   // NH3 absorption
-  auto ab = prad->GetBandByName("radio")->GetAbsorber("NH3");
+  auto ab = prad->GetBandByName("radio")->GetAbsorberByName("NH3");
   EXPECT_NEAR(ab->GetAttenuation(0.6, 0.6, var), 7.9161198e-07, 1.E-10);
 
   // H2O absorption
-  ab = prad->GetBandByName("radio")->GetAbsorber("H2O");
+  ab = prad->GetBandByName("radio")->GetAbsorberByName("H2O");
   EXPECT_NEAR(ab->GetAttenuation(0.6, 0.6, var), 1.21548e-08, 1.E-10);
 
   // electron absorption
-  ab = prad->GetBandByName("radio")->GetAbsorber("Electron");
+  ab = prad->GetBandByName("radio")->GetAbsorberByName("Electron");
 };
 
 int main(int argc, char *argv[]) {
