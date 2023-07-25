@@ -12,7 +12,7 @@ set_if_empty(NVAPOR 0)
 
 # canoe variables
 set_if_empty(NCLOUD 0)
-set_if_empty(NTRACER 0)
+set_if_empty(NTRACER 4)
 
 # canoe task set(TASKLIST InversionTasks)
 

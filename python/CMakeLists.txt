@@ -43,3 +43,5 @@ endmacro()
 # add python modules
 add_python_module(pyathena)
 add_python_module(pyharp)
+add_python_module(pycanoe)
+add_python_module(aiur)

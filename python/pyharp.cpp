@@ -6,6 +6,9 @@
 #include <athena/athena.hpp>
 #include <athena/parameter_input.hpp>
 
+// canoe
+#include <index_map.hpp>
+
 // harp
 #include <harp/absorber.hpp>
 #include <harp/radiation.hpp>
@@ -13,10 +16,15 @@
 
 namespace py = pybind11;
 
+void init_index_map(ParameterInput *pin) { IndexMap::InitFromAthenaInput(pin); }
+
 PYBIND11_MODULE(pyharp, m) {
   m.attr("__name__") = "pyharp";
   m.doc() = "Python bindings for HARP";
 
+  m.def("init_index_map", &init_index_map);
+
+  // Radiation
   py::class_<Radiation>(m, "radiation")
       .def_readonly("radiance", &Radiation::radiance)
       .def_readonly("fluxup", &Radiation::flxup)
@@ -31,6 +39,7 @@ PYBIND11_MODULE(pyharp, m) {
       .def("cal_radiative_flux", &Radiation::CalRadiativeFlux)
       .def("cal_radiance", &Radiation::CalRadiance);
 
+  // RadiationBand
   py::class_<RadiationBand>(m, "radband")
       .def_readonly("btau", &RadiationBand::btau)
       .def_readonly("bssa", &RadiationBand::bssa)
