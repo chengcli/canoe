@@ -1,5 +1,4 @@
 #! /usr/bin/env python3
-from pylab import *
 from pyathena import FileMode, io_wrapper, parameter_input
 from pyharp import radiation, init_index_map
 
@@ -16,4 +15,8 @@ rad = radiation()
 rad.load_all_radiation_bands(pin)
 for i in range(rad.get_num_bands()):
     band = rad.get_band(i)
-    print(band.get_name())
+    name = band.get_name()
+    wmin = band.get_wavenumber_min()
+    wmax = band.get_wavenumber_max()
+    wres = band.get_wavenumber_res()
+    print(name, wmin, wmax, wres)

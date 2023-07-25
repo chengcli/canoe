@@ -40,7 +40,7 @@ PYBIND11_MODULE(pyharp, m) {
       .def("cal_radiance", &Radiation::CalRadiance);
 
   // RadiationBand
-  py::class_<RadiationBand, std::shared_ptr<RadiationBand>>(m, "radband")
+  py::class_<RadiationBand, std::shared_ptr<RadiationBand>>(m, "radiation_band")
       .def_readonly("btau", &RadiationBand::btau)
       .def_readonly("bssa", &RadiationBand::bssa)
       .def_readonly("bpmom", &RadiationBand::bpmom)
@@ -50,6 +50,9 @@ PYBIND11_MODULE(pyharp, m) {
       .def(py::init())
 
       .def("get_num_bins", &RadiationBand::GetNumBins)
+      .def("get_wavenumber_min", &RadiationBand::GetWavenumberMin)
+      .def("get_wavenumber_max", &RadiationBand::GetWavenumberMax)
+      .def("get_wavenumber_res", &RadiationBand::GetWavenumberRes)
       .def("has_parameter", &RadiationBand::HasParameter)
       .def("get_parameter", &RadiationBand::GetParameter)
       .def("get_num_absorbers", &RadiationBand::GetNumAbsorbers)

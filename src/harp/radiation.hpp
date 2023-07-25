@@ -52,9 +52,9 @@ class Radiation {
 
   size_t GetNumBands() const { return bands_.size(); }
 
-  RadiationBand *GetBand(int i) const { return bands_[i].get(); }
+  RadiationBandPtr GetBand(int i) const { return bands_[i]; }
 
-  RadiationBand *GetBandByName(std::string const &name) const;
+  RadiationBandPtr GetBandByName(std::string const &name) const;
 
   void CalRadiativeFlux(Real time, int k, int j, int il, int iu);
 

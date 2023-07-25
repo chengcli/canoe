@@ -43,13 +43,21 @@ class RadiationBand {
 
   ~RadiationBand();
 
-  size_t GetNumBins() { return spec_.size(); }
+  size_t GetNumBins() const { return spec_.size(); }
 
-  bool HasParameter(std::string const &name) { return params_.count(name); }
+  Real GetWavenumberMin() const { return wmin_; }
 
-  Real GetParameter(std::string const &name) { return params_.at(name); }
+  Real GetWavenumberMax() const { return wmax_; }
 
-  size_t GetNumAbsorbers() { return absorbers_.size(); }
+  Real GetWavenumberRes() const;
+
+  bool HasParameter(std::string const &name) const {
+    return params_.count(name);
+  }
+
+  Real GetParameter(std::string const &name) const { return params_.at(name); }
+
+  size_t GetNumAbsorbers() const { return absorbers_.size(); }
 
   Absorber *GetAbsorber(int i) { return absorbers_[i].get(); }
 

@@ -81,10 +81,10 @@ Radiation::~Radiation() {
   app->Log("Destroy Radiation");
 }
 
-RadiationBand *Radiation::GetBandByName(std::string const &name) const {
+RadiationBandPtr Radiation::GetBandByName(std::string const &name) const {
   for (auto &band : bands_) {
     if (band->GetName() == name) {
-      return band.get();
+      return band;
     }
   }
 

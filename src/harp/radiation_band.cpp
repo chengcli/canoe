@@ -236,6 +236,13 @@ void RadiationBand::setFrequencyGrid(YAML::Node &my) {
   }
 }
 
+Real RadiationBand::GetWavenumberRes() const {
+  if (spec_.size() > 1)
+    return (wmax_ - wmin_) / (spec_.size() - 1);
+  else
+    return (wmax_ - wmin_) / spec_.size();
+}
+
 void RadiationBand::setWavelengthRange(YAML::Node &my) {
   throw NotImplementedError("setWavelengthRange");
 }
