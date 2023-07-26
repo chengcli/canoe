@@ -28,6 +28,7 @@ hitfile = f"{cmake_source_dir}/data/MidIR_HITRAN_0-2500_H2broaden_C2H2_C2H6_AIRb
 parfile = f"{cmake_source_dir}/data/HITRAN2020.par"
 
 base_name = os.path.basename(args['input'])
+path_name = os.path.dirname(args['input'])
 inpfile = base_name.split('.')[0]
 
 # number of threads
@@ -48,7 +49,10 @@ generate_cktable = True
 file = io_wrapper()
 pin = parameter_input()
 
-file.open(f"{inpfile}.inp", FileMode.read)
+if path_name != '':
+    file.open(f"{path_name}/{inpfile}.inp", FileMode.read)
+else:
+    file.open(f"{inpfile}.inp", FileMode.read)
 pin.load_from_file(file)
 file.close()
 
