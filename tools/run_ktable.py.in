@@ -1,5 +1,5 @@
 #! /usr/bin/env python3
-import sys
+import sys, os
 sys.path.append('@CMAKE_BINARY_DIR@/python')
 
 from pyathena import FileMode, io_wrapper, parameter_input
@@ -27,7 +27,8 @@ cktable = f"{cmake_binary_dir}/bin/cktable.py"
 hitfile = f"{cmake_source_dir}/data/MidIR_HITRAN_0-2500_H2broaden_C2H2_C2H6_AIRbroaden.hit"
 parfile = f"{cmake_source_dir}/data/HITRAN2020.par"
 
-inpfile = args['input'].split('.')[0]
+base_name = os.path.basename(args['input'])
+inpfile = base_name.split('.')[0]
 
 # number of threads
 max_threads = cpu_count() // 2
