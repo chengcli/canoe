@@ -45,7 +45,8 @@ Ttriple2    = 195.4
 Ptriple2    = 6060.
 
 <radiation>
-control_file = example_bands.yaml
+infrared_bands = example_infrared.yaml
+radio_bands = example_radio.yaml
 
 <problem>
 dens  = 1.0

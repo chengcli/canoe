@@ -12,7 +12,7 @@
 namespace GiantPlanets {
 
 MwrAbsorberCIA::MwrAbsorberCIA(SpeciesNames const& species, ParameterMap params)
-    : Absorber("radio-CIA", species, params) {
+    : Absorber("CIA", species, params) {
   if (!params_.count("xHe")) {
     throw NotFoundError("MwrAbsorberCIA", "parameter 'xHe'");
   }

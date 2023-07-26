@@ -36,6 +36,8 @@ class Absorber {
 
   std::string GetName() const { return name_; }
 
+  std::string GetCategory() const { return category_; }
+
   void SetModel(std::string name) { model_name_ = name; }
 
   virtual ~Absorber();
@@ -55,6 +57,9 @@ class Absorber {
   //! absorber name
   std::string name_;
 
+  //! absorber category
+  std::string category_;
+
   //! absorption model model
   std::string model_name_;
 
@@ -65,6 +70,6 @@ class Absorber {
   ParameterMap params_;
 };
 
-using AbsorberPtr = std::unique_ptr<Absorber>;
+using AbsorberPtr = std::shared_ptr<Absorber>;
 
 #endif  // SRC_HARP_ABSORBER_HPP_

@@ -8,7 +8,7 @@
 
 class YamlReadTests : public ::testing::Test {
  protected:
-  std::string filename = "example_bands.yaml";  // The name of your YAML file
+  std::string filename = "example_infrared.yaml";  // The name of your YAML file
   YAML::Node node;
 
   virtual void SetUp() {
@@ -28,29 +28,27 @@ TEST_F(YamlReadTests, OpacitySource) {
       << "'opacity-sources' not found in YAML file";
 
   auto sources = node["opacity-sources"].as<std::vector<YAML::Node>>();
-  ASSERT_EQ(9, sources.size())
+  ASSERT_EQ(6, sources.size())
       << "Unexpected number of sources in 'opacity-sources'";
 
   // Check first source
-  EXPECT_EQ("ir-H2-H2-CIA", sources[0]["name"].as<std::string>());
+  EXPECT_EQ("H2-H2-CIA", sources[0]["name"].as<std::string>());
   EXPECT_EQ("Hydrogen-Hydrogen collisional absorption",
             sources[0]["long-name"].as<std::string>());
   EXPECT_EQ("xiz", sources[0]["model"].as<std::string>());
 
   // Check third source
-  EXPECT_EQ("ir-CH4", sources[2]["name"].as<std::string>());
+  EXPECT_EQ("CH4", sources[2]["name"].as<std::string>());
   EXPECT_EQ("Methane line absorption",
             sources[2]["long-name"].as<std::string>());
   EXPECT_EQ("Voigt", sources[2]["model"].as<std::string>());
-  EXPECT_EQ("kcoeff.<min>-<max>-<res>.nc",
-            sources[2]["data"].as<std::string>());
 }
 
 TEST_F(YamlReadTests, BandsList) {
   // Checking 'bands'
   ASSERT_TRUE(node["bands"]) << "'bands' not found in YAML file";
   std::vector<std::string> bands = node["bands"].as<std::vector<std::string>>();
-  ASSERT_EQ(3, bands.size()) << "Unexpected number of bands";
+  ASSERT_EQ(2, bands.size()) << "Unexpected number of bands";
 }
 
 TEST_F(YamlReadTests, RadiationBand) {

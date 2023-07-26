@@ -10,7 +10,10 @@
 class O2O2CIA : public Absorber {
  public:
   O2O2CIA(SpeciesNames const& species, ParameterMap params)
-      : Absorber("O2-O2", species, params) {}
+      : Absorber("O2-O2", species, params) {
+    category_ = "cia";
+  }
+
   virtual ~O2O2CIA() {}
 
   void LoadCoefficient(std::string fname, size_t bid) override;

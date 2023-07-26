@@ -12,10 +12,10 @@
 #include <athena/mesh/mesh.hpp>
 #include <athena/outputs/outputs.hpp>
 #include <athena/parameter_input.hpp>
-#include <athena/stride_iterator.hpp>
 
 // application
 #include <application/application.hpp>
+#include <application/exceptions.hpp>
 
 // canoe
 #include <configure.hpp>
@@ -42,7 +42,6 @@ void MeshBlock::InitUserMeshBlockData(ParameterInput *pin) {
 }
 
 void MeshBlock::UserWorkBeforeOutput(ParameterInput *pin) {
-  Real dq[1 + NVAPOR], rh;
   auto pthermo = Thermodynamics::GetInstance();
 
   for (int k = ks; k <= ke; ++k)
@@ -85,29 +84,28 @@ void Mesh::InitUserMeshData(ParameterInput *pin) {
 
 void MeshBlock::ProblemGenerator(ParameterInput *pin) {
   Application::Logger app("main");
+  app->Log("ProblemGenerator: jupiter_re");
 
-  app->Log("ProblemGenerator: test_jupiter_re");
-  Real gamma = pin->GetReal("hydro", "gamma");
-
-  // construct a 1D adiabat with given relative humidity
-  Real x1min = pmy_mesh->mesh_size.x1min;
-  Real x1max = pmy_mesh->mesh_size.x1max;
-
-  Real **w1, *z1, *p1, *t1;
-  Real dz = (x1max - x1min) / pmy_mesh->mesh_size.nx1 / 2.;
-  size_t nx1 = 2 * pmy_mesh->mesh_size.nx1 + 1;
-  NewCArray(w1, nx1, NHYDRO);
-  z1 = new Real[nx1];
-  p1 = new Real[nx1];
-  t1 = new Real[nx1];
-
-  // estimate surface temperature and pressure
   auto pthermo = Thermodynamics::GetInstance();
 
+  // mesh limits
+  Real x1min = pmy_mesh->mesh_size.x1min;
+  Real x1max = pmy_mesh->mesh_size.x1max;
+  Real H0 = pimpl->GetPressureScaleHeight();
+
+  // request temperature and pressure
+  app->Log("request T", T0);
+  app->Log("request P", P0);
+
+  // thermodynamic constants
+  Real gamma = pin->GetReal("hydro", "gamma");
   Real Rd = pthermo->GetRd();
   Real cp = gamma / (gamma - 1.) * Rd;
-  Real Ts = T0 - grav / cp * (x1min - Z0);
-  Real Ps = P0 * pow(Ts / T0, cp / Rd);
+
+  // index
+  auto pindex = IndexMap::GetInstance();
+  int iH2O = pindex->GetVaporId("H2O");
+  int iNH3 = pindex->GetVaporId("NH3");
 
   // set up an adiabatic atmosphere
   int max_iter = 200, iter = 0;
@@ -199,18 +197,14 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
       }
   }
 
-  // add noise
-  unsigned int seed = time(NULL);
+  // set chemical tracers
+  auto ptracer = pimpl->ptracer;
+
   for (int k = ks; k <= ke; ++k)
     for (int j = js; j <= je; ++j)
-      for (int i = is; i <= ie; ++i)
-        phydro->w(IVX, k, j, i) = 0.01 * (1. * rand_r(&seed) / RAND_MAX - 0.5);
+      for (int i = is; i <= ie; ++i) {
+      }
 
   peos->PrimitiveToConserved(phydro->w, pfield->bcc, phydro->u, pcoord, is, ie,
                              js, je, ks, ke);
-
-  FreeCArray(w1);
-  delete[] z1;
-  delete[] p1;
-  delete[] t1;
 }

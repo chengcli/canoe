@@ -3,7 +3,9 @@
 
 // C/C++
 #include <iostream>
+#include <map>
 #include <string>
+#include <vector>
 
 // canoe
 #include <configure.hpp>
@@ -37,5 +39,8 @@ char* StripLine(char* line);
 char* NextLine(char* line, int num, FILE* stream);
 void read_data_table(char const* fname, double** data, int* rows, int* cols);
 void ReadDataTable(AthenaArray<Real>* data, std::string fname, char c = ' ');
+
+using DataVector = std::map<std::string, std::vector<double>>;
+DataVector read_data_vector(std::string fname);
 
 #endif  // SRC_UTILS_FILEIO_HPP_

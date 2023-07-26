@@ -150,17 +150,20 @@ jobs:
       - name: create build directory
         # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
         # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
-        run: cmake -DRFM=ON -DNETCDF=ON -DACCOUNT=${{env.ACCOUNT}} -DTOKEN=${{secrets.ACCESS_TOKEN}} -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -B ${{github.workspace}}/build-netcdf
+        run: cmake -DRFM=ON -DNETCDF=ON -DACCOUNT=${{env.ACCOUNT}} -DTOKEN=${{secrets.ACCESS_TOKEN}} -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -B ${{github.workspace}}/build-netcdf -DNTRACER=2 -DPLANET=Jupiter
 
       - name: build
         # Build your program with the given configuration
-        run: cmake --build ${{github.workspace}}/build-netcdf --config ${{env.BUILD_TYPE}} -- -j2
+        run: |
+          cmake --build ${{github.workspace}}/build-netcdf --config ${{env.BUILD_TYPE}} -- -j2
 
       - name: test generating ktable
         working-directory: ${{github.workspace}}/build-netcdf
         # Execute tests defined by the CMake configuration.
         # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
-        run: python ./bin/run_ktable.py
+        run: |
+          cp ./bin/example_giants_ir.yaml .
+          python ./bin/run_ktable.py -i ./bin/example_giants_ir.inp
 
       - name: test jupiter heating/cooling
         working-directory: ${{github.workspace}}/build-netcdf
@@ -214,11 +217,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: set up git lfs
-        run: |
-          git lfs install
-          git lfs pull
-
       - name: create build directory
         # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
         # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
@@ -249,11 +247,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: set up git lfs
-        run: |
-          git lfs install
-          git lfs pull
-
       - name: create build directory
         # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
         # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
@@ -281,11 +274,6 @@ jobs:
     needs: build-non-hydrostatic
     steps:
       - uses: actions/checkout@v3
-
-      - name: set up git lfs
-        run: |
-          git lfs install
-          git lfs pull
 
       - name: create build directory
         # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.

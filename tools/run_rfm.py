@@ -194,7 +194,7 @@ if __name__ == '__main__':
   tmin, tmax, tnum = map(float, args['temp'].split())
   tnum = int(tnum)
   if args['hit'] == '':
-    hitfile = CreateHitFile(args['par'], wmin, wmax, version = args['version'])
+    hitfile = args['par']
   else:
     hitfile = args['hit']
   print("# Hit file is: ", hitfile)

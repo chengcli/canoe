@@ -40,17 +40,21 @@ class Radiation {
   AthenaArray<Real> flxup, flxdn;
 
   // functions
+  Radiation() {}
+
   Radiation(MeshBlock *pmb, ParameterInput *pin);
 
   ~Radiation();
 
+  void LoadAllRadiationBands(ParameterInput *pin);
+
+  void LoadRadiationBands(ParameterInput *pin, std::string key);
+
   size_t GetNumBands() const { return bands_.size(); }
 
-  RadiationBand *GetBand(int i) const { return bands_[i].get(); }
+  RadiationBandPtr GetBand(int i) const { return bands_[i]; }
 
-  RadiationBand *GetBand(std::string const &name) const;
-
-  void PopulateRadiationBands(ParameterInput *pin);
+  RadiationBandPtr GetBandByName(std::string const &name) const;
 
   void CalRadiativeFlux(Real time, int k, int j, int il, int iu);
 
@@ -91,7 +95,7 @@ class Radiation {
   Real stellarDistance_au_;
 
   // connections
-  MeshBlock *pmy_block_;
+  MeshBlock *pmy_block_ = nullptr;
   CelestrialBodyPtr planet_;
 };
 

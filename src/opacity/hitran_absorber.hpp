@@ -15,10 +15,14 @@ class HitranAbsorber : public Absorber {
  public:
   HitranAbsorber(std::string name, SpeciesNames const& species,
                  ParameterMap params)
-      : Absorber(name, species, params) {}
+      : Absorber(name, species, params) {
+    category_ = "hitran";
+  }
+
   virtual ~HitranAbsorber() {}
-  void LoadCoefficient(std::string fname, size_t bid) override;
-  Real GetAttenuation(Real wave1, Real wave2, Variable const& var) const;
+  void LoadCoefficient(std::string fname, size_t bid = 0) override;
+  Real GetAttenuation(Real wave1, Real wave2,
+                      Variable const& var) const override;
 
  protected:
   size_t len_[3];            /**< length of interpolation axis */

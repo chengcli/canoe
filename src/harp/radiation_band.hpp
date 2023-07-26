@@ -36,28 +36,38 @@ class RadiationBand {
   AthenaArray<Real> btoa;
 
   // functions
+  RadiationBand() {}
+
   RadiationBand(MeshBlock *pmb, ParameterInput *pin, YAML::Node &node,
                 std::string name);
 
   ~RadiationBand();
 
-  size_t GetNumBins() { return spec_.size(); }
+  size_t GetNumBins() const { return spec_.size(); }
 
-  bool HasParameter(std::string const &name) { return params_.count(name); }
+  Real GetWavenumberMin() const { return wmin_; }
 
-  Real GetParameter(std::string const &name) { return params_.at(name); }
+  Real GetWavenumberMax() const { return wmax_; }
 
-  size_t GetNumAbsorbers() { return absorbers_.size(); }
+  Real GetWavenumberRes() const;
 
-  Absorber *GetAbsorber(int i) { return absorbers_[i].get(); }
+  bool HasParameter(std::string const &name) const {
+    return params_.count(name);
+  }
 
-  Absorber *GetAbsorber(std::string const &name);
+  Real GetParameter(std::string const &name) const { return params_.at(name); }
+
+  size_t GetNumAbsorbers() const { return absorbers_.size(); }
+
+  AbsorberPtr GetAbsorber(int i) { return absorbers_[i]; }
+
+  AbsorberPtr GetAbsorberByName(std::string const &name);
 
   size_t GetNumOutgoingRays() { return rayOutput_.size(); }
 
   std::string GetName() { return name_; }
 
-  std::string GetType() { return type_; }
+  std::string GetCategory() { return category_; }
 
   Real GetCosinePolarAngle(int n) const { return rayOutput_[n].mu; }
 
@@ -84,10 +94,10 @@ class RadiationBand {
   void setWavelengthGrid(YAML::Node &my);
 
   void addAbsorberGiants(ParameterInput *pin, YAML::Node &node);
-  void addAbsorberGiantsRADIO(YAML::Node &node);
-  void addAbsorberGiantsIR(YAML::Node &node);
-  void addAbsorberGiantsVIS(YAML::Node &node);
-  void addAbsorberGiantsUV(YAML::Node &node);
+  void addAbsorberGiantsRadio(YAML::Node &node);
+  void addAbsorberGiantsInfrared(YAML::Node &node);
+  void addAbsorberGiantsVisible(YAML::Node &node);
+  void addAbsorberGiantsUltraviolet(YAML::Node &node);
 
   void addAbsorberEarth(ParameterInput *pin, YAML::Node &node);
   void addAbsorberVenus(ParameterInput *pin, YAML::Node &node);
@@ -101,7 +111,8 @@ class RadiationBand {
 
   // data
   std::string name_;
-  std::string type_;
+  std::string myfile_;
+  std::string category_;
   uint64_t bflags_;
 
   // spectra

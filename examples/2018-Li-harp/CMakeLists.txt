@@ -1,11 +1,12 @@
 string(TOLOWER ${CMAKE_BUILD_TYPE} buildl)
 string(TOUPPER ${CMAKE_BUILD_TYPE} buildu)
 
-# 1. Compile test_jupiter_re.cpp
+# 1. Compile giants_re.cpp
 
-set(namel test_jupiter_re)
+set(namel giants_re)
 
-add_executable(${namel}.${buildl} ${namel}.cpp)
+add_executable(${namel}.${buildl} ${namel}.cpp
+  ${CMAKE_BINARY_DIR}/main_${TASK}.cpp)
 
 set_target_properties(
     ${namel}.${buildl}
@@ -29,7 +30,7 @@ target_include_directories(${namel}.${buildl}
 
 # 1. Copy input file to run directory
 
-file(GLOB inputs *.inp *.toml)
+file(GLOB inputs *.inp *.toml *.yaml)
 foreach(input ${inputs})
-    file(COPY ${input} DESTINATION ${CMAKE_BINARY_DIR}/bin)
+  file(COPY ${input} DESTINATION ${CMAKE_BINARY_DIR}/bin)
 endforeach()

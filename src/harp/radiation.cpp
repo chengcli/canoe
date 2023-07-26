@@ -39,8 +39,7 @@ Radiation::Radiation(MeshBlock *pmb, ParameterInput *pin)
   app->Log("Stellar distance = " + std::to_string(stellarDistance_au_) + " au");
 
   // radiation bands
-  if (pin->DoesParameterExist("radiation", "control_file"))
-    PopulateRadiationBands(pin);
+  LoadAllRadiationBands(pin);
 
   // incoming radiation direction (mu,phi) in degree
   std::string str = pin->GetOrAddString("radiation", "indir", "(0.,0.)");
@@ -82,21 +81,21 @@ Radiation::~Radiation() {
   app->Log("Destroy Radiation");
 }
 
-RadiationBand *Radiation::GetBand(std::string const &name) const {
+RadiationBandPtr Radiation::GetBandByName(std::string const &name) const {
   for (auto &band : bands_) {
     if (band->GetName() == name) {
-      return band.get();
+      return band;
     }
   }
 
   throw NotFoundError("GetBand", "Band " + name);
 }
 
-void Radiation::PopulateRadiationBands(ParameterInput *pin) {
+void Radiation::LoadRadiationBands(ParameterInput *pin, std::string key) {
   Application::Logger app("harp");
-  app->Log("Populate Radiation bands");
+  app->Log("Load Radiation bands");
 
-  std::string filename = pin->GetString("radiation", "control_file");
+  std::string filename = pin->GetString("radiation", key);
 
   std::ifstream stream(filename);
   if (stream.good() == false) {
@@ -105,7 +104,7 @@ void Radiation::PopulateRadiationBands(ParameterInput *pin) {
   YAML::Node node = YAML::Load(stream);
 
   if (!node["opacity-sources"]) {
-    throw NotFoundError("PopulateRadiationBand", "opacity-sources");
+    throw NotFoundError("LoadRadiationBand", "opacity-sources");
   }
 
   for (auto bname : node["bands"]) {
@@ -200,4 +199,16 @@ size_t Radiation::LoadRestartData(char *psrc) {
   offset += flxdn.GetSizeInBytes();
 
   return GetRestartDataSizeInBytes();
+}
+
+void Radiation::LoadAllRadiationBands(ParameterInput *pin) {
+  if (pin->DoesParameterExist("radiation", "infrared_bands")) {
+    LoadRadiationBands(pin, "infrared_bands");
+  }
+
+  if (pin->DoesParameterExist("radiation", "visible_bands"))
+    LoadRadiationBands(pin, "visible_bands");
+
+  if (pin->DoesParameterExist("radiation", "radio_bands"))
+    LoadRadiationBands(pin, "radio_bands");
 }
