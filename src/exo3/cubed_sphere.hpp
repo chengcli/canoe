@@ -20,8 +20,8 @@ class CubedSphere {
   static void TransformOX(int *ox2, int *ox3, int *tox2, int *tox3,
                           LogicalLocation const &loc);
 
-  Real GenerateMeshX2(Real x) const;
-  Real GenerateMeshX3(Real x) const;
+  static Real GenerateMeshX2(Real x, LogicalLocation const &loc);
+  static Real GenerateMeshX3(Real x, LogicalLocation const &loc);
 
   void GetLatLon(Real *lat, Real *lon, int k, int j, int i) const;
   void GetLatLonFace2(Real *lat, Real *lon, int k, int j, int i) const;
