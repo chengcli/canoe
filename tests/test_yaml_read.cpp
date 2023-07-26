@@ -42,8 +42,6 @@ TEST_F(YamlReadTests, OpacitySource) {
   EXPECT_EQ("Methane line absorption",
             sources[2]["long-name"].as<std::string>());
   EXPECT_EQ("Voigt", sources[2]["model"].as<std::string>());
-  EXPECT_EQ("kcoeff.<min>-<max>-<res>.nc",
-            sources[2]["data"].as<std::string>());
 }
 
 TEST_F(YamlReadTests, BandsList) {

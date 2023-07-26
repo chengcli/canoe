@@ -161,7 +161,7 @@ jobs:
         working-directory: ${{github.workspace}}/build-netcdf
         # Execute tests defined by the CMake configuration.
         # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
-        run: python ./bin/run_ktable.py
+        run: python ./bin/run_ktable.py -i example_giants_ir.inp
 
       - name: test jupiter heating/cooling
         working-directory: ${{github.workspace}}/build-netcdf

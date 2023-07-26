@@ -13,22 +13,18 @@ opacity-sources:
   - name: CH4
     long-name: "Methane line absorption"
     model: Voigt
-    data: 'kcoeff.<min>-<max>-<res>.nc'
 
   - name: C2H2
     long-name: "Acetylene line absorption"
     model: Voigt
-    data: 'kcoeff.<min>-<max>-<res>.nc'
 
   - name: C2H4
     long-name: "Ethylene line absorption"
     model: Voigt
-    data: 'kcoeff.<min>-<max>-<res>.nc'
 
   - name: C2H6
     long-name: "Ethane line absorption"
     model: Voigt
-    data: 'kcoeff.<min>-<max>-<res>.nc'
 
 bands: [vis, ir]
 

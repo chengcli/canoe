@@ -107,7 +107,16 @@ void RadiationBand::addAbsorberGiantsInfrared(YAML::Node &node) {
   }
 
   auto app = Application::GetInstance();
-  auto full_path = app->FindInputFile(data_file);
+  std::string full_path;
+  try {
+    full_path = app->FindInputFile(data_file);
+  } catch (NotFoundError const &e) {
+    auto log = app->GetMonitor("harp");
+    std::stringstream ss;
+    ss << e.what() << std::endl;
+    ss << name << " will not be loaded." << std::endl;
+    log->Warn(ss.str());
+  }
 
   if (name == "H2-H2-CIA") {
     auto ab = std::make_unique<XizH2H2CIA>(species, params);
