@@ -28,3 +28,6 @@ tests/Testing
 
 # external
 external/*.tar.gz
+
+# vscode
+.vscode

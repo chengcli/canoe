@@ -34,9 +34,7 @@ CubedSphere::CubedSphere(MeshBlock *pmb) : pmy_block_(pmb) {
   R3DValues[2].NewAthenaArray(NWAVE, nc3, nc2, nc1);
 }
 
-Real CubedSphere::GenerateMeshX2(Real x) const {
-  auto &loc = pmy_block_->loc;
-
+Real CubedSphere::GenerateMeshX2(Real x, LogicalLocation const &loc) {
   Real x_l, x_u;
   int lx2_lv2 = loc.lx2 >> (loc.level - 2);
 
@@ -53,9 +51,7 @@ Real CubedSphere::GenerateMeshX2(Real x) const {
   return (0.5 * (x - x_l) / (x_u - x_l) - 0.25) * PI;  // Add Pi back later!!
 }
 
-Real CubedSphere::GenerateMeshX3(Real x) const {
-  auto &loc = pmy_block_->loc;
-
+Real CubedSphere::GenerateMeshX3(Real x, LogicalLocation const &loc) {
   Real x_l, x_u;
   int lx3_lv2 = loc.lx3 >> (loc.level - 2);
 
@@ -359,11 +355,12 @@ void CubedSphere::sendNeighborBlocks(int ox2, int ox3, int tg_rank,
                 data[offset++] = vx;
               else
                 data[offset++] = vy;
-            } else  // No projection needed
+            } else {  // No projection needed
               if (Left)
                 data[offset++] = L3DValues[DirNum](n, k, j, i);
               else
                 data[offset++] = R3DValues[DirNum](n, k, j, i);
+            }
   } else {
     for (int n = 0; n < NWAVE; n++)
       for (int k = kb1; k <= kb2; k++)
@@ -426,11 +423,12 @@ void CubedSphere::sendNeighborBlocks(int ox2, int ox3, int tg_rank,
                 data[offset++] = vx;
               else
                 data[offset++] = vy;
-            } else  // No projection needed
+            } else {  // No projection needed
               if (Left)
                 data[offset++] = L3DValues[DirNum](n, k, j, i);
               else
                 data[offset++] = R3DValues[DirNum](n, k, j, i);
+            }
   }
 
   // Calculate the tag of destination

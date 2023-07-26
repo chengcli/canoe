@@ -18,7 +18,7 @@ index c11dd078..d594699e 100644
          }
          Real rx = ComputeMeshGeneratorX(noffset, nrootmesh, true);
 +#ifdef CUBED_SPHERE
-+        x2f(j) = pmy_block->pimpl->pexo3->GenerateMeshX2(rx);
++        x2f(j) = CubedSphere::GenerateMeshX2(rx, pmy_block->loc);
 +#else
          x2f(j) = pm->MeshGenerator_[X2DIR](rx, mesh_size);
 +#endif
@@ -37,7 +37,7 @@ index c11dd078..d594699e 100644
          }
          Real rx = ComputeMeshGeneratorX(noffset, nrootmesh, true);
 +#ifdef CUBED_SPHERE
-+        x3f(k) = pmy_block->pimpl->pexo3->GenerateMeshX3(rx);
++        x3f(k) = CubedSphere::GenerateMeshX3(rx, pmy_block->loc);
 +#else
          x3f(k) = pm->MeshGenerator_[X3DIR](rx, mesh_size);
 +#endif

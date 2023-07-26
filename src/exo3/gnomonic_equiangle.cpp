@@ -9,6 +9,10 @@
 #include <athena/mesh/mesh.hpp>
 #include <athena/parameter_input.hpp>
 
+// application
+#include <application/application.hpp>
+
+// exo3
 #include "gnomonic_equiangle.hpp"
 
 //----------------------------------------------------------------------------------------
@@ -17,7 +21,9 @@
 GnomonicEquiangle::GnomonicEquiangle(MeshBlock *pmb, ParameterInput *pin,
                                      bool flag)
     : Coordinates(pmb, pin, flag) {
-  std::cout << "Gnomonic Equiangle Coordinate " << std::endl;
+  Application::Logger app("exo3");
+  app->Log("Gnomonic Equiangle Coordinate");
+
   // initialize volume-averaged coordinates and spacing
   // x1-direction: x1v = dx/2
   for (int i = il - ng; i <= iu + ng; ++i) {
