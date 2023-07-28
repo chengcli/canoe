@@ -91,12 +91,13 @@ def RunRfm(hitfile,
   CreateRfmAtm(molecules, atm_data, rundir + '/rfm.atm')
 
   # run rfm
-  print('# Running RFM in dir "%s"' % rundir)
   if rundir != '.':
     os.chdir(os.path.join(pwd,rundir))
+    print('# Running RFM in dir "%s"' % rundir)
     os.system('echo | %s > %s' % (os.path.join(pwd,args['rfm']), 'rfm.log'))
     os.chdir(pwd)
   else:
+    print('# Running RFM in dir "%s"' % pwd)
     os.system('echo | %s > %s' % (args['rfm'], 'rfm.log'))
   print('# RFM finished.')
 
@@ -197,6 +198,8 @@ if __name__ == '__main__':
     hitfile = CreateHitFile(args['par'], wmin, wmax, version = args['version'])
   else:
     hitfile = args['hit']
+    if '.par' in hitfile:
+      print("Hit file is not created from .par file, instead %s is directly used as hit file."%hitfile)
   print("# Hit file is: ", hitfile)
   RunRfm(hitfile, wmin, wmax, wdel, tmin, tmax, tnum, args['molecule'], atm_data,
          rundir = args['rundir'])
