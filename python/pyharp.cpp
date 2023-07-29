@@ -65,6 +65,22 @@ PYBIND11_MODULE(pyharp, m) {
   py::class_<Absorber, AbsorberPtr>(m, "absorber")
       .def("get_category", &Absorber::GetCategory)
       .def("get_name", &Absorber::GetName)
-      .def("get_attenuation", &Absorber::GetAttenuation)
-      .def("get_single_scattering_albedo", &Absorber::GetAttenuation);
+
+      .def("get_attenuation",
+           [](Absorber &ab, double wave1, double wave2, py::list lst) {
+             Variable air;
+             std::transform(
+                 lst.begin(), lst.end(), air.w,
+                 [](const py::handle &elem) { return py::cast<double>(elem); });
+             return ab.GetAttenuation(wave1, wave2, air);
+           })
+
+      .def("get_single_scattering_albedo",
+           [](Absorber &ab, double wave1, double wave2, py::list lst) {
+             Variable air;
+             std::transform(
+                 lst.begin(), lst.end(), air.w,
+                 [](const py::handle &elem) { return py::cast<double>(elem); });
+             return ab.GetSingleScatteringAlbedo(wave1, wave2, air);
+           });
 }

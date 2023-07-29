@@ -3,6 +3,10 @@
 Created on Jul 16 13:34:11 2017
 @author: thl, cli
 """
+import sys, os
+sys.path.append('@CMAKE_BINARY_DIR@/python')
+
+from pycanoe import constants
 from netCDF4 import *
 from pylab import *
 import argparse, glob
@@ -51,9 +55,9 @@ parser.add_argument('--output')
 # parse command-line inputs
 args = vars(parser.parse_args())
 
-Rgas = 8.3144621                # ideal gas constant    J/(K mol)
-kBoltz = 1.3806504e-23          # Boltzman constant     J/K
-Lo     = 2.68719e25             # Loschmidt number      mol/m^3 at STP
+Rgas   = constants.Rgas
+kBoltz = constants.kBoltz
+Lo     = constants.Lo
 
 
 ilayer =  50
