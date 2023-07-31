@@ -866,6 +866,7 @@ void GnomonicEquiangle::AddCoordTermsDivergence(const Real dt,
                                                 const AthenaArray<Real> &prim,
                                                 const AthenaArray<Real> &bcc,
                                                 AthenaArray<Real> &u) {
+  auto pco = pmy_block->pcoord;
   for (int k = pmy_block->ks; k <= pmy_block->ke; ++k) {
     for (int j = pmy_block->js; j <= pmy_block->je; ++j) {
 #pragma omp simd
@@ -901,14 +902,41 @@ void GnomonicEquiangle::AddCoordTermsDivergence(const Real dt,
         Real v_2 = v2 + v3 * cth;
         Real v_3 = v3 + v2 * cth;
 
+        Real xm = tan(x2f(j));
+        Real deltam = sqrt(1.0 + xm * xm + y * y);
+        Real Cm = sqrt(1.0 + xm * xm);
+        Real sthm = deltam / (Cm * D);
+        Real x2aream = pco->GetFace2Area(k, j, i);
+
+        Real xp = tan(x2f(j + 1));
+        Real Cp = sqrt(1.0 + xp * xp);
+        Real deltap = sqrt(1.0 + xp * xp + y * y);
+        Real sthp = deltap / (Cp * D);
+        Real x2areap = pco->GetFace2Area(k, j + 1, i);
+
+        Real vol = pco->GetCellVolume(k, j, i);
+        Real x_ov_rD = (x2aream * sthm - x2areap * sthp) / vol;
+
         // Update flux 2
-        Real src2 =
-            -x / (r * D) * (pr + rho * v3 * v3 * sth2) - rho * v1 * v_2 / r;
+        Real src2 = -x_ov_rD * (pr + rho * v3 * v3 * sth2) - rho * v1 * v_2 / r;
         u(IM2, k, j, i) += dt * src2;
 
+        Real ym = tan(x3f(k));
+        deltam = sqrt(1.0 + x * x + ym * ym);
+        Real Dm = sqrt(1.0 + ym * ym);
+        sthm = deltam / (C * Dm);
+        Real x3aream = pco->GetFace3Area(k, j, i);
+
+        Real yp = tan(x3f(k + 1));
+        Real Dp = sqrt(1.0 + yp * yp);
+        deltap = sqrt(1.0 + x * x + yp * yp);
+        sthp = deltap / (C * Dp);
+        Real x3areap = pco->GetFace3Area(k + 1, j, i);
+
+        Real y_ov_rC = (x3aream * sthm - x3areap * sthp) / vol;
+
         // Update flux 3
-        Real src3 =
-            -y / (r * C) * (pr + rho * v2 * v2 * sth2) - rho * v1 * v_3 / r;
+        Real src3 = -y_ov_rC * (pr + rho * v2 * v2 * sth2) - rho * v1 * v_3 / r;
         u(IM3, k, j, i) += dt * src3;
       }
     }
