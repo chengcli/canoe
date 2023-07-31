@@ -174,9 +174,30 @@ void InteprolateX2(const AthenaArray<Real> &src, AthenaArray<Real> &tgt,
                 tan(((y2 - yq) * src_cy1 + (yq - y1) * src_cy2) / (y2 - y1));
             int blockID = CubedSphere::FindBlockID(loc);
             Real U, V;
+            // Raise the vectors to contravariant
+            Real sth = sqrt(1 + src_cy * src_cy + src_cz * src_cz) /
+                       sqrt(1 + src_cy * src_cy) / sqrt(1 + src_cz * src_cz);
+            Real cth = -src_cy * src_cz / sqrt(1 + src_cy * src_cy) /
+                       sqrt(1 + src_cz * src_cz);
+            Real vyt = vy;
+            Real vzt = vz;
+            vy = vyt / sth / sth - vzt * cth / sth / sth;
+            vz = vzt / sth / sth - vyt * cth / sth / sth;
+
             // Trasform to global coordinate and back
             VecTransRLLFromABP(src_cy, src_cz, blockID, vy, vz, &U, &V);
             VecTransABPFromRLL(tgt_cy, tgt_cz, TgtID, U, V, &vy, &vz);
+
+            // Lower the vectors to covariant
+            sth = sqrt(1 + tgt_cy * tgt_cy + tgt_cz * tgt_cz) /
+                  sqrt(1 + tgt_cy * tgt_cy) / sqrt(1 + tgt_cz * tgt_cz);
+            cth = -tgt_cy * tgt_cz / sqrt(1 + tgt_cy * tgt_cy) /
+                  sqrt(1 + tgt_cz * tgt_cz);
+            vyt = vy;
+            vzt = vz;
+            vy = vyt + vzt * cth;
+            vz = vzt + vyt * cth;
+
             if (n == IVY) {
               tgt(n - sn, k - sk, j - sj, i - si) = vy;
             } else {  // n==IVZ
@@ -279,6 +300,17 @@ void InteprolateX3(const AthenaArray<Real> &src, AthenaArray<Real> &tgt,
                 tan(((y2 - yq) * src_cz1 + (yq - y1) * src_cz2) / (y2 - y1));
             int blockID = CubedSphere::FindBlockID(loc);
             Real U, V;
+
+            // Raise the vectors to contravariant
+            Real sth = sqrt(1 + src_cy * src_cy + src_cz * src_cz) /
+                       sqrt(1 + src_cy * src_cy) / sqrt(1 + src_cz * src_cz);
+            Real cth = -src_cy * src_cz / sqrt(1 + src_cy * src_cy) /
+                       sqrt(1 + src_cz * src_cz);
+            Real vyt = vy;
+            Real vzt = vz;
+            vy = vyt / sth / sth - vzt * cth / sth / sth;
+            vz = vzt / sth / sth - vyt * cth / sth / sth;
+
             // Trasform to global coordinate and back
             VecTransRLLFromABP(src_cy, src_cz, blockID, vy, vz, &U, &V);
             if (((TgtID == 1) && (blockID == 3)) ||
@@ -294,6 +326,17 @@ void InteprolateX3(const AthenaArray<Real> &src, AthenaArray<Real> &tgt,
               tgt_cz = tmp;
             }
             VecTransABPFromRLL(tgt_cy, tgt_cz, TgtID, U, V, &vy, &vz);
+
+            // Lower the vectors to covariant
+            sth = sqrt(1 + tgt_cy * tgt_cy + tgt_cz * tgt_cz) /
+                  sqrt(1 + tgt_cy * tgt_cy) / sqrt(1 + tgt_cz * tgt_cz);
+            cth = -tgt_cy * tgt_cz / sqrt(1 + tgt_cy * tgt_cy) /
+                  sqrt(1 + tgt_cz * tgt_cz);
+            vyt = vy;
+            vzt = vz;
+            vy = vyt + vzt * cth;
+            vz = vzt + vyt * cth;
+
             if (n == IVY) {
               tgt(n - sn, k - sk, j - sj, i - si) = vy;
             } else {  // n==IVZ

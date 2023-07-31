@@ -12,6 +12,7 @@
 #include <athena/hydro/hydro.hpp>
 #include <athena/mesh/mesh.hpp>
 #include <athena/parameter_input.hpp>
+#include <configure.hpp>
 
 // EquationOfState constructor
 //
@@ -37,16 +38,32 @@ void EquationOfState::ConservedToPrimitive(
     for (int j = jl; j <= ju; ++j)
       for (int i = il; i <= iu; ++i) {
         Real &ud = cons(IDN, k, j, i);
-        Real &wd = prim(IDN, k, j, i);
 
         // apply density floor, without changing momentum or energy
         ud = (ud > density_floor_) ? ud : density_floor_;
-        wd = ud;
-
-        Real di = 1. / ud;
+        prim(IDN, k, j, i) = ud;
         prim(IVX, k, j, i) = 0.;
-        prim(IVY, k, j, i) = cons(IVY, k, j, i) * di;
-        prim(IVZ, k, j, i) = cons(IVZ, k, j, i) * di;
+        Real di = 1. / ud;
+
+        const Real u = 0.;
+        const Real v = cons(IVY, k, j, i) * di;
+        const Real w = cons(IVZ, k, j, i) * di;
+
+#if defined(CUBED_SPHERE)
+        Real x = tan(pco->x2v(j));
+        Real y = tan(pco->x3v(k));
+        Real C = sqrt(1. + x * x);
+        Real D = sqrt(1. + y * y);
+        Real cth = -x * y / (C * D);
+        Real sth2 = 1. - cth * cth;
+
+        // Raise to contravarient velocity
+        prim(IVY, k, j, i) = v / sth2 - w * cth / sth2;
+        prim(IVZ, k, j, i) = -v * cth / sth2 + w / sth2;
+#else
+        prim(IVY, k, j, i) = v;
+        prim(IVZ, k, j, i) = w;
+#endif
       }
 }
 
@@ -68,8 +85,25 @@ void EquationOfState::PrimitiveToConserved(const AthenaArray<Real> &prim,
         const Real &wd = prim(IDN, k, j, i);
         cons(IDN, k, j, i) = wd;
         cons(IVX, k, j, i) = 0.;
-        cons(IVY, k, j, i) = prim(IVY, k, j, i) * wd;
-        cons(IVZ, k, j, i) = prim(IVZ, k, j, i) * wd;
+
+        const Real u = 0.;
+        const Real v = prim(IVY, k, j, i) * wd;
+        const Real w = prim(IVZ, k, j, i) * wd;
+
+#if defined(CUBED_SPHERE)
+        Real x = tan(pco->x2v(j));
+        Real y = tan(pco->x3v(k));
+        Real C = sqrt(1. + x * x);
+        Real D = sqrt(1. + y * y);
+        Real cth = -x * y / (C * D);
+
+        cons(IVY, k, j, i) = v + w * cth;
+        cons(IVZ, k, j, i) = w + v * cth;
+
+#else
+        cons(IVY, k, j, i) = v;
+        cons(IVZ, k, j, i) = w;
+#endif
       }
 }
 

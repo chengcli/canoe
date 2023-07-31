@@ -104,4 +104,49 @@ void Hydro::RiemannSolver(int const k, int const j, int const il, int const iu,
     }
   }
 #endif  // AFFINE or CUBED_SPHERE
+
+#if defined(CUBED_SPHERE)  // projection from contravariant fluxes to covariant
+  {
+    switch (ivx) {
+      case IVY:
+        for (int i = il; i <= iu; ++i) {
+          Real x = tan(pmy_block->pcoord->x2f(j));
+          Real y = tan(pmy_block->pcoord->x3v(k));
+          Real C = sqrt(1. + x * x);
+          Real D = sqrt(1. + y * y);
+          Real cth = -x * y / C / D;
+
+          // Extract local conserved quantities and fluxes
+          const Real ty = flx(ivx, k, j, i);
+          const Real tz = flx(ivy, k, j, i);
+
+          // Transform fluxes
+          flx(ivx, k, j, i) = ty + tz * cth;
+          flx(ivy, k, j, i) = tz + ty * cth;
+        }
+        break;
+
+      case IVZ:
+        for (int i = il; i <= iu; ++i) {
+          Real x = tan(pmy_block->pcoord->x2v(j));
+          Real y = tan(pmy_block->pcoord->x3f(k));
+          Real C = sqrt(1. + x * x);
+          Real D = sqrt(1. + y * y);
+          Real cth = -x * y / C / D;
+
+          // Extract local conserved quantities and fluxes
+          const Real ty = flx(ivx, k, j, i);
+          const Real tz = flx(ivy, k, j, i);
+
+          // Transform fluxes
+          flx(ivx, k, j, i) = ty + tz * cth;
+          flx(ivy, k, j, i) = tz + ty * cth;
+        }
+        break;
+      default:
+        break;
+    }
+  }
+
+#endif
 }

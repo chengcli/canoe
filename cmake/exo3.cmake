@@ -7,7 +7,7 @@ macro(SET_IF_EMPTY _variable)
 endmacro()
 
 # athena variables
-set_if_empty(NUMBER_GHOST_CELLS 2)
+set_if_empty(NUMBER_GHOST_CELLS 3)
 
 # canoe configure
 set(PLANET "Earth")

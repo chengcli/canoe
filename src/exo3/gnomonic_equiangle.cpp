@@ -12,6 +12,9 @@
 // application
 #include <application/application.hpp>
 
+// climath
+#include <climath/core.h>
+
 // exo3
 #include "gnomonic_equiangle.hpp"
 
@@ -305,6 +308,43 @@ void GnomonicEquiangle::VolCenterFace3Area(const int k, const int j,
   return;
 }
 
+//----------------------------------------------------------------------------------------
+// GetVolCenterFaceXArea functions: return area of face with normal in X-dir at
+// (i,j,k) in volume center
+
+/*Real GnomonicEquiangle::GetVolCenterFace1Area(const int k, const int j,
+                                              const int i) {
+  Real E1 =
+      Spherical_Tri(x2f(j), x2f(j), x2f(j + 1), x3f(k), x3f(k + 1), x3f(k));
+  Real E2 = Spherical_Tri(x2f(j), x2f(j + 1), x2f(j + 1), x3f(k + 1), x3f(k),
+                          x3f(k + 1));
+  Real E = E1 + E2;
+
+  return x1v(i) * x1v(i) * E;
+}
+
+Real GnomonicEquiangle::GetVolCenterFace2Area(const int k, const int j,
+                                              const int i) {
+  Real x = tan(x2v(j));
+  Real y1 = tan(x3f(k));
+  Real y2 = tan(x3f(k + 1));
+  Real delta1 = sqrt(1.0 + x * x + y1 * y1);
+  Real delta2 = sqrt(1.0 + x * x + y2 * y2);
+  Real dx3_lin = x1v(i) * acos(1 / (delta1 * delta2) * (1 + x * x + y1 * y2));
+  return dx1f(i) * dx3_lin;
+}
+
+Real GnomonicEquiangle::GetVolCenterFace3Area(const int k, const int j,
+                                              const int i) {
+  Real x1 = tan(x2f(j));
+  Real x2 = tan(x2f(j + 1));
+  Real y = tan(x3v(k));
+  Real delta1 = sqrt(1.0 + x1 * x1 + y * y);
+  Real delta2 = sqrt(1.0 + x2 * x2 + y * y);
+  Real dx2_lin = x1v(i) * acos(1 / (delta1 * delta2) * (1 + x1 * x2 + y * y));
+  return dx1f(i) * dx2_lin;
+}*/
+
 // Cell Volume function: compute volume of cell as vector
 
 void GnomonicEquiangle::CellVolume(const int k, const int j, const int il,
@@ -384,8 +424,23 @@ Real GnomonicEquiangle::GetCellVolume(const int k, const int j, const int i) {
   Real xt = tan(x2v(j));
   Real yt = tan(x3v(k));
   Real sin_theta =
-      sqrt(1.0 + xt * xt + yt * yt / (1.0 + xt * xt) / (1.0 + yt * yt));
-  return dx1f(i) * dx2f(j) * dx3f(k) * sin_theta;
+      sqrt((1.0 + xt * xt + yt * yt) / (1.0 + xt * xt) / (1.0 + yt * yt));
+
+  Real x1 = tan(x2f(j));
+  Real x2 = tan(x2f(j + 1));
+  Real y = tan(x3v(k));
+  Real delta1 = sqrt(1.0 + x1 * x1 + y * y);
+  Real delta2 = sqrt(1.0 + x2 * x2 + y * y);
+  Real dx2_ang = acos(1 / (delta1 * delta2) * (1 + x1 * x2 + y * y));
+
+  Real x = tan(x2v(j));
+  Real y1 = tan(x3f(k));
+  Real y2 = tan(x3f(k + 1));
+  delta1 = sqrt(1.0 + x * x + y1 * y1);
+  delta2 = sqrt(1.0 + x * x + y2 * y2);
+  Real dx3_ang = acos(1 / (delta1 * delta2) * (1 + x * x + y1 * y2));
+
+  return dx1f(i) * dx2_ang * dx3_ang * x1v(i) * x1v(i) * sin_theta;
 }
 
 //----------------------------------------------------------------------------------------
@@ -824,9 +879,13 @@ void GnomonicEquiangle::AddCoordTermsDivergence(const Real dt,
         Real y = tan(x3v(k));
         Real C = sqrt(1.0 + x * x);
         Real D = sqrt(1.0 + y * y);
-        Real delta = 1.0 / (1.0 + x * x + y * y);
+        Real delta = sqrt(1.0 + x * x + y * y);
+        Real cth = -x * y / (C * D);
+        Real sth2 = 1. - cth * cth;
+
         Real pr;
         Real rho;
+
         if (strcmp(EQUATION_OF_STATE, "shallow_yz") == 0) {
           pr = 0.5 * prim(IDN, k, j, i) * prim(IDN, k, j, i);
           rho = prim(IDN, k, j, i);
@@ -834,18 +893,22 @@ void GnomonicEquiangle::AddCoordTermsDivergence(const Real dt,
           pr = prim(IPR, k, j, i);
           rho = prim(IDN, k, j, i);
           // Update flux 1 (excluded from shallow water case)
-          Real src1 = 2.0 * pr / r +
-                      rho * (v2 * v2 + v3 * v3 - 2 * v2 * v3 * x * y / (C * D));
+          Real src1 =
+              2.0 * pr / r + rho * (v2 * v2 + v3 * v3 + 2 * v2 * v3 * cth) / r;
           u(IM1, k, j, i) += dt * src1;
         }
+
+        Real v_2 = v2 + v3 * cth;
+        Real v_3 = v3 + v2 * cth;
+
         // Update flux 2
-        Real src2 = pr * y * y / r * x / D -
-                    rho * v2 / r * (v1 - y * v3 * delta * delta / (C * D * D));
+        Real src2 =
+            -x / (r * D) * (pr + rho * v3 * v3 * sth2) - rho * v1 * v_2 / r;
         u(IM2, k, j, i) += dt * src2;
 
         // Update flux 3
-        Real src3 = pr * x * x / r * y / C -
-                    rho * v3 / r * (v1 - x * v2 * delta * delta / (C * C * D));
+        Real src3 =
+            -y / (r * C) * (pr + rho * v2 * v2 * sth2) - rho * v1 * v_3 / r;
         u(IM3, k, j, i) += dt * src3;
       }
     }
