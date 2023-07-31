@@ -1,43 +1,43 @@
 <job>
-problem_id = blast_48_cubed  # problem ID: basename of output filenames
+problem_id = blast_384_cubed  # problem ID: basename of output filenames
 
 <output1>
 file_type  = hst         # History data dump
-dt         = 1E4        # time increment between outputs
+dt         = 3600        # time increment between outputs
 
 <output2>
 #ghost_zones= true
 file_type  = netcdf    # Binary data dump
 variable   = prim        # variables to be output
-dt         = 1E4         # time increment between outputs
+dt         = 3600         # time increment between outputs
 
 <output3>
 #ghost_zones= true
 file_type  = netcdf
 variable   = uov
-dt         = 1E4
+dt         = 3600
 
 <time>
 cfl_number = 0.7          # The Courant, Friedrichs, & Lewy (CFL) Number
 nlim       = -1         # cycle limit
-tlim       = 8.E6           # time limit
-xorder     = 2            # horizontal reconstruction order
+tlim       = 8.64E6           # time limit
+xorder     = 5            # horizontal reconstruction order
 integrator = rk3          # integration method
 
 <mesh>
-nx1        = 2            # Number of zones in X1-direction
+nx1        = 3            # Number of zones in X1-direction
 x1min      = 6371000.           # minimum value of X1
 x1max      = 6371001.           # maximum value of X1
 ix1_bc     = reflecting   # inner-X1 boundary flag
 ox1_bc     = reflecting   # outer-X1 boundary flag
 
-nx2        = 96            # Number of zones in X2-direction
+nx2        = 768            # Number of zones in X2-direction
 x2min      = 0.           # minimum value of X2
 x2max      = 1.E3         # maximum value of X2
 ix2_bc     = periodic   # inner-X2 boundary flag
 ox2_bc     = periodic   # outer-X2 boundary flag
 
-nx3        = 144           # Number of zones in X3-direction
+nx3        = 1152           # Number of zones in X3-direction
 x3min      = 0.           # minimum value of X3
 x3max      = 1.E3         # maximum value of X3
 ix3_bc     = periodic   # inner-X3 boundary flag
@@ -47,9 +47,9 @@ ReferencePressure = 1.E5
 PressureScaleHeight = 10.E3
 
 <meshblock>
-nx1        = 2
-nx2        = 48
-nx3        = 48
+nx1        = 3
+nx2        = 192
+nx3        = 192
 
 <hydro>
 gamma       = 1.4         # gamma = C_p/C_v

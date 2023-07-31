@@ -7,10 +7,10 @@
 #include <iostream>
 
 // Athena++
-#include <athena.hpp>
-#include <coordinates/coordinates.hpp>
-#include <hydro/hydro.hpp>
-#include <mesh/mesh.hpp>
+#include <athena/athena.hpp>
+#include <athena/coordinates/coordinates.hpp>
+#include <athena/hydro/hydro.hpp>
+#include <athena/mesh/mesh.hpp>
 
 // canoe
 #include <configure.hpp>
