@@ -1,0 +1,13 @@
+README from linfel -- what I have modified.
+Edit on 7/27/2023
+
+run_ktable_lava.py
+line 17       specify the input SiO .par file directly as the hitfile
+line 22       specify the atmosphere file
+line 24       specify the molecule SiO
+line 39       specify the wavenumber band
+
+
+run_rfm.py
+line 96 100   move the 'print('# Running RFM in dir "%s"')' into the 'if else' section to indicate that rfm is running in 'pwd' or 'rundir'
+line 201      add an 'if' section to indicate that .par file is directly used as hit file.
