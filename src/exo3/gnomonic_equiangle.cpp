@@ -131,112 +131,137 @@ GnomonicEquiangle::GnomonicEquiangle(MeshBlock *pmb, ParameterInput *pin,
   // Initialize coordinate-transfer related variables
   g_.NewAthenaArray(NMETRIC, nc1 + 1);
   gi_.NewAthenaArray(NMETRIC, nc1 + 1);
+
+  // scratch space for area metric calculation
+  coord_vol_i_.NewAthenaArray(nc1);
+  coord_area2_i_.NewAthenaArray(nc1);
+  coord_area2_i1_.NewAthenaArray(nc1);
+  coord_area3_i_.NewAthenaArray(nc1);
+  coord_area3_i1_.NewAthenaArray(nc1);
+
+  cosine_cell_kj_.NewAthenaArray(nc3, nc2);
+  sine_cell_kj_.NewAthenaArray(nc3, nc2);
+  cosine_face2_kj_.NewAthenaArray(nc3, nc2);
+  sine_face2_kj_.NewAthenaArray(nc3, nc2);
+  cosine_face3_kj_.NewAthenaArray(nc3, nc2);
+  sine_face3_kj_.NewAthenaArray(nc3, nc2);
+
+  dx2f_ang_kj_.NewAthenaArray(nc3, nc2);
+  dx3f_ang_kj_.NewAthenaArray(nc3, nc2);
+  dx2f_ang_face3_kj_.NewAthenaArray(nc3, nc2);
+  dx3f_ang_face2_kj_.NewAthenaArray(nc3, nc2);
+
+  for (int k = kl - ng; k <= ku + ng; ++k)
+    for (int j = jl - ng; j <= ju + ng; ++j) {
+      Real x = tan(x2v(j));
+      Real xf = tan(x2f(j));
+      Real y = tan(x3v(k));
+      Real yf = tan(x3f(k));
+
+      Real C = sqrt(1.0 + x * x);
+      Real Cf = sqrt(1.0 + xf * xf);
+      Real D = sqrt(1.0 + y * y);
+      Real Df = sqrt(1.0 + yf * yf);
+
+      cosine_cell_kj_(k, j) = -x * y / (C * D);
+      sine_cell_kj_(k, j) = sqrt(1.0 + x * x + y * y) / (C * D);
+
+      cosine_face2_kj_(k, j) = -xf * y / (Cf * D);
+      sine_face2_kj_(k, j) = sqrt(1.0 + xf * xf + y * y) / (Cf * D);
+
+      cosine_face3_kj_(k, j) = -x * yf / (C * Df);
+      sine_face3_kj_(k, j) = sqrt(1.0 + x * x + yf * yf) / (C * Df);
+
+      Real x1 = tan(x2f(j));
+      Real x2 = tan(x2f(j + 1));
+      Real delta1 = sqrt(1.0 + x1 * x1 + y * y);
+      Real delta2 = sqrt(1.0 + x2 * x2 + y * y);
+      Real delta1f = sqrt(1.0 + x1 * x1 + yf * yf);
+      Real delta2f = sqrt(1.0 + x2 * x2 + yf * yf);
+
+      dx2f_ang_kj_(k, j) = acos((1 + x1 * x2 + y * y) / (delta1 * delta2));
+      dx2f_ang_face3_kj_(k, j) =
+          acos((1 + x1 * x2 + yf * yf) / (delta1f * delta2f));
+
+      Real y1 = tan(x3f(k));
+      Real y2 = tan(x3f(k + 1));
+      delta1 = sqrt(1.0 + x * x + y1 * y1);
+      delta2 = sqrt(1.0 + x * x + y2 * y2);
+      delta1f = sqrt(1.0 + xf * xf + y1 * y1);
+      delta2f = sqrt(1.0 + xf * xf + y2 * y2);
+
+      dx3f_ang_kj_(k, j) = acos((1 + x * x + y1 * y2) / (delta1 * delta2));
+      dx3f_ang_face2_kj_(k, j) =
+          acos((1 + xf * xf + y1 * y2) / (delta1f * delta2f));
+    }
+
+  x_ov_rD_kji_.NewAthenaArray(nc3, nc2, nc1);
+  y_ov_rC_kji_.NewAthenaArray(nc3, nc2, nc1);
+
+  for (int k = kl - ng; k <= ku + ng; ++k)
+    for (int j = jl - ng; j <= ju + ng; ++j) {
+      CellVolume(k, j, il - ng, iu + ng, coord_vol_i_);
+      Face2Area(k, j, il - ng, iu + ng, coord_area2_i_);
+      Face2Area(k, j + 1, il - ng, iu + ng, coord_area2_i1_);
+      Face3Area(k, j, il - ng, iu + ng, coord_area3_i_);
+      Face3Area(k + 1, j, il - ng, iu + ng, coord_area3_i1_);
+
+      for (int i = il - ng; i <= iu + ng; ++i) {
+        x_ov_rD_kji_(k, j, i) =
+            (coord_area2_i_(i) * sine_face2_kj_(k, j) -
+             coord_area2_i1_(i) * sine_face2_kj_(k, j + 1)) /
+            coord_vol_i_(i);
+
+        y_ov_rC_kji_(k, j, i) =
+            (coord_area3_i_(i) * sine_face3_kj_(k, j) -
+             coord_area3_i1_(i) * sine_face3_kj_(k + 1, j)) /
+            coord_vol_i_(i);
+      }
+    }
 }
 
 void GnomonicEquiangle::Face1Area(const int k, const int j, const int il,
                                   const int iu, AthenaArray<Real> &area) {
+  Real sin_theta = sine_cell_kj_(k, j);
+  Real dx2f_ang = dx2f_ang_kj_(k, j);
+  Real dx3f_ang = dx3f_ang_kj_(k, j);
+
 #pragma omp simd
-  Real xt = tan(x2v(j));
-  Real yt = tan(x3v(k));
-  Real sin_theta =
-      sqrt((1.0 + xt * xt + yt * yt) / (1.0 + xt * xt) / (1.0 + yt * yt));
-
-  Real x1 = tan(x2f(j));
-  Real x2 = tan(x2f(j + 1));
-  Real y = tan(x3v(k));
-  Real delta1 = sqrt(1.0 + x1 * x1 + y * y);
-  Real delta2 = sqrt(1.0 + x2 * x2 + y * y);
-  Real dx2_ang = acos(1 / (delta1 * delta2) * (1 + x1 * x2 + y * y));
-
-  Real x = tan(x2v(j));
-  Real y1 = tan(x3f(k));
-  Real y2 = tan(x3f(k + 1));
-  delta1 = sqrt(1.0 + x * x + y1 * y1);
-  delta2 = sqrt(1.0 + x * x + y2 * y2);
-  Real dx3_ang = acos(1 / (delta1 * delta2) * (1 + x * x + y1 * y2));
-
-  for (int i = il; i <= iu; ++i) {
-    area(i) = dx2_ang * dx3_ang * x1f(i) * x1f(i) * sin_theta;
-  }
-  return;
+  for (int i = il; i <= iu; ++i)
+    area(i) = dx2f_ang * dx3f_ang * x1f(i) * x1f(i) * sin_theta;
 }
 
 void GnomonicEquiangle::Face2Area(const int k, const int j, const int il,
                                   const int iu, AthenaArray<Real> &area) {
-  Real x = tan(x2f(j));
-  Real y1 = tan(x3f(k));
-  Real y2 = tan(x3f(k + 1));
-  Real delta1 = sqrt(1.0 + x * x + y1 * y1);
-  Real delta2 = sqrt(1.0 + x * x + y2 * y2);
 #pragma omp simd
-  for (int i = il; i <= iu; ++i) {
-    Real dx3_lin = x1v(i) * acos(1 / (delta1 * delta2) * (1 + x * x + y1 * y2));
-    Real &area_i = area(i);
-    area_i = dx3_lin * dx1f(i);
-  }
-  return;
+  for (int i = il; i <= iu; ++i)
+    area(i) = x1v(i) * dx3f_ang_face2_kj_(k, j) * dx1f(i);
 }
 
 void GnomonicEquiangle::Face3Area(const int k, const int j, const int il,
                                   const int iu, AthenaArray<Real> &area) {
-  Real x1 = tan(x2f(j));
-  Real x2 = tan(x2f(j + 1));
-  Real y = tan(x3f(k));
-  Real delta1 = sqrt(1.0 + x1 * x1 + y * y);
-  Real delta2 = sqrt(1.0 + x2 * x2 + y * y);
 #pragma omp simd
-  for (int i = il; i <= iu; ++i) {
-    Real dx2_lin = x1v(i) * acos(1 / (delta1 * delta2) * (1 + x1 * x2 + y * y));
-    Real &area_i = area(i);
-    area_i = dx2_lin * dx1f(i);
-  }
-  return;
+  for (int i = il; i <= iu; ++i)
+    area(i) = x1v(i) * dx2f_ang_face3_kj_(k, j) * dx1f(i);
 }
 
 //----------------------------------------------------------------------------------------
 // GetFaceXArea functions: return area of face with normal in X-dir at (i,j,k)
 
 Real GnomonicEquiangle::GetFace1Area(const int k, const int j, const int i) {
-  Real xt = tan(x2v(j));
-  Real yt = tan(x3v(k));
-  Real sin_theta =
-      sqrt((1.0 + xt * xt + yt * yt) / (1.0 + xt * xt) / (1.0 + yt * yt));
+  Real sin_theta = sine_cell_kj_(k, j);
+  Real dx2f_ang = dx2f_ang_kj_(k, j);
+  Real dx3f_ang = dx3f_ang_kj_(k, j);
 
-  Real x1 = tan(x2f(j));
-  Real x2 = tan(x2f(j + 1));
-  Real y = tan(x3v(k));
-  Real delta1 = sqrt(1.0 + x1 * x1 + y * y);
-  Real delta2 = sqrt(1.0 + x2 * x2 + y * y);
-  Real dx2_ang = acos(1 / (delta1 * delta2) * (1 + x1 * x2 + y * y));
-
-  Real x = tan(x2v(j));
-  Real y1 = tan(x3f(k));
-  Real y2 = tan(x3f(k + 1));
-  delta1 = sqrt(1.0 + x * x + y1 * y1);
-  delta2 = sqrt(1.0 + x * x + y2 * y2);
-  Real dx3_ang = acos(1 / (delta1 * delta2) * (1 + x * x + y1 * y2));
-
-  return dx2_ang * dx3_ang * x1f(i) * x1f(i) * sin_theta;
+  return dx2f_ang * dx3f_ang * x1f(i) * x1f(i) * sin_theta;
 }
 
 Real GnomonicEquiangle::GetFace2Area(const int k, const int j, const int i) {
-  Real x = tan(x2f(j));
-  Real y1 = tan(x3f(k));
-  Real y2 = tan(x3f(k + 1));
-  Real delta1 = sqrt(1.0 + x * x + y1 * y1);
-  Real delta2 = sqrt(1.0 + x * x + y2 * y2);
-  Real dx3_lin = x1v(i) * acos(1 / (delta1 * delta2) * (1 + x * x + y1 * y2));
-  return dx1f(i) * dx3_lin;
+  return dx1f(i) * x1v(i) * dx3f_ang_face2_kj_(k, j);
 }
 
 Real GnomonicEquiangle::GetFace3Area(const int k, const int j, const int i) {
-  Real x1 = tan(x2f(j));
-  Real x2 = tan(x2f(j + 1));
-  Real y = tan(x3f(k));
-  Real delta1 = sqrt(1.0 + x1 * x1 + y * y);
-  Real delta2 = sqrt(1.0 + x2 * x2 + y * y);
-  Real dx2_lin = x1v(i) * acos(1 / (delta1 * delta2) * (1 + x1 * x2 + y * y));
-  return dx1f(i) * dx2_lin;
+  return dx1f(i) * x1v(i) * dx2f_ang_face3_kj_(k, j);
 }
 
 //----------------------------------------------------------------------------------------
@@ -247,72 +272,67 @@ Real GnomonicEquiangle::GetFace3Area(const int k, const int j, const int i) {
 void GnomonicEquiangle::VolCenterFace1Area(const int k, const int j,
                                            const int il, const int iu,
                                            AthenaArray<Real> &area) {
-  Real xt = tan(x2v(j));
-  Real yt = tan(x3v(k));
-  Real sin_theta =
-      sqrt((1.0 + xt * xt + yt * yt) / (1.0 + xt * xt) / (1.0 + yt * yt));
-
-  Real x1 = tan(x2f(j));
-  Real x2 = tan(x2f(j + 1));
-  Real y = tan(x3v(k));
-  Real delta1 = sqrt(1.0 + x1 * x1 + y * y);
-  Real delta2 = sqrt(1.0 + x2 * x2 + y * y);
-  Real dx2_ang = acos(1 / (delta1 * delta2) * (1 + x1 * x2 + y * y));
-
-  Real x = tan(x2v(j));
-  Real y1 = tan(x3f(k));
-  Real y2 = tan(x3f(k + 1));
-  delta1 = sqrt(1.0 + x * x + y1 * y1);
-  delta2 = sqrt(1.0 + x * x + y2 * y2);
-  Real dx3_ang = acos(1 / (delta1 * delta2) * (1 + x * x + y1 * y2));
+  Real sin_theta = sine_cell_kj_(k, j);
+  Real dx2f_ang = dx2f_ang_kj_(k, j);
+  Real dx3f_ang = dx3f_ang_kj_(k, j);
 
 #pragma omp simd
-  for (int i = il; i <= iu; ++i) {
-    Real &area_i = area(i);
-    area_i = dx2_ang * dx3_ang * x1v(i) * x1v(i) * sin_theta;
-  }
+  for (int i = il; i <= iu; ++i)
+    area(i) = dx2f_ang * dx3f_ang * x1v(i) * x1v(i) * sin_theta;
   return;
 }
 
 void GnomonicEquiangle::VolCenterFace2Area(const int k, const int j,
                                            const int il, const int iu,
                                            AthenaArray<Real> &area) {
-  Real x = tan(x2v(j));
-  Real y1 = tan(x3f(k));
-  Real y2 = tan(x3f(k + 1));
-  Real delta1 = sqrt(1.0 + x * x + y1 * y1);
-  Real delta2 = sqrt(1.0 + x * x + y2 * y2);
 #pragma omp simd
-  for (int i = il; i <= iu; ++i) {
-    Real dx3_lin = x1v(i) * acos(1 / (delta1 * delta2) * (1 + x * x + y1 * y2));
-    Real &area_i = area(i);
-    area_i = dx1v(i) * dx3_lin;
-  }
-  return;
+  for (int i = il; i <= iu; ++i)
+    area(i) = dx1f(i) * x1v(i) * dx3f_ang_kj_(k, j);
 }
 
 void GnomonicEquiangle::VolCenterFace3Area(const int k, const int j,
                                            const int il, const int iu,
                                            AthenaArray<Real> &area) {
-  Real x1 = tan(x2f(j));
-  Real x2 = tan(x2f(j + 1));
-  Real y = tan(x3v(k));
-  Real delta1 = sqrt(1.0 + x1 * x1 + y * y);
-  Real delta2 = sqrt(1.0 + x2 * x2 + y * y);
 #pragma omp simd
-  for (int i = il; i <= iu; ++i) {
-    Real dx2_lin = x1v(i) * acos(1 / (delta1 * delta2) * (1 + x1 * x2 + y * y));
-    Real &area_i = area(i);
-    area_i = dx1v(i) * dx2_lin;
-  }
-  return;
+  for (int i = il; i <= iu; ++i)
+    area(i) = dx1f(i) * x1v(i) * dx2f_ang_kj_(k, j);
 }
 
 //----------------------------------------------------------------------------------------
 // GetVolCenterFaceXArea functions: return area of face with normal in X-dir at
 // (i,j,k) in volume center
 
-/*Real GnomonicEquiangle::GetVolCenterFace1Area(const int k, const int j,
+/*Real GnomonicEquiangle::Spherical_Tri(Real x1, Real x2, Real x3, Real y1,
+                                      Real y2, Real y3) {
+  Real tx1 = tan(x1);
+  Real tx2 = tan(x2);
+  Real tx3 = tan(x3);
+  Real ty1 = tan(y1);
+  Real ty2 = tan(y2);
+  Real ty3 = tan(y3);
+  Real delta1 = sqrt(1.0 + tx1 * tx1 + ty1 * ty1);
+  Real delta2 = sqrt(1.0 + tx2 * tx2 + ty2 * ty2);
+  Real delta3 = sqrt(1.0 + tx3 * tx3 + ty3 * ty3);
+
+  tx1 = tx1 / delta1;
+  tx2 = tx2 / delta2;
+  tx3 = tx3 / delta3;
+  ty1 = ty1 / delta1;
+  ty2 = ty2 / delta2;
+  ty3 = ty3 / delta3;
+
+  // triple product
+  Real num = fabs(tx1 * ty2 / delta3 - tx2 * ty1 / delta3 + tx2 * ty3 / delta1 -
+                  tx3 * ty2 / delta1 + tx3 * ty1 / delta2 - tx1 * ty3 / delta2);
+  Real den = 1.0 + tx1 * tx2 + tx2 * tx3 + tx3 * tx1 + ty1 * ty2 + ty2 * ty3 +
+             ty3 * ty1 + 1.0 / (delta1 * delta2) + 1.0 / (delta2 * delta3) +
+             1.0 / (delta3 * delta1);
+  Real E2 = atan(num / den);
+
+  return E2 * 2.0;
+}
+
+Real GnomonicEquiangle::GetVolCenterFace1Area(const int k, const int j,
                                               const int i) {
   Real E1 =
       Spherical_Tri(x2f(j), x2f(j), x2f(j + 1), x3f(k), x3f(k + 1), x3f(k));
@@ -349,30 +369,13 @@ Real GnomonicEquiangle::GetVolCenterFace3Area(const int k, const int j,
 
 void GnomonicEquiangle::CellVolume(const int k, const int j, const int il,
                                    const int iu, AthenaArray<Real> &vol) {
-  Real xt = tan(x2v(j));
-  Real yt = tan(x3v(k));
-  Real sin_theta =
-      sqrt((1.0 + xt * xt + yt * yt) / (1.0 + xt * xt) / (1.0 + yt * yt));
-
-  Real x1 = tan(x2f(j));
-  Real x2 = tan(x2f(j + 1));
-  Real y = tan(x3v(k));
-  Real delta1 = sqrt(1.0 + x1 * x1 + y * y);
-  Real delta2 = sqrt(1.0 + x2 * x2 + y * y);
-  Real dx2_ang = acos(1 / (delta1 * delta2) * (1 + x1 * x2 + y * y));
-
-  Real x = tan(x2v(j));
-  Real y1 = tan(x3f(k));
-  Real y2 = tan(x3f(k + 1));
-  delta1 = sqrt(1.0 + x * x + y1 * y1);
-  delta2 = sqrt(1.0 + x * x + y2 * y2);
-  Real dx3_ang = acos(1 / (delta1 * delta2) * (1 + x * x + y1 * y2));
+  Real sin_theta = sine_cell_kj_(k, j);
+  Real dx2f_ang = dx2f_ang_kj_(k, j);
+  Real dx3f_ang = dx3f_ang_kj_(k, j);
 
 #pragma omp simd
-  for (int i = il; i <= iu; ++i) {
-    vol(i) = dx1f(i) * dx2_ang * dx3_ang * x1v(i) * x1v(i) * sin_theta;
-  }
-  return;
+  for (int i = il; i <= iu; ++i)
+    vol(i) = dx1f(i) * dx2f_ang * dx3f_ang * x1v(i) * x1v(i) * sin_theta;
 }
 
 //----------------------------------------------------------------------------------------
@@ -384,63 +387,29 @@ void GnomonicEquiangle::CenterWidth1(const int k, const int j, const int il,
   for (int i = il; i <= iu; ++i) {
     dx1(i) = dx1f(i);  // Same as cartesian
   }
-  return;
 }
 
 void GnomonicEquiangle::CenterWidth2(const int k, const int j, const int il,
                                      const int iu, AthenaArray<Real> &dx2) {
-  Real x = tan(x2v(j));
-  Real y1 = tan(x3f(k));
-  Real y2 = tan(x3f(k + 1));
-  Real delta1 = sqrt(1.0 + x * x + y1 * y1);
-  Real delta2 = sqrt(1.0 + x * x + y2 * y2);
 #pragma omp simd
-  for (int i = il; i <= iu; ++i) {
-    Real r = x1v(i);
-    dx2(i) = r * acos(1 / (delta1 * delta2) * (1 + x * x + y1 * y2));
-  }
-  return;
+  for (int i = il; i <= iu; ++i) dx2(i) = x1v(i) * dx2f_ang_kj_(k, j);
 }
 
 void GnomonicEquiangle::CenterWidth3(const int k, const int j, const int il,
                                      const int iu, AthenaArray<Real> &dx3) {
-  Real x1 = tan(x2f(j));
-  Real x2 = tan(x2f(j + 1));
-  Real y = tan(x3v(k));
-  Real delta1 = sqrt(1.0 + x1 * x1 + y * y);
-  Real delta2 = sqrt(1.0 + x2 * x2 + y * y);
 #pragma omp simd
-  for (int i = il; i <= iu; ++i) {
-    Real r = x1v(i);
-    dx3(i) = r * acos(1 / (delta1 * delta2) * (1 + x1 * x2 + y * y));
-  }
-  return;
+  for (int i = il; i <= iu; ++i) dx3(i) = x1v(i) * dx3f_ang_kj_(k, j);
 }
 
 //----------------------------------------------------------------------------------------
 // GetCellVolume: returns cell volume at (i,j,k)
 
 Real GnomonicEquiangle::GetCellVolume(const int k, const int j, const int i) {
-  Real xt = tan(x2v(j));
-  Real yt = tan(x3v(k));
-  Real sin_theta =
-      sqrt((1.0 + xt * xt + yt * yt) / (1.0 + xt * xt) / (1.0 + yt * yt));
+  Real sin_theta = sine_cell_kj_(k, j);
+  Real dx2f_ang = dx2f_ang_kj_(k, j);
+  Real dx3f_ang = dx3f_ang_kj_(k, j);
 
-  Real x1 = tan(x2f(j));
-  Real x2 = tan(x2f(j + 1));
-  Real y = tan(x3v(k));
-  Real delta1 = sqrt(1.0 + x1 * x1 + y * y);
-  Real delta2 = sqrt(1.0 + x2 * x2 + y * y);
-  Real dx2_ang = acos(1 / (delta1 * delta2) * (1 + x1 * x2 + y * y));
-
-  Real x = tan(x2v(j));
-  Real y1 = tan(x3f(k));
-  Real y2 = tan(x3f(k + 1));
-  delta1 = sqrt(1.0 + x * x + y1 * y1);
-  delta2 = sqrt(1.0 + x * x + y2 * y2);
-  Real dx3_ang = acos(1 / (delta1 * delta2) * (1 + x * x + y1 * y2));
-
-  return dx1f(i) * dx2_ang * dx3_ang * x1v(i) * x1v(i) * sin_theta;
+  return dx1f(i) * dx2f_ang * dx3f_ang * x1v(i) * x1v(i) * sin_theta;
 }
 
 //----------------------------------------------------------------------------------------
@@ -448,11 +417,8 @@ Real GnomonicEquiangle::GetCellVolume(const int k, const int j, const int i) {
 void GnomonicEquiangle::CellMetric(const int k, const int j, const int il,
                                    const int iu, AthenaArray<Real> &g,
                                    AthenaArray<Real> &g_inv) {
-  Real xt = tan(x2v(j));
-  Real yt = tan(x3v(k));
-  Real cos_theta = xt * yt / sqrt((1.0 + xt * xt) * (1.0 + yt * yt));
-  Real sin_theta =
-      sqrt((1.0 + xt * xt + yt * yt) / (1.0 + xt * xt) / (1.0 + yt * yt));
+  Real cos_theta = cosine_cell_kj_(k, j);
+  Real sin_theta = sine_cell_kj_(k, j);
   // Go through 1D block of cells
 
 #pragma omp simd
@@ -479,8 +445,8 @@ void GnomonicEquiangle::CellMetric(const int k, const int j, const int il,
     g33 = 1.0;
 
     gi11 = 1.0;
-    gi22 = 1.0 / sin_theta / sin_theta;
-    gi33 = 1.0 / sin_theta / sin_theta;
+    gi22 = 1.0 / (sin_theta * sin_theta);
+    gi33 = 1.0 / (sin_theta * sin_theta);
   }
   return;
 }
@@ -488,11 +454,8 @@ void GnomonicEquiangle::CellMetric(const int k, const int j, const int il,
 void GnomonicEquiangle::Face1Metric(const int k, const int j, const int il,
                                     const int iu, AthenaArray<Real> &g,
                                     AthenaArray<Real> &g_inv) {
-  Real xt = tan(x2v(j));
-  Real yt = tan(x3v(k));
-  Real cos_theta = -xt * yt / sqrt((1.0 + xt * xt) * (1.0 + yt * yt));
-  Real sin_theta =
-      sqrt((1.0 + xt * xt + yt * yt) / (1.0 + xt * xt) / (1.0 + yt * yt));
+  Real cos_theta = cosine_cell_kj_(k, j);
+  Real sin_theta = sine_cell_kj_(k, j);
   // Go through 1D block of cells
 
 #pragma omp simd
@@ -519,8 +482,8 @@ void GnomonicEquiangle::Face1Metric(const int k, const int j, const int il,
     g33 = 1.0;
 
     gi11 = 1.0;
-    gi22 = 1.0 / sin_theta / sin_theta;
-    gi33 = 1.0 / sin_theta / sin_theta;
+    gi22 = 1.0 / (sin_theta * sin_theta);
+    gi33 = 1.0 / (sin_theta * sin_theta);
   }
   return;
 }
@@ -529,11 +492,8 @@ void GnomonicEquiangle::Face2Metric(const int k, const int j, const int il,
                                     const int iu, AthenaArray<Real> &g,
                                     AthenaArray<Real> &g_inv) {
   // Go through 1D block of cells
-  Real xt = tan(x2f(j));
-  Real yt = tan(x3v(k));
-  Real cos_theta = -xt * yt / sqrt((1.0 + xt * xt) * (1.0 + yt * yt));
-  Real sin_theta =
-      sqrt((1.0 + xt * xt + yt * yt) / (1.0 + xt * xt) / (1.0 + yt * yt));
+  Real cos_theta = cosine_face2_kj_(k, j);
+  Real sin_theta = sine_face2_kj_(k, j);
   // Go through 1D block of cells
 
 #pragma omp simd
@@ -560,8 +520,8 @@ void GnomonicEquiangle::Face2Metric(const int k, const int j, const int il,
     g33 = 1.0;
 
     gi11 = 1.0;
-    gi22 = 1.0 / sin_theta / sin_theta;
-    gi33 = 1.0 / sin_theta / sin_theta;
+    gi22 = 1.0 / (sin_theta * sin_theta);
+    gi33 = 1.0 / (sin_theta * sin_theta);
   }
   return;
 }
@@ -570,11 +530,8 @@ void GnomonicEquiangle::Face3Metric(const int k, const int j, const int il,
                                     const int iu, AthenaArray<Real> &g,
                                     AthenaArray<Real> &g_inv) {
   // Go through 1D block of cells
-  Real xt = tan(x2v(j));
-  Real yt = tan(x3f(k));
-  Real cos_theta = -xt * yt / sqrt((1.0 + xt * xt) * (1.0 + yt * yt));
-  Real sin_theta =
-      sqrt((1.0 + xt * xt + yt * yt) / (1.0 + xt * xt) / (1.0 + yt * yt));
+  Real cos_theta = cosine_face3_kj_(k, j);
+  Real sin_theta = sine_face3_kj_(k, j);
   // Go through 1D block of cells
 
 #pragma omp simd
@@ -601,8 +558,8 @@ void GnomonicEquiangle::Face3Metric(const int k, const int j, const int il,
     g33 = 1.0;
 
     gi11 = 1.0;
-    gi22 = 1.0 / sin_theta / sin_theta;
-    gi33 = 1.0 / sin_theta / sin_theta;
+    gi22 = 1.0 / (sin_theta * sin_theta);
+    gi33 = 1.0 / (sin_theta * sin_theta);
   }
   return;
 }
@@ -652,32 +609,28 @@ void GnomonicEquiangle::PrimToLocal2(const int k, const int j, const int il,
 
     // // Calculate transformation matrix
     Real T11 = 1.0;
-    Real T12 = 0.0;
-    Real T13 = 0.0;
-    Real T21 = 0.0;
     Real T22 = 1.0 / sqrt(gi22);
-    Real T23 = 0.0;
-    Real T31 = 0.0;
     Real T32 = g23 / sqrt(g33);
     Real T33 = sqrt(g33);
 
     // // Transform projected velocities
-    Real ux_l = T11 * uu1_l + T12 * uu2_l + T13 * uu3_l;
-    Real uy_l = T21 * uu1_l + T22 * uu2_l + T23 * uu3_l;
-    Real uz_l = T31 * uu1_l + T32 * uu2_l + T33 * uu3_l;
-    Real ux_r = T11 * uu1_r + T12 * uu2_r + T13 * uu3_r;
-    Real uy_r = T21 * uu1_r + T22 * uu2_r + T23 * uu3_r;
-    Real uz_r = T31 * uu1_r + T32 * uu2_r + T33 * uu3_r;
+    Real ux_l = T11 * uu1_l;
+    Real uy_l = T22 * uu2_l;
+    Real uz_l = T32 * uu2_l + T33 * uu3_l;
+
+    Real ux_r = T11 * uu1_r;
+    Real uy_r = T22 * uu2_r;
+    Real uz_r = T32 * uu2_r + T33 * uu3_r;
 
     // Set local projected 4-velocities
     prim_left(IVX, i) = ux_l;
     prim_left(IVY, i) = uy_l;
     prim_left(IVZ, i) = uz_l;
+
     prim_right(IVX, i) = ux_r;
     prim_right(IVY, i) = uy_r;
     prim_right(IVZ, i) = uz_r;
   }
-  return;
 }
 
 void GnomonicEquiangle::PrimToLocal3(const int k, const int j, const int il,
@@ -708,38 +661,35 @@ void GnomonicEquiangle::PrimToLocal3(const int k, const int j, const int il,
     Real uu1_l = prim_left(IVX, i);
     Real uu2_l = prim_left(IVY, i);
     Real uu3_l = prim_left(IVZ, i);
+
     Real uu1_r = prim_right(IVX, i);
     Real uu2_r = prim_right(IVY, i);
     Real uu3_r = prim_right(IVZ, i);
 
     // // Calculate transformation matrix
     Real T11 = 1.0;
-    Real T12 = 0.0;
-    Real T13 = 0.0;
-    Real T21 = 0.0;
     Real T22 = sqrt(g22);
     Real T23 = g23 / sqrt(g22);
-    Real T31 = 0.0;
-    Real T32 = 0.0;
-    Real T33 = 1 / sqrt(gi33);
+    Real T33 = 1.0 / sqrt(gi33);
 
     // // Transform projected velocities
-    Real ux_l = T11 * uu1_l + T12 * uu2_l + T13 * uu3_l;
-    Real uy_l = T21 * uu1_l + T22 * uu2_l + T23 * uu3_l;
-    Real uz_l = T31 * uu1_l + T32 * uu2_l + T33 * uu3_l;
-    Real ux_r = T11 * uu1_r + T12 * uu2_r + T13 * uu3_r;
-    Real uy_r = T21 * uu1_r + T22 * uu2_r + T23 * uu3_r;
-    Real uz_r = T31 * uu1_r + T32 * uu2_r + T33 * uu3_r;
+    Real ux_l = T11 * uu1_l;
+    Real uy_l = T22 * uu2_l + T23 * uu3_l;
+    Real uz_l = T33 * uu3_l;
+
+    Real ux_r = T11 * uu1_r;
+    Real uy_r = T22 * uu2_r + T23 * uu3_r;
+    Real uz_r = T33 * uu3_r;
 
     // Set local projected 4-velocities
     prim_left(IVX, i) = ux_l;
     prim_left(IVY, i) = uy_l;
     prim_left(IVZ, i) = uz_l;
+
     prim_right(IVX, i) = ux_r;
     prim_right(IVY, i) = uy_r;
     prim_right(IVZ, i) = uz_r;
   }
-  return;
 }
 
 //----------------------------------------------------------------------------------------
@@ -781,32 +731,21 @@ void GnomonicEquiangle::FluxToGlobal2(
     Real &g23 = g_(I23, i);
 
     // Extract local conserved quantities and fluxes
-    const Real txx = flux(IM1, k, j, i);
-    const Real txy = flux(IM2, k, j, i);
-    const Real txz = flux(IM3, k, j, i);
+    Real txx = flux(IM1, k, j, i);
+    Real txy = flux(IM2, k, j, i);
+    Real txz = flux(IM3, k, j, i);
 
     // Calculate transformation matrix
     Real T11 = 1.0;
-    Real T12 = 0.0;
-    Real T13 = 0.0;
-    Real T21 = 0.0;
     Real T22 = sqrt(gi22);
-    Real T23 = 0.0;
-    Real T31 = 0.0;
     Real T32 = -sqrt(gi22) * g23 / g33;
     Real T33 = 1.0 / sqrt(g33);
 
-    // Extract global fluxes
-    Real &t1_1 = flux(IM1, k, j, i);
-    Real &t1_2 = flux(IM2, k, j, i);
-    Real &t1_3 = flux(IM3, k, j, i);
-
     // Set fluxes
-    t1_1 = T11 * txx + T12 * txy + T13 * txz;
-    t1_2 = T21 * txx + T22 * txy + T23 * txz;
-    t1_3 = T31 * txx + T32 * txy + T33 * txz;
+    flux(IM1, k, j, i) = T11 * txx;
+    flux(IM2, k, j, i) = T22 * txy;
+    flux(IM3, k, j, i) = T32 * txy + T33 * txz;
   }
-  return;
 }
 
 void GnomonicEquiangle::FluxToGlobal3(
@@ -833,32 +772,21 @@ void GnomonicEquiangle::FluxToGlobal3(
     Real &g23 = g_(I23, i);
 
     // Extract local conserved quantities and fluxes
-    const Real txx = flux(IM1, k, j, i);
-    const Real txy = flux(IM2, k, j, i);
-    const Real txz = flux(IM3, k, j, i);
+    Real txx = flux(IM1, k, j, i);
+    Real txy = flux(IM2, k, j, i);
+    Real txz = flux(IM3, k, j, i);
 
     // Calculate transformation matrix
     Real T11 = 1.0;
-    Real T12 = 0.0;
-    Real T13 = 0.0;
-    Real T21 = 0.0;
     Real T22 = 1.0 / sqrt(g22);
     Real T23 = -g23 / g22 * sqrt(gi33);
-    Real T31 = 0.0;
-    Real T32 = 0.0;
     Real T33 = sqrt(gi33);
 
-    // Extract global fluxes
-    Real &t1_1 = flux(IM1, k, j, i);
-    Real &t1_2 = flux(IM2, k, j, i);
-    Real &t1_3 = flux(IM3, k, j, i);
-
     // Set fluxes
-    t1_1 = T11 * txx + T12 * txy + T13 * txz;
-    t1_2 = T21 * txx + T22 * txy + T23 * txz;
-    t1_3 = T31 * txx + T32 * txy + T33 * txz;
+    flux(IM1, k, j, i) = T11 * txx;
+    flux(IM2, k, j, i) = T22 * txy + T23 * txz;
+    flux(IM3, k, j, i) = T33 * txz;
   }
-  return;
 }
 
 void GnomonicEquiangle::AddCoordTermsDivergence(const Real dt,
@@ -866,26 +794,23 @@ void GnomonicEquiangle::AddCoordTermsDivergence(const Real dt,
                                                 const AthenaArray<Real> &prim,
                                                 const AthenaArray<Real> &bcc,
                                                 AthenaArray<Real> &u) {
-  auto pco = pmy_block->pcoord;
-  for (int k = pmy_block->ks; k <= pmy_block->ke; ++k) {
-    for (int j = pmy_block->js; j <= pmy_block->je; ++j) {
+  auto pmb = pmy_block;
+  for (int k = pmb->ks; k <= pmb->ke; ++k)
+    for (int j = pmb->js; j <= pmb->je; ++j) {
+      Real cosine = cosine_cell_kj_(k, j);
+      Real sine2 = sine_cell_kj_(k, j) * sine_cell_kj_(k, j);
 #pragma omp simd
-      for (int i = pmy_block->is; i <= pmy_block->ie; ++i) {
+      for (int i = pmb->is; i <= pmb->ie; ++i) {
         // General variables
         Real v1 = prim(IVX, k, j, i);
         Real v2 = prim(IVY, k, j, i);
         Real v3 = prim(IVZ, k, j, i);
-        Real r = x1v(i);
-        Real x = tan(x2v(j));
-        Real y = tan(x3v(k));
-        Real C = sqrt(1.0 + x * x);
-        Real D = sqrt(1.0 + y * y);
-        Real delta = sqrt(1.0 + x * x + y * y);
-        Real cth = -x * y / (C * D);
-        Real sth2 = 1. - cth * cth;
+        Real radius = x1v(i);
 
-        Real pr;
-        Real rho;
+        Real pr, rho;
+
+        Real v_2 = v2 + v3 * cosine;
+        Real v_3 = v3 + v2 * cosine;
 
         if (strcmp(EQUATION_OF_STATE, "shallow_yz") == 0) {
           pr = 0.5 * prim(IDN, k, j, i) * prim(IDN, k, j, i);
@@ -894,52 +819,19 @@ void GnomonicEquiangle::AddCoordTermsDivergence(const Real dt,
           pr = prim(IPR, k, j, i);
           rho = prim(IDN, k, j, i);
           // Update flux 1 (excluded from shallow water case)
-          Real src1 =
-              2.0 * pr / r + rho * (v2 * v2 + v3 * v3 + 2 * v2 * v3 * cth) / r;
+          Real src1 = (2.0 * pr + rho * (v2 * v_2 + v3 * v_3)) / radius;
           u(IM1, k, j, i) += dt * src1;
         }
 
-        Real v_2 = v2 + v3 * cth;
-        Real v_3 = v3 + v2 * cth;
-
-        Real xm = tan(x2f(j));
-        Real deltam = sqrt(1.0 + xm * xm + y * y);
-        Real Cm = sqrt(1.0 + xm * xm);
-        Real sthm = deltam / (Cm * D);
-        Real x2aream = pco->GetFace2Area(k, j, i);
-
-        Real xp = tan(x2f(j + 1));
-        Real Cp = sqrt(1.0 + xp * xp);
-        Real deltap = sqrt(1.0 + xp * xp + y * y);
-        Real sthp = deltap / (Cp * D);
-        Real x2areap = pco->GetFace2Area(k, j + 1, i);
-
-        Real vol = pco->GetCellVolume(k, j, i);
-        Real x_ov_rD = (x2aream * sthm - x2areap * sthp) / vol;
-
         // Update flux 2
-        Real src2 = -x_ov_rD * (pr + rho * v3 * v3 * sth2) - rho * v1 * v_2 / r;
+        Real src2 = -x_ov_rD_kji_(k, j, i) * (pr + rho * v3 * v3 * sine2) -
+                    rho * v1 * v_2 / radius;
         u(IM2, k, j, i) += dt * src2;
 
-        Real ym = tan(x3f(k));
-        deltam = sqrt(1.0 + x * x + ym * ym);
-        Real Dm = sqrt(1.0 + ym * ym);
-        sthm = deltam / (C * Dm);
-        Real x3aream = pco->GetFace3Area(k, j, i);
-
-        Real yp = tan(x3f(k + 1));
-        Real Dp = sqrt(1.0 + yp * yp);
-        deltap = sqrt(1.0 + x * x + yp * yp);
-        sthp = deltap / (C * Dp);
-        Real x3areap = pco->GetFace3Area(k + 1, j, i);
-
-        Real y_ov_rC = (x3aream * sthm - x3areap * sthp) / vol;
-
         // Update flux 3
-        Real src3 = -y_ov_rC * (pr + rho * v2 * v2 * sth2) - rho * v1 * v_3 / r;
+        Real src3 = -y_ov_rC_kji_(k, j, i) * (pr + rho * v2 * v2 * sine2) -
+                    rho * v1 * v_3 / radius;
         u(IM3, k, j, i) += dt * src3;
       }
     }
-  }
-  return;
 }

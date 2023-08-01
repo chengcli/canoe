@@ -69,6 +69,16 @@ class GnomonicEquiangle : public Coordinates {
                                const AthenaArray<Real> &prim,
                                const AthenaArray<Real> &bcc,
                                AthenaArray<Real> &u) final;
+
+ protected:
+  Real sphericalTri(Real x1, Real x2, Real x3, Real y1, Real y2, Real y3);
+
+  AthenaArray<Real> cosine_cell_kj_, sine_cell_kj_;
+  AthenaArray<Real> cosine_face2_kj_, sine_face2_kj_;
+  AthenaArray<Real> cosine_face3_kj_, sine_face3_kj_;
+  AthenaArray<Real> x_ov_rD_kji_, y_ov_rC_kji_;
+  AthenaArray<Real> dx2f_ang_kj_, dx3f_ang_kj_;
+  AthenaArray<Real> dx2f_ang_face3_kj_, dx3f_ang_face2_kj_;
 };
 
 #endif  // SRC_EXO3_GNOMONIC_EQUIANGLE_HPP_
