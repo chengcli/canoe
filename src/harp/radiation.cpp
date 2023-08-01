@@ -202,12 +202,14 @@ size_t Radiation::LoadRestartData(char *psrc) {
 }
 
 void Radiation::LoadAllRadiationBands(ParameterInput *pin) {
-  if (pin->DoesParameterExist("radiation", "infrared_bands")) {
+  if (pin->DoesParameterExist("radiation", "infrared_bands"))
     LoadRadiationBands(pin, "infrared_bands");
-  }
 
   if (pin->DoesParameterExist("radiation", "visible_bands"))
     LoadRadiationBands(pin, "visible_bands");
+
+  if (pin->DoesParameterExist("radiation", "ultraviolet_bands"))
+    LoadRadiationBands(pin, "ultraviolet_bands");
 
   if (pin->DoesParameterExist("radiation", "radio_bands"))
     LoadRadiationBands(pin, "radio_bands");

@@ -100,6 +100,10 @@ class RadiationBand {
   void addAbsorberGiantsUltraviolet(YAML::Node &node);
 
   void addAbsorberEarth(ParameterInput *pin, YAML::Node &node);
+  void addAbsorberEarthInfrared(YAML::Node &node);
+  void addAbsorberEarthVisible(YAML::Node &node);
+  void addAbsorberEarthUltraviolet(YAML::Node &node);
+
   void addAbsorberVenus(ParameterInput *pin, YAML::Node &node);
 
   void addAbsorberMars(ParameterInput *pin, YAML::Node &node);
