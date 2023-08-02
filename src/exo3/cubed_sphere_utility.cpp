@@ -99,10 +99,11 @@ void InteprolateX2(const AthenaArray<Real> &src, AthenaArray<Real> &tgt,
   int lv2_lx3 = loc.lx3 >> (loc.level - 2);
   int local_lx2 = loc.lx2 - (lv2_lx2 << (loc.level - 2));
   int bound_lim = (1 << (loc.level - 2)) - 1;
-  int N_blk = (ej - sj + 1) *
+  int meshblock_size = ej - sj + 1;
+  int N_blk = meshblock_size *
               (bound_lim + 1);  // N in X2 direction for each panel. This value
                                 // is required to be an even number
-  int n_start = local_lx2 * bound_lim - N_blk / 2;
+  int n_start = local_lx2 * meshblock_size - N_blk / 2;
   Real *src_x2 = new Real[N_blk];  // Need to calculate source indices along the
                                    // whole panel boundary
   Real *src_coord = new Real[N_blk];  // The src coordinate along panel boundary
@@ -229,10 +230,11 @@ void InteprolateX3(const AthenaArray<Real> &src, AthenaArray<Real> &tgt,
   int lv2_lx3 = loc.lx3 >> (loc.level - 2);
   int local_lx3 = loc.lx3 - (lv2_lx3 << (loc.level - 2));
   int bound_lim = (1 << (loc.level - 2)) - 1;
-  int N_blk = (ek - sk + 1) *
+  int meshblock_size = ek - sk + 1;
+  int N_blk = meshblock_size *
               (bound_lim + 1);  // N in X2 direction for each panel. This value
                                 // is required to be an even number
-  int n_start = local_lx3 * bound_lim - N_blk / 2;
+  int n_start = local_lx3 * meshblock_size - N_blk / 2;
   Real *src_x3 = new Real[N_blk];  // Need to calculate source indices along the
                                    // whole panel boundary
   Real *src_coord = new Real[N_blk];  // The src coordinate along panel boundary

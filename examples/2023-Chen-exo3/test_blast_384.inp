@@ -9,13 +9,13 @@ dt         = 3600        # time increment between outputs
 #ghost_zones= true
 file_type  = netcdf    # Binary data dump
 variable   = prim        # variables to be output
-dt         = 3600         # time increment between outputs
+dt         = 43200         # time increment between outputs
 
 <output3>
 #ghost_zones= true
 file_type  = netcdf
 variable   = uov
-dt         = 3600
+dt         = 43200
 
 <time>
 cfl_number = 0.7          # The Courant, Friedrichs, & Lewy (CFL) Number
