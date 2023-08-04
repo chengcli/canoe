@@ -17,7 +17,7 @@ repos:
         entry: clang-format
         language: system
         files: ^(src|python|tools|tests|examples)/.*\.(c|cc|cpp|h|hpp)$
-        exclude: ^src/opacity/microwave/.*\.(c|cc|cpp|h|hpp)$
+        exclude: ^(src/opacity/microwave)/.*\.(c|cc|cpp|h|hpp)$
         args: ["-i", "-style=Google"]
 
       - id: cmake-format
@@ -31,4 +31,4 @@ repos:
         name: Fix *.py
         entry: black
         language: system
-        files: ^(tests/python)/.*\.(py|in)$
+        files: ^(tools|examples)/.*\.(py|in)$
