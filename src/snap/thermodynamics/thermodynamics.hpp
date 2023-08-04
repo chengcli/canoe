@@ -59,7 +59,7 @@ inline Real SatVaporPresIdeal(Real t, Real p3, Real beta, Real delta) {
 
 class Thermodynamics {
  protected:
-  enum { NPHASE = 3 };
+  enum { NPHASE = NPHASE_LEGACY };
 
   enum { MAX_REACTANT = 3 };
 

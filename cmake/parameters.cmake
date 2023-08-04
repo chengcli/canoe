@@ -13,6 +13,8 @@ set_if_empty(NVAPOR 0)
 
 set_if_empty(NCLOUD 0)
 
+set_if_empty(NPHASE_LEGACY 3)
+
 set_if_empty(NCHEMISTRY 0)
 
 set_if_empty(NTRACER 0)

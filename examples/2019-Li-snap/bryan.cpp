@@ -36,13 +36,22 @@
 // snap
 #include <snap/thermodynamics/thermodynamics.hpp>
 
-int iH2O;
+int iH2O, iH2Oc;
 Real p0, grav;
 
 struct RootData {
   Real temp_v;
   Variable *air;
 };
+
+void CondenseVapor(Variable *air) {
+  auto pthermo = Thermodynamics::GetInstance();
+  auto rates = pthermo->TryEquilibriumTP_VaporCloud(*air, iH2O);
+
+  // vapor condensation rate
+  air->w[iH2O] += rates[0];
+  air->c[iH2Oc] += rates[1];
+}
 
 Real root_func(Real temp, void *aux) {
   auto pthermo = Thermodynamics::GetInstance();
@@ -52,16 +61,7 @@ Real root_func(Real temp, void *aux) {
   Variable *air = pd->air;
 
   air->w[IDN] = temp;
-  auto rates = pthermo->TryEquilibriumTP_VaporCloud(*air, iH2O);
-
-  // vapor condensation rate
-  air->w[iH2O] += rates[0];
-
-  // cloud concentration rates
-  for (int n = 1; n < rates.size(); ++n) {
-    int j = pthermo->GetCloudIndex(iH2O, j - 1);
-    air->c[j] += rates[n];
-  }
+  CondenseVapor(air);
 
   return temp * pthermo->RovRd(*air) - temp_v;
 };
@@ -120,6 +120,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
 
   // index
   iH2O = pindex->GetVaporId("H2O");
+  iH2Oc = pindex->GetCloudId("H2O(c)");
 
   Variable air(Variable::Type::MoleFrac);
 
@@ -129,14 +130,18 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
       air.w[iH2O] = qt;
       air.w[IPR] = Ps;
       air.w[IDN] = Ts;
+      air.c[iH2Oc] = 0.;
+      CondenseVapor(&air);
+
       for (int i = is; i <= ie; ++i) {
         pimpl->DistributeToConserved(air, k, j, i);
         pthermo->Extrapolate(&air, pcoord->dx1f(i),
                              Thermodynamics::Method::ReversibleAdiabat, grav);
+        std::cout << air.w[iH2O] + air.c[iH2Oc] << std::endl;
       }
     }
 
-  // add temperature anomaly
+  /* add temperature anomaly
   Real temp, Rd = pthermo->GetRd();
   RootData solver;
 
@@ -162,5 +167,5 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
           }
           pimpl->DistributeToConserved(air, k, j, i);
         }
-      }
+      }*/
 }
