@@ -41,7 +41,7 @@ Real p0, grav;
 
 struct RootData {
   Real temp_v;
-  Variable *qfrac;
+  Variable *air;
 };
 
 Real root_func(Real temp, void *aux) {
@@ -49,19 +49,21 @@ Real root_func(Real temp, void *aux) {
 
   RootData *pd = static_cast<RootData *>(aux);
   Real &temp_v = pd->temp_v;
-  Variable *qfrac = pd->qfrac;
+  Variable *air = pd->air;
 
-  qfrac->w[IDN] = temp;
-  auto rates = pthermo->TryEquilibriumTP_VaporCloud(*qfrac, iH2O);
+  air->w[IDN] = temp;
+  auto rates = pthermo->TryEquilibriumTP_VaporCloud(*air, iH2O);
 
   // vapor condensation rate
-  qfrac->w[iH2O] += rates[0];
+  air->w[iH2O] += rates[0];
 
   // cloud concentration rates
-  for (int j = 1; j < rates.size(); ++j)
-    qfrac->c[pthermo->GetCloudIndex(iH2O, j - 1)] += rates[j];
+  for (int n = 1; n < rates.size(); ++n) {
+    int j = pthermo->GetCloudIndex(iH2O, j - 1);
+    air->c[j] += rates[n];
+  }
 
-  return temp * pthermo->RovRd(*qfrac) - temp_v;
+  return temp * pthermo->RovRd(*air) - temp_v;
 };
 
 void MeshBlock::InitUserMeshBlockData(ParameterInput *pin) {
@@ -115,23 +117,22 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
   Real zr = pin->GetReal("problem", "zr");
   Real dT = pin->GetReal("problem", "dT");
   Real qt = pin->GetReal("problem", "qt");
-  Real dz = pcoord->dx1f(is);
 
   // index
   iH2O = pindex->GetVaporId("H2O");
 
-  Variable qfrac(Variable::Type::MoleFrac);
+  Variable air(Variable::Type::MoleFrac);
 
   // construct a reversible adiabat
   for (int k = ks; k <= ke; ++k)
     for (int j = js; j <= je; ++j) {
-      qfrac.w[iH2O] = qt;
-      qfrac.w[IPR] = Ps;
-      qfrac.w[IDN] = Ts;
+      air.w[iH2O] = qt;
+      air.w[IPR] = Ps;
+      air.w[IDN] = Ts;
       for (int i = is; i <= ie; ++i) {
-        pimpl->DistributeToConserved(qfrac, k, j, i);
-        pthermo->Extrapolate(&qfrac, -dz,
-                             Thermodynamics::Method::ReversibleAdiabat);
+        pimpl->DistributeToConserved(air, k, j, i);
+        pthermo->Extrapolate(&air, pcoord->dx1f(i),
+                             Thermodynamics::Method::ReversibleAdiabat, grav);
       }
     }
 
@@ -147,19 +148,19 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
         Real L = sqrt(sqr((x2 - xc) / xr) + sqr((x1 - zc) / zr));
 
         if (L < 1.) {
-          pimpl->GatherFromConserved(&qfrac, k, j, i);
-          solver.qfrac = &qfrac;
+          pimpl->GatherFromConserved(&air, k, j, i);
+          solver.air = &air;
           solver.temp_v = phydro->w(IPR, k, j, i) /
                           (phydro->w(IDN, k, j, i) * Rd) *
                           (dT * sqr(cos(M_PI * L / 2.)) / 300. + 1.);
-          int err = root(qfrac.w[IDN], qfrac.w[IDN] + dT, 1.E-8, &temp,
-                         root_func, &solver);
+          int err = root(air.w[IDN], air.w[IDN] + dT, 1.E-8, &temp, root_func,
+                         &solver);
           if (err) {
             throw RuntimeError("pgen", "TVSolver doesn't converge");
           } else {
             root_func(temp, &solver);
           }
-          pimpl->DistributeToConserved(qfrac, k, j, i);
+          pimpl->DistributeToConserved(air, k, j, i);
         }
       }
 }
