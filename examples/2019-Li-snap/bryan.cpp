@@ -137,7 +137,6 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
         pimpl->DistributeToConserved(air, k, j, i);
         pthermo->Extrapolate(&air, pcoord->dx1f(i),
                              Thermodynamics::Method::ReversibleAdiabat, grav);
-        std::cout << air.w[iH2O] + air.c[iH2Oc] << std::endl;
       }
     }
 

@@ -20,7 +20,13 @@ void Thermodynamics::rk4IntegrateZ(Variable *qfrac, Real dz, Method method,
       for (int j = 0; j < NCLOUD; ++j) qfrac->c[j] = 0;
 
     // TODO(cli) : latent heat was diasabled now
-    for (int i = 1; i <= NVAPOR; ++i) latent[i] = 0;
+    for (int i = 1; i <= NVAPOR; ++i) {
+      // make a trial run to get latent heat
+      qfrac->w[i] += 1.E-2;
+      auto rates = TryEquilibriumTP_VaporCloud(*qfrac, i);
+      latent[i] = GetLatentHeatMole(i, rates, temp) / (Constants::Rgas * temp);
+      qfrac->w[i] -= 1.E-2;
+    }
 
     Real q_gas = 1., q_eps = 1.;
     for (int i = 1; i <= NVAPOR; ++i) {
@@ -61,11 +67,12 @@ void Thermodynamics::rk4IntegrateZ(Variable *qfrac, Real dz, Method method,
     }
 
     if (!(qfrac->w[IDN] > 0.)) qfrac->w[IDN] = temp;
-    if (fabs(qfrac->w[IDN] - temp) > 0.1)  // isothermal limit
+    if (fabs(qfrac->w[IDN] - temp) > 0.01) {
       qfrac->w[IPR] = pres * pow(qfrac->w[IDN] / temp, 1. / chi_avg);
-    else
+    } else {  // isothermal limit
       qfrac->w[IPR] =
           pres * exp(-2. * g_ov_Rd * dz / (R_ov_Rd * (qfrac->w[IDN] + temp)));
+    }
   }
 
   // recondensation

@@ -16,17 +16,20 @@
 RealArrayX Thermodynamics::TryEquilibriumTP_VaporCloud(Variable const& qfrac,
                                                        int i, Real cv_hat,
                                                        bool misty) const {
-  Real xv = qfrac.w[i];
+  Real xv = qfrac.w[i], xg = 1.;
   Real t = qfrac.w[IDN] / t3_[i];
   std::vector<Real> rates(1 + cloud_index_set_[i].size(), 0.);
+
+#pragma omp simd reduction(+ : xg)
+  for (int n = 0; n < NCLOUD; ++n) xg += -qfrac.c[n];
 
   for (int n = 0; n < cloud_index_set_[i].size(); ++n) {
     int j = cloud_index_set_[i][n];
     Real xs = svp_func1_[i][n](qfrac, i, j) / qfrac.w[IPR];
     Real xc = qfrac.c[j];
 
-    if (misty) {  // no cloud in variable
-      rates[0] += xs - xv;
+    if (misty) {  // in a cloudy ambient environment
+      rates[0] += xs - xv / xg;
       continue;
     }
 
@@ -38,18 +41,16 @@ RealArrayX Thermodynamics::TryEquilibriumTP_VaporCloud(Variable const& qfrac,
       continue;
     }
 
-    Real g = 1., alpha = 0.;
-#pragma omp simd reduction(+ : g)
-    for (int n = 0; n < NCLOUD; ++n) g += -qfrac.c[n];
-    g -= xv;
+    Real alpha = 0.;
+    xg -= xv;
 
     if (cv_hat > 0.) {
       alpha = GetLatentEnergyMole(j + 1 + NVAPOR, qfrac.w[IDN]) / cv_hat;
     }
 
     Real s1 = xs / (1. - xs);
-    Real rate = (s1 * g - xv) /
-                (1. + alpha * g * (beta_[j] / t - delta_[j]) * s1 / (1. - xs));
+    Real rate = (s1 * xg - xv) /
+                (1. + alpha * xg * (beta_[j] / t - delta_[j]) * s1 / (1. - xs));
 
     // condensate at most xv vapor
     if (rate < 0.) {
