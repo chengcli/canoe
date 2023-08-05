@@ -165,8 +165,6 @@ TEST_F(TestMoistAdiabat, moist_adiabat) {
   EXPECT_NEAR(air.w[iH2Oc], 0.0127248713312, 1e-8);
 }
 
-TEST_F(TestMoistAdiabat, equivalent_potential_temp) {}
-
 TEST_F(TestMoistAdiabat, moist_static_energy) {
   auto pthermo = Thermodynamics::GetInstance();
   auto pmb = pmesh->my_blocks(0);
@@ -198,6 +196,40 @@ TEST_F(TestMoistAdiabat, moist_static_energy) {
 
   Real mse2 = pthermo->MoistStaticEnergy(pmb, grav * dz, ks, js, is + 1);
   EXPECT_NEAR(mse2, 272872.16971, 1.E-4);
+}
+
+TEST_F(TestMoistAdiabat, equivalent_potential_temp) {
+  auto pthermo = Thermodynamics::GetInstance();
+  auto pmb = pmesh->my_blocks(0);
+
+  Variable air(Variable::Type::MassFrac);
+  air.w[iH2O] = qt;
+  air.c[iH2Oc] = 0.;
+
+  air.ToMoleFraction();
+  air.w[IPR] = Ps;
+  air.w[IDN] = Ts;
+  air.c[iH2Oc] = 0.;
+
+  auto rates = pthermo->TryEquilibriumTP_VaporCloud(air, iH2O);
+  air.w[iH2O] += rates[0];
+  air.w[iH2Oc] += rates[1];
+
+  // first grid
+  int ks = pmb->ks, js = pmb->js, is = pmb->is;
+  pmb->pimpl->DistributeToPrimitive(air, ks, js, is);
+
+  Real theta_e1 = pthermo->EquivalentPotentialTemp(pmb, Ps, iH2O, ks, js, is);
+  EXPECT_NEAR(theta_e1, 320.54669065133, 1.E-8);
+
+  // second grid
+  pthermo->Extrapolate(&air, dz, Thermodynamics::Method::ReversibleAdiabat,
+                       grav);
+  pmb->pimpl->DistributeToPrimitive(air, ks, js, is + 1);
+
+  Real theta_e2 =
+      pthermo->EquivalentPotentialTemp(pmb, Ps, iH2O, ks, js, is + 1);
+  EXPECT_NEAR(theta_e2, 320.5466916420, 1.E-4);
 }
 
 int main(int argc, char* argv[]) {
