@@ -165,6 +165,8 @@ TEST_F(TestMoistAdiabat, moist_adiabat) {
   EXPECT_NEAR(air.w[iH2Oc], 0.0127248713312, 1e-8);
 }
 
+TEST_F(TestMoistAdiabat, equivalent_potential_temp) {}
+
 TEST_F(TestMoistAdiabat, moist_static_energy) {
   auto pthermo = Thermodynamics::GetInstance();
   auto pmb = pmesh->my_blocks(0);

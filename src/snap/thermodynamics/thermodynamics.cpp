@@ -370,6 +370,7 @@ Real Thermodynamics::MoistStaticEnergy(MeshBlock* pmb, Real gz, int k, int j,
   return (IE + LE) / rho + gz;
 }
 
+// TODO(cli): check
 Real Thermodynamics::GetCpMass(MeshBlock* pmb, int k, int j, int i) const {
   Real gammad = pmb->peos->GetGamma();
   auto& w = pmb->phydro->w;
@@ -381,6 +382,7 @@ Real Thermodynamics::GetCpMass(MeshBlock* pmb, int k, int j, int i) const {
   return gammad / (gammad - 1.) * Rd_ * qsig;
 }
 
+// TODO(cli): check
 Real Thermodynamics::GetCvMass(MeshBlock* pmb, int k, int j, int i) const {
   Real gammad = pmb->peos->GetGamma();
   auto& w = pmb->phydro->w;
