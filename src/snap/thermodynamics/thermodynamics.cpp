@@ -449,7 +449,7 @@ Real Thermodynamics::GetLatentHeatMole(int i, std::vector<Real> const& rates,
     heat += rates[j] * GetLatentEnergyMole(n, temp);
   }
 
-  return heat / std::abs(rates[0]) + Constants::Rgas * temp;
+  return heat / std::abs(rates[0]);
 }
 
 // Eq.4.5.11 in Emanuel (1994)

@@ -360,7 +360,7 @@ class Thermodynamics {
   void enrollVaporFunctionCO2();
   void enrollVaporFunctionNH4SH();
 
- private:
+ protected:
   //! ideal gas constant of dry air in J/kg
   Real Rd_;
 
