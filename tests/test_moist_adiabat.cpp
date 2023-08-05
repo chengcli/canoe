@@ -117,8 +117,6 @@ TEST_F(TestMoistAdiabat, concentration) {
   air.w[iH2Oc] += rates[1];
 
   air.ToMassFraction();
-  std::cout << air << std::endl;
-  std::cout << air.w[iH2O] + air.w[iH2Oc] << std::endl;
 
   EXPECT_NEAR(air.w[IDN], 1.2028112737, 1e-8);
   EXPECT_NEAR(air.w[IPR], 100000, 1e-8);
