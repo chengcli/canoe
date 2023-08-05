@@ -89,7 +89,7 @@ void MeshBlock::UserWorkBeforeOutput(ParameterInput *pin) {
         // theta_v
         user_out_var(2, k, j, i) =
             user_out_var(1, j, i) * pthermo->RovRd(this, k, j, i);
-        // msv
+        // mse
         user_out_var(3, k, j, i) =
             pthermo->MoistStaticEnergy(this, grav * pcoord->x1v(i), k, j, i);
         // theta_e
@@ -144,6 +144,9 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
   air.ToMoleFraction();
   qt = air.w[iH2O];
 
+  Variable air0(Variable::Type::MoleFrac);
+  Variable air1(Variable::Type::MoleFrac);
+
   // construct a reversible adiabat
   for (int k = ks; k <= ke; ++k)
     for (int j = js; j <= je; ++j) {
@@ -157,11 +160,17 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
                            Thermodynamics::Method::ReversibleAdiabat, grav);
 
       for (int i = is; i <= ie; ++i) {
+        if (i == is) air0 = air;
+        if (i == ie) air1 = air;
+
         pimpl->DistributeToConserved(air, k, j, i);
         pthermo->Extrapolate(&air, pcoord->dx1f(i),
                              Thermodynamics::Method::ReversibleAdiabat, grav);
       }
     }
+
+  std::cout << air0 << std::endl;
+  std::cout << air1 << std::endl;
 
   /* add temperature anomaly
   Real temp, Rd = pthermo->GetRd();

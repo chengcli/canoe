@@ -355,14 +355,16 @@ Real Thermodynamics::MoistStaticEnergy(MeshBlock* pmb, Real gz, int k, int j,
   Real IE = w(IDN, k, j, i) * GetCpMass(pmb, k, j, i) * temp;
   Real rho_gas = w(IDN, k, j, i);
   Real rho_total = rho_gas;
+  Real LE = 0.;
 
-#pragma omp simd reduction(+ : IE, rho_total)
+#pragma omp simd reduction(+ : IE, rho_total, LE)
   for (int n = 0; n < NCLOUD; ++n) {
-    IE += rho_gas * c(n, k, j, i) * GetCpMassRef(n) * temp;
+    IE += rho_gas * c(n, k, j, i) * GetCpMassRef(1 + NVAPOR + n) * temp;
+    LE += -latent_energy_mass_[1 + NVAPOR + n] * rho_gas * c(n, k, j, i);
     rho_total += rho_gas * c(n, k, j, i);
   }
 
-  return IE / rho_total + gz;
+  return (IE + LE) / rho_total + gz;
 }
 
 Real Thermodynamics::GetCpMass(MeshBlock* pmb, int k, int j, int i) const {

@@ -35,7 +35,7 @@ void Thermodynamics::rk4IntegrateZ(Variable *qfrac, Real dz, Method method,
 
     for (int j = 0; j < NCLOUD; ++j) {
       q_eps += qfrac->c[j] * (mu_ratio_[1 + NVAPOR + j] - 1.);
-      q_gas -= qfrac->c[j];
+      q_gas += -qfrac->c[j];
     }
 
     Real g_ov_Rd = grav / Rd_;
