@@ -45,7 +45,9 @@ RealArrayX Thermodynamics::TryEquilibriumTP_VaporCloud(Variable const& qfrac,
     xg -= xv;
 
     if (cv_hat > 0.) {
-      alpha = GetLatentEnergyMole(j + 1 + NVAPOR, qfrac.w[IDN]) / cv_hat;
+      alpha = (GetLatentEnergyMole(j + 1 + NVAPOR, qfrac.w[IDN]) -
+               Constants::Rgas * qfrac.w[IDN]) /
+              cv_hat;
     }
 
     Real s1 = xs / (1. - xs);
