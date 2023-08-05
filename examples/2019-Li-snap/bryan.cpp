@@ -105,12 +105,6 @@ void CondensateGravity(MeshBlock *pmb, Real const time, Real const dt,
 #pragma omp simd
         for (int n = 0; n < NCLOUD; ++n) rho_cloud += rho_dry * r(n, k, j, i);
 
-        /*Variable var(Variable::Type::MassConc);
-        pmb->pimpl->GatherFromPrimitive(&var, k, j, i);
-        Real rho = 0.;
-        for (int n = 0; n < NCLOUD; ++n)
-          rho += var.c[iH2Oc];*/
-
         Real src = -dt * rho_cloud * grav;
         u(IM1, k, j, i) += src;
         if (NON_BAROTROPIC_EOS) u(IEN, k, j, i) += src * w(IVX, k, j, i);
