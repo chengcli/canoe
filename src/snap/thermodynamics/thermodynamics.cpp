@@ -274,7 +274,12 @@ Real Thermodynamics::GetPres(MeshBlock* pmb, int k, int j, int i) const {
 
 // Eq.71 in Li2019
 Real Thermodynamics::GetChi(MeshBlock* pmb, int k, int j, int i) const {
-  Real gammad = pmb->peos->GetGamma();
+  Variable air(Variable::Type::MoleFrac);
+  pmb->pimpl->GatherFromPrimitive(&air, k, j, i);
+  return GetChi(air);
+}
+
+/*  Real gammad = pmb->peos->GetGamma();
   auto& w = pmb->phydro->w;
   auto& c = pmb->pimpl->pcloud->w;
 
@@ -292,7 +297,7 @@ Real Thermodynamics::GetChi(MeshBlock* pmb, int k, int j, int i) const {
   }
 
   return (gammad - 1.) / gammad * feps / qsig;
-}
+}*/
 
 // TODO(cli): check
 Real Thermodynamics::GetChi(Variable const& qfrac) const {
@@ -316,19 +321,20 @@ Real Thermodynamics::GetChi(Variable const& qfrac) const {
 // Eq.63 in Li2019
 Real Thermodynamics::GetGamma(MeshBlock* pmb, int k, int j, int i) const {
   Real gammad = pmb->peos->GetGamma();
-  auto& w = pmb->phydro->w;
-  auto& c = pmb->pimpl->pcloud->w;
+
+  Variable air(Variable::Type::MassFrac);
+  pmb->pimpl->GatherFromPrimitive(&air, k, j, i);
 
   Real fsig = 1., feps = 1.;
 #pragma omp simd reduction(+ : fsig, feps)
   for (int n = 1; n <= NVAPOR; ++n) {
-    fsig += w(n, k, j, i) * (cv_ratio_mass_[n] - 1.);
-    feps += w(n, k, j, i) * (inv_mu_ratio_[n] - 1.);
+    fsig += air.w[n] * (cv_ratio_mass_[n] - 1.);
+    feps += air.w[n] * (inv_mu_ratio_[n] - 1.);
   }
 
   for (int n = 0; n < NCLOUD; ++n) {
-    fsig += c(n, k, j, i) * (cv_ratio_mass_[n + 1 + NVAPOR] - 1.);
-    feps += -c(n, k, j, i);
+    fsig += air.c[n] * (cv_ratio_mass_[n + 1 + NVAPOR] - 1.);
+    feps += -air.c[n];
   }
 
   return 1. + (gammad - 1.) * feps / fsig;
@@ -336,16 +342,15 @@ Real Thermodynamics::GetGamma(MeshBlock* pmb, int k, int j, int i) const {
 
 // Eq.16 in Li2019
 Real Thermodynamics::RovRd(MeshBlock* pmb, int k, int j, int i) const {
-  auto& w = pmb->phydro->w;
-  auto& c = pmb->pimpl->pcloud->w;
+  Variable air(Variable::Type::MassFrac);
+  pmb->pimpl->GatherFromPrimitive(&air, k, j, i);
 
   Real feps = 1.;
 #pragma omp simd reduction(+ : feps)
-  for (int n = 1; n <= NVAPOR; ++n)
-    feps += w(n, k, j, i) * (inv_mu_ratio_[n] - 1.);
+  for (int n = 1; n <= NVAPOR; ++n) feps += air.w[n] * (inv_mu_ratio_[n] - 1.);
 
 #pragma omp simd reduction(+ : feps)
-  for (int n = 0; n < NCLOUD; ++n) feps += -c(n, k, j, i);
+  for (int n = 0; n < NCLOUD; ++n) feps += -air.c[n];
 
   return feps;
 }
@@ -475,41 +480,41 @@ Real Thermodynamics::GetLatentHeatMole(int i, std::vector<Real> const& rates,
 // Eq.4.5.11 in Emanuel (1994)
 Real Thermodynamics::EquivalentPotentialTemp(MeshBlock* pmb, Real p0, int v,
                                              int k, int j, int i) const {
-  auto& w = pmb->phydro->w;
-  auto& c = pmb->pimpl->pcloud->w;
+  Variable air(Variable::Type::MassFrac);
+  pmb->pimpl->GatherFromPrimitive(&air, k, j, i);
 
 #if (NVAPOR > 0)
   // get dry air mixing ratio
   Real sum = 1., qd = 1.;
 #pragma omp simd reduction(+ : sum, qd)
   for (int n = 1; n <= NVAPOR; ++n) {
-    sum += w(n, k, j, i) * (inv_mu_ratio_[n] - 1.);
-    qd += -w(n, k, j, i);
+    sum += air.w[n] * (inv_mu_ratio_[n] - 1.);
+    qd += -air.w[n];
   }
 
 #pragma omp simd reduction(+ : sum, qd)
   for (int n = 0; n < NCLOUD; ++n) {
-    sum += c(n, k, j, i) * (inv_mu_ratio_[n + 1 + NVAPOR] - 1.);
-    qd += -c(n, k, j, i);
+    sum += air.c[n] * (inv_mu_ratio_[n + 1 + NVAPOR] - 1.);
+    qd += -air.c[n];
   }
 
   Real xg = 1.;
 #pragma omp simd reduction(+ : xg)
   for (int n = 1; n <= NVAPOR; ++n) {
-    xg += -w(n, k, j, i) * inv_mu_ratio_[n] / sum;
+    xg += -air.w[n] * inv_mu_ratio_[n] / sum;
   }
 
   Real xd = xg;
 #pragma omp simd reduction(+ : xd)
   for (int n = 0; n < NCLOUD; ++n) {
-    xd += -c(n, k, j, i) * inv_mu_ratio_[n + 1 + NVAPOR] / sum;
+    xd += -air.c[n] * inv_mu_ratio_[n + 1 + NVAPOR] / sum;
   }
 
   Real temp = GetTemp(pmb, k, j, i);
-  Real pres = w(IPR, k, j, i);
+  Real pres = pmb->phydro->w(IPR, k, j, i);
 
-  Real rv = w(v, k, j, i) / qd;
-  Real rc = c(cloud_index_set_[v][0], k, j, i) / qd;
+  Real rv = air.w[v] / qd;
+  Real rc = air.c[cloud_index_set_[v][0]] / qd;
   Real rt = rv + rc;
 
   Real Rd = Rd_;
@@ -518,7 +523,7 @@ Real Thermodynamics::EquivalentPotentialTemp(MeshBlock* pmb, Real p0, int v,
   Real cpd = Rd_ * gammad_ref_ / (gammad_ref_ - 1.);
   Real cl = cpd * cp_ratio_mass_[cloud_index_set_[v][0] + 1 + NVAPOR];
 
-  std::vector<Real> rates{-1., 1.};
+  std::vector<Real> rates{-0.01, 0.01};
   Real lv = GetLatentHeatMass(v, rates, temp);
 
   Real rh = RelativeHumidity(pmb, v, k, j, i);

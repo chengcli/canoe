@@ -22,6 +22,7 @@
 #include <athena/parameter_input.hpp>
 
 // application
+#include <application/application.hpp>
 #include <application/exceptions.hpp>
 
 // canoe
@@ -35,6 +36,7 @@
 
 // snap
 #include <snap/thermodynamics/thermodynamics.hpp>
+#include <snap/thermodynamics/vapors/water_vapors.hpp>
 
 int iH2O, iH2Oc;
 Real p0, grav;
@@ -104,6 +106,19 @@ void Mesh::InitUserMeshData(ParameterInput *pin) {
   p0 = pin->GetReal("problem", "p0");
 }
 
+// water svp
+void Thermodynamics::enrollVaporFunctionH2O() {
+  Application::Logger app("snap");
+  app->Log("Enrolling H2O vapor pressures");
+
+  auto pindex = IndexMap::GetInstance();
+  int iH2O = pindex->GetVaporId("H2O");
+
+  svp_func1_[iH2O][0] = [](Variable const &qfrac, int, int) {
+    return sat_vapor_p_H2O_liquid_Ideal(qfrac.w[IDN]);
+  };
+}
+
 void MeshBlock::ProblemGenerator(ParameterInput *pin) {
   auto pthermo = Thermodynamics::GetInstance();
   auto pindex = IndexMap::GetInstance();
@@ -122,7 +137,12 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
   iH2O = pindex->GetVaporId("H2O");
   iH2Oc = pindex->GetCloudId("H2O(c)");
 
-  Variable air(Variable::Type::MoleFrac);
+  Variable air(Variable::Type::MassFrac);
+  air.w[iH2O] = qt;
+  air.c[iH2Oc] = 0.;
+
+  air.ToMoleFraction();
+  qt = air.w[iH2O];
 
   // construct a reversible adiabat
   for (int k = ks; k <= ke; ++k)
@@ -131,13 +151,27 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
       air.w[IPR] = Ps;
       air.w[IDN] = Ts;
       air.c[iH2Oc] = 0.;
-      CondenseVapor(&air);
+
+      // half a grid to cell center
+      pthermo->Extrapolate(&air, pcoord->dx1f(is) / 2.,
+                           Thermodynamics::Method::ReversibleAdiabat, grav);
+
+      Variable air0(air);
+      std::cout << air0 << std::endl;
 
       for (int i = is; i <= ie; ++i) {
-        pimpl->DistributeToConserved(air, k, j, i);
+        pimpl->DistributeToPrimitive(air, k, j, i);
         pthermo->Extrapolate(&air, pcoord->dx1f(i),
                              Thermodynamics::Method::ReversibleAdiabat, grav);
+
+        if (i == ie) {
+          std::cout << air << std::endl;
+          std::cout << "Temp = " << pthermo->GetTemp(this, k, j, i)
+                    << std::endl;
+        }
       }
+
+      exit(1);
     }
 
   /* add temperature anomaly

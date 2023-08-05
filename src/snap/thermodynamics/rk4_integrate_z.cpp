@@ -22,10 +22,10 @@ void Thermodynamics::rk4IntegrateZ(Variable *qfrac, Real dz, Method method,
     // TODO(cli) : latent heat was diasabled now
     for (int i = 1; i <= NVAPOR; ++i) {
       // make a trial run to get latent heat
-      qfrac->w[i] += 1.E-2;
+      qfrac->w[i] += 1.E-6;
       auto rates = TryEquilibriumTP_VaporCloud(*qfrac, i);
       latent[i] = GetLatentHeatMole(i, rates, temp) / (Constants::Rgas * temp);
-      qfrac->w[i] -= 1.E-2;
+      qfrac->w[i] -= 1.E-6;
     }
 
     Real q_gas = 1., q_eps = 1.;
