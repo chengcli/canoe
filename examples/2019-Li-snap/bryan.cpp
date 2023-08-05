@@ -138,8 +138,6 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
     }
 
   // add temperature anomaly
-  Real temp, Rd = pthermo->GetRd();
-
   for (int k = ks; k <= ke; ++k)
     for (int j = js; j <= je; ++j)
       for (int i = is; i <= ie; ++i) {
@@ -152,6 +150,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
           Real temp_v = air.w[IDN] * pthermo->RovRd(air);
           temp_v *= 1. + dT * sqr(cos(M_PI * L / 2.)) / 300.;
 
+          Real temp;
           int err = root(air.w[IDN], air.w[IDN] + dT, 1.E-8, &temp,
                          [&pthermo, &air, temp_v](Real temp) {
                            air.w[IDN] = temp;
@@ -167,6 +166,10 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
           if (err) throw RuntimeError("pgen", "TVSolver doesn't converge");
 
           air.w[IDN] = temp;
+          auto rates = pthermo->TryEquilibriumTP_VaporCloud(air, iH2O);
+          air.w[iH2O] += rates[0];
+          air.c[iH2Oc] += rates[1];
+
           pimpl->DistributeToConserved(air, k, j, i);
         }
       }
