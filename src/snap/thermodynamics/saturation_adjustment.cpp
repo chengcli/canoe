@@ -11,6 +11,7 @@
 #include <application/exceptions.hpp>
 
 // canoe
+#include <constants.hpp>
 #include <variable.hpp>
 
 // snap
@@ -34,7 +35,7 @@ void Thermodynamics::SaturationAdjustment(Variable *qfrac) const {
     msg << "iter = " << iter << ", ";
     msg << "old temp = " << qfrac->w[IDN] << ", ";
 
-    Real cvd = Rd_ / (GetGammad(*qfrac) - 1.);
+    Real cvd = Constants::Rgas / (GetGammad(*qfrac) - 1.);
     Real fsig = 1.;
     for (int i = 1; i <= NVAPOR; ++i) {
       Real qv = qfrac->w[i];
