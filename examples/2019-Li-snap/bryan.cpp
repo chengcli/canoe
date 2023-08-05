@@ -32,7 +32,8 @@
 // climath
 #include <climath/core.h>
 #include <climath/interpolation.h>
-#include <climath/root.h>
+
+#include <climath/root.hpp>
 
 // snap
 #include <snap/thermodynamics/thermodynamics.hpp>
@@ -40,33 +41,6 @@
 
 int iH2O, iH2Oc;
 Real p0, grav;
-
-struct RootData {
-  Real temp_v;
-  Variable *air;
-};
-
-void CondenseVapor(Variable *air) {
-  auto pthermo = Thermodynamics::GetInstance();
-  auto rates = pthermo->TryEquilibriumTP_VaporCloud(*air, iH2O);
-
-  // vapor condensation rate
-  air->w[iH2O] += rates[0];
-  air->c[iH2Oc] += rates[1];
-}
-
-Real root_func(Real temp, void *aux) {
-  auto pthermo = Thermodynamics::GetInstance();
-
-  RootData *pd = static_cast<RootData *>(aux);
-  Real &temp_v = pd->temp_v;
-  Variable *air = pd->air;
-
-  air->w[IDN] = temp;
-  CondenseVapor(air);
-
-  return temp * pthermo->RovRd(*air) - temp_v;
-};
 
 void MeshBlock::InitUserMeshBlockData(ParameterInput *pin) {
   AllocateUserOutputVariables(6);
@@ -144,9 +118,6 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
   air.ToMoleFraction();
   qt = air.w[iH2O];
 
-  Variable air0(Variable::Type::MoleFrac);
-  Variable air1(Variable::Type::MoleFrac);
-
   // construct a reversible adiabat
   for (int k = ks; k <= ke; ++k)
     for (int j = js; j <= je; ++j) {
@@ -160,18 +131,14 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
                            Thermodynamics::Method::ReversibleAdiabat, grav);
 
       for (int i = is; i <= ie; ++i) {
-        if (i == is) air0 = air;
-        if (i == ie) air1 = air;
-
         pimpl->DistributeToConserved(air, k, j, i);
         pthermo->Extrapolate(&air, pcoord->dx1f(i),
                              Thermodynamics::Method::ReversibleAdiabat, grav);
       }
     }
 
-  /* add temperature anomaly
+  // add temperature anomaly
   Real temp, Rd = pthermo->GetRd();
-  RootData solver;
 
   for (int k = ks; k <= ke; ++k)
     for (int j = js; j <= je; ++j)
@@ -182,18 +149,25 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
 
         if (L < 1.) {
           pimpl->GatherFromConserved(&air, k, j, i);
-          solver.air = &air;
-          solver.temp_v = phydro->w(IPR, k, j, i) /
-                          (phydro->w(IDN, k, j, i) * Rd) *
-                          (dT * sqr(cos(M_PI * L / 2.)) / 300. + 1.);
-          int err = root(air.w[IDN], air.w[IDN] + dT, 1.E-8, &temp, root_func,
-                         &solver);
-          if (err) {
-            throw RuntimeError("pgen", "TVSolver doesn't converge");
-          } else {
-            root_func(temp, &solver);
-          }
+          Real temp_v = air.w[IDN] * pthermo->RovRd(air);
+          temp_v *= 1. + dT * sqr(cos(M_PI * L / 2.)) / 300.;
+
+          int err = root(air.w[IDN], air.w[IDN] + dT, 1.E-8, &temp,
+                         [&pthermo, &air, temp_v](Real temp) {
+                           air.w[IDN] = temp;
+
+                           auto rates =
+                               pthermo->TryEquilibriumTP_VaporCloud(air, iH2O);
+                           air.w[iH2O] += rates[0];
+                           air.c[iH2Oc] += rates[1];
+
+                           return temp * pthermo->RovRd(air) - temp_v;
+                         });
+
+          if (err) throw RuntimeError("pgen", "TVSolver doesn't converge");
+
+          air.w[IDN] = temp;
           pimpl->DistributeToConserved(air, k, j, i);
         }
-      }*/
+      }
 }
