@@ -348,23 +348,26 @@ Real Thermodynamics::RovRd(Variable const& qfrac) const {
 
 Real Thermodynamics::MoistStaticEnergy(MeshBlock* pmb, Real gz, int k, int j,
                                        int i) const {
-  auto& w = pmb->phydro->w;
-  auto& c = pmb->pimpl->pcloud->w;
+  Variable var(Variable::Type::MassConc);
+  pmb->pimpl->GatherFromPrimitive(&var, k, j, i);
 
   Real temp = GetTemp(pmb, k, j, i);
-  Real IE = w(IDN, k, j, i) * GetCpMass(pmb, k, j, i) * temp;
-  Real rho_gas = w(IDN, k, j, i);
-  Real rho_total = rho_gas;
-  Real LE = 0.;
+  Real rho = 0., LE = 0., IE = 0.;
 
-#pragma omp simd reduction(+ : IE, rho_total, LE)
-  for (int n = 0; n < NCLOUD; ++n) {
-    IE += rho_gas * c(n, k, j, i) * GetCpMassRef(1 + NVAPOR + n) * temp;
-    LE += -latent_energy_mass_[1 + NVAPOR + n] * rho_gas * c(n, k, j, i);
-    rho_total += rho_gas * c(n, k, j, i);
+#pragma omp simd reduction(+ : IE, rho)
+  for (int n = 0; n <= NVAPOR; ++n) {
+    IE += var.w[n] * GetCpMassRef(n) * temp;
+    rho += var.w[n];
   }
 
-  return (IE + LE) / rho_total + gz;
+#pragma omp simd reduction(+ : IE, LE, rho)
+  for (int n = 0; n < NCLOUD; ++n) {
+    IE += var.c[n] * GetCpMassRef(1 + NVAPOR + n) * temp;
+    LE += -latent_energy_mass_[1 + NVAPOR + n] * var.c[n];
+    rho += var.c[n];
+  }
+
+  return (IE + LE) / rho + gz;
 }
 
 Real Thermodynamics::GetCpMass(MeshBlock* pmb, int k, int j, int i) const {
