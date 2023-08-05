@@ -234,6 +234,9 @@ class Thermodynamics {
   //! Adjust to the maximum saturation state conserving internal energy
   void SaturationAdjustment(Variable *qfrac) const;
 
+  //! Inverse of the mean molecular weight (with cloud)
+  Real RovRd(Variable const &qfrac) const;
+
   //! Potential temperature
   //!$\theta = T(\frac{p_0}{p})^{\chi}$
   //! \return $\theta$
@@ -262,12 +265,18 @@ class Thermodynamics {
   //! \return $mu$
   Real GetMu(MeshBlock *pmb, int k, int j, int i) const;
 
-  //! Inverse of the mean molecular weight
+  //! Inverse of the mean molecular weight (no cloud)
   //! $ \frac{R}{R_d} = \frac{\mu_d}{\mu}$
   //! \return $1/\mu$
-  Real RovRd(MeshBlock *pmb, int k, int j, int i) const;
-
-  Real RovRd(Variable const &qfrac) const;
+  //! Eq.16 in Li2019
+  Real RovRd(MeshBlock *pmb, int k, int j, int i) const {
+    Real feps = 1.;
+    auto &w = pmb->phydro->w;
+#pragma omp simd reduction(+ : feps)
+    for (int n = 1; n <= NVAPOR; ++n)
+      feps += w(n, k, j, i) * (inv_mu_ratio_[n] - 1.);
+    return feps;
+  }
 
   //! Specific heat capacity [J/(kg K)] of the air parcel at constant volume
   //! c_v = c_{v,d}*(1 + \sum_i (q_i*(\hat{c}_{v,i} - 1.)))

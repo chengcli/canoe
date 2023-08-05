@@ -156,22 +156,11 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
       pthermo->Extrapolate(&air, pcoord->dx1f(is) / 2.,
                            Thermodynamics::Method::ReversibleAdiabat, grav);
 
-      Variable air0(air);
-      std::cout << air0 << std::endl;
-
       for (int i = is; i <= ie; ++i) {
-        pimpl->DistributeToPrimitive(air, k, j, i);
+        pimpl->DistributeToConserved(air, k, j, i);
         pthermo->Extrapolate(&air, pcoord->dx1f(i),
                              Thermodynamics::Method::ReversibleAdiabat, grav);
-
-        if (i == ie) {
-          std::cout << air << std::endl;
-          std::cout << "Temp = " << pthermo->GetTemp(this, k, j, i)
-                    << std::endl;
-        }
       }
-
-      exit(1);
     }
 
   /* add temperature anomaly

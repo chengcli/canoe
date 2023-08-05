@@ -274,14 +274,8 @@ Real Thermodynamics::GetPres(MeshBlock* pmb, int k, int j, int i) const {
 
 // Eq.71 in Li2019
 Real Thermodynamics::GetChi(MeshBlock* pmb, int k, int j, int i) const {
-  Variable air(Variable::Type::MoleFrac);
-  pmb->pimpl->GatherFromPrimitive(&air, k, j, i);
-  return GetChi(air);
-}
-
-/*  Real gammad = pmb->peos->GetGamma();
+  Real gammad = pmb->peos->GetGamma();
   auto& w = pmb->phydro->w;
-  auto& c = pmb->pimpl->pcloud->w;
 
   Real qsig = 1., feps = 1.;
 #pragma omp simd reduction(+ : qsig, feps)
@@ -290,14 +284,8 @@ Real Thermodynamics::GetChi(MeshBlock* pmb, int k, int j, int i) const {
     qsig += w(n, k, j, i) * (cp_ratio_mass_[n] - 1.);
   }
 
-#pragma omp simd reduction(+ : qsig, feps)
-  for (int n = 0; n < NCLOUD; ++n) {
-    feps += -c(n, k, j, i);
-    qsig += c(n, k, j, i) * (cp_ratio_mass_[n + 1 + NVAPOR] - 1.);
-  }
-
   return (gammad - 1.) / gammad * feps / qsig;
-}*/
+}
 
 // TODO(cli): check
 Real Thermodynamics::GetChi(Variable const& qfrac) const {
@@ -338,21 +326,6 @@ Real Thermodynamics::GetGamma(MeshBlock* pmb, int k, int j, int i) const {
   }
 
   return 1. + (gammad - 1.) * feps / fsig;
-}
-
-// Eq.16 in Li2019
-Real Thermodynamics::RovRd(MeshBlock* pmb, int k, int j, int i) const {
-  Variable air(Variable::Type::MassFrac);
-  pmb->pimpl->GatherFromPrimitive(&air, k, j, i);
-
-  Real feps = 1.;
-#pragma omp simd reduction(+ : feps)
-  for (int n = 1; n <= NVAPOR; ++n) feps += air.w[n] * (inv_mu_ratio_[n] - 1.);
-
-#pragma omp simd reduction(+ : feps)
-  for (int n = 0; n < NCLOUD; ++n) feps += -air.c[n];
-
-  return feps;
 }
 
 // Eq.94 in Li2019
