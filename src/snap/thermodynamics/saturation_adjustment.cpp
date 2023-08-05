@@ -28,7 +28,12 @@ void Thermodynamics::SaturationAdjustment(Variable *qfrac) const {
   int iter = 0;
 
   Real Teq = qfrac->w[IDN];
+  std::stringstream msg;
+
   while (iter++ < sa_max_iter_) {
+    msg << "iter = " << iter << ", ";
+    msg << "Teq = " << Teq << ", ";
+
     Real cvd = Rd_ / (GetGammad(*qfrac) - 1.);
     Real fsig = 1.;
     for (int i = 1; i <= NVAPOR; ++i) {
@@ -55,6 +60,7 @@ void Thermodynamics::SaturationAdjustment(Variable *qfrac) const {
 
     Real Told = qfrac->w[IDN];
     updateTPConservingU(qfrac, rmole, umole);
+    msg << "Temp = " << qfrac->w[IDN] << std::endl;
     if (fabs(qfrac->w[IDN] - Teq) < sa_ftol_) break;
 
     // relax temperature and pressure
@@ -68,7 +74,6 @@ void Thermodynamics::SaturationAdjustment(Variable *qfrac) const {
   }
 
   if (iter > sa_max_iter_) {
-    std::stringstream msg;
     msg << "Variables before iteration q0 = (" << qfrac0 << ")" << std::endl;
     msg << "Variables after iteration q = (" << *qfrac << ")" << std::endl;
     throw RuntimeError("SaturationAdjustment", msg.str());
