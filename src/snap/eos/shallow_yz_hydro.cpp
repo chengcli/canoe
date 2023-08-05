@@ -12,7 +12,16 @@
 #include <athena/hydro/hydro.hpp>
 #include <athena/mesh/mesh.hpp>
 #include <athena/parameter_input.hpp>
+#include <athena/stride_iterator.hpp>
+
+// canoe
 #include <configure.hpp>
+
+// exo3
+#include <exo3/cubed_sphere_utility.hpp>
+#include <exo3/gnomonic_equiangle.hpp>
+
+namespace cs = CubedSphereUtility;
 
 // EquationOfState constructor
 //
@@ -43,27 +52,17 @@ void EquationOfState::ConservedToPrimitive(
         ud = (ud > density_floor_) ? ud : density_floor_;
         prim(IDN, k, j, i) = ud;
         prim(IVX, k, j, i) = 0.;
+        prim(IVY, k, j, i) = cons(IVY, k, j, i);
+        prim(IVZ, k, j, i) = cons(IVZ, k, j, i);
         Real di = 1. / ud;
 
-        const Real u = 0.;
-        const Real v = cons(IVY, k, j, i) * di;
-        const Real w = cons(IVZ, k, j, i) * di;
-
-#if defined(CUBED_SPHERE)
-        Real x = tan(pco->x2v(j));
-        Real y = tan(pco->x3v(k));
-        Real C = sqrt(1. + x * x);
-        Real D = sqrt(1. + y * y);
-        Real cth = -x * y / (C * D);
-        Real sth2 = 1. - cth * cth;
-
-        // Raise to contravarient velocity
-        prim(IVY, k, j, i) = v / sth2 - w * cth / sth2;
-        prim(IVZ, k, j, i) = -v * cth / sth2 + w / sth2;
-#else
-        prim(IVY, k, j, i) = v;
-        prim(IVZ, k, j, i) = w;
+#ifdef CUBED_SPHERE
+        cs::CovariantToContravariant(
+            prim.at(k, j, i),
+            static_cast<GnomonicEquiangle *>(pco)->GetCosineCell(k, j));
 #endif
+        prim(IVY, k, j, i) *= di;
+        prim(IVZ, k, j, i) *= di;
       }
 }
 
@@ -85,25 +84,16 @@ void EquationOfState::PrimitiveToConserved(const AthenaArray<Real> &prim,
         const Real &wd = prim(IDN, k, j, i);
         cons(IDN, k, j, i) = wd;
         cons(IVX, k, j, i) = 0.;
+        cons(IVY, k, j, i) = prim(IVY, k, j, i);
+        cons(IVZ, k, j, i) = prim(IVZ, k, j, i);
 
-        const Real u = 0.;
-        const Real v = prim(IVY, k, j, i) * wd;
-        const Real w = prim(IVZ, k, j, i) * wd;
-
-#if defined(CUBED_SPHERE)
-        Real x = tan(pco->x2v(j));
-        Real y = tan(pco->x3v(k));
-        Real C = sqrt(1. + x * x);
-        Real D = sqrt(1. + y * y);
-        Real cth = -x * y / (C * D);
-
-        cons(IVY, k, j, i) = v + w * cth;
-        cons(IVZ, k, j, i) = w + v * cth;
-
-#else
-        cons(IVY, k, j, i) = v;
-        cons(IVZ, k, j, i) = w;
+#ifdef CUBED_SPHERE
+        cs::ContravariantToCovariant(
+            cons.at(k, j, i),
+            static_cast<GnomonicEquiangle *>(pco)->GetCosineCell(k, j));
 #endif
+        cons(IVY, k, j, i) *= wd;
+        cons(IVZ, k, j, i) *= wd;
       }
 }
 

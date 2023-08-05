@@ -6,9 +6,6 @@
 #include <Eigen/Core>
 #include <Eigen/Dense>
 
-// canoe
-#include <impl.hpp>
-
 // application
 #include <application/application.hpp>
 
@@ -16,6 +13,9 @@
 #include <athena/eos/eos.hpp>
 #include <athena/hydro/hydro.hpp>
 #include <athena/mesh/mesh.hpp>
+
+// canoe
+#include <impl.hpp>
 
 // snap
 #include "../thermodynamics/thermodynamics.hpp"

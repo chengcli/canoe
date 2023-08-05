@@ -70,6 +70,10 @@ class GnomonicEquiangle : public Coordinates {
                                const AthenaArray<Real> &bcc,
                                AthenaArray<Real> &u) final;
 
+  Real GetCosineCell(const int k, const int j) const {
+    return cosine_cell_kj_(k, j);
+  }
+
  protected:
   Real sphericalTri(Real x1, Real x2, Real x3, Real y1, Real y2, Real y3);
 

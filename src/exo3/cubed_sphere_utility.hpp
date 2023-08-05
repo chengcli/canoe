@@ -19,6 +19,24 @@ void VecTransRLLFromABP(Real X, Real Y, int blockID, Real V2, Real V3, Real *U,
 void RLLFromXYP(Real dX, Real dY, int nP, Real &lon, Real &lat);
 void XYPFromRLL(Real lon, Real lat, Real &dX, Real &dY, int &nP);
 
+template <typename A>
+void CovariantToContravariant(A a, Real cth) {
+  Real v = a[IVY];
+  Real w = a[IVZ];
+  Real sth2 = 1. - cth * cth;
+
+  a[IVY] = v / sth2 - w * cth / sth2;
+  a[IVZ] = -v * cth / sth2 + w / sth2;
+}
+
+template <typename A>
+void ContravariantToCovariant(A a, Real cth) {
+  Real v = a[IVY];
+  Real w = a[IVZ];
+  a[IVY] = v + w * cth;
+  a[IVZ] = w + v * cth;
+}
+
 }  // namespace CubedSphereUtility
 
 #endif  // SRC_EXO3_CUBED_SPHERE_UTILITY_HPP_
