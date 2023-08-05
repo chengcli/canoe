@@ -38,7 +38,7 @@ class ThermodynamicsTestOnly : public Thermodynamics {
 class TestMoistAdiabat : public testing::Test {
  protected:
   ParameterInput* pinput;
-  Real Ps, Ts, qt;
+  Real Ps, Ts, qt, grav, dz;
   int iH2O, iH2Oc;
 
   virtual void SetUp() {
@@ -56,6 +56,8 @@ class TestMoistAdiabat : public testing::Test {
     Ps = pinput->GetReal("problem", "Ps");
     Ts = pinput->GetReal("problem", "Ts");
     qt = pinput->GetReal("problem", "qt");
+    grav = -pinput->GetReal("hydro", "grav_acc1");
+    dz = 100.;  // grid spacing 100 m
 
     iH2O = pindex->GetSpeciesId("vapor.H2O");
     iH2Oc = pindex->GetSpeciesId("cloud.H2O(c)");
@@ -116,12 +118,38 @@ TEST_F(TestMoistAdiabat, concentration) {
   air.w[iH2O] += rates[0];
   air.w[iH2Oc] += rates[1];
 
+  EXPECT_NEAR(air.w[IDN], Ts, 1e-8);
+  EXPECT_NEAR(air.w[IPR], Ps, 1e-8);
+  EXPECT_NEAR(air.w[iH2O], 0.0187935176958, 1e-8);
+  EXPECT_NEAR(air.w[iH2Oc], 0.0123953973819, 1e-8);
+
   air.ToMassFraction();
 
   EXPECT_NEAR(air.w[IDN], 1.2028112737, 1e-8);
-  EXPECT_NEAR(air.w[IPR], 100000, 1e-8);
+  EXPECT_NEAR(air.w[IPR], Ps, 1e-8);
   EXPECT_NEAR(air.w[iH2O], 0.0118103802559, 1e-8);
   EXPECT_NEAR(air.w[iH2Oc], 0.007789619744086, 1e-8);
+}
+
+TEST_F(TestMoistAdiabat, moist_adiabat) {
+  auto pthermo = Thermodynamics::GetInstance();
+
+  Variable air(Variable::Type::MassFrac);
+  air.w[iH2O] = qt;
+  air.c[iH2Oc] = 0.;
+
+  air.ToMoleFraction();
+  air.w[IPR] = Ps;
+  air.w[IDN] = Ts;
+  air.c[iH2Oc] = 0.;
+
+  pthermo->Extrapolate(&air, dz, Thermodynamics::Method::ReversibleAdiabat,
+                       grav);
+
+  EXPECT_NEAR(air.w[IDN], 289.392118923, 1e-8);
+  EXPECT_NEAR(air.w[IPR], 98825.8592854826, 1e-8);
+  EXPECT_NEAR(air.w[iH2O], 0.0184640437464, 1e-8);
+  EXPECT_NEAR(air.w[iH2Oc], 0.0127248713312, 1e-8);
 }
 
 int main(int argc, char* argv[]) {

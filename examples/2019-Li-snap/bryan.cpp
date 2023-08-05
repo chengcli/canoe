@@ -169,9 +169,6 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
       }
     }
 
-  std::cout << air0 << std::endl;
-  std::cout << air1 << std::endl;
-
   /* add temperature anomaly
   Real temp, Rd = pthermo->GetRd();
   RootData solver;

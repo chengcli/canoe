@@ -1,5 +1,6 @@
 // C/C++
 #include <algorithm>
+#include <iomanip>
 #include <iostream>
 
 // thermodynamics
@@ -19,12 +20,12 @@ void Thermodynamics::rk4IntegrateZ(Variable *qfrac, Real dz, Method method,
     if (method != Method::ReversibleAdiabat)
       for (int j = 0; j < NCLOUD; ++j) qfrac->c[j] = 0;
 
-    // TODO(cli) : latent heat was diasabled now
     for (int i = 1; i <= NVAPOR; ++i) {
       // make a trial run to get latent heat
       qfrac->w[i] += 1.E-6;
       auto rates = TryEquilibriumTP_VaporCloud(*qfrac, i);
-      latent[i] = GetLatentHeatMole(i, rates, temp) / (Constants::Rgas * temp);
+      latent[i] = GetLatentHeatMole(i, rates, qfrac->w[IDN]) /
+                  (Constants::Rgas * qfrac->w[IDN]);
       qfrac->w[i] -= 1.E-6;
     }
 
@@ -67,6 +68,7 @@ void Thermodynamics::rk4IntegrateZ(Variable *qfrac, Real dz, Method method,
     }
 
     if (!(qfrac->w[IDN] > 0.)) qfrac->w[IDN] = temp;
+
     if (fabs(qfrac->w[IDN] - temp) > 0.01) {
       qfrac->w[IPR] = pres * pow(qfrac->w[IDN] / temp, 1. / chi_avg);
     } else {  // isothermal limit
