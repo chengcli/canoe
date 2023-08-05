@@ -22,6 +22,8 @@ void Hydro::RiemannSolver(const int k, const int j, const int il, const int iu,
                           const AthenaArray<Real> &dxw) {
   int ivy = IVX + ((ivx - IVX) + 1) % 3;
   int ivz = IVX + ((ivx - IVX) + 2) % 3;
+  auto pcoord = pmy_block->pcoord;
+
   Real wli[(NHYDRO)], wri[(NHYDRO)];
   Real flxi[(NHYDRO)], fl[(NHYDRO)], fr[(NHYDRO)];
   Real gamma;
@@ -35,15 +37,10 @@ void Hydro::RiemannSolver(const int k, const int j, const int il, const int iu,
 
   AthenaArray<Real> empty{};
 #if defined(AFFINE) || defined(CUBED_SPHERE)  // need of projection
-  {
-    switch (ivx) {
-      case IVX:
-        pmy_block->pcoord->PrimToLocal2(k, j, il, iu, empty, wl, wr, empty);
-        break;
-      case IVY:
-        pmy_block->pcoord->PrimToLocal3(k, j, il, iu, empty, wl, wr, empty);
-        break;
-    }
+  if (ivx == IVY) {
+    pcoord->PrimToLocal2(k, j, il, iu, empty, wl, wr, empty);
+  } else if (ivx == IVZ) {
+    pcoord->PrimToLocal3(k, j, il, iu, empty, wl, wr, empty);
   }
 #endif  // AFFINE or CUBED_SPHERE
 
@@ -186,19 +183,39 @@ void Hydro::RiemannSolver(const int k, const int j, const int il, const int iu,
   }
 
 #if defined(AFFINE) || defined(CUBED_SPHERE)  // need of deprojection
-  {
-    switch (ivx) {
-      case IVX:
-        pmy_block->pcoord->FluxToGlobal2(k, j, il, iu, empty, empty, flx, empty,
-                                         empty);
-        break;
-      case IVY:
-        pmy_block->pcoord->FluxToGlobal3(k, j, il, iu, empty, empty, flx, empty,
-                                         empty);
-        break;
-    }
+  if (ivx == IVY) {
+    pcoord->FluxToGlobal2(k, j, il, iu, empty, empty, flx, empty, empty);
+  } else if (ivx == IVZ) {
+    pcoord->FluxToGlobal3(k, j, il, iu, empty, empty, flx, empty, empty);
   }
 #endif  // AFFINE or CUBED_SPHERE
 
-  return;
+#if defined(CUBED_SPHERE)  // projection from contravariant fluxes to covariant
+  Real x, y;
+
+  if (ivx == IVY) {
+    x = tan(pcoord->x2f(j));
+    y = tan(pcoord->x3v(k));
+    ivy = IVZ;
+  } else if (ivx == IVZ) {  // IVZ
+    x = tan(pcoord->x2v(j));
+    y = tan(pcoord->x3f(k));
+    ivy = IVY;
+  }
+
+  Real C = sqrt(1. + x * x);
+  Real D = sqrt(1. + y * y);
+  Real cth = -x * y / C / D;
+
+  for (int i = il; i <= iu; ++i) {
+    // Extract local conserved quantities and fluxes
+    Real ty = flx(ivx, k, j, i);
+    Real tz = flx(ivy, k, j, i);
+
+    // Transform fluxes
+    flx(ivx, k, j, i) = ty + tz * cth;
+    flx(ivy, k, j, i) = tz + ty * cth;
+  }
+#endif  // CUBED_SPHERE
+
 }
