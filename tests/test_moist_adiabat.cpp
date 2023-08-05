@@ -18,6 +18,8 @@ class ThermodynamicsTestOnly : public Thermodynamics {
  public:
   std::array<Real, Size> const& GetBeta() const { return beta_; }
   std::array<Real, Size> const& GetDelta() const { return delta_; }
+  std::array<Real, 1 + NVAPOR> const& GetT3() const { return t3_; }
+  std::array<Real, 1 + NVAPOR> const& GetP3() const { return p3_; }
 };
 
 class TestMoistAdiabat : public testing::Test {
@@ -55,6 +57,8 @@ TEST_F(TestMoistAdiabat, parameter) {
 
   auto& beta = pthermo_test->GetBeta();
   auto& delta = pthermo_test->GetDelta();
+  auto& t3 = pthermo_test->GetT3();
+  auto& p3 = pthermo_test->GetP3();
 
   EXPECT_NEAR(beta[0], 0., 1e-8);
   EXPECT_NEAR(beta[1], 0., 1e-8);
@@ -63,6 +67,15 @@ TEST_F(TestMoistAdiabat, parameter) {
   EXPECT_NEAR(delta[0], 0., 1e-8);
   EXPECT_NEAR(delta[1], 0., 1e-8);
   EXPECT_NEAR(delta[2], 4.986009, 1e-8);
+
+  EXPECT_DOUBLE_EQ(t3[0], 0.);
+  EXPECT_DOUBLE_EQ(t3[1], 273.16);
+  EXPECT_DOUBLE_EQ(p3[0], 0.);
+  EXPECT_DOUBLE_EQ(p3[1], 611.7);
+
+  EXPECT_NEAR(pthermo->GetLatentEnergyMass(0), 0., 1e-8);
+  EXPECT_NEAR(pthermo->GetLatentEnergyMass(1), 0., 1e-8);
+  EXPECT_NEAR(pthermo->GetLatentEnergyMass(2), 3136508.0151368757, 1e-8);
 }
 
 int main(int argc, char* argv[]) {

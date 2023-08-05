@@ -189,20 +189,16 @@ class Thermodynamics {
   //! constant volume $L_{ij}(T) = L_{ij}^r - (c_{ij} - c_{p,i})\times(T - T^r)$
   //! $= L_{ij}^r - \delta_{ij}R_i(T - T^r)$
   //! \return $L_{ij}(T)$
-  Real GetLatentEnergyMass(int n, Real temp) const {
+  Real GetLatentEnergyMass(int n, Real temp = 0.) const {
     return latent_energy_mass_[n] - delta_[n] * Rd_ * inv_mu_ratio_[n] * temp;
   }
-
-  Real GetLatentEnergyMass(int n) const { return latent_energy_mass_[n]; }
 
   //! Temperature dependent specific latent energy [J/mol] of condensates at
   //! constant volume
   //! \return $L_{ij}(T)$
-  Real GetLatentEnergyMole(int n, Real temp) const {
+  Real GetLatentEnergyMole(int n, Real temp = 0.) const {
     return GetLatentEnergyMass(n, temp) * mu_[n];
   }
-
-  Real GetLatentEnergyMole(int n) const { return latent_energy_mole_[n]; }
 
   Real GetLatentHeatMole(int i, std::vector<Real> const &rates,
                          Real temp) const;
