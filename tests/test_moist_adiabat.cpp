@@ -13,6 +13,19 @@
 #include <snap/thermodynamics/thermodynamics.hpp>
 #include <snap/thermodynamics/vapors/water_vapors.hpp>
 
+// water svp
+void Thermodynamics::enrollVaporFunctionH2O() {
+  Application::Logger app("snap");
+  app->Log("Enrolling H2O vapor pressures");
+
+  auto pindex = IndexMap::GetInstance();
+  int iH2O = pindex->GetVaporId("H2O");
+
+  svp_func1_[iH2O][0] = [](Variable const& qfrac, int, int) {
+    return sat_vapor_p_H2O_liquid_Ideal(qfrac.w[IDN]);
+  };
+}
+
 // expose private members for testing
 class ThermodynamicsTestOnly : public Thermodynamics {
  public:
@@ -25,6 +38,8 @@ class ThermodynamicsTestOnly : public Thermodynamics {
 class TestMoistAdiabat : public testing::Test {
  protected:
   ParameterInput* pinput;
+  Real Ps, Ts, qt;
+  int iH2O, iH2Oc;
 
   virtual void SetUp() {
     // code here will execute just before the test ensues
@@ -35,8 +50,15 @@ class TestMoistAdiabat : public testing::Test {
     pinput->LoadFromFile(infile);
     infile.Close();
 
-    IndexMap::InitFromAthenaInput(pinput);
+    auto pindex = IndexMap::InitFromAthenaInput(pinput);
     Thermodynamics::InitFromAthenaInput(pinput);
+
+    Ps = pinput->GetReal("problem", "Ps");
+    Ts = pinput->GetReal("problem", "Ts");
+    qt = pinput->GetReal("problem", "qt");
+
+    iH2O = pindex->GetSpeciesId("vapor.H2O");
+    iH2Oc = pindex->GetSpeciesId("cloud.H2O(c)");
   }
 
   virtual void TearDown() {
@@ -76,6 +98,32 @@ TEST_F(TestMoistAdiabat, parameter) {
   EXPECT_NEAR(pthermo->GetLatentEnergyMass(0), 0., 1e-8);
   EXPECT_NEAR(pthermo->GetLatentEnergyMass(1), 0., 1e-8);
   EXPECT_NEAR(pthermo->GetLatentEnergyMass(2), 3136508.0151368757, 1e-8);
+}
+
+TEST_F(TestMoistAdiabat, concentration) {
+  auto pthermo = Thermodynamics::GetInstance();
+
+  Variable air(Variable::Type::MassFrac);
+  air.w[iH2O] = qt;
+  air.c[iH2Oc] = 0.;
+
+  air.ToMoleFraction();
+  air.w[IPR] = Ps;
+  air.w[IDN] = Ts;
+  air.c[iH2Oc] = 0.;
+
+  auto rates = pthermo->TryEquilibriumTP_VaporCloud(air, iH2O);
+  air.w[iH2O] += rates[0];
+  air.w[iH2Oc] += rates[1];
+
+  air.ToMassFraction();
+  std::cout << air << std::endl;
+  std::cout << air.w[iH2O] + air.w[iH2Oc] << std::endl;
+
+  EXPECT_NEAR(air.w[IDN], 1.2028112737, 1e-8);
+  EXPECT_NEAR(air.w[IPR], 100000, 1e-8);
+  EXPECT_NEAR(air.w[iH2O], 0.0118103802559, 1e-8);
+  EXPECT_NEAR(air.w[iH2Oc], 0.007789619744086, 1e-8);
 }
 
 int main(int argc, char* argv[]) {

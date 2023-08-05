@@ -91,14 +91,14 @@ inline double sat_vapor_p_H2O_Smithsonian(double T) {
 }
 
 inline double sat_vapor_p_H2O_Ideal(double T) {
-  double betal = 24.845, gammal = 5.05121, betas = 22.98, gammas = 0.52,
+  double betal = 24.845, gammal = 4.986009, betas = 22.98, gammas = 0.52,
          tr = 273.16, pr = 611.7;
   return T > tr ? svph2o(T / tr, pr, betal, gammal)
                 : svph2o(T / tr, pr, betas, gammas);
 }
 
 inline double sat_vapor_p_H2O_liquid_Ideal(double T) {
-  double betal = 24.845, gammal = 5.05121, tr = 273.16, pr = 611.7;
+  double betal = 24.845, gammal = 4.986009, tr = 273.16, pr = 611.7;
   return svph2o(T / tr, pr, betal, gammal);
 }
 
