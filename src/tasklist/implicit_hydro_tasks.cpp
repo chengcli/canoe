@@ -311,12 +311,14 @@ TaskStatus ImplicitHydroTasks::UpdateAllConserved(MeshBlock *pmb, int stage) {
         // add frictional heating
         // pchem->AddFrictionalHeating(phydro);
 
+        Real rho = pmb->pscalars->s(0, k, j, i);
+        Real rhov = pmb->phydro->u(1, k, j, i);
         pmb->pimpl->GatherFromConserved(&qfrac, k, j, i);
-        Real rho = pmb->phydro->u(IDN, k, j, i);
 
         pthermo->SaturationAdjustment(&qfrac);
 
         pmb->pimpl->DistributeToConserved(qfrac, k, j, i);
+        pmb->pscalars->s(0, k, j, i) = rho + rhov - pmb->phydro->u(1, k, j, i);
       }
 
   return TaskStatus::success;
