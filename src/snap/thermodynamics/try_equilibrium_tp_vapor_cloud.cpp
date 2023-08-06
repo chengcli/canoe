@@ -45,19 +45,22 @@ RealArrayX Thermodynamics::TryEquilibriumTP_VaporCloud(Variable const& qfrac,
     xg -= xv;
 
     if (cv_hat > 0.) {
-      alpha = (GetLatentEnergyMole(j + 1 + NVAPOR, qfrac.w[IDN]) -
-               Constants::Rgas * qfrac.w[IDN]) /
-              cv_hat;
+      alpha =
+          (GetLatentEnergyMole(j + 1 + NVAPOR, qfrac.w[IDN]) / qfrac.w[IDN] -
+           Constants::Rgas) /
+          cv_hat;
     }
 
     Real s1 = xs / (1. - xs);
     Real rate = (s1 * xg - xv) /
-                (1. + alpha * xg * (beta_[j] / t - delta_[j]) * s1 / (1. - xs));
+                (1. + alpha * xg *
+                          (beta_[1 + NVAPOR + j] / t - delta_[1 + NVAPOR + j]) *
+                          s1 / (1. - xs));
 
     // condensate at most xv vapor
     if (rate < 0.) {
-      rates[0] += -std::min(std::abs(rate), xv);
-      rates[1 + n] = std::min(std::abs(rate), xv);
+      rates[0] += -std::min(-rate, xv);
+      rates[1 + n] = std::min(-rate, xv);
     }
 
     // evaporate at most xc cloud
