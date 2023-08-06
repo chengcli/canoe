@@ -37,7 +37,6 @@
 
 // snap
 #include <snap/thermodynamics/thermodynamics.hpp>
-#include <snap/thermodynamics/vapors/water_vapors.hpp>
 
 int iH2O, iH2Oc;
 Real p0, grav;
@@ -79,6 +78,11 @@ void MeshBlock::UserWorkBeforeOutput(ParameterInput *pin) {
       }
 }
 
+double sat_vapor_p_H2O(double T) {
+  double betal = 24.845, gammal = -2.1735, tr = 273.16, pr = 611.7;
+  return svph2o(T / tr, pr, betal, gammal);
+}
+
 // water svp
 void Thermodynamics::enrollVaporFunctionH2O() {
   Application::Logger app("snap");
@@ -88,7 +92,7 @@ void Thermodynamics::enrollVaporFunctionH2O() {
   int iH2O = pindex->GetVaporId("H2O");
 
   svp_func1_[iH2O][0] = [](Variable const &qfrac, int, int) {
-    return sat_vapor_p_H2O_liquid_Ideal(qfrac.w[IDN]);
+    return sat_vapor_p_H2O(qfrac.w[IDN]);
   };
 }
 

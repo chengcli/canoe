@@ -11,7 +11,11 @@
 
 // snap
 #include <snap/thermodynamics/thermodynamics.hpp>
-#include <snap/thermodynamics/vapors/water_vapors.hpp>
+
+double sat_vapor_p_H2O(double T) {
+  double betal = 24.845, gammal = 4.986009, tr = 273.16, pr = 611.7;
+  return svph2o(T / tr, pr, betal, gammal);
+}
 
 // water svp
 void Thermodynamics::enrollVaporFunctionH2O() {
@@ -22,7 +26,7 @@ void Thermodynamics::enrollVaporFunctionH2O() {
   int iH2O = pindex->GetVaporId("H2O");
 
   svp_func1_[iH2O][0] = [](Variable const& qfrac, int, int) {
-    return sat_vapor_p_H2O_liquid_Ideal(qfrac.w[IDN]);
+    return sat_vapor_p_H2O(qfrac.w[IDN]);
   };
 }
 
@@ -120,12 +124,12 @@ TEST_F(TestMoistAdiabat, concentration) {
 
   Variable air(Variable::Type::MassFrac);
   air.w[iH2O] = qt;
-  air.c[iH2Oc] = 0.;
+  air.w[iH2Oc] = 0.;
 
   air.ToMoleFraction();
   air.w[IPR] = Ps;
   air.w[IDN] = Ts;
-  air.c[iH2Oc] = 0.;
+  air.w[iH2Oc] = 0.;
 
   auto rates = pthermo->TryEquilibriumTP_VaporCloud(air, iH2O);
   air.w[iH2O] += rates[0];
@@ -149,12 +153,12 @@ TEST_F(TestMoistAdiabat, moist_adiabat) {
 
   Variable air(Variable::Type::MassFrac);
   air.w[iH2O] = qt;
-  air.c[iH2Oc] = 0.;
+  air.w[iH2Oc] = 0.;
 
   air.ToMoleFraction();
   air.w[IPR] = Ps;
   air.w[IDN] = Ts;
-  air.c[iH2Oc] = 0.;
+  air.w[iH2Oc] = 0.;
 
   pthermo->Extrapolate(&air, dz, Thermodynamics::Method::ReversibleAdiabat,
                        grav);
@@ -171,12 +175,12 @@ TEST_F(TestMoistAdiabat, moist_static_energy) {
 
   Variable air(Variable::Type::MassFrac);
   air.w[iH2O] = qt;
-  air.c[iH2Oc] = 0.;
+  air.w[iH2Oc] = 0.;
 
   air.ToMoleFraction();
   air.w[IPR] = Ps;
   air.w[IDN] = Ts;
-  air.c[iH2Oc] = 0.;
+  air.w[iH2Oc] = 0.;
 
   auto rates = pthermo->TryEquilibriumTP_VaporCloud(air, iH2O);
   air.w[iH2O] += rates[0];
@@ -204,12 +208,12 @@ TEST_F(TestMoistAdiabat, equivalent_potential_temp) {
 
   Variable air(Variable::Type::MassFrac);
   air.w[iH2O] = qt;
-  air.c[iH2Oc] = 0.;
+  air.w[iH2Oc] = 0.;
 
   air.ToMoleFraction();
   air.w[IPR] = Ps;
   air.w[IDN] = Ts;
-  air.c[iH2Oc] = 0.;
+  air.w[iH2Oc] = 0.;
 
   auto rates = pthermo->TryEquilibriumTP_VaporCloud(air, iH2O);
   air.w[iH2O] += rates[0];
@@ -235,23 +239,63 @@ TEST_F(TestMoistAdiabat, equivalent_potential_temp) {
 TEST_F(TestMoistAdiabat, saturation_adjustment) {
   auto pthermo = Thermodynamics::GetInstance();
   auto pmb = pmesh->my_blocks(0);
+  Real vx = 100.;
+  Real vy = 200.;
+  Real vz = 300.;
 
   Variable air(Variable::Type::MassFrac);
   air.w[iH2O] = qt;
-  air.c[iH2Oc] = 0.;
+  air.w[iH2Oc] = 0.;
 
   air.ToMoleFraction();
   air.w[IPR] = Ps;
   air.w[IDN] = Ts;
-  air.c[iH2Oc] = 0.;
+  air.w[IVX] = vx;
+  air.w[IVY] = vy;
+  air.w[IVZ] = vz;
+  air.w[iH2Oc] = 0.;
 
+  int ks = pmb->ks, js = pmb->js, is = pmb->is;
   pthermo->SaturationAdjustment(&air);
+  std::cout << "air1 = " << air << std::endl;
+
+  pmb->pimpl->DistributeToPrimitive(air, ks, js, is);
+  pmb->pimpl->DistributeToConserved(air, ks, js, is);
 
   air.ToMassFraction();
-
   EXPECT_NEAR(air.w[IDN], 1.187901949988, 1e-8);
   EXPECT_NEAR(air.w[IPR], 101934.372666, 1e-6);
   EXPECT_NEAR(air.w[iH2O] + air.w[iH2Oc], 0.0196, 1e-8);
+  air.ToMoleFraction();
+
+  Real drho = pmb->pimpl->pcloud->u(0, ks, js, is) / 2.;
+  Real cv = pthermo->GetCvMassRef(iH2O);
+  Real temp = air.w[IDN];
+  pmb->phydro->u(iH2O, ks, js, is) += drho;
+
+  std::cout << pmb->phydro->u(IEN, ks, js, is) << std::endl;
+  pmb->phydro->u(IVX, ks, js, is) += drho * vx;
+  pmb->phydro->u(IVY, ks, js, is) += drho * vy;
+  pmb->phydro->u(IVZ, ks, js, is) += drho * vz;
+  pmb->phydro->u(IEN, ks, js, is) +=
+      0.5 * drho * (vx * vx + vy * vy + vz * vz) + drho * cv * temp;
+  std::cout << pmb->phydro->u(IEN, ks, js, is) << std::endl;
+
+  pmb->pimpl->pcloud->u(0, ks, js, is) -= drho;
+  pmb->pimpl->GatherFromConserved(&air, ks, js, is);
+  std::cout << "air2 = " << air << std::endl;
+  pmb->pimpl->DistributeToPrimitive(air, ks, js, is);
+
+  Real theta_e1 = pthermo->EquivalentPotentialTemp(pmb, Ps, iH2O, ks, js, is);
+
+  pthermo->SaturationAdjustment(&air);
+  std::cout << "air3 = " << air << std::endl;
+
+  pmb->pimpl->DistributeToPrimitive(air, ks, js, is);
+  Real theta_e2 = pthermo->EquivalentPotentialTemp(pmb, Ps, iH2O, ks, js, is);
+
+  EXPECT_NEAR(theta_e1, 343.73446046, 1e-8);
+  EXPECT_NEAR(theta_e2, 343.73573051, 1e-8);
 }
 
 int main(int argc, char* argv[]) {
