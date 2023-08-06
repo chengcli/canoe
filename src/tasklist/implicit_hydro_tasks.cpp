@@ -55,7 +55,7 @@ ImplicitHydroTasks::ImplicitHydroTasks(ParameterInput *pin, Mesh *pm)
   // **CANOE TASKS** : ADD_FLX_CONS ->
   // **ATHENA TASKS**: (INT_HYD | INT_SCLR) -> SRC_TERM ->
   // **CANOE TASKS** : IMPLICIT_CORR -> UPDATE_ALLCONS ->
-  // **ATHENA TASKS**: SEND_HYD -> ...
+  // **ATHENA TASKS**: (SEND_HYD | SEND_SCLR) -> ...
   if (NSCALARS > 0) {
     AddTask(ADD_FLX_CONS, (CALC_HYDFLX | CALC_SCLRFLX));
   } else {
@@ -91,10 +91,10 @@ ImplicitHydroTasks::ImplicitHydroTasks(ParameterInput *pin, Mesh *pm)
   if (NSCALARS > 0) {
     if (!ORBITAL_ADVECTION) {
       itask = find_task(task_list_, ntasks, SEND_SCLR);
-      task_list_[itask].dependency = IMPLICIT_CORR;
+      task_list_[itask].dependency = UPDATE_ALLCONS;
 
       itask = find_task(task_list_, ntasks, SETB_SCLR);
-      task_list_[itask].dependency = (RECV_SCLR | IMPLICIT_CORR);
+      task_list_[itask].dependency = (RECV_SCLR | UPDATE_ALLCONS);
     }
   }
 }
@@ -304,15 +304,15 @@ TaskStatus ImplicitHydroTasks::UpdateAllConserved(MeshBlock *pmb, int stage) {
 
   auto pthermo = Thermodynamics::GetInstance();
 
-  Variable qfrac(Variable::Type::MoleFrac);
-
   for (int k = ks; k <= ke; k++)
     for (int j = js; j <= je; j++)
       for (int i = is; i <= ie; i++) {
+        Variable qfrac(Variable::Type::MoleFrac);
         // add frictional heating
         // pchem->AddFrictionalHeating(phydro);
 
         pmb->pimpl->GatherFromConserved(&qfrac, k, j, i);
+        Real rho = pmb->phydro->u(IDN, k, j, i);
 
         pthermo->SaturationAdjustment(&qfrac);
 

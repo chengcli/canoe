@@ -43,13 +43,14 @@ int iH2O, iH2Oc;
 Real p0, grav;
 
 void MeshBlock::InitUserMeshBlockData(ParameterInput *pin) {
-  AllocateUserOutputVariables(6);
+  AllocateUserOutputVariables(7);
   SetUserOutputVariableName(0, "temp");
   SetUserOutputVariableName(1, "theta");
   SetUserOutputVariableName(2, "theta_v");
   SetUserOutputVariableName(3, "mse");
   SetUserOutputVariableName(4, "theta_e");
   SetUserOutputVariableName(5, "rh");
+  SetUserOutputVariableName(6, "qtol");
 }
 
 void MeshBlock::UserWorkBeforeOutput(ParameterInput *pin) {
@@ -69,9 +70,12 @@ void MeshBlock::UserWorkBeforeOutput(ParameterInput *pin) {
         // theta_e
         user_out_var(4, k, j, i) =
             pthermo->EquivalentPotentialTemp(this, p0, iH2O, k, j, i);
-        for (int n = 1; n <= NVAPOR; ++n)
-          user_out_var(4 + n, k, j, i) =
-              pthermo->RelativeHumidity(this, n, k, j, i);
+        user_out_var(5, k, j, i) =
+            pthermo->RelativeHumidity(this, iH2O, k, j, i);
+        // total mixing ratio
+        Variable air(Variable::Type::MassFrac);
+        pimpl->GatherFromPrimitive(&air, k, j, i);
+        user_out_var(6, k, j, i) = air.w[iH2O] + air.c[iH2Oc];
       }
 }
 

@@ -232,6 +232,28 @@ TEST_F(TestMoistAdiabat, equivalent_potential_temp) {
   EXPECT_NEAR(theta_e2, 320.5466916420, 1.E-4);
 }
 
+TEST_F(TestMoistAdiabat, saturation_adjustment) {
+  auto pthermo = Thermodynamics::GetInstance();
+  auto pmb = pmesh->my_blocks(0);
+
+  Variable air(Variable::Type::MassFrac);
+  air.w[iH2O] = qt;
+  air.c[iH2Oc] = 0.;
+
+  air.ToMoleFraction();
+  air.w[IPR] = Ps;
+  air.w[IDN] = Ts;
+  air.c[iH2Oc] = 0.;
+
+  pthermo->SaturationAdjustment(&air);
+
+  air.ToMassFraction();
+
+  EXPECT_NEAR(air.w[IDN], 1.187901949988, 1e-8);
+  EXPECT_NEAR(air.w[IPR], 101934.372666, 1e-6);
+  EXPECT_NEAR(air.w[iH2O] + air.w[iH2Oc], 0.0196, 1e-8);
+}
+
 int main(int argc, char* argv[]) {
   Application::Start(argc, argv);
 
