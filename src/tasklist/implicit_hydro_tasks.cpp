@@ -307,18 +307,16 @@ TaskStatus ImplicitHydroTasks::UpdateAllConserved(MeshBlock *pmb, int stage) {
   for (int k = ks; k <= ke; k++)
     for (int j = js; j <= je; j++)
       for (int i = is; i <= ie; i++) {
-        Variable qfrac(Variable::Type::MoleFrac);
+        Variable air(Variable::Type::MoleFrac);
         // add frictional heating
         // pchem->AddFrictionalHeating(phydro);
 
-        Real rho = pmb->pscalars->s(0, k, j, i);
-        Real rhov = pmb->phydro->u(1, k, j, i);
-        pmb->pimpl->GatherFromConserved(&qfrac, k, j, i);
+        pmb->pimpl->GatherFromConserved(&air, k, j, i);
 
-        pthermo->SaturationAdjustment(&qfrac);
+        pthermo->SaturationAdjustment(&air);
+        air.ToMassConcentration();
 
-        pmb->pimpl->DistributeToConserved(qfrac, k, j, i);
-        pmb->pscalars->s(0, k, j, i) = rho + rhov - pmb->phydro->u(1, k, j, i);
+        pmb->pimpl->DistributeToConserved(air, k, j, i);
       }
 
   return TaskStatus::success;
