@@ -1,0 +1,82 @@
+<comment>
+problem   = Moist rising bubble test
+reference = Bryan and Fritsch, 2002
+configure = --prob=bryan --flux=lmars --nvapor=1 --nphase=2 --nghost=3 -pnetcdf -mpi
+
+<job>
+problem_id  = bryan         # problem ID: basename of output filenames
+
+<output1>
+file_type   = hst           # History data dump
+dt          = 100.          # time increment between outputs
+
+<output2>
+file_type   = pnetcdf       # Netcdf format output
+variable    = prim          # variables to be output
+dt          = 100.          # time increment between outputs
+
+<output3>
+file_type   = pnetcdf       # Netcdf format output
+variable    = uov           # diagnostic variables
+dt          = 100.          # time increment
+
+<time>
+cfl_number  = 0.9           # The Courant, Friedrichs, & Lewy (CFL) Number
+nlim        = -1            # cycle limit
+tlim        = 1000          # time limit
+xorder      = 5             # horizontal reconstruction order
+integrator  = rk3           # integration method
+
+<mesh>
+nx1         = 200.          # Number of zones in X1-direction
+x1min       = 0.            # minimum value of X1
+x1max       = 10.E3         # maximum value of X1
+ix1_bc      = reflecting    # inner-X1 boundary flag
+ox1_bc      = reflecting    # outer-X1 boundary flag
+
+nx2         = 400           # Number of zones in X2-direction
+x2min       = 0.            # minimum value of X2
+x2max       = 20.E3         # maximum value of X2
+ix2_bc      = reflecting    # inner-X2 boundary flag
+ox2_bc      = reflecting    # outer-X2 boundary flag
+
+nx3         = 1             # Number of zones in X3-direction
+x3min       = -0.5          # minimum value of X3
+x3max       = 0.5           # maximum value of X3
+ix3_bc      = periodic      # inner-X3 boundary flag
+ox3_bc      = periodic      # outer-X3 boundary flag
+
+<meshblock>
+nx1         = 200
+nx2         = 100
+nx3         = 1
+
+<hydro>
+grav_acc1   = -9.81
+gamma       = 1.4           # gamma = C_p/C_v
+
+<species>
+vapor = H2O
+cloud = H2O(c)
+
+<thermodynamics>
+Rd          = 287.
+eps1        = 0.621   0.621
+rcp1        = 1.   0.
+beta1       = 0.      24.845
+Ttriple1    = 273.16
+Ptriple1    = 611.7
+
+sa.max_iter = 2
+sa.relax    = 1.0
+sa.ftol     = 1.e-3
+
+<problem>
+dT    = 2.0
+xc    = 10.E3
+zc    = 2.E3
+xr    = 2.E3
+zr    = 2.E3
+p0    = 1.E5
+Ts    = 289.85
+qt    = 0.0196

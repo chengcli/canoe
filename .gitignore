@@ -22,3 +22,6 @@ tests/Testing
 
 # netcdf
 *.nc
+
+# mac
+.DS_Store

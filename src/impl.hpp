@@ -65,6 +65,8 @@ class MeshBlock::Impl {
   void DistributeToPrimitive(Variable const &prim, int k, int j, int i);
   void DistributeToConserved(Variable const &cons, int k, int j, int i);
 
+  void MapScalarsConserved(AthenaArray<Real> &s);
+
  private:
   MeshBlock *pmy_block_;
 

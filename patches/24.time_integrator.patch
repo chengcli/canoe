@@ -1,0 +1,22 @@
+diff --git a/src/task_list/time_integrator.cpp b/src/task_list/time_integrator.cpp
+index 097afa53..de5df53f 100644
+--- a/src/task_list/time_integrator.cpp
++++ b/src/task_list/time_integrator.cpp
+@@ -36,6 +36,9 @@
+ #include "../scalars/scalars.hpp"
+ #include "task_list.hpp"
+ 
++// canoe injection
++#include <impl.hpp>
++
+ //----------------------------------------------------------------------------------------
+ //! TimeIntegratorTaskList constructor
+ 
+@@ -2388,6 +2391,7 @@ TaskStatus TimeIntegratorTaskList::IntegrateScalars(MeshBlock *pmb, int stage) {
+       ave_wghts[2] = stage_wghts[stage-1].gamma_3;
+       if (ave_wghts[0] == 0.0 && ave_wghts[1] == 1.0 && ave_wghts[2] == 0.0) {
+         ps->s.SwapAthenaArray(ps->s1);
++        pmb->pimpl->MapScalarsConserved(ps->s);
+       } else {
+         pmb->WeightedAve(ps->s, ps->s1, ps->s2, ps->s0, ps->s_fl_div, ave_wghts);
+       }

@@ -48,6 +48,10 @@ if (${NVAPOR} EQUAL 0)
   add_test_case(test_mesh.cpp)
 endif()
 
+if (${NVAPOR} EQUAL 1 AND ${NCLOUD} EQUAL 1 AND ${NPHASE_LEGACY} EQUAL 2)
+  add_test_case(test_moist_adiabat.cpp)
+endif()
+
 if (${NVAPOR} EQUAL 2)
   if (${NCLOUD} EQUAL 4)
     add_test_case(test_impl.cpp)

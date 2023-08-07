@@ -1,22 +1,22 @@
 //! \file lmars.cpp
 //  \brief LMARS based on Chen's 2013 paper
 
-// C/C++ headers
+// C/C++
 #include <cstring>
 
-// climath headers
-extern "C" {
-#include <core.h>  // sqr
-}
+// Athena++
+#include <athena/athena.hpp>
+#include <athena/eos/eos.hpp>
+#include <athena/hydro/hydro.hpp>
 
-// Athena++ headers
-#include <athena.hpp>
-#include <eos/eos.hpp>
-#include <hydro/hydro.hpp>
+// climath
+#include <climath/core.h>  // sqr
 
-// canoe headers
-#include "../../../mesh/meshblock_impl.hpp"
-#include "../../../thermodynamics/thermodynamics.hpp"
+// canoe
+#include <impl.hpp>
+
+// snap
+#include <snap/thermodynamics/thermodynamics.hpp>
 
 void Hydro::RiemannSolver(int const k, int const j, int const il, int const iu,
                           int const ivx, AthenaArray<Real> &wl,
@@ -28,7 +28,7 @@ void Hydro::RiemannSolver(int const k, int const j, int const il, int const iu,
   auto pthermo = Thermodynamics::GetInstance();
 
   Real rhobar, pbar, cbar, ubar, hl, hr;
-  Real gamma = pmy_block->peos->getGamma();
+  Real gamma = pmy_block->peos->GetGamma();
   Real wli[NHYDRO], wri[NHYDRO];
 
   for (int i = il; i <= iu; ++i) {
@@ -41,16 +41,16 @@ void Hydro::RiemannSolver(int const k, int const j, int const il, int const iu,
     // left
     Real fsig = 1., feps = 1.;
     for (int n = 1; n <= NVAPOR; ++n) {
-      fsig += wli[n] * (pthermo->getCvRatio(n) - 1.);
-      feps += wli[n] * (1. / pthermo->getMuRatio(n) - 1.);
+      fsig += wli[n] * (pthermo->GetCvRatioMass(n) - 1.);
+      feps += wli[n] * (1. / pthermo->GetMuRatio(n) - 1.);
     }
     Real kappal = 1. / (gamma - 1.) * fsig / feps;
 
     // right
     fsig = 1., feps = 1.;
     for (int n = 1; n <= NVAPOR; ++n) {
-      fsig += wri[n] * (pthermo->getCvRatio(n) - 1.);
-      feps += wri[n] * (1. / pthermo->getMassRatio(n) - 1.);
+      fsig += wri[n] * (pthermo->GetCvRatioMass(n) - 1.);
+      feps += wri[n] * (1. / pthermo->GetMuRatio(n) - 1.);
     }
     Real kappar = 1. / (gamma - 1.) * fsig / feps;
 

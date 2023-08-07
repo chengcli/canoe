@@ -31,7 +31,7 @@ Real NullSatVaporPres1(Variable const& qfrac, int i, int j) {
 }
 
 // water svp
-void Thermodynamics::enrollVaporFunctionH2O() {
+void __attribute__((weak)) Thermodynamics::enrollVaporFunctionH2O() {
   auto pindex = IndexMap::GetInstance();
   if (!pindex->HasVapor("H2O")) return;
 

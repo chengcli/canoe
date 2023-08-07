@@ -17,14 +17,12 @@ Real Thermodynamics::calDlnTDlnP(Variable const& qfrac, Real latent[]) const {
     f_sig += qfrac.w[n] * (cp_ratio_mole_[n] - 1.);
   // cloud
   for (int n = 0; n < NCLOUD; ++n)
-    f_sig += qfrac.c[n] * (cp_ratio_mole_[n] - 1.);
+    f_sig += qfrac.c[n] * (cp_ratio_mole_[1 + NVAPOR + n] - 1.);
   Real cphat_ov_r = gammad / (gammad - 1.) * f_sig / q_gas;
 
   // vapor
-  Real xd = 1.;
+  Real xd = q_gas;
   for (int n = 1; n <= NVAPOR; ++n) xd -= qfrac.w[n];
-  // clouds
-  for (int n = 0; n < NCLOUD; ++n) xd -= qfrac.c[n];
 
   Real c1 = 0., c2 = 0., c3 = 0.;
   for (int iv = 1; iv <= NVAPOR; ++iv) {

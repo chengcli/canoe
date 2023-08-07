@@ -282,6 +282,11 @@ void MeshBlock::Impl::DistributeToConserved(Variable const &var_in, int k,
   }
 }
 
+// TODO(cli) : more needs to be changed
+void MeshBlock::Impl::MapScalarsConserved(AthenaArray<Real> &s) {
+  if (NCLOUD > 0) pcloud->u.InitWithShallowSlice(s, 4, 0, NCLOUD);
+}
+
 int find_pressure_level_lesser(Real pres, AthenaArray<Real> const &w, int k,
                                int j, int is, int ie) {
   for (int i = is; i <= ie; ++i)

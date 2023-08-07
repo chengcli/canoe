@@ -1,0 +1,45 @@
+<time>
+cfl_number  = 0.9           # The Courant, Friedrichs, & Lewy (CFL) Number
+tlim        = 1000          # time limit
+
+<mesh>
+nx1         = 200.          # Number of zones in X1-direction
+x1min       = 0.            # minimum value of X1
+x1max       = 10.E3         # maximum value of X1
+ix1_bc      = reflecting    # inner-X1 boundary flag
+ox1_bc      = reflecting    # outer-X1 boundary flag
+
+nx2         = 400           # Number of zones in X2-direction
+x2min       = 0.            # minimum value of X2
+x2max       = 20.E3         # maximum value of X2
+ix2_bc      = reflecting    # inner-X2 boundary flag
+ox2_bc      = reflecting    # outer-X2 boundary flag
+
+nx3         = 1             # Number of zones in X3-direction
+x3min       = -0.5          # minimum value of X3
+x3max       = 0.5           # maximum value of X3
+ix3_bc      = periodic      # inner-X3 boundary flag
+ox3_bc      = periodic      # outer-X3 boundary flag
+
+<hydro>
+grav_acc1   = -9.81
+gamma       = 1.4           # gamma = C_p/C_v
+
+<species>
+vapor = H2O
+cloud = H2O(c)
+
+<thermodynamics>
+Rd          = 287.
+eps1        = 0.621   0.621
+rcp1        = 1.166   3.46
+beta1       = 0.      24.845
+Ttriple1    = 273.16
+Ptriple1    = 611.7
+
+sa.relax = 1.0
+
+<problem>
+Ps    = 1.E5
+Ts    = 289.85
+qt    = 0.0196
