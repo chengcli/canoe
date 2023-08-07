@@ -1,3 +1,4 @@
 straka_output.nc filter=lfs diff=lfs merge=lfs -text
 robert_output.nc filter=lfs diff=lfs merge=lfs -text
 robert3d_output.nc filter=lfs diff=lfs merge=lfs -text
+bryan_output.nc filter=lfs diff=lfs merge=lfs -text

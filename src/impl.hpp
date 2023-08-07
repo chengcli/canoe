@@ -60,12 +60,44 @@ class MeshBlock::Impl {
   Real GetPressureScaleHeight() const { return pressure_scale_height_; }
 
   void GatherFromPrimitive(Variable *prim, int k, int j, int i) const;
+  void GatherFromPrimitive(std::vector<Variable> &air_column, int k, int j,
+                           int il, int iu) const {
+    air_column.resize(iu - il + 1);
+    for (int i = il; i <= iu; ++i) {
+      GatherFromPrimitive(&air_column[i - il], k, j, i);
+    }
+  }
+
   void GatherFromConserved(Variable *cons, int k, int j, int i) const;
+  void GatherFromConserved(std::vector<Variable> &air_column, int k, int j,
+                           int il, int iu) const {
+    air_column.resize(iu - il + 1);
+    for (int i = il; i <= iu; ++i) {
+      GatherFromConserved(&air_column[i - il], k, j, i);
+    }
+  }
 
   void DistributeToPrimitive(Variable const &prim, int k, int j, int i);
-  void DistributeToConserved(Variable const &cons, int k, int j, int i);
+  void DistributeToPrimitive(std::vector<Variable> const &air_column, int k,
+                             int j, int il, int iu) {
+    for (int i = il; i <= iu; ++i) {
+      DistributeToPrimitive(air_column[i - il], k, j, i);
+    }
+  }
 
-  void MapScalarsConserved(AthenaArray<Real> &s);
+  void DistributeToConserved(Variable const &cons, int k, int j, int i);
+  void DistributeToConserved(std::vector<Variable> const &air_column, int k,
+                             int j, int il, int iu) {
+    for (int i = il; i <= iu; ++i) {
+      DistributeToConserved(air_column[i - il], k, j, i);
+    }
+  }
+
+  // TODO(cli) : more needs to be changed
+  // called in task_list/time_integration.cpp
+  void MapScalarsConserved(AthenaArray<Real> &s) {
+    if (NCLOUD > 0) pcloud->u.InitWithShallowSlice(s, 4, 0, NCLOUD);
+  }
 
  private:
   MeshBlock *pmy_block_;

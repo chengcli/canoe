@@ -8,6 +8,7 @@
 #include <memory>
 #include <set>
 #include <utility>
+#include <vector>
 
 // external
 #include <yaml-cpp/yaml.h>
@@ -228,7 +229,7 @@ class Thermodynamics {
   void EquilibrateTP(Variable *qfrac) const;
 
   //! Adjust to the maximum saturation state conserving internal energy
-  void SaturationAdjustment(Variable *qfrac) const;
+  void SaturationAdjustment(std::vector<Variable> &air_column) const;
 
   //! Inverse of the mean molecular weight (with cloud)
   Real RovRd(Variable const &qfrac) const;

@@ -17,66 +17,71 @@
 // snap
 #include "thermodynamics.hpp"
 
-void Thermodynamics::SaturationAdjustment(Variable *qfrac) const {
+void Thermodynamics::SaturationAdjustment(
+    std::vector<Variable>& air_column) const {
   // return if there's no vapor
   if (NVAPOR == 0) return;
-  Variable qfrac0(*qfrac);
 
-  // calculate total mole density
-  Real rmole = getDensityMole(*qfrac);
-  Real umole = getInternalEnergyMole(*qfrac);
+  for (auto& air : air_column) {
+    air.ToMoleFraction();
+    Variable air0(air);
 
-  int iter = 0;
+    // calculate total mole density
+    Real rmole = getDensityMole(air);
+    Real umole = getInternalEnergyMole(air);
 
-  Real Teq = qfrac->w[IDN];
-  std::stringstream msg;
+    int iter = 0;
 
-  while (iter++ < sa_max_iter_) {
-    msg << "iter = " << iter << std::endl;
-    msg << "old var = " << *qfrac << std::endl;
+    Real Teq = air.w[IDN];
+    std::stringstream msg;
 
-    Real cvd = Constants::Rgas / (GetGammad(*qfrac) - 1.);
-    Real fsig = 1.;
-    for (int i = 1; i <= NVAPOR; ++i) {
-      Real qv = qfrac->w[i];
+    while (iter++ < sa_max_iter_) {
+      msg << "iter = " << iter << std::endl;
+      msg << "old var = " << air << std::endl;
+
+      Real cvd = 1. / (GetGammad(air) - 1.);
+      Real fsig = 1.;
+      for (int i = 1; i <= NVAPOR; ++i) {
+        Real qv = air.w[i];
 
 #pragma omp simd reduction(+ : qv)
-      for (auto j : cloud_index_set_[i]) qv += qfrac->c[j];
+        for (auto j : cloud_index_set_[i]) qv += air.c[j];
 
-      fsig += (cv_ratio_mole_[i] - 1.) * qv;
-    }
-
-    // condensation
-    for (int i = 1; i <= NVAPOR; ++i) {
-      auto rates = TryEquilibriumTP_VaporCloud(*qfrac, i, cvd * fsig);
-
-      // vapor condensation rate
-      qfrac->w[i] += rates[0];
-
-      // cloud concentration rates
-      for (int j = 1; j < rates.size(); ++j) {
-        qfrac->c[cloud_index_set_[i][j - 1]] += rates[j];
+        fsig += (cv_ratio_mole_[i] - 1.) * qv;
       }
+
+      // condensation
+      for (int i = 1; i <= NVAPOR; ++i) {
+        auto rates = TryEquilibriumTP_VaporCloud(air, i, cvd * fsig);
+
+        // vapor condensation rate
+        air.w[i] += rates[0];
+
+        // cloud concentration rates
+        for (int j = 1; j < rates.size(); ++j) {
+          air.c[cloud_index_set_[i][j - 1]] += rates[j];
+        }
+      }
+
+      Real Told = air.w[IDN];
+      updateTPConservingU(&air, rmole, umole);
+      msg << "new var = " << air << std::endl;
+      if (fabs(air.w[IDN] - Teq) < sa_ftol_) break;
+
+      // relax temperature and pressure
+      Teq = air.w[IDN];
+      Real qgas = 1.;
+#pragma omp simd reduction(+ : qgas)
+      for (int n = 0; n < NCLOUD; ++n) qgas += -air.c[n];
+
+      air.w[IDN] = Told + sa_relax_ * (air.w[IDN] - Told);
+      air.w[IPR] = rmole * qgas * Constants::Rgas * air.w[IDN];
     }
 
-    Real Told = qfrac->w[IDN];
-    updateTPConservingU(qfrac, rmole, umole);
-    msg << "new var = " << *qfrac << std::endl;
-    if (fabs(qfrac->w[IDN] - Teq) < sa_ftol_) break;
-
-    // relax temperature and pressure
-    Teq = qfrac->w[IDN];
-    Real qgas = 1.;
-#pragma omp simd reduction(+ : qgas)
-    for (int n = 0; n < NCLOUD; ++n) qgas += -qfrac->c[n];
-
-    qfrac->w[IDN] = Told + sa_relax_ * (qfrac->w[IDN] - Told);
-    qfrac->w[IPR] = rmole * qgas * Constants::Rgas * qfrac->w[IDN];
-  }
-
-  if (iter > sa_max_iter_) {
-    msg << "Variables before iteration q0 = (" << qfrac0 << ")" << std::endl;
-    msg << "Variables after iteration q = (" << *qfrac << ")" << std::endl;
-    throw RuntimeError("SaturationAdjustment", msg.str());
+    if (iter > sa_max_iter_) {
+      msg << "Variables before iteration q0 = (" << air0 << ")" << std::endl;
+      msg << "Variables after iteration q = (" << air << ")" << std::endl;
+      throw RuntimeError("SaturationAdjustment", msg.str());
+    }
   }
 }
