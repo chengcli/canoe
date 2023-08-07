@@ -36,8 +36,8 @@ void Thermodynamics::SaturationAdjustment(
     std::stringstream msg;
 
     while (iter++ < sa_max_iter_) {
-      msg << "iter = " << iter << std::endl;
-      msg << "old var = " << air << std::endl;
+      // msg << "iter = " << iter << std::endl;
+      // msg << "old var = " << air << std::endl;
 
       Real cvd = 1. / (GetGammad(air) - 1.);
       Real fsig = 1.;
@@ -65,7 +65,7 @@ void Thermodynamics::SaturationAdjustment(
 
       Real Told = air.w[IDN];
       updateTPConservingU(&air, rmole, umole);
-      msg << "new var = " << air << std::endl;
+      // msg << "new var = " << air << std::endl;
       if (fabs(air.w[IDN] - Teq) < sa_ftol_) break;
 
       // relax temperature and pressure
