@@ -5,7 +5,8 @@ set(FETCHCONTENT_QUIET FALSE)
 set(patch_command
     git apply ${CMAKE_CURRENT_SOURCE_DIR}/patches/19.decomposition.patch
     ${CMAKE_CURRENT_SOURCE_DIR}/patches/21.implicit_dt.patch
-    ${CMAKE_CURRENT_SOURCE_DIR}/patches/23.exo3_coord.patch)
+    ${CMAKE_CURRENT_SOURCE_DIR}/patches/23.exo3_coord.patch
+    ${CMAKE_CURRENT_SOURCE_DIR}/patches/24.time_integrator.patch)
 
 FetchContent_Declare(
   athenapp

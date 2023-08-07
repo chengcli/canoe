@@ -69,7 +69,7 @@ Ptriple1    = 611.7
 
 sa.max_iter = 2
 sa.relax    = 1.0
-sa.ftol     = 1.e-2
+sa.ftol     = 1.e-3
 
 <problem>
 dT    = 2.0

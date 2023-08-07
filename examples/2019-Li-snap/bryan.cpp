@@ -80,7 +80,7 @@ void MeshBlock::UserWorkBeforeOutput(ParameterInput *pin) {
 
 double sat_vapor_p_H2O(double T) {
   double betal = 24.845, gammal = -2.1735, tr = 273.16, pr = 611.7;
-  return svph2o(T / tr, pr, betal, gammal);
+  return SatVaporPresIdeal(T / tr, pr, betal, gammal);
 }
 
 // water svp

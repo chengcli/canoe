@@ -14,7 +14,7 @@
 
 double sat_vapor_p_H2O(double T) {
   double betal = 24.845, gammal = 4.986009, tr = 273.16, pr = 611.7;
-  return svph2o(T / tr, pr, betal, gammal);
+  return SatVaporPresIdeal(T / tr, pr, betal, gammal);
 }
 
 // water svp
