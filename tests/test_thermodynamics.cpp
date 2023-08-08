@@ -133,19 +133,19 @@ TEST_F(TestThermodynamics, equilibrium_water) {
   int iH2O = 1;
   int iNH3 = 2;
 
-  Variable qfrac(Variable::Type::MoleFrac);
-  qfrac.SetZero();
+  Variable air(Variable::Type::MoleFrac);
+  air.SetZero();
 
-  qfrac.w[IDN] = 300.;
-  qfrac.w[IPR] = 7.E5;
-  qfrac.w[iH2O] = 0.2;
-  qfrac.w[iNH3] = 0.1;
+  air.w[IDN] = 300.;
+  air.w[IPR] = 7.E5;
+  air.w[iH2O] = 0.2;
+  air.w[iNH3] = 0.1;
 
   // water
-  Real svp = sat_vapor_p_H2O_BriggsS(qfrac.w[IDN]);
-  auto rates = pthermo->TryEquilibriumTP_VaporCloud(qfrac, iH2O);
+  Real svp = sat_vapor_p_H2O_BriggsS(air.w[IDN]);
+  auto rates = pthermo->TryEquilibriumTP_VaporCloud(air, iH2O);
 
-  EXPECT_NEAR(rates[0], svp / qfrac.w[IPR] - qfrac.w[iH2O], 1e-3);
+  EXPECT_NEAR(rates[0], svp / air.w[IPR] - air.w[iH2O], 1e-3);
   EXPECT_NEAR(rates[1], 0.19592911846053, 1e-8);
   EXPECT_NEAR(rates[2], 0.0, 1e-8);
 }
@@ -156,19 +156,19 @@ TEST_F(TestThermodynamics, equilibrium_ammonia) {
   int iH2O = 1;
   int iNH3 = 2;
 
-  Variable qfrac(Variable::Type::MoleFrac);
-  qfrac.SetZero();
+  Variable air(Variable::Type::MoleFrac);
+  air.SetZero();
 
-  qfrac.w[IDN] = 160.;
-  qfrac.w[IPR] = 7.E4;
-  qfrac.w[iH2O] = 0.02;
-  qfrac.w[iNH3] = 0.01;
+  air.w[IDN] = 160.;
+  air.w[IPR] = 7.E4;
+  air.w[iH2O] = 0.02;
+  air.w[iNH3] = 0.01;
 
   // ammonia
-  Real svp = sat_vapor_p_NH3_BriggsS(qfrac.w[IDN]);
-  auto rates = pthermo->TryEquilibriumTP_VaporCloud(qfrac, iNH3);
+  Real svp = sat_vapor_p_NH3_BriggsS(air.w[IDN]);
+  auto rates = pthermo->TryEquilibriumTP_VaporCloud(air, iNH3);
 
-  EXPECT_NEAR(rates[0], svp / qfrac.w[IPR] - qfrac.w[iNH3], 1e-3);
+  EXPECT_NEAR(rates[0], svp / air.w[IPR] - air.w[iNH3], 1e-3);
   EXPECT_NEAR(rates[1], 0.0088517945331865, 1e-8);
   EXPECT_NEAR(rates[2], 0.0, 1e-8);
 }
@@ -181,30 +181,34 @@ TEST_F(TestThermodynamics, saturation_adjust) {
   int iH2Oc = 0;
   int iNH3c = 1;
 
-  Variable qfrac(Variable::Type::MoleFrac);
-  qfrac.SetZero();
+  std::vector<Variable> air_column(1);
 
-  qfrac.w[IDN] = 160.;
-  qfrac.w[IPR] = 7.E4;
-  qfrac.w[iH2O] = 0.02;
-  qfrac.w[iNH3] = 0.10;
+  auto &air = air_column[0];
+  air.SetType(Variable::Type::MoleFrac);
 
-  pthermo->SaturationAdjustment(&qfrac);
+  air.SetZero();
 
-  EXPECT_NEAR(qfrac.w[IDN], 206.41191698346, 1e-8);
-  EXPECT_NEAR(qfrac.w[IPR], 88499.531838818, 1e-8);
+  air.w[IDN] = 160.;
+  air.w[IPR] = 7.E4;
+  air.w[iH2O] = 0.02;
+  air.w[iNH3] = 0.10;
 
-  Real svp1 = sat_vapor_p_H2O_BriggsS(qfrac.w[IDN]);
+  pthermo->SaturationAdjustment(air_column);
+
+  EXPECT_NEAR(air.w[IDN], 206.41191698346, 1e-8);
+  EXPECT_NEAR(air.w[IPR], 88499.531838818, 1e-8);
+
+  Real svp1 = sat_vapor_p_H2O_BriggsS(air.w[IDN]);
 
   Real qgas = 1.;
 #pragma omp parallel for reduction(+ : qgas)
-  for (int n = 0; n < NCLOUD; ++n) qgas += -qfrac.c[n];
+  for (int n = 0; n < NCLOUD; ++n) qgas += -air.c[n];
 
-  EXPECT_NEAR(qfrac.w[iH2O] / qgas * qfrac.w[IPR] / svp1, 1., 0.01);
-  EXPECT_NEAR(qfrac.w[iNH3], 0.1, 1e-8);
+  EXPECT_NEAR(air.w[iH2O] / qgas * air.w[IPR] / svp1, 1., 0.01);
+  EXPECT_NEAR(air.w[iNH3], 0.1, 1e-8);
 
-  EXPECT_NEAR(qfrac.c[iH2Oc], 0.02 - qfrac.w[iH2O], 1e-8);
-  EXPECT_NEAR(qfrac.c[iNH3c], 0.1 - qfrac.w[iNH3], 1e-8);
+  EXPECT_NEAR(air.c[iH2Oc], 0.02 - air.w[iH2O], 1e-8);
+  EXPECT_NEAR(air.c[iNH3c], 0.1 - air.w[iNH3], 1e-8);
 }
 
 int main(int argc, char *argv[]) {
