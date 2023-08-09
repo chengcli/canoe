@@ -243,7 +243,11 @@ TEST_F(TestMoistAdiabat, saturation_adjustment) {
   Real vy = 200.;
   Real vz = 300.;
 
-  Variable air(Variable::Type::MassFrac);
+  std::vector<Variable> air_column(1);
+
+  auto& air = air_column[0];
+  air.SetType(Variable::Type::MassFrac);
+
   air.w[iH2O] = qt;
   air.w[iH2Oc] = 0.;
 
@@ -256,7 +260,7 @@ TEST_F(TestMoistAdiabat, saturation_adjustment) {
   air.w[iH2Oc] = 0.;
 
   int ks = pmb->ks, js = pmb->js, is = pmb->is;
-  pthermo->SaturationAdjustment(&air);
+  pthermo->SaturationAdjustment(air_column);
   std::cout << "air1 = " << air << std::endl;
 
   pmb->pimpl->DistributeToPrimitive(air, ks, js, is);
@@ -288,7 +292,7 @@ TEST_F(TestMoistAdiabat, saturation_adjustment) {
 
   Real theta_e1 = pthermo->EquivalentPotentialTemp(pmb, Ps, iH2O, ks, js, is);
 
-  pthermo->SaturationAdjustment(&air);
+  pthermo->SaturationAdjustment(air_column);
   std::cout << "air3 = " << air << std::endl;
 
   pmb->pimpl->DistributeToPrimitive(air, ks, js, is);

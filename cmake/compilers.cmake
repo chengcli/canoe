@@ -7,11 +7,11 @@
 #
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
   set(CMAKE_CXX_FLAGS_RELEASE
-      "-O2 -funroll-loops -funroll-all-loops -fstrict-aliasing -fPIC")
+      "-O3 -funroll-loops -funroll-all-loops -fstrict-aliasing -fPIC")
 
   set(CMAKE_CXX_FLAGS_DEBUG "-g3 -fPIC")
   set(CMAKE_C_FLAGS_RELEASE
-      "-O2 -funroll-loops -funroll-all-loops -fstrict-aliasing -fPIC")
+      "-O3 -funroll-loops -funroll-all-loops -fstrict-aliasing -fPIC")
 
   set(CMAKE_C_FLAGS_DEBUG "-g3 -fPIC")
 
@@ -20,10 +20,10 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
 endif()
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  set(CMAKE_CXX_FLAGS_RELEASE "-O2 -funroll-loops -fstrict-aliasing")
+  set(CMAKE_CXX_FLAGS_RELEASE "-O3 -funroll-loops -fstrict-aliasing")
 
   set(CMAKE_CXX_FLAGS_DEBUG "-g3")
-  set(CMAKE_C_FLAGS_RELEASE "-O2 -funroll-loops -fstrict-aliasing")
+  set(CMAKE_C_FLAGS_RELEASE "-O3 -funroll-loops -fstrict-aliasing")
 
   set(CMAKE_C_FLAGS_DEBUG "-g3")
 

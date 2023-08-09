@@ -304,22 +304,18 @@ TaskStatus ImplicitHydroTasks::UpdateAllConserved(MeshBlock *pmb, int stage) {
 
   auto pthermo = Thermodynamics::GetInstance();
 
-  Variable air(Variable::Type::MassConc);
+  std::vector<Variable> air_column;
 
   for (int k = ks; k <= ke; k++)
-    for (int j = js; j <= je; j++)
-      for (int i = is; i <= ie; i++) {
-        // add frictional heating
-        // pchem->AddFrictionalHeating(phydro);
+    for (int j = js; j <= je; j++) {
+      pmb->pimpl->GatherFromConserved(air_column, k, j, is, ie);
+      // add frictional heating
+      // pchem->AddFrictionalHeating(phydro);
 
-        pmb->pimpl->GatherFromConserved(&air, k, j, i);
+      pthermo->SaturationAdjustment(air_column);
 
-        air.ToMoleFraction();
-        pthermo->SaturationAdjustment(&air);
-        air.ToMassConcentration();
-
-        pmb->pimpl->DistributeToConserved(air, k, j, i);
-      }
+      pmb->pimpl->DistributeToConserved(air_column, k, j, is, ie);
+    }
 
   return TaskStatus::success;
 }
