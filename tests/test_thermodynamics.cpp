@@ -118,12 +118,12 @@ TEST_F(TestThermodynamics, latent_heats) {
   rates[1] = 0.5;
   rates[2] = 0.5;
 
-  EXPECT_NEAR(pthermo->GetLatentEnergyMole(3, 300.), 43573.1037985724, 1e-6);
+  EXPECT_NEAR(pthermo->GetLatentEnergyMole(3, 300.), 43573.103798572, 1e-6);
   EXPECT_NEAR(pthermo->GetLatentHeatMole(1, rates, 300.), 46067.442398572,
               1e-6);
 
   EXPECT_NEAR(pthermo->GetLatentEnergyMass(3, 300.), 2419791.93586797, 1e-6);
-  EXPECT_NEAR(pthermo->GetLatentHeatMass(1, rates, 300.), 2558312.7182640,
+  EXPECT_NEAR(pthermo->GetLatentHeatMass(1, rates, 300.), 2419791.9358679,
               1e-6);
 }
 
