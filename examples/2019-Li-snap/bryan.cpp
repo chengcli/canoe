@@ -72,7 +72,7 @@ void MeshBlock::UserWorkBeforeOutput(ParameterInput *pin) {
         user_out_var(5, k, j, i) =
             pthermo->RelativeHumidity(this, iH2O, k, j, i);
         // total mixing ratio
-        Variable air(Variable::Type::MassFrac);
+        AirParcel air(AirParcel::Type::MassFrac);
         pimpl->GatherFromPrimitive(&air, k, j, i);
         user_out_var(6, k, j, i) = air.w[iH2O] + air.c[iH2Oc];
       }
@@ -91,7 +91,7 @@ void Thermodynamics::enrollVaporFunctionH2O() {
   auto pindex = IndexMap::GetInstance();
   int iH2O = pindex->GetVaporId("H2O");
 
-  svp_func1_[iH2O][0] = [](Variable const &qfrac, int, int) {
+  svp_func1_[iH2O][0] = [](AirParcel const &qfrac, int, int) {
     return sat_vapor_p_H2O(qfrac.w[IDN]);
   };
 }
@@ -144,7 +144,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
   iH2O = pindex->GetVaporId("H2O");
   iH2Oc = pindex->GetCloudId("H2O(c)");
 
-  Variable air(Variable::Type::MassFrac);
+  AirParcel air(AirParcel::Type::MassFrac);
   air.w[iH2O] = qt;
   air.c[iH2Oc] = 0.;
 
