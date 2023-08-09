@@ -39,14 +39,14 @@ Absorber::~Absorber() {
 void Absorber::LoadCoefficient(std::string fname, size_t bid) {}
 
 Real Absorber::GetAttenuation(Real wave1, Real wave2,
-                              Variable const& var) const {
+                              AirParcel const& var) const {
   return 0.;
 }
 
 Real Absorber::GetSingleScatteringAlbedo(Real wave1, Real wave2,
-                                         Variable const& var) const {
+                                         AirParcel const& var) const {
   return 0.;
 }
 
 void Absorber::GetPhaseMomentum(Real* pp, Real wave1, Real wave2,
-                                Variable const& var, int np) const {}
+                                AirParcel const& var, int np) const {}

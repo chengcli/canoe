@@ -20,12 +20,12 @@ class N2N2CIA : public Absorber {
   void LoadCoefficient(std::string fname, size_t bid) override;
 
   Real GetAttenuation(Real wave1, Real wave2,
-                      Variable const& var) const override {
+                      AirParcel const& var) const override {
     return getAttenuation1((wave1 + wave2) / 2., var);
   }
 
  protected:
-  Real getAttenuation1(Real wave, Variable const& var) const;
+  Real getAttenuation1(Real wave, AirParcel const& var) const;
 
   size_t rt_len_[2];
   size_t fd1_len_[2];

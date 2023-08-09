@@ -145,7 +145,7 @@ void O2O2CIA::LoadCoefficient(std::string fname, size_t bid) {
   other_len_[1] = nwave;
 }
 
-Real O2O2CIA::getAttenuation1(Real wave, Variable const& qfrac) const {
+Real O2O2CIA::getAttenuation1(Real wave, AirParcel const& qfrac) const {
   Real kk, temp = qfrac.w[IDN];
 
   Real coor[2] = {temp, wave};

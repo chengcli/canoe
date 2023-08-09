@@ -5,7 +5,7 @@
 // thermodynamics
 #include "thermodynamics.hpp"
 
-void Thermodynamics::rk4IntegrateLnp(Variable *qfrac, Real dlnp, Method method,
+void Thermodynamics::rk4IntegrateLnp(AirParcel *qfrac, Real dlnp, Method method,
                                      Real adlnTdlnP) const {
   Real step[] = {0.5, 0.5, 1.};
   Real temp = qfrac->w[IDN];

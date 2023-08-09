@@ -16,7 +16,7 @@ class CorrelatedKAbsorber : public Absorber {
   virtual ~CorrelatedKAbsorber() {}
   void LoadCoefficient(std::string fname, size_t bid) override;
   // Real ckAbsorptionCoefficient(int mw, int mg, Real const prim[]) const;
-  Real GetAttenuation(Real g1, Real g2, Variable const& var) const override;
+  Real GetAttenuation(Real g1, Real g2, AirParcel const& var) const override;
 
  protected:
   size_t len_[3];            /**< length of interpolation axis */

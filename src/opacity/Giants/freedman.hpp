@@ -16,7 +16,7 @@ class FreedmanMean : public Absorber {
   FreedmanMean(SpeciesNames const& species, ParameterMap params)
       : Absorber("FreedmanMean", species, params) {}
   virtual ~FreedmanMean() {}
-  Real GetAttenuation(Real wave1, Real wave2, Variable const& var) const;
+  Real GetAttenuation(Real wave1, Real wave2, AirParcel const& var) const;
 };
 
 class FreedmanSimple : public Absorber {
@@ -24,7 +24,7 @@ class FreedmanSimple : public Absorber {
   FreedmanSimple(SpeciesNames const& species, ParameterMap params)
       : Absorber("FreedmanSimple", species, params) {}
   virtual ~FreedmanSimple() {}
-  Real GetAttenuation(Real wave1, Real wave2, Variable const& var) const;
+  Real GetAttenuation(Real wave1, Real wave2, AirParcel const& var) const;
 };
 
 #endif  // SRC_OPACITY_GIANTS_FREEDMAN_HPP_

@@ -101,7 +101,7 @@ Real gz[18][8] = {{.838, .839, .844, .847, .849, .860, .853, .859},
 
 // TODO(cli): number density and mass density are incorrect
 Real FuWaterLiquidCloud::getAttenuation1(Real wave,
-                                         Variable const& qfrac) const {
+                                         AirParcel const& qfrac) const {
   auto pthermo = Thermodynamics::GetInstance();
 
   Real pre = 10.;  // choose in 4.18 ~ 31.23 micron
@@ -127,7 +127,7 @@ Real FuWaterLiquidCloud::getAttenuation1(Real wave,
 }
 
 Real FuWaterLiquidCloud::getSingleScatteringAlbedo1(
-    Real wave, Variable const& qfrac) const {
+    Real wave, AirParcel const& qfrac) const {
   // from fu & liou code
   Real pre = 10.;
 
@@ -150,7 +150,7 @@ Real FuWaterLiquidCloud::getSingleScatteringAlbedo1(
 }
 
 void FuWaterLiquidCloud::getPhaseMomentum1(Real* pp, Real wave,
-                                           Variable const& qfrac,
+                                           AirParcel const& qfrac,
                                            int np) const {
   // from fu & liou code
 

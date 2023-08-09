@@ -4,7 +4,7 @@
 // snap
 #include "thermodynamics.hpp"
 
-Real Thermodynamics::calDlnTDlnP(Variable const& qfrac, Real latent[]) const {
+Real Thermodynamics::calDlnTDlnP(AirParcel const& qfrac, Real latent[]) const {
   // calculate gammad
   Real gammad = GetGammad(qfrac);
 

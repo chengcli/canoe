@@ -23,7 +23,7 @@
 // athena
 #include <athena/athena.hpp>
 
-class Variable;
+class AirParcel;
 
 using ParameterMap = std::map<std::string, Real>;
 using SpeciesNames = std::vector<std::string>;
@@ -45,13 +45,13 @@ class Absorber {
   virtual void LoadCoefficient(std::string fname, size_t bid);
 
   virtual Real GetAttenuation(Real wave1, Real wave2,
-                              Variable const& var) const;
+                              AirParcel const& var) const;
 
   virtual Real GetSingleScatteringAlbedo(Real wave1, Real wave2,
-                                         Variable const& var) const;
+                                         AirParcel const& var) const;
 
   virtual void GetPhaseMomentum(Real* pp, Real wave1, Real wave2,
-                                Variable const& var, int np) const;
+                                AirParcel const& var, int np) const;
 
  protected:
   //! absorber name

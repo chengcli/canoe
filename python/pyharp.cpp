@@ -68,7 +68,7 @@ PYBIND11_MODULE(pyharp, m) {
 
       .def("get_attenuation",
            [](Absorber &ab, double wave1, double wave2, py::list lst) {
-             Variable air;
+             AirParcel air;
              std::transform(
                  lst.begin(), lst.end(), air.w,
                  [](const py::handle &elem) { return py::cast<double>(elem); });
@@ -77,7 +77,7 @@ PYBIND11_MODULE(pyharp, m) {
 
       .def("get_single_scattering_albedo",
            [](Absorber &ab, double wave1, double wave2, py::list lst) {
-             Variable air;
+             AirParcel air;
              std::transform(
                  lst.begin(), lst.end(), air.w,
                  [](const py::handle &elem) { return py::cast<double>(elem); });

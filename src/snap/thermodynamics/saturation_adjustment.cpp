@@ -18,13 +18,13 @@
 #include "thermodynamics.hpp"
 
 void Thermodynamics::SaturationAdjustment(
-    std::vector<Variable>& air_column) const {
+    std::vector<AirParcel>& air_column) const {
   // return if there's no vapor
   if (NVAPOR == 0) return;
 
   for (auto& air : air_column) {
     air.ToMoleFraction();
-    Variable air0(air);
+    AirParcel air0(air);
 
     // calculate total mole density
     Real rmole = getDensityMole(air);

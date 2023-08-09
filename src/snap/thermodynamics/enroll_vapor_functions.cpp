@@ -21,7 +21,7 @@
 #include "vapors/methane_vapors.hpp"
 #include "vapors/water_vapors.hpp"
 
-Real NullSatVaporPres1(Variable const& qfrac, int i, int j) {
+Real NullSatVaporPres1(AirParcel const& qfrac, int i, int j) {
   Real g = 1.;
 
 #pragma omp simd reduction(+ : g)

@@ -13,14 +13,14 @@
 
 //! \class Variable
 //  \brief a collection of all physical data in a computational cell
-class Variable {
+class AirParcel {
  public:
   enum { Size = NHYDRO + NCLOUD + NCHEMISTRY + NTRACER + NSTATIC };
 
   enum class Type { MassFrac = 0, MassConc = 1, MoleFrac = 2, MoleConc = 3 };
 
   friend std::ostream &operator<<(std::ostream &os, Type const &type);
-  friend std::ostream &operator<<(std::ostream &os, Variable const &var);
+  friend std::ostream &operator<<(std::ostream &os, AirParcel const &var);
 
   //! data pointers
   //! hydro data
@@ -42,7 +42,7 @@ class Variable {
   Real const *d;
 
   // constructor
-  explicit Variable(Type type = Type::MoleFrac) : mytype_(type) {
+  explicit AirParcel(Type type = Type::MoleFrac) : mytype_(type) {
     w = data_.data();
     c = w + NHYDRO;
     q = c + NCLOUD;
@@ -53,7 +53,7 @@ class Variable {
   }
 
   // copy constructor
-  Variable(Variable const &other) : mytype_(other.mytype_) {
+  AirParcel(AirParcel const &other) : mytype_(other.mytype_) {
     data_ = other.data_;
     w = data_.data();
     c = w + NHYDRO;
@@ -64,7 +64,7 @@ class Variable {
   }
 
   // Assignment operator
-  Variable &operator=(const Variable &other) {
+  AirParcel &operator=(const AirParcel &other) {
     // Check for self-assignment
     if (this == &other) {
       return *this;
@@ -80,12 +80,12 @@ class Variable {
 
   void SetZero() { std::fill(data_.begin(), data_.end(), 0.0); }
 
-  Variable &ConvertTo(Variable::Type type);
+  AirParcel &ConvertTo(AirParcel::Type type);
 
-  Variable &ToMassFraction();
-  Variable &ToMassConcentration();
-  Variable &ToMoleFraction();
-  Variable &ToMoleConcentration();
+  AirParcel &ToMassFraction();
+  AirParcel &ToMassConcentration();
+  AirParcel &ToMoleFraction();
+  AirParcel &ToMoleConcentration();
 
  protected:
   void massFractionToMassConcentration();

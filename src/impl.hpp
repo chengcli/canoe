@@ -59,8 +59,8 @@ class MeshBlock::Impl {
   Real GetReferencePressure() const { return reference_pressure_; }
   Real GetPressureScaleHeight() const { return pressure_scale_height_; }
 
-  void GatherFromPrimitive(Variable *prim, int k, int j, int i) const;
-  void GatherFromPrimitive(std::vector<Variable> &air_column, int k, int j,
+  void GatherFromPrimitive(AirParcel *prim, int k, int j, int i) const;
+  void GatherFromPrimitive(std::vector<AirParcel> &air_column, int k, int j,
                            int il, int iu) const {
     air_column.resize(iu - il + 1);
     for (int i = il; i <= iu; ++i) {
@@ -68,8 +68,8 @@ class MeshBlock::Impl {
     }
   }
 
-  void GatherFromConserved(Variable *cons, int k, int j, int i) const;
-  void GatherFromConserved(std::vector<Variable> &air_column, int k, int j,
+  void GatherFromConserved(AirParcel *cons, int k, int j, int i) const;
+  void GatherFromConserved(std::vector<AirParcel> &air_column, int k, int j,
                            int il, int iu) const {
     air_column.resize(iu - il + 1);
     for (int i = il; i <= iu; ++i) {
@@ -77,16 +77,16 @@ class MeshBlock::Impl {
     }
   }
 
-  void DistributeToPrimitive(Variable const &prim, int k, int j, int i);
-  void DistributeToPrimitive(std::vector<Variable> const &air_column, int k,
+  void DistributeToPrimitive(AirParcel const &prim, int k, int j, int i);
+  void DistributeToPrimitive(std::vector<AirParcel> const &air_column, int k,
                              int j, int il, int iu) {
     for (int i = il; i <= iu; ++i) {
       DistributeToPrimitive(air_column[i - il], k, j, i);
     }
   }
 
-  void DistributeToConserved(Variable const &cons, int k, int j, int i);
-  void DistributeToConserved(std::vector<Variable> const &air_column, int k,
+  void DistributeToConserved(AirParcel const &cons, int k, int j, int i);
+  void DistributeToConserved(std::vector<AirParcel> const &air_column, int k,
                              int j, int il, int iu) {
     for (int i = il; i <= iu; ++i) {
       DistributeToConserved(air_column[i - il], k, j, i);

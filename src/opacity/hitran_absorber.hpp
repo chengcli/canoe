@@ -22,7 +22,7 @@ class HitranAbsorber : public Absorber {
   virtual ~HitranAbsorber() {}
   void LoadCoefficient(std::string fname, size_t bid = 0) override;
   Real GetAttenuation(Real wave1, Real wave2,
-                      Variable const& var) const override;
+                      AirParcel const& var) const override;
 
  protected:
   size_t len_[3];            /**< length of interpolation axis */

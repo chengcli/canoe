@@ -12,7 +12,7 @@
 namespace GiantPlanets {
 
 Real MwrAbsorberPH3::GetAttenuation(Real wave1, Real wave2,
-                                    Variable const& var) const {
+                                    AirParcel const& var) const {
   Real P = var.w[IPR] / 1.E5;  // pa -> bar
   Real T = var.w[IDN];
   Real xdry = 1.;

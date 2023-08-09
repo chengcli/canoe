@@ -67,12 +67,12 @@ MeshBlock::Impl::Impl(MeshBlock *pmb, ParameterInput *pin) : pmy_block_(pmb) {
 
 MeshBlock::Impl::~Impl() {}
 
-void MeshBlock::Impl::GatherFromPrimitive(Variable *var, int k, int j,
+void MeshBlock::Impl::GatherFromPrimitive(AirParcel *var, int k, int j,
                                           int i) const {
   auto &pmb = pmy_block_;
   auto mytype = var->GetType();
   auto phydro = pmb->phydro;
-  var->SetType(Variable::Type::MassFrac);
+  var->SetType(AirParcel::Type::MassFrac);
 
 #pragma omp simd
   for (int n = 0; n < NHYDRO; ++n) var->w[n] = phydro->w(n, k, j, i);
@@ -114,12 +114,12 @@ void MeshBlock::Impl::GatherFromPrimitive(Variable *var, int k, int j,
   var->ConvertTo(mytype);
 }
 
-void MeshBlock::Impl::GatherFromConserved(Variable *var, int k, int j,
+void MeshBlock::Impl::GatherFromConserved(AirParcel *var, int k, int j,
                                           int i) const {
   auto &pmb = pmy_block_;
   auto mytype = var->GetType();
   auto phydro = pmb->phydro;
-  var->SetType(Variable::Type::MassConc);
+  var->SetType(AirParcel::Type::MassConc);
 
   auto pthermo = Thermodynamics::GetInstance();
 
@@ -164,17 +164,17 @@ void MeshBlock::Impl::GatherFromConserved(Variable *var, int k, int j,
   var->ConvertTo(mytype);
 }
 
-void MeshBlock::Impl::DistributeToPrimitive(Variable const &var_in, int k,
+void MeshBlock::Impl::DistributeToPrimitive(AirParcel const &var_in, int k,
                                             int j, int i) {
-  Variable *var;
+  AirParcel *var;
   auto &pmb = pmy_block_;
   auto phydro = pmb->phydro;
 
-  if (var_in.GetType() != Variable::Type::MassFrac) {
-    var = new Variable(var_in);
+  if (var_in.GetType() != AirParcel::Type::MassFrac) {
+    var = new AirParcel(var_in);
     var->ToMassFraction();
   } else {
-    var = const_cast<Variable *>(&var_in);
+    var = const_cast<AirParcel *>(&var_in);
   }
 
   // scale mass fractions back
@@ -213,23 +213,23 @@ void MeshBlock::Impl::DistributeToPrimitive(Variable const &var_in, int k,
 #pragma omp simd
   for (int n = 0; n < NTRACER; ++n) ptracer->w(n, k, j, i) = var->x[n];
 
-  if (var_in.GetType() != Variable::Type::MassFrac) {
+  if (var_in.GetType() != AirParcel::Type::MassFrac) {
     delete var;
   }
 }
 
-void MeshBlock::Impl::DistributeToConserved(Variable const &var_in, int k,
+void MeshBlock::Impl::DistributeToConserved(AirParcel const &var_in, int k,
                                             int j, int i) {
-  Variable *var;
+  AirParcel *var;
   auto &pmb = pmy_block_;
   auto phydro = pmb->phydro;
   auto pthermo = Thermodynamics::GetInstance();
 
-  if (var_in.GetType() != Variable::Type::MassConc) {
-    var = new Variable(var_in);
+  if (var_in.GetType() != AirParcel::Type::MassConc) {
+    var = new AirParcel(var_in);
     var->ToMassConcentration();
   } else {
-    var = const_cast<Variable *>(&var_in);
+    var = const_cast<AirParcel *>(&var_in);
   }
 
 #pragma omp simd
@@ -277,7 +277,7 @@ void MeshBlock::Impl::DistributeToConserved(Variable const &var_in, int k,
 #pragma omp simd
   for (int n = 0; n < NTRACER; ++n) ptracer->u(n, k, j, i) = var->x[n];
 
-  if (var_in.GetType() != Variable::Type::MassConc) {
+  if (var_in.GetType() != AirParcel::Type::MassConc) {
     delete var;
   }
 }

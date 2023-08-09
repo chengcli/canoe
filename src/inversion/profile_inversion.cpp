@@ -318,7 +318,7 @@ void ProfileInversion::ConvectiveAdjustment(Hydro *phydro, int k,
   auto pthermo = Thermodynamics::GetInstance();
   auto pmb = pmy_block_;
 
-  Variable var(Variable::Type::MoleFrac);
+  AirParcel var(AirParcel::Type::MoleFrac);
   for (int i = is + 1; i <= ie; ++i) {
     pmy_block_->pimpl->GatherFromPrimitive(&var, k, ju, i - 1);
     Real dlnp = log(phydro->w(IPR, k, ju, i) / phydro->w(IPR, k, ju, i - 1));

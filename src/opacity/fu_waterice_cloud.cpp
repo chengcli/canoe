@@ -103,7 +103,7 @@ Real cpir[18][4] = {
     {.22920, 1.724e-2, -1.573e-4, 4.995e-7}};
 
 // TODO(cli): number density and mass density are incorrect
-Real FuWaterIceCloud::getAttenuation1(Real wave, Variable const& qfrac) const {
+Real FuWaterIceCloud::getAttenuation1(Real wave, AirParcel const& qfrac) const {
   auto pthermo = Thermodynamics::GetInstance();
 
   // from fu & liou code
@@ -131,7 +131,7 @@ Real FuWaterIceCloud::getAttenuation1(Real wave, Variable const& qfrac) const {
 }
 
 Real FuWaterIceCloud::getSingleScatteringAlbedo1(Real wave,
-                                                 Variable const& qfrac) const {
+                                                 AirParcel const& qfrac) const {
   // from fu & liou code
   int iband = locate(wband, wave, 19) + 1;
   assert(iband >= 1 && iband <= 18);
@@ -160,7 +160,7 @@ Real FuWaterIceCloud::getSingleScatteringAlbedo1(Real wave,
 }
 
 void FuWaterIceCloud::getPhaseMomentum1(Real* pp, Real wave,
-                                        Variable const& qfrac, int np) const {
+                                        AirParcel const& qfrac, int np) const {
   // from fu & liou code
   int iband = locate(wband, wave, 19) + 1;
   assert(iband >= 1 && iband <= 18);

@@ -24,7 +24,7 @@
 
 // xiz semigrey
 Real FreedmanSimple::GetAttenuation(Real wave1, Real wave2,
-                                    Variable const &var) const {
+                                    AirParcel const &var) const {
   auto pthermo = Thermodynamics::GetInstance();
   Real mu = Constants::Rgas / pthermo->GetRd();
   Real result;

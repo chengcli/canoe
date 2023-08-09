@@ -47,38 +47,38 @@ PYBIND11_MODULE(pycanoe, m) {
       .def("get_tracer_id", &IndexMap::GetTracerId)
       .def("get_species_id", &IndexMap::GetSpeciesId);
 
-  // Variable type
-  py::enum_<Variable::Type>(m, "VariableType")
-      .value("MassFrac", Variable::Type::MassFrac)
-      .value("MassConc", Variable::Type::MassConc)
-      .value("MoleFrac", Variable::Type::MoleFrac)
-      .value("MoleConc", Variable::Type::MoleConc)
+  // AirParcel type
+  py::enum_<AirParcel::Type>(m, "VariableType")
+      .value("MassFrac", AirParcel::Type::MassFrac)
+      .value("MassConc", AirParcel::Type::MassConc)
+      .value("MoleFrac", AirParcel::Type::MoleFrac)
+      .value("MoleConc", AirParcel::Type::MoleConc)
       .export_values();
 
-  // Variable
-  py::class_<Variable>(m, "AirParcel")
+  // AirParcel
+  py::class_<AirParcel>(m, "AirParcel")
       .def(py::init<>())
 
       .def("hydro",
-           [](const Variable& var) {
+           [](const AirParcel& var) {
              py::array_t<double> result(NCLOUD, var.c);
              return result;
            })
 
       .def("cloud",
-           [](const Variable& var) {
+           [](const AirParcel& var) {
              py::array_t<double> result(NCLOUD, var.c);
              return result;
            })
 
       .def("tracer",
-           [](const Variable& var) {
+           [](const AirParcel& var) {
              py::array_t<double> result(NCLOUD, var.x);
              return result;
            })
 
-      .def("to_mass_fraction", &Variable::ToMassFraction)
-      .def("to_mass_concentration", &Variable::ToMassConcentration)
-      .def("to_mole_fraction", &Variable::ToMoleFraction)
-      .def("to_mole_concentration", &Variable::ToMoleConcentration);
+      .def("to_mass_fraction", &AirParcel::ToMassFraction)
+      .def("to_mass_concentration", &AirParcel::ToMassConcentration)
+      .def("to_mole_fraction", &AirParcel::ToMoleFraction)
+      .def("to_mole_concentration", &AirParcel::ToMoleConcentration);
 }

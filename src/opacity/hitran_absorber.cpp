@@ -125,7 +125,7 @@ void HitranAbsorber::LoadCoefficient(std::string fname, size_t bid) {
 }
 
 Real HitranAbsorber::GetAttenuation(Real wave1, Real wave2,
-                                    Variable const &var) const {
+                                    AirParcel const &var) const {
   // first axis is wavenumber, second is pressure, third is temperature anomaly
   Real val, coord[3] = {wave1, var.w[IPR], var.w[IDN] - getRefTemp(var.w[IPR])};
   interpn(&val, coord, kcoeff_.data(), axis_.data(), len_, 3, 1);

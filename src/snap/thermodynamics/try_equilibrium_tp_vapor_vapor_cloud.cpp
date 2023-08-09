@@ -24,10 +24,8 @@
 // Example phase equilibrium:
 // NH3 + H2S -> NH4SH(s)
 //
-RealArray3 Thermodynamics::TryEquilibriumTP_VaporVaporCloud(Variable const& air,
-                                                            IndexPair ij,
-                                                            Real cv_hat,
-                                                            bool misty) const {
+RealArray3 Thermodynamics::TryEquilibriumTP_VaporVaporCloud(
+    AirParcel const& air, IndexPair ij, Real cv_hat, bool misty) const {
   auto& info = cloud_reaction_map_.at(ij);
 
   int j1 = info.first[0];

@@ -49,7 +49,7 @@ void XizH2HeCIA::LoadCoefficient(std::string fname, int bid) {
 }
 
 Real XizH2HeCIA::GetAttenuation(Real wave1, Real wave2,
-                                Variable const& var) const {
+                                AirParcel const& var) const {
   // first axis is wavenumber, second is temperature
   Real val, coord[2] = {wave1, var.w[IDN]};
   interpn(&val, coord, kcoeff_.data(), axis_.data(), len_, 2, 1);

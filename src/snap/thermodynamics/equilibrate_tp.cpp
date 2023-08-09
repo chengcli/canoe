@@ -4,7 +4,7 @@
 // snap
 #include "thermodynamics.hpp"
 
-void Thermodynamics::EquilibrateTP(Variable* qfrac) const {
+void Thermodynamics::EquilibrateTP(AirParcel* qfrac) const {
   setTotalEquivalentVapor(qfrac);
 
   // vapor <=> cloud

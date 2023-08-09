@@ -32,11 +32,11 @@ using IndexSet = std::vector<int>;
 using RealArray3 = std::array<Real, 3>;
 using RealArrayX = std::vector<Real>;
 
-using SatVaporPresFunc1 = Real (*)(Variable const &, int i, int j);
-using SatVaporPresFunc2 = Real (*)(Variable const &, int i, int j, int k);
+using SatVaporPresFunc1 = Real (*)(AirParcel const &, int i, int j);
+using SatVaporPresFunc2 = Real (*)(AirParcel const &, int i, int j, int k);
 
-Real NullSatVaporPres1(Variable const &, int, int);
-Real NullSatVaporPres2(Variable const &, int, int, int);
+Real NullSatVaporPres1(AirParcel const &, int, int);
+Real NullSatVaporPres2(AirParcel const &, int, int, int);
 
 void read_thermo_property(Real var[], char const name[], int len, Real v0,
                           ParameterInput *pin);
@@ -103,7 +103,7 @@ class Thermodynamics {
   //! \return $R_d=\hat{R}/\mu_d$
   Real GetRd() const { return Rd_; }
 
-  Real GetGammad(Variable const &var) const;
+  Real GetGammad(AirParcel const &var) const;
 
   Real GetGammadRef() const { return gammad_ref_; }
 
@@ -137,7 +137,7 @@ class Thermodynamics {
   //! $c_{v,d} = \frac{R_d}{\gamma_d - 1}$ \n
   //! $c_{v,i} = \frac{c_{v,i}}{c_{v,d}}\times c_{v,d}$
   //! \return $c_{v,i}$
-  Real GetCvMass(Variable const &qfrac, int n) const {
+  Real GetCvMass(AirParcel const &qfrac, int n) const {
     Real cvd = Rd_ / (GetGammad(qfrac) - 1.);
     return cv_ratio_mass_[n] * cvd;
   }
@@ -149,7 +149,7 @@ class Thermodynamics {
 
   //! Specific heat capacity [J/(mol K)] of the air parcel at constant volume
   //! \return $\hat{c}_v$
-  Real GetCvMole(Variable const &qfrac, int n) const {
+  Real GetCvMole(AirParcel const &qfrac, int n) const {
     return GetCvMass(qfrac, n) * mu_[n];
   }
 
@@ -165,7 +165,7 @@ class Thermodynamics {
   //! $c_{p,d} = \frac{\gamma_d}{\gamma_d - 1}R_d$ \n
   //! $c_{p,i} = \frac{c_{p,i}}{c_{p,d}}\times c_{p,d}$
   //! \return $c_p$
-  Real GetCpMass(Variable const &qfrac, int n) const {
+  Real GetCpMass(AirParcel const &qfrac, int n) const {
     Real gammad = GetGammad(qfrac);
     Real cpd = Rd_ * gammad / (gammad - 1.);
     return cp_ratio_mass_[n] * cpd;
@@ -178,13 +178,13 @@ class Thermodynamics {
 
   //! Specific heat capacity [J/(mol K)] of the air parcel at constant pressure
   //! \return $\hat{c}_v$
-  Real GetCpMole(Variable const &qfrac, int n) const {
+  Real GetCpMole(AirParcel const &qfrac, int n) const {
     return GetCpMass(qfrac, n) * mu_[n];
   }
 
   //! Adiabatic index
   //! \return $\chi = \frac{R}{c_p}$
-  Real GetChi(Variable const &qfrac) const;
+  Real GetChi(AirParcel const &qfrac) const;
 
   //! Temperature dependent specific latent energy [J/kg] of condensates at
   //! constant volume $L_{ij}(T) = L_{ij}^r - (c_{ij} - c_{p,i})\times(T - T^r)$
@@ -212,27 +212,27 @@ class Thermodynamics {
   //! Calculate the equilibrium mole transfer between vapor and cloud
   //! \param L_ov_cv L/cv evaluated at current temperature
   //! \return molar fraction change of vapor to cloud
-  RealArrayX TryEquilibriumTP_VaporCloud(Variable const &qfrac, int ivapor,
+  RealArrayX TryEquilibriumTP_VaporCloud(AirParcel const &qfrac, int ivapor,
                                          Real cv_hat = 0.,
                                          bool misty = false) const;
 
-  RealArray3 TryEquilibriumTP_VaporVaporCloud(Variable const &air, IndexPair ij,
-                                              Real cv_hat = 0.,
+  RealArray3 TryEquilibriumTP_VaporVaporCloud(AirParcel const &air,
+                                              IndexPair ij, Real cv_hat = 0.,
                                               bool misty = false) const;
 
   //! Construct an 1d atmosphere
   //! @param method choose from [reversible, pseudo, dry, isothermal]
-  void Extrapolate(Variable *qfrac, Real dzORdlnp, Method method,
+  void Extrapolate(AirParcel *qfrac, Real dzORdlnp, Method method,
                    Real grav = 0., Real userp = 0.) const;
 
   //! Thermodnamic equilibrium at current TP
-  void EquilibrateTP(Variable *qfrac) const;
+  void EquilibrateTP(AirParcel *qfrac) const;
 
   //! Adjust to the maximum saturation state conserving internal energy
-  void SaturationAdjustment(std::vector<Variable> &air_column) const;
+  void SaturationAdjustment(std::vector<AirParcel> &air_column) const;
 
   //! Inverse of the mean molecular weight (with cloud)
-  Real RovRd(Variable const &qfrac) const;
+  Real RovRd(AirParcel const &qfrac) const;
 
   //! Potential temperature
   //!$\theta = T(\frac{p_0}{p})^{\chi}$
@@ -316,29 +316,29 @@ class Thermodynamics {
   //! \return $H$
   Real RelativeHumidity(MeshBlock *pmb, int n, int k, int j, int i) const;
 
-  Real RelativeHumidity(Variable const &qfrac, int n) const {
+  Real RelativeHumidity(AirParcel const &qfrac, int n) const {
     auto rates = TryEquilibriumTP_VaporCloud(qfrac, n, 0., true);
     return qfrac.w[n] / (qfrac.w[n] + rates[0]);
   }
 
  protected:
   //! update T/P
-  void updateTPConservingU(Variable *qfrac, Real rmole, Real umole) const;
+  void updateTPConservingU(AirParcel *qfrac, Real rmole, Real umole) const;
 
-  Real getInternalEnergyMole(Variable const &qfrac) const;
+  Real getInternalEnergyMole(AirParcel const &qfrac) const;
 
-  Real getDensityMole(Variable const &qfrac) const;
+  Real getDensityMole(AirParcel const &qfrac) const;
 
-  void setTotalEquivalentVapor(Variable *qfrac) const;
+  void setTotalEquivalentVapor(AirParcel *qfrac) const;
 
   //! Calculate moist adiabatic temperature gradient
   //! $\Gamma_m = (\frac{d\ln T}{d\ln P})_m$
   //! \return $\Gamma_m$
-  Real calDlnTDlnP(Variable const &qfrac, Real latent[]) const;
+  Real calDlnTDlnP(AirParcel const &qfrac, Real latent[]) const;
 
-  void rk4IntegrateLnp(Variable *qfrac, Real dlnp, Method method,
+  void rk4IntegrateLnp(AirParcel *qfrac, Real dlnp, Method method,
                        Real adlnTdlnP) const;
-  void rk4IntegrateZ(Variable *qfrac, Real dlnp, Method method, Real grav,
+  void rk4IntegrateZ(AirParcel *qfrac, Real dlnp, Method method, Real grav,
                      Real adlnTdlnP) const;
 
   void enrollVaporFunctionsEarth();
