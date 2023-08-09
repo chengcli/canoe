@@ -10,9 +10,9 @@
 #include <athena/stride_iterator.hpp>
 
 // canoe
+#include <air_parcel.hpp>
 #include <constants.hpp>
 #include <impl.hpp>
-#include <variable.hpp>
 
 // snap
 #include <snap/thermodynamics/thermodynamics.hpp>
@@ -35,7 +35,7 @@ void RadiationBand::SetSpectralProperties(int k, int j, int il, int iu) {
 
   std::vector<Real> mypmom(1 + npmom);
 
-  Variable var(Variable::Type::MoleFrac);
+  AirParcel var(AirParcel::Type::MoleFrac);
   // Particles *ppart;
 
   MeshBlock* pmb = pmy_block_;

@@ -6,7 +6,7 @@
 #include <vector>
 
 // canoe
-#include <variable.hpp>
+#include <air_parcel.hpp>
 
 // harp
 #include <harp/absorber.hpp>
@@ -17,24 +17,24 @@ class FuWaterLiquidCloud : public Absorber {
       : Absorber("H2O(l)", species, params) {}
 
   Real GetAttenuation(Real wave1, Real wave2,
-                      Variable const& var) const override {
+                      AirParcel const& var) const override {
     return getAttenuation1((wave1 + wave2) / 2, var);
   }
 
   Real GetSingleScatteringAlbedo(Real wave1, Real wave2,
-                                 Variable const& var) const override {
+                                 AirParcel const& var) const override {
     return getSingleScatteringAlbedo1((wave1 + wave2) / 2., var);
   }
 
-  void GetPhaseMomentum(Real* pp, Real wave1, Real wave2, Variable const& var,
+  void GetPhaseMomentum(Real* pp, Real wave1, Real wave2, AirParcel const& var,
                         int np) const override {
     getPhaseMomentum1(pp, (wave1 + wave2) / 2., var, np);
   }
 
  protected:
-  Real getAttenuation1(Real wave, Variable const& var) const;
-  Real getSingleScatteringAlbedo1(Real wave, Variable const& var) const;
-  void getPhaseMomentum1(Real* pp, Real wave, Variable const& var,
+  Real getAttenuation1(Real wave, AirParcel const& var) const;
+  Real getSingleScatteringAlbedo1(Real wave, AirParcel const& var) const;
+  void getPhaseMomentum1(Real* pp, Real wave, AirParcel const& var,
                          int np) const;
 };
 
@@ -44,24 +44,24 @@ class FuWaterIceCloud : public Absorber {
       : Absorber("H2O(s)", species, params) {}
 
   Real GetAttenuation(Real wave1, Real wave2,
-                      Variable const& var) const override {
+                      AirParcel const& var) const override {
     return getAttenuation1((wave1 + wave2) / 2, var);
   }
 
   Real GetSingleScatteringAlbedo(Real wave1, Real wave2,
-                                 Variable const& var) const override {
+                                 AirParcel const& var) const override {
     return getSingleScatteringAlbedo1((wave1 + wave2) / 2., var);
   }
 
-  void GetPhaseMomentum(Real* pp, Real wave1, Real wave2, Variable const& var,
+  void GetPhaseMomentum(Real* pp, Real wave1, Real wave2, AirParcel const& var,
                         int np) const override {
     getPhaseMomentum1(pp, (wave1 + wave2) / 2., var, np);
   }
 
  protected:
-  Real getAttenuation1(Real wave, Variable const& var) const;
-  Real getSingleScatteringAlbedo1(Real wave, Variable const& var) const;
-  void getPhaseMomentum1(Real* pp, Real wave, Variable const& var,
+  Real getAttenuation1(Real wave, AirParcel const& var) const;
+  Real getSingleScatteringAlbedo1(Real wave, AirParcel const& var) const;
+  void getPhaseMomentum1(Real* pp, Real wave, AirParcel const& var,
                          int np) const;
 
  protected:
@@ -79,24 +79,24 @@ class XuWaterIceCloud : public Absorber {
   void LoadCoefficient(std::string fname, size_t bid) override;
 
   Real GetAttenuation(Real wave1, Real wave2,
-                      Variable const& var) const override {
+                      AirParcel const& var) const override {
     return getAttenuation1((wave1 + wave2) / 2, var);
   }
 
   Real GetSingleScatteringAlbedo(Real wave1, Real wave2,
-                                 Variable const& var) const override {
+                                 AirParcel const& var) const override {
     return getSingleScatteringAlbedo1((wave1 + wave2) / 2., var);
   }
 
-  void GetPhaseMomentum(Real* pp, Real wave1, Real wave2, Variable const& var,
+  void GetPhaseMomentum(Real* pp, Real wave1, Real wave2, AirParcel const& var,
                         int np) const override {
     getPhaseMomentum1(pp, (wave1 + wave2) / 2., var, np);
   }
 
  protected:
-  Real getAttenuation1(Real wave, Variable const& var) const;
-  Real getSingleScatteringAlbedo1(Real wave, Variable const& var) const;
-  void getPhaseMomentum1(Real* pp, Real wave, Variable const& var,
+  Real getAttenuation1(Real wave, AirParcel const& var) const;
+  Real getSingleScatteringAlbedo1(Real wave, AirParcel const& var) const;
+  void getPhaseMomentum1(Real* pp, Real wave, AirParcel const& var,
                          int np) const;
 
  protected:

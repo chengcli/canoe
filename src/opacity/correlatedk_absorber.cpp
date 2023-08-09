@@ -7,9 +7,9 @@
 #include <string>
 
 // canoe
+#include <air_parcel.hpp>
 #include <configure.hpp>
 #include <constants.hpp>
-#include <variable.hpp>
 
 // netcdf
 #ifdef NETCDFOUTPUT
@@ -53,7 +53,7 @@ void CorrelatedKAbsorber::LoadCoefficient(std::string fname, size_t bid) {
 }
 
 Real CorrelatedKAbsorber::GetAttenuation(Real g1, Real g2,
-                                         Variable const& var) const {
+                                         AirParcel const& var) const {
   // first axis is wavenumber, second is pressure, third is temperature anomaly
   Real val, coord[3] = {log(var.q[IPR]), var.q[IDN], g1};
   interpn(&val, coord, kcoeff_.data(), axis_.data(), len_, 3, 1);

@@ -5,9 +5,9 @@
 #include <application/application.hpp>
 
 // canoe
+#include <air_parcel.hpp>
 #include <impl.hpp>
 #include <index_map.hpp>
-#include <variable.hpp>
 
 // snap
 #include <snap/thermodynamics/thermodynamics.hpp>
@@ -133,7 +133,7 @@ TEST_F(TestThermodynamics, equilibrium_water) {
   int iH2O = 1;
   int iNH3 = 2;
 
-  Variable air(Variable::Type::MoleFrac);
+  AirParcel air(AirParcel::Type::MoleFrac);
   air.SetZero();
 
   air.w[IDN] = 300.;
@@ -156,7 +156,7 @@ TEST_F(TestThermodynamics, equilibrium_ammonia) {
   int iH2O = 1;
   int iNH3 = 2;
 
-  Variable air(Variable::Type::MoleFrac);
+  AirParcel air(AirParcel::Type::MoleFrac);
   air.SetZero();
 
   air.w[IDN] = 160.;
@@ -181,10 +181,10 @@ TEST_F(TestThermodynamics, saturation_adjust) {
   int iH2Oc = 0;
   int iNH3c = 1;
 
-  std::vector<Variable> air_column(1);
+  std::vector<AirParcel> air_column(1);
 
   auto &air = air_column[0];
-  air.SetType(Variable::Type::MoleFrac);
+  air.SetType(AirParcel::Type::MoleFrac);
 
   air.SetZero();
 

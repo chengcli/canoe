@@ -8,9 +8,9 @@
 #include <athena/mesh/mesh.hpp>
 
 // canoe
+#include <air_parcel.hpp>
 #include <impl.hpp>
 #include <index_map.hpp>
-#include <variable.hpp>
 
 // harp
 #include <harp/absorber.hpp>
@@ -68,7 +68,7 @@ TEST_F(TestMicrowaveOpacity, Absorbers) {
   EXPECT_EQ(prad->GetNumBands(), 3);
   EXPECT_EQ(prad->GetBandByName("radio")->GetNumAbsorbers(), 3);
 
-  Variable var;
+  AirParcel var;
   var.w[IDN] = 300.;
   var.w[IPR] = 1.E5;
   var.w[1] = 1.E-2;

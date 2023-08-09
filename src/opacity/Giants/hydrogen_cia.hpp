@@ -17,7 +17,7 @@ class XizH2H2CIA : public Absorber {
 
   virtual ~XizH2H2CIA() {}
   void LoadCoefficient(std::string fname, int bid = -1);
-  Real GetAttenuation(Real wave1, Real wave2, Variable const& var) const;
+  Real GetAttenuation(Real wave1, Real wave2, AirParcel const& var) const;
 
  protected:
   size_t len_[2];
@@ -34,7 +34,7 @@ class XizH2HeCIA : public Absorber {
 
   virtual ~XizH2HeCIA() {}
   void LoadCoefficient(std::string fname, int bid = -1);
-  Real GetAttenuation(Real wave1, Real wave2, Variable const& var) const;
+  Real GetAttenuation(Real wave1, Real wave2, AirParcel const& var) const;
 
  protected:
   Real mixr2_;
@@ -52,7 +52,7 @@ class OrtonCIA : public Absorber {
 
   virtual ~OrtonCIA() {}
   void LoadCoefficient(std::string fname, int bid = -1);
-  Real GetAttenuation(Real wave1, Real wave2, Variable const& var) const;
+  Real GetAttenuation(Real wave1, Real wave2, AirParcel const& var) const;
 
  protected:
   size_t len_[2];

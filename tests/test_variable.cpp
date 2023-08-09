@@ -9,17 +9,17 @@
 #include <application/application.hpp>
 
 // canoe
+#include <air_parcel.hpp>
 #include <impl.hpp>
 #include <index_map.hpp>
-#include <variable.hpp>
 
 // snap
 #include <snap/thermodynamics/thermodynamics.hpp>
 
-class TestVariable : public testing::Test {
+class TestAirParcel : public testing::Test {
  protected:
   ParameterInput *pinput;
-  Variable a;
+  AirParcel a;
 
   virtual void SetUp() {
     // code here will execute just before the test ensues
@@ -33,9 +33,9 @@ class TestVariable : public testing::Test {
     IndexMap::InitFromAthenaInput(pinput);
     Thermodynamics::InitFromAthenaInput(pinput);
 
-    a.SetType(Variable::Type::MoleFrac);
+    a.SetType(AirParcel::Type::MoleFrac);
 
-    std::fill(a.w, a.w + Variable::Size,
+    std::fill(a.w, a.w + AirParcel::Size,
               1. / (1 + NVAPOR + NCLOUD + NCHEMISTRY));
     std::fill(a.x, a.x + NTRACER, 2.);
 
@@ -56,13 +56,13 @@ class TestVariable : public testing::Test {
   }
 };
 
-TEST(variable, copy_constructer) {
-  Variable a(Variable::Type::MoleFrac);
+TEST(TestAirParcel, copy_constructer) {
+  AirParcel a(AirParcel::Type::MoleFrac);
 
-  std::fill(a.w, a.w + Variable::Size, 1.0);
+  std::fill(a.w, a.w + AirParcel::Size, 1.0);
 
-  Variable b(a);
-  std::fill(b.w, b.w + Variable::Size, 2.0);
+  AirParcel b(a);
+  std::fill(b.w, b.w + AirParcel::Size, 2.0);
 
   EXPECT_DOUBLE_EQ(a.w[0], 1.0);
   EXPECT_DOUBLE_EQ(a.w[1], 1.0);
@@ -73,14 +73,14 @@ TEST(variable, copy_constructer) {
   EXPECT_DOUBLE_EQ(b.w[2], 2.0);
 }
 
-TEST(variable, assignment_operator) {
-  Variable a(Variable::Type::MoleFrac);
+TEST(TestAirParcel, assignment_operator) {
+  AirParcel a(AirParcel::Type::MoleFrac);
 
-  std::fill(a.w, a.w + Variable::Size, 1.0);
+  std::fill(a.w, a.w + AirParcel::Size, 1.0);
 
-  Variable b(Variable::Type::MoleFrac);
+  AirParcel b(AirParcel::Type::MoleFrac);
   b = a;
-  std::fill(b.w, b.w + Variable::Size, 2.0);
+  std::fill(b.w, b.w + AirParcel::Size, 2.0);
 
   EXPECT_DOUBLE_EQ(a.w[0], 1.0);
   EXPECT_DOUBLE_EQ(a.w[1], 1.0);
@@ -91,7 +91,7 @@ TEST(variable, assignment_operator) {
   EXPECT_DOUBLE_EQ(b.w[2], 2.0);
 }
 
-TEST_F(TestVariable, MoleFraction_MassFraction) {
+TEST_F(TestAirParcel, MoleFraction_MassFraction) {
   // mole fraction to mass fraction
   a.ToMassFraction();
   a.ToMoleFraction();
@@ -112,7 +112,7 @@ TEST_F(TestVariable, MoleFraction_MassFraction) {
   EXPECT_DOUBLE_EQ(a.w[IVZ], 0.3);
 }
 
-TEST_F(TestVariable, MoleFraction_MassConcentration) {
+TEST_F(TestAirParcel, MoleFraction_MassConcentration) {
   // mole fraction to mass concentration
   a.ToMassConcentration();
   a.ToMoleFraction();
@@ -133,8 +133,8 @@ TEST_F(TestVariable, MoleFraction_MassConcentration) {
   EXPECT_DOUBLE_EQ(a.w[IVZ], 0.3);
 }
 
-TEST_F(TestVariable, MassFraction_MassConcentration) {
-  a.SetType(Variable::Type::MassFrac);
+TEST_F(TestAirParcel, MassFraction_MassConcentration) {
+  a.SetType(AirParcel::Type::MassFrac);
 
   // mass fraction to mass concentration
   a.ToMassConcentration();
@@ -156,7 +156,7 @@ TEST_F(TestVariable, MassFraction_MassConcentration) {
   EXPECT_DOUBLE_EQ(a.w[IVZ], 0.3);
 }
 
-TEST_F(TestVariable, MoleFraction_MoleConcentration) {
+TEST_F(TestAirParcel, MoleFraction_MoleConcentration) {
   a.ToMoleConcentration();
   a.ToMoleFraction();
 
@@ -176,9 +176,9 @@ TEST_F(TestVariable, MoleFraction_MoleConcentration) {
   EXPECT_DOUBLE_EQ(a.w[IVZ], 0.3);
 }
 
-TEST_F(TestVariable, MassFraction_MoleConcentration) {}
+TEST_F(TestAirParcel, MassFraction_MoleConcentration) {}
 
-TEST_F(TestVariable, MassConcentration_MoleConcentration) {}
+TEST_F(TestAirParcel, MassConcentration_MoleConcentration) {}
 
 int main(int argc, char **argv) {
   Application::Start(argc, argv);

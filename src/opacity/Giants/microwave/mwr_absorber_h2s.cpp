@@ -1,6 +1,6 @@
 // canoe
+#include <air_parcel.hpp>
 #include <configure.hpp>
-#include <variable.hpp>
 
 // opacity
 #include "absorption_functions.hpp"
@@ -9,7 +9,7 @@
 namespace GiantPlanets {
 
 Real MwrAbsorberH2S::GetAttenuation(Real wave1, Real wave2,
-                                    Variable const& var) const {
+                                    AirParcel const& var) const {
   // adapted by cli (Cheng Li), Aug 30
   Real P = var.w[IPR] / 1.E5;
   Real T = var.w[IDN];

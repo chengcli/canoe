@@ -5,9 +5,9 @@
 #include <application/application.hpp>
 
 // canoe
+#include <air_parcel.hpp>
 #include <impl.hpp>
 #include <index_map.hpp>
-#include <variable.hpp>
 
 // snap
 #include <snap/thermodynamics/thermodynamics.hpp>
@@ -25,7 +25,7 @@ void Thermodynamics::enrollVaporFunctionH2O() {
   auto pindex = IndexMap::GetInstance();
   int iH2O = pindex->GetVaporId("H2O");
 
-  svp_func1_[iH2O][0] = [](Variable const& qfrac, int, int) {
+  svp_func1_[iH2O][0] = [](AirParcel const& qfrac, int, int) {
     return sat_vapor_p_H2O(qfrac.w[IDN]);
   };
 }
@@ -122,7 +122,7 @@ TEST_F(TestMoistAdiabat, parameter) {
 TEST_F(TestMoistAdiabat, concentration) {
   auto pthermo = Thermodynamics::GetInstance();
 
-  Variable air(Variable::Type::MassFrac);
+  AirParcel air(AirParcel::Type::MassFrac);
   air.w[iH2O] = qt;
   air.w[iH2Oc] = 0.;
 
@@ -151,7 +151,7 @@ TEST_F(TestMoistAdiabat, concentration) {
 TEST_F(TestMoistAdiabat, moist_adiabat) {
   auto pthermo = Thermodynamics::GetInstance();
 
-  Variable air(Variable::Type::MassFrac);
+  AirParcel air(AirParcel::Type::MassFrac);
   air.w[iH2O] = qt;
   air.w[iH2Oc] = 0.;
 
@@ -173,7 +173,7 @@ TEST_F(TestMoistAdiabat, moist_static_energy) {
   auto pthermo = Thermodynamics::GetInstance();
   auto pmb = pmesh->my_blocks(0);
 
-  Variable air(Variable::Type::MassFrac);
+  AirParcel air(AirParcel::Type::MassFrac);
   air.w[iH2O] = qt;
   air.w[iH2Oc] = 0.;
 
@@ -206,7 +206,7 @@ TEST_F(TestMoistAdiabat, equivalent_potential_temp) {
   auto pthermo = Thermodynamics::GetInstance();
   auto pmb = pmesh->my_blocks(0);
 
-  Variable air(Variable::Type::MassFrac);
+  AirParcel air(AirParcel::Type::MassFrac);
   air.w[iH2O] = qt;
   air.w[iH2Oc] = 0.;
 
@@ -243,10 +243,10 @@ TEST_F(TestMoistAdiabat, saturation_adjustment) {
   Real vy = 200.;
   Real vz = 300.;
 
-  std::vector<Variable> air_column(1);
+  std::vector<AirParcel> air_column(1);
 
   auto& air = air_column[0];
-  air.SetType(Variable::Type::MassFrac);
+  air.SetType(AirParcel::Type::MassFrac);
 
   air.w[iH2O] = qt;
   air.w[iH2Oc] = 0.;

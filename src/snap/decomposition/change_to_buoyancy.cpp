@@ -8,8 +8,8 @@
 #include <athena/stride_iterator.hpp>
 
 // canoe
+#include <air_parcel.hpp>
 #include <impl.hpp>
-#include <variable.hpp>
 
 // utils
 #include <utils/ndarrays.hpp>
@@ -54,7 +54,7 @@ void Decomposition::ChangeToBuoyancy(AthenaArray<Real> &w, int kl, int ku,
     RecvFromTop(psf_, kl, ku, jl, ju);
   } else {
     // adiabatic extrapolation
-    Variable var(Variable::Type::MoleFrac);
+    AirParcel var(AirParcel::Type::MoleFrac);
 
     for (int k = kl; k <= ku; ++k)
       for (int j = jl; j <= ju; ++j) {
@@ -182,8 +182,8 @@ void Decomposition::RestoreFromBuoyancy(AthenaArray<Real> &w,
   }
 
   // fix boundary condition
-  Variable var0(Variable::Type::MoleFrac);
-  Variable var1(Variable::Type::MoleFrac);
+  AirParcel var0(AirParcel::Type::MoleFrac);
+  AirParcel var1(AirParcel::Type::MoleFrac);
 
   // adiabatic extrapolation for a grid
   Real dz = pco->dx1f(is);

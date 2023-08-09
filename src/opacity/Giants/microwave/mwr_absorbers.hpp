@@ -28,7 +28,7 @@ class MwrAbsorberCIA : public Absorber {
  public:
   MwrAbsorberCIA(SpeciesNames const& species, ParameterMap params);
 
-  Real GetAttenuation(Real wave1, Real wave2, Variable const& var) const;
+  Real GetAttenuation(Real wave1, Real wave2, AirParcel const& var) const;
 
  private:
   Real xHe_, xCH4_, mix_;
@@ -59,7 +59,7 @@ class MwrAbsorberNH3 : public Absorber {
     return *this;
   }
 
-  Real GetAttenuation(Real wave1, Real wave2, Variable const& var) const;
+  Real GetAttenuation(Real wave1, Real wave2, AirParcel const& var) const;
 };
 
 class MwrAbsorberPH3 : public Absorber {
@@ -76,7 +76,7 @@ class MwrAbsorberPH3 : public Absorber {
     return *this;
   }
 
-  Real GetAttenuation(Real wave1, Real wave2, Variable const& var) const;
+  Real GetAttenuation(Real wave1, Real wave2, AirParcel const& var) const;
 };
 
 class MwrAbsorberH2O : public Absorber {
@@ -101,7 +101,7 @@ class MwrAbsorberH2O : public Absorber {
     return *this;
   }
 
-  Real GetAttenuation(Real wave1, Real wave2, Variable const& var) const;
+  Real GetAttenuation(Real wave1, Real wave2, AirParcel const& var) const;
 };
 
 class MwrAbsorberH2S : public Absorber {
@@ -109,7 +109,7 @@ class MwrAbsorberH2S : public Absorber {
   MwrAbsorberH2S(SpeciesNames const& species, ParameterMap params)
       : Absorber("H2S", species, params) {}
 
-  Real GetAttenuation(Real wave1, Real wave2, Variable const& var) const;
+  Real GetAttenuation(Real wave1, Real wave2, AirParcel const& var) const;
 };
 
 class MwrAbsorberElectron : public Absorber {
@@ -131,7 +131,7 @@ class MwrAbsorberElectron : public Absorber {
     return *this;
   }
 
-  Real GetAttenuation(Real wave1, Real wave2, Variable const& var) const;
+  Real GetAttenuation(Real wave1, Real wave2, AirParcel const& var) const;
 };
 
 }  // namespace GiantPlanets

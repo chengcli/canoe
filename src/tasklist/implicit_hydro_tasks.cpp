@@ -11,8 +11,8 @@
 #include <application/exceptions.hpp>
 
 // canoe
+#include <air_parcel.hpp>
 #include <impl.hpp>
-#include <variable.hpp>
 
 // snap
 #include <snap/implicit/implicit_solver.hpp>
@@ -304,7 +304,7 @@ TaskStatus ImplicitHydroTasks::UpdateAllConserved(MeshBlock *pmb, int stage) {
 
   auto pthermo = Thermodynamics::GetInstance();
 
-  std::vector<Variable> air_column;
+  std::vector<AirParcel> air_column;
 
   for (int k = ks; k <= ke; k++)
     for (int j = js; j <= je; j++) {

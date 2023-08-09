@@ -9,9 +9,9 @@
 #include <application/exceptions.hpp>
 
 // canoe
+#include <air_parcel.hpp>
 #include <configure.hpp>
 #include <index_map.hpp>
-#include <variable.hpp>
 
 // snap
 #include "thermodynamics.hpp"
@@ -21,7 +21,7 @@
 #include "vapors/methane_vapors.hpp"
 #include "vapors/water_vapors.hpp"
 
-Real NullSatVaporPres1(Variable const& qfrac, int i, int j) {
+Real NullSatVaporPres1(AirParcel const& qfrac, int i, int j) {
   Real g = 1.;
 
 #pragma omp simd reduction(+ : g)
@@ -42,7 +42,7 @@ void __attribute__((weak)) Thermodynamics::enrollVaporFunctionH2O() {
   for (int n = 0; n < cloud_index_set_[iH2O].size(); ++n) {
     int j = cloud_index_set_[iH2O][n];
     if (n == 0) {
-      svp_func1_[iH2O][n] = [](Variable const& qfrac, int, int) {
+      svp_func1_[iH2O][n] = [](AirParcel const& qfrac, int, int) {
         return sat_vapor_p_H2O_BriggsS(qfrac.w[IDN]);
       };
     } else {
@@ -63,7 +63,7 @@ void Thermodynamics::enrollVaporFunctionNH3() {
   for (int n = 0; n < cloud_index_set_[iNH3].size(); ++n) {
     int j = cloud_index_set_[iNH3][n];
     if (n == 0) {
-      svp_func1_[iNH3][n] = [](Variable const& qfrac, int, int) {
+      svp_func1_[iNH3][n] = [](AirParcel const& qfrac, int, int) {
         return sat_vapor_p_NH3_BriggsS(qfrac.w[IDN]);
       };
     } else {
@@ -84,7 +84,7 @@ void Thermodynamics::enrollVaporFunctionH2S() {
   for (int n = 0; n < cloud_index_set_[iH2S].size(); ++n) {
     int j = cloud_index_set_[iH2S][n];
     if (n == 0) {
-      svp_func1_[iH2S][n] = [](Variable const& qfrac, int, int) {
+      svp_func1_[iH2S][n] = [](AirParcel const& qfrac, int, int) {
         return sat_vapor_p_H2S_Antoine(qfrac.w[IDN]);
       };
     } else {
@@ -105,7 +105,7 @@ void Thermodynamics::enrollVaporFunctionCH4() {
   for (int n = 0; n < cloud_index_set_[iCH4].size(); ++n) {
     int j = cloud_index_set_[iCH4][n];
     if (n == 0) {
-      svp_func1_[iCH4][n] = [](Variable const& qfrac, int, int) {
+      svp_func1_[iCH4][n] = [](AirParcel const& qfrac, int, int) {
         return sat_vapor_p_CH4_Antoine(qfrac.w[IDN]);
       };
     } else {
@@ -130,7 +130,7 @@ void Thermodynamics::enrollVaporFunctionNH4SH() {
   int iNH4SH = pindex->GetCloudId("NH4SH(s)");
 
   auto ij = std::minmax(iNH3, iH2S);
-  svp_func2_[ij] = [](Variable const& qfrac, int, int, int) {
+  svp_func2_[ij] = [](AirParcel const& qfrac, int, int, int) {
     return sat_vapor_p_NH4SH_Lewis(qfrac.w[IDN]);
   };
 

@@ -12,9 +12,9 @@
 #include <athena/mesh/mesh.hpp>
 
 // canoe
+#include <air_parcel.hpp>
 #include <constants.hpp>
 #include <impl.hpp>
-#include <variable.hpp>
 
 // snap
 #include <snap/thermodynamics/thermodynamics.hpp>
@@ -24,7 +24,7 @@
 
 // xiz semigrey
 Real FreedmanSimple::GetAttenuation(Real wave1, Real wave2,
-                                    Variable const &var) const {
+                                    AirParcel const &var) const {
   auto pthermo = Thermodynamics::GetInstance();
   Real mu = Constants::Rgas / pthermo->GetRd();
   Real result;

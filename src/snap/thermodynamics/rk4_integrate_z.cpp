@@ -7,7 +7,7 @@
 #include "thermodynamics.hpp"
 
 // TODO(cli) : check
-void Thermodynamics::rk4IntegrateZ(Variable *qfrac, Real dz, Method method,
+void Thermodynamics::rk4IntegrateZ(AirParcel *qfrac, Real dz, Method method,
                                    Real grav, Real adTdz) const {
   Real step[] = {0.5, 0.5, 1.};
   Real temp = qfrac->w[IDN];

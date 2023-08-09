@@ -1,6 +1,6 @@
 // canoe
+#include <air_parcel.hpp>
 #include <configure.hpp>
-#include <variable.hpp>
 
 // application
 #include <application/exceptions.hpp>
@@ -23,7 +23,7 @@ MwrAbsorberH2O::MwrAbsorberH2O(SpeciesNames const& species, ParameterMap params)
 }
 
 Real MwrAbsorberH2O::GetAttenuation(Real wave1, Real wave2,
-                                    Variable const& var) const {
+                                    AirParcel const& var) const {
   Real P = var.w[IPR] / 1.E5;  // pa -> bar
   Real T = var.w[IDN];
   Real xdry = 1.;

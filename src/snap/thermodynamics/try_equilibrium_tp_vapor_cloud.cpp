@@ -2,7 +2,7 @@
 #include <algorithm>
 
 // canoe
-#include <variable.hpp>
+#include <air_parcel.hpp>
 
 // snap
 #include "thermodynamics.hpp"
@@ -13,7 +13,7 @@
 // Example phase equilibrium:
 // H2O -> H2O(l)
 //
-RealArrayX Thermodynamics::TryEquilibriumTP_VaporCloud(Variable const& qfrac,
+RealArrayX Thermodynamics::TryEquilibriumTP_VaporCloud(AirParcel const& qfrac,
                                                        int i, Real cv_hat,
                                                        bool misty) const {
   Real xv = qfrac.w[i], xg = 1.;

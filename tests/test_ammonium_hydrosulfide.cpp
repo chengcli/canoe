@@ -8,9 +8,9 @@
 #include <application/application.hpp>
 
 // canoe
+#include <air_parcel.hpp>
 #include <impl.hpp>
 #include <index_map.hpp>
-#include <variable.hpp>
 
 // snap
 #include <snap/thermodynamics/thermodynamics.hpp>
@@ -71,7 +71,7 @@ TEST_F(TestAmmoniumHydrosulfide, equilibrium) {
   int iNH3 = pindex->GetVaporId("NH3");
   int iH2S = pindex->GetVaporId("H2S");
 
-  Variable qfrac(Variable::Type::MoleFrac);
+  AirParcel qfrac(AirParcel::Type::MoleFrac);
   qfrac.SetZero();
 
   qfrac.w[IDN] = 160.;
@@ -95,7 +95,7 @@ TEST_F(TestAmmoniumHydrosulfide, equilibrium2) {
   int iNH3 = pindex->GetVaporId("NH3");
   int iH2S = pindex->GetVaporId("H2S");
 
-  Variable qfrac(Variable::Type::MoleFrac);
+  AirParcel qfrac(AirParcel::Type::MoleFrac);
   qfrac.SetZero();
 
   qfrac.w[IDN] = 250.;

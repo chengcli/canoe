@@ -1,10 +1,10 @@
 // canoe
-#include <variable.hpp>
+#include <air_parcel.hpp>
 
 // snap
 #include "thermodynamics.hpp"
 
-void Thermodynamics::EquilibrateTP(Variable* qfrac) const {
+void Thermodynamics::EquilibrateTP(AirParcel* qfrac) const {
   setTotalEquivalentVapor(qfrac);
 
   // vapor <=> cloud

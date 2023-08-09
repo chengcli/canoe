@@ -5,9 +5,9 @@
 #include <string>
 
 // canoe
+#include <air_parcel.hpp>
 #include <configure.hpp>
 #include <constants.hpp>
-#include <variable.hpp>
 
 // climath
 #include <climath/interpolation.h>
@@ -108,7 +108,7 @@ void N2N2CIA::LoadCoefficient(std::string fname, size_t bid) {
   fd2_len_[1] = nwave;
 }
 
-Real N2N2CIA::getAttenuation1(Real wave, Variable const& qfrac) const {
+Real N2N2CIA::getAttenuation1(Real wave, AirParcel const& qfrac) const {
   Real kk, temp = qfrac.w[IDN];
 
   Real coor[2] = {temp, wave};

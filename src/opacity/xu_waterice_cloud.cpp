@@ -7,7 +7,7 @@
 #include <stdexcept>
 
 // canoe
-#include <variable.hpp>
+#include <air_parcel.hpp>
 
 // climath
 #include <climath/interpolation.h>
@@ -57,7 +57,7 @@ void XuWaterIceCloud::LoadCoefficient(std::string fname, size_t bid) {
   len_[1] = nsize;  // number of size
 }
 
-Real XuWaterIceCloud::getAttenuation1(Real wave, Variable const& air) const {
+Real XuWaterIceCloud::getAttenuation1(Real wave, AirParcel const& air) const {
   Real T1, re, result;
   // calculate ice cloud size
   T1 = air.w[IDN] - 273.15;  // K to C
@@ -71,7 +71,7 @@ Real XuWaterIceCloud::getAttenuation1(Real wave, Variable const& air) const {
 }
 
 Real XuWaterIceCloud::getSingleScatteringAlbedo1(Real wave,
-                                                 Variable const& air) const {
+                                                 AirParcel const& air) const {
   Real T1, re, kk;
   // calculate ice cloud size
   T1 = air.w[IDN] - 273.15;  // K to C
@@ -91,7 +91,7 @@ Real XuWaterIceCloud::getSingleScatteringAlbedo1(Real wave,
 }
 
 void XuWaterIceCloud::getPhaseMomentum1(Real* pp, Real wave,
-                                        Variable const& air, int np) const {
+                                        AirParcel const& air, int np) const {
   Real T1, re, gg;
   // calculate ice cloud size
   T1 = air.w[IDN] - 273.15;  // K to C

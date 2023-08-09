@@ -11,8 +11,8 @@
 #include <athena/mesh/mesh.hpp>
 
 // canoe
+#include <air_parcel.hpp>
 #include <impl.hpp>
-#include <variable.hpp>
 
 // snap
 #include <snap/thermodynamics/thermodynamics.hpp>
@@ -27,7 +27,7 @@ Real c1 = 10.602, c2 = 2.882, c3 = 6.09e-15, c4 = 2.954, c5 = -2.526,
 Real c8, c9, c10, c11, c12;
 
 Real FreedmanMean::GetAttenuation(Real wave1, Real wave2,
-                                  Variable const& var) const {
+                                  AirParcel const& var) const {
   Real p = var.w[IPR];
   Real T = var.w[IDN];
   if (T < 800.) {

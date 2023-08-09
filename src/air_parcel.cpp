@@ -2,19 +2,19 @@
 #include <application/exceptions.hpp>
 
 // canoe
-#include "variable.hpp"
+#include "air_parcel.hpp"
 
 // snap
-#include <snap/thermodynamics/thermodynamics.hpp>
+#include "snap/thermodynamics/thermodynamics.hpp"
 
-std::ostream& operator<<(std::ostream& os, Variable::Type const& type) {
-  if (type == Variable::Type::MassFrac) {
+std::ostream& operator<<(std::ostream& os, AirParcel::Type const& type) {
+  if (type == AirParcel::Type::MassFrac) {
     os << "Mass Fraction";
-  } else if (type == Variable::Type::MassConc) {
+  } else if (type == AirParcel::Type::MassConc) {
     os << "Mass Concentration";
-  } else if (type == Variable::Type::MoleFrac) {
+  } else if (type == AirParcel::Type::MoleFrac) {
     os << "Mole Fraction";
-  } else if (type == Variable::Type::MoleConc) {
+  } else if (type == AirParcel::Type::MoleConc) {
     os << "Mole Concentration";
   } else {
     throw RuntimeError("Variable", "Unknown variable type");
@@ -23,13 +23,13 @@ std::ostream& operator<<(std::ostream& os, Variable::Type const& type) {
   return os;
 }
 
-std::ostream& operator<<(std::ostream& os, Variable const& var) {
+std::ostream& operator<<(std::ostream& os, AirParcel const& var) {
   os << var.mytype_ << ": ";
   for (auto& v : var.data_) os << v << ", ";
   return os;
 }
 
-Variable& Variable::ConvertTo(Variable::Type type) {
+AirParcel& AirParcel::ConvertTo(AirParcel::Type type) {
   if (type == mytype_) {
     return *this;
   }
@@ -49,7 +49,7 @@ Variable& Variable::ConvertTo(Variable::Type type) {
   return *this;
 }
 
-Variable& Variable::ToMassFraction() {
+AirParcel& AirParcel::ToMassFraction() {
   if (mytype_ == Type::MassFrac) {
     return *this;
   }
@@ -67,7 +67,7 @@ Variable& Variable::ToMassFraction() {
   return *this;
 }
 
-Variable& Variable::ToMassConcentration() {
+AirParcel& AirParcel::ToMassConcentration() {
   if (mytype_ == Type::MassConc) {
     return *this;
   }
@@ -85,7 +85,7 @@ Variable& Variable::ToMassConcentration() {
   return *this;
 }
 
-Variable& Variable::ToMoleFraction() {
+AirParcel& AirParcel::ToMoleFraction() {
   if (mytype_ == Type::MoleFrac) {
     return *this;
   }
@@ -103,7 +103,7 @@ Variable& Variable::ToMoleFraction() {
   return *this;
 }
 
-Variable& Variable::ToMoleConcentration() {
+AirParcel& AirParcel::ToMoleConcentration() {
   if (mytype_ == Type::MoleConc) {
     return *this;
   }
@@ -121,7 +121,7 @@ Variable& Variable::ToMoleConcentration() {
   return *this;
 }
 
-void Variable::massFractionToMoleFraction() {
+void AirParcel::massFractionToMoleFraction() {
   auto pthermo = Thermodynamics::GetInstance();
 
   // set molar mixing ratio
@@ -154,7 +154,7 @@ void Variable::massFractionToMoleFraction() {
   SetType(Type::MoleFrac);
 }
 
-void Variable::moleFractionToMassFraction() {
+void AirParcel::moleFractionToMassFraction() {
   auto pthermo = Thermodynamics::GetInstance();
   Real g = 1.;
 
@@ -187,7 +187,7 @@ void Variable::moleFractionToMassFraction() {
   SetType(Type::MassFrac);
 }
 
-void Variable::massConcentrationToMoleFraction() {
+void AirParcel::massConcentrationToMoleFraction() {
   auto pthermo = Thermodynamics::GetInstance();
 
   Real rho = 0., sum = 0., cvt = 0., rhoR = 0.;
@@ -233,7 +233,7 @@ void Variable::massConcentrationToMoleFraction() {
   SetType(Type::MoleFrac);
 }
 
-void Variable::moleFractionToMassConcentration() {
+void AirParcel::moleFractionToMassConcentration() {
   auto pthermo = Thermodynamics::GetInstance();
 
   Real tem = w[IDN];
@@ -279,7 +279,7 @@ void Variable::moleFractionToMassConcentration() {
   SetType(Type::MassConc);
 }
 
-void Variable::massFractionToMassConcentration() {
+void AirParcel::massFractionToMassConcentration() {
   auto pthermo = Thermodynamics::GetInstance();
   Real igm1 = 1.0 / (pthermo->GetGammadRef() - 1.0);
 
@@ -324,7 +324,7 @@ void Variable::massFractionToMassConcentration() {
   SetType(Type::MassConc);
 }
 
-void Variable::massConcentrationToMassFraction() {
+void AirParcel::massConcentrationToMassFraction() {
   auto pthermo = Thermodynamics::GetInstance();
   Real gm1 = pthermo->GetGammadRef() - 1.;
 
@@ -372,7 +372,7 @@ void Variable::massConcentrationToMassFraction() {
   SetType(Type::MassFrac);
 }
 
-void Variable::moleFractionToMoleConcentration() {
+void AirParcel::moleFractionToMoleConcentration() {
   auto pthermo = Thermodynamics::GetInstance();
   Real tem = w[IDN];
   Real pres = w[IPR];
@@ -421,7 +421,7 @@ void Variable::moleFractionToMoleConcentration() {
   SetType(Type::MoleConc);
 }
 
-void Variable::moleConcentrationToMoleFraction() {
+void AirParcel::moleConcentrationToMoleFraction() {
   auto pthermo = Thermodynamics::GetInstance();
   Real tmols = w[IDN], fsig = w[IDN], xgas = 1., LE = 0.;
 
@@ -469,18 +469,18 @@ void Variable::moleConcentrationToMoleFraction() {
   SetType(Type::MoleFrac);
 }
 
-void Variable::massFractionToMoleConcentration() {
+void AirParcel::massFractionToMoleConcentration() {
   throw NotImplementedError("Variable::massFractionToMoleConcentration");
 }
 
-void Variable::moleConcentrationToMassFraction() {
+void AirParcel::moleConcentrationToMassFraction() {
   throw NotImplementedError("Variable::moleConcentrationToMassFraction");
 }
 
-void Variable::massConcentrationToMoleConcentration() {
+void AirParcel::massConcentrationToMoleConcentration() {
   throw NotImplementedError("Variable::massConcentrationToMoleConcentration");
 }
 
-void Variable::moleConcentrationToMassConcentration() {
+void AirParcel::moleConcentrationToMassConcentration() {
   throw NotImplementedError("Variable::moleConcentrationToMassConcentration");
 }
