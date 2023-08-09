@@ -13,9 +13,9 @@
 #include <athena/scalars/scalars.hpp>
 
 // canoe
+#include <air_parcel.hpp>
 #include <impl.hpp>
 #include <index_map.hpp>
-#include <variable.hpp>
 
 class TestImpl : public testing::Test {
  protected:

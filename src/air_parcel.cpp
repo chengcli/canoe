@@ -2,10 +2,10 @@
 #include <application/exceptions.hpp>
 
 // canoe
-#include "variable.hpp"
+#include "air_parcel.hpp"
 
 // snap
-#include <snap/thermodynamics/thermodynamics.hpp>
+#include "snap/thermodynamics/thermodynamics.hpp"
 
 std::ostream& operator<<(std::ostream& os, AirParcel::Type const& type) {
   if (type == AirParcel::Type::MassFrac) {

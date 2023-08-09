@@ -1,5 +1,5 @@
-#ifndef SRC_VARIABLE_HPP_
-#define SRC_VARIABLE_HPP_
+#ifndef SRC_AIR_PARCEL_HPP_
+#define SRC_AIR_PARCEL_HPP_
 
 // C/C++
 #include <array>
@@ -113,4 +113,4 @@ class AirParcel {
   Type mytype_;
 };
 
-#endif  // SRC_VARIABLE_HPP_
+#endif  // SRC_AIR_PARCEL_HPP_

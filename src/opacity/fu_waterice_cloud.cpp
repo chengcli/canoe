@@ -6,7 +6,7 @@
 #include <stdexcept>
 
 // canoe
-#include <variable.hpp>
+#include <air_parcel.hpp>
 
 // climath
 #include <climath/interpolation.h>

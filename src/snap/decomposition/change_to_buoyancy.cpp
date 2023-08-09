@@ -8,8 +8,8 @@
 #include <athena/stride_iterator.hpp>
 
 // canoe
+#include <air_parcel.hpp>
 #include <impl.hpp>
-#include <variable.hpp>
 
 // utils
 #include <utils/ndarrays.hpp>

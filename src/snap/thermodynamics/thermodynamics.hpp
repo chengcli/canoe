@@ -19,9 +19,9 @@
 #include <athena/mesh/mesh.hpp>
 
 // canoe
+#include <air_parcel.hpp>
 #include <configure.hpp>
 #include <constants.hpp>
-#include <variable.hpp>
 
 class MeshBlock;
 class ParameterInput;

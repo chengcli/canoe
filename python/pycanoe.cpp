@@ -8,10 +8,10 @@
 #include <athena/parameter_input.hpp>
 
 // canoe
+#include <air_parcel.hpp>
 #include <configure.hpp>
 #include <constants.hpp>
 #include <index_map.hpp>
-#include <variable.hpp>
 
 // harp
 #include <harp/absorber.hpp>

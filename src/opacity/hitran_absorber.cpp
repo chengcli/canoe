@@ -7,9 +7,9 @@
 #include <string>
 
 // canoe
+#include <air_parcel.hpp>
 #include <configure.hpp>
 #include <constants.hpp>
-#include <variable.hpp>
 
 // climath
 #include <climath/interpolation.h>

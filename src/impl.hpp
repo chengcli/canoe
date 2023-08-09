@@ -11,7 +11,7 @@
 #include <athena/mesh/mesh.hpp>
 
 // canoe
-#include "variable.hpp"
+#include "air_parcel.hpp"
 
 // snap
 #include "snap/decomposition/decomposition.hpp"

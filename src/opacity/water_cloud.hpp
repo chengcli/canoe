@@ -6,7 +6,7 @@
 #include <vector>
 
 // canoe
-#include <variable.hpp>
+#include <air_parcel.hpp>
 
 // harp
 #include <harp/absorber.hpp>

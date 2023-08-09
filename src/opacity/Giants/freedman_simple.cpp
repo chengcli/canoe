@@ -12,9 +12,9 @@
 #include <athena/mesh/mesh.hpp>
 
 // canoe
+#include <air_parcel.hpp>
 #include <constants.hpp>
 #include <impl.hpp>
-#include <variable.hpp>
 
 // snap
 #include <snap/thermodynamics/thermodynamics.hpp>
