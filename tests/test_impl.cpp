@@ -94,7 +94,7 @@ class TestImpl : public testing::Test {
 };
 
 TEST_F(TestImpl, GatherPrimitive) {
-  Variable var(Variable::Type::MoleFrac);
+  AirParcel var(AirParcel::Type::MoleFrac);
   auto pmb = pmesh->my_blocks(0);
   auto pimpl = pmb->pimpl;
   auto phydro = pmb->phydro;
@@ -124,7 +124,7 @@ TEST_F(TestImpl, GatherPrimitive) {
 }
 
 TEST_F(TestImpl, GatherConserved) {
-  Variable var(Variable::Type::MassConc);
+  AirParcel var(AirParcel::Type::MassConc);
   auto pmb = pmesh->my_blocks(0);
   auto pimpl = pmb->pimpl;
   auto phydro = pmb->phydro;

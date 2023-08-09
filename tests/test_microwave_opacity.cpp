@@ -68,7 +68,7 @@ TEST_F(TestMicrowaveOpacity, Absorbers) {
   EXPECT_EQ(prad->GetNumBands(), 3);
   EXPECT_EQ(prad->GetBandByName("radio")->GetNumAbsorbers(), 3);
 
-  Variable var;
+  AirParcel var;
   var.w[IDN] = 300.;
   var.w[IPR] = 1.E5;
   var.w[1] = 1.E-2;

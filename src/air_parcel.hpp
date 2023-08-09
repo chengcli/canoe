@@ -11,7 +11,7 @@
 // canoe
 #include <configure.hpp>
 
-//! \class Variable
+//! \class AirParcel
 //  \brief a collection of all physical data in a computational cell
 class AirParcel {
  public:

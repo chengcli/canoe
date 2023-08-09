@@ -71,7 +71,7 @@ TEST_F(TestAmmoniumHydrosulfide, equilibrium) {
   int iNH3 = pindex->GetVaporId("NH3");
   int iH2S = pindex->GetVaporId("H2S");
 
-  Variable qfrac(Variable::Type::MoleFrac);
+  AirParcel qfrac(AirParcel::Type::MoleFrac);
   qfrac.SetZero();
 
   qfrac.w[IDN] = 160.;
@@ -95,7 +95,7 @@ TEST_F(TestAmmoniumHydrosulfide, equilibrium2) {
   int iNH3 = pindex->GetVaporId("NH3");
   int iH2S = pindex->GetVaporId("H2S");
 
-  Variable qfrac(Variable::Type::MoleFrac);
+  AirParcel qfrac(AirParcel::Type::MoleFrac);
   qfrac.SetZero();
 
   qfrac.w[IDN] = 250.;
