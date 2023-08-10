@@ -10,7 +10,6 @@ endmacro()
 set_if_empty(NUMBER_GHOST_CELLS 3)
 
 # canoe configure
-set(PLANET "Earth")
 set(EOS "shallow_yz")
 set(NETCDF ON)
 set(MPI ON)

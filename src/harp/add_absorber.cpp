@@ -4,6 +4,9 @@
 // athena++
 #include <athena/parameter_input.hpp>
 
+// application
+#include <application/exceptions.hpp>
+
 // harp
 #include "radiation_band.hpp"
 

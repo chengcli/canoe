@@ -130,7 +130,7 @@ Thermodynamics const* Thermodynamics::InitFromAthenaInput(ParameterInput* pin) {
   }
 
   // enroll vapor functions
-  mythermo->enrollVaporFunctions();
+  mythermo_->enrollVaporFunctions();
 
   // alias
   auto& Rd = mythermo_->Rd_;
