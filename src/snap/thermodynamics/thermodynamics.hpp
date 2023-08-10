@@ -341,15 +341,7 @@ class Thermodynamics {
   void rk4IntegrateZ(AirParcel *qfrac, Real dlnp, Method method, Real grav,
                      Real adlnTdlnP) const;
 
-  void enrollVaporFunctionsEarth();
-  void enrollVaporFunctionsMars();
-  void enrollVaporFunctionsVenus();
-  void enrollVaporFunctionsTitan();
-  void enrollVaporFunctionsGasGiants();
-  void enrollVaporFunctionsIceGiants();
-  void enrollVaporFunctionsHotJupiter();
-  void enrollVaporFunctionsLavaWorld();
-
+  // custom functions for vapor (to be overridden by user mods)
   void enrollVaporFunctionH2O();
   void enrollVaporFunctionNH3();
   void enrollVaporFunctionH2S();

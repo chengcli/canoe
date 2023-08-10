@@ -311,17 +311,3 @@ void RadiationBand::WriteBinRadiance(OutputParameters const *pout) const {
 
   fclose(pfile);
 }
-
-void RadiationBand::AddAbsorber(ParameterInput *pin, YAML::Node &node) {
-  if (strcmp(PLANET, "Jupiter") == 0 || strcmp(PLANET, "Saturn") == 0) {
-    addAbsorberGiants(pin, node);
-  } else if (strcmp(PLANET, "Uranus") == 0 || strcmp(PLANET, "Neptune") == 0) {
-    addAbsorberGiants(pin, node);
-  } else if (strcmp(PLANET, "Earth") == 0) {
-    addAbsorberEarth(pin, node);
-  } else if (strcmp(PLANET, "Mars") == 0) {
-    addAbsorberMars(pin, node);
-  } else if (strcmp(PLANET, "Venus") == 0) {
-    addAbsorberVenus(pin, node);
-  }
-}

@@ -93,17 +93,10 @@ class RadiationBand {
   void setWavelengthRange(YAML::Node &my);
   void setWavelengthGrid(YAML::Node &my);
 
-  void addAbsorberGiants(ParameterInput *pin, YAML::Node &node);
-  void addAbsorberGiantsRadio(YAML::Node &node);
-  void addAbsorberGiantsInfrared(YAML::Node &node);
-  void addAbsorberGiantsVisible(YAML::Node &node);
-  void addAbsorberGiantsUltraviolet(YAML::Node &node);
-
-  void addAbsorberEarth(ParameterInput *pin, YAML::Node &node);
-  void addAbsorberVenus(ParameterInput *pin, YAML::Node &node);
-
-  void addAbsorberMars(ParameterInput *pin, YAML::Node &node);
-  void addAbsorberMarsInfrared(YAML::Node &node);
+  void addAbsorberRadio(YAML::Node &node);
+  void addAbsorberInfrared(YAML::Node &node);
+  void addAbsorberVisible(YAML::Node &node);
+  void addAbsorberUltraviolet(YAML::Node &node);
 
   int test(uint64_t flag) const { return bflags_ & flag; }
   void set(uint64_t flag) { bflags_ |= flag; }
