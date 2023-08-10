@@ -1,6 +1,9 @@
 // snap
 #include "thermodynamics.hpp"
 
+// all vapor functions
+void __attribute__((weak)) Thermodynamics::enrollVaporFunctions() {}
+
 // water svp
 void __attribute__((weak)) Thermodynamics::enrollVaporFunctionH2O() {}
 

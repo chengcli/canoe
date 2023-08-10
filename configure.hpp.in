@@ -9,8 +9,6 @@ enum {
   NSTATIC = @NSTATIC@
 };
 
-#define PLANET  "@PLANET@"
-
 // Affine option (AFFINE or NOT_AFFINE)
 #define @AFFINE_OPTION@
 

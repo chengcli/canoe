@@ -130,17 +130,7 @@ Thermodynamics const* Thermodynamics::InitFromAthenaInput(ParameterInput* pin) {
   }
 
   // enroll vapor functions
-  if (strcmp(PLANET, "Earth") == 0) {
-    mythermo_->enrollVaporFunctionsEarth();
-  } else if (strcmp(PLANET, "Mars") == 0) {
-    mythermo_->enrollVaporFunctionsMars();
-  } else if (strcmp(PLANET, "Venus") == 0) {
-    mythermo_->enrollVaporFunctionsVenus();
-  } else if (strcmp(PLANET, "Jupiter") == 0 || strcmp(PLANET, "Saturn") == 0) {
-    mythermo_->enrollVaporFunctionsGasGiants();
-  } else if (strcmp(PLANET, "Uranus") == 0 || strcmp(PLANET, "Neptune") == 0) {
-    mythermo_->enrollVaporFunctionsIceGiants();
-  }
+  mythermo->enrollVaporFunctions();
 
   // alias
   auto& Rd = mythermo_->Rd_;

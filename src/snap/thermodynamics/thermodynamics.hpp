@@ -342,6 +342,7 @@ class Thermodynamics {
                      Real adlnTdlnP) const;
 
   // custom functions for vapor (to be overridden by user mods)
+  void enrollVaporFunctions();
   void enrollVaporFunctionH2O();
   void enrollVaporFunctionNH3();
   void enrollVaporFunctionH2S();
