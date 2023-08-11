@@ -5,7 +5,7 @@ string(TOUPPER ${CMAKE_BUILD_TYPE} buildu)
 
 set(namel giants_re)
 
-add_executable(${namel}.${buildl} ${namel}.cpp
+add_executable(${namel}.${buildl} ${namel}_pgen.cpp ${namel}_mods.cpp
   ${CMAKE_BINARY_DIR}/main_${TASK}.cpp)
 
 set_target_properties(

@@ -17,9 +17,6 @@
 #include <harp/radiation.hpp>
 #include <harp/radiation_band.hpp>
 
-// opacity
-#include <opacity/Giants/microwave/mwr_absorbers.hpp>
-
 class TestMicrowaveOpacity : public testing::Test {
  protected:
   ParameterInput *pinput;
