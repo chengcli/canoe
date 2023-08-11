@@ -25,7 +25,7 @@ jobs:
         run: git lfs install
 
       - name: fetch the needed lfs file
-        run: git lfs pull examples/examples/2019-Li-snap/bryan_output.nc
+        run: git lfs pull -I examples/2019-Li-snap/straka_output.nc
 
       - name: create build directory
         # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
@@ -57,7 +57,7 @@ jobs:
           lfs: false
 
       - name: fetch the needed lfs file
-        run: git lfs pull examples/examples/2019-Li-snap/bryan_output.nc
+        run: git lfs pull -I examples/2019-Li-snap/robert_output.nc
 
       - name: create build directory
         # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
@@ -89,7 +89,7 @@ jobs:
           lfs: false
 
       - name: fetch the needed lfs file
-        run: git lfs pull examples/examples/2019-Li-snap/bryan_output.nc
+        run: git lfs pull -I examples/2019-Li-snap/robert3d_output.nc
 
       - name: create build directory
         # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
@@ -121,7 +121,7 @@ jobs:
           lfs: false
 
       - name: fetch the needed lfs file
-        run: git lfs pull examples/examples/2019-Li-snap/bryan_output.nc
+        run: git lfs pull -I examples/2019-Li-snap/bryan_output.nc
 
       - name: create build directory
         # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
@@ -156,7 +156,7 @@ jobs:
         run: git lfs install
 
       - name: fetch the needed lfs file
-        run: git lfs pull examples/2020-Li-polar-vortex/swxy_output.nc
+        run: git lfs pull -I examples/2020-Li-polar-vortex/swxy_output.nc
 
       - name: set up libraries
         run: brew bundle
