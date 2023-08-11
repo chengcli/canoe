@@ -78,34 +78,9 @@ void MeshBlock::UserWorkBeforeOutput(ParameterInput *pin) {
       }
 }
 
-void CondensateGravity(MeshBlock *pmb, Real const time, Real const dt,
-                       AthenaArray<Real> const &w, AthenaArray<Real> const &r,
-                       AthenaArray<Real> const &bcc, AthenaArray<Real> &u,
-                       AthenaArray<Real> &s) {
-  // acceleration in 1-direction
-  for (int k = pmb->ks; k <= pmb->ke; ++k)
-    for (int j = pmb->js; j <= pmb->je; ++j) {
-      for (int i = pmb->is; i <= pmb->ie; ++i) {
-        Real qd = 1.;
-#pragma omp simd reduction(+ : qd)
-        for (int n = 1; n <= NVAPOR; ++n) qd += -w(n, k, j, i);
-
-        Real rho_dry = w(IDN, k, j, i) * qd;
-        Real rho_cloud = 0.;
-#pragma omp simd
-        for (int n = 0; n < NCLOUD; ++n) rho_cloud += rho_dry * r(n, k, j, i);
-
-        Real src = -dt * rho_cloud * grav;
-        u(IM1, k, j, i) += src;
-        if (NON_BAROTROPIC_EOS) u(IEN, k, j, i) += src * w(IVX, k, j, i);
-      }
-    }
-}
-
 void Mesh::InitUserMeshData(ParameterInput *pin) {
   grav = -pin->GetReal("hydro", "grav_acc1");
   p0 = pin->GetReal("problem", "p0");
-  EnrollUserExplicitSourceFunction(CondensateGravity);
 }
 
 void MeshBlock::ProblemGenerator(ParameterInput *pin) {

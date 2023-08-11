@@ -17,6 +17,8 @@ double sat_vapor_p_H2O(double T) {
   return SatVaporPresIdeal(T / tr, pr, betal, gammal);
 }
 
+void Thermodynamics::enrollVaporFunctions() { enrollVaporFunctionH2O(); }
+
 // water svp
 void Thermodynamics::enrollVaporFunctionH2O() {
   Application::Logger app("snap");
