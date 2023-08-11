@@ -10,7 +10,9 @@ configure_file(globals.cpp.in globals.cpp @ONLY)
 macro(add_test_case test)
   get_filename_component(name ${test} NAME_WE)
 
-  add_executable(${name}.${buildl} ${name}.cpp globals.cpp)
+  add_executable(${name}.${buildl} ${name}.cpp
+	  globals.cpp giants_add_absorber.cpp giants_enroll_vapor_functions.cpp
+	  )
 
   set_target_properties(
     ${name}.${buildl}

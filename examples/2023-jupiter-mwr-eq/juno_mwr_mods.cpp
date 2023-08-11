@@ -17,11 +17,11 @@
 #include <index_map.hpp>
 
 // thermodynamics
-#include <thermodynamics/vapors/ammonia_vapors.hpp>
-#include <thermodynamics/vapors/ammonium_hydrosulfide_vapors.hpp>
-#include <thermodynamics/vapors/hydrogen_sulfide_vapors.hpp>
-#include <thermodynamics/vapors/methane_vapors.hpp>
-#include <thermodynamics/vapors/water_vapors.hpp>
+#include <snap/thermodynamics/thermodynamcis.hpp>
+#include <snap/thermodynamics/vapors/water_vapors.hpp>
+#include <snap/thermodynamics/vapors/ammonia_vapors.hpp>
+#include <snap/thermodynamics/vapors/ammonium_hydrosulfide_vapors.hpp>
+#include <snap/thermodynamics/vapors/hydrogen_sulfide_vapors.hpp>
 
 // opacity
 #include <opacity/Giants/hydrogen_cia.hpp>
@@ -118,6 +118,30 @@ void Thermodynamics::enrollVaporFunctionH2S() {
       svp_func1_[iH2S][n] = NullSatVaporPres1;
     }
   }
+}
+
+// ammonium hydrosulfide svp
+void Thermodynamics::enrollVaporFunctionNH4SH() {
+  auto pindex = IndexMap::GetInstance();
+  if (!pindex->HasVapor("NH3") || !pindex->HasVapor("H2S") ||
+      !pindex->HasCloud("NH4SH(s)"))
+    return;
+
+  Application::Logger app("snap");
+  app->Log("Enrolling NH4SH vapor pressure");
+
+  // ammonium hydrosulfide svp
+  int iNH3 = pindex->GetVaporId("NH3");
+  int iH2S = pindex->GetVaporId("H2S");
+  int iNH4SH = pindex->GetCloudId("NH4SH(s)");
+
+  auto ij = std::minmax(iNH3, iH2S);
+  svp_func2_[ij] = [](AirParcel const& qfrac, int, int, int) {
+    return sat_vapor_p_NH4SH_Lewis(qfrac.w[IDN]);
+  };
+
+  cloud_reaction_map_[ij] = std::make_pair<ReactionIndx, ReactionStoi>(
+      {iNH3, iH2S, iNH4SH}, {1, 1, 1});
 }
 
 // hydrogen heat capacity
