@@ -56,7 +56,7 @@ class TestAirParcel : public testing::Test {
   }
 };
 
-TEST(TestAirParcel, copy_constructer) {
+TEST(AirParcel, copy_constructer) {
   AirParcel a(AirParcel::Type::MoleFrac);
 
   std::fill(a.w, a.w + AirParcel::Size, 1.0);
@@ -73,7 +73,7 @@ TEST(TestAirParcel, copy_constructer) {
   EXPECT_DOUBLE_EQ(b.w[2], 2.0);
 }
 
-TEST(TestAirParcel, assignment_operator) {
+TEST(AirParcel, assignment_operator) {
   AirParcel a(AirParcel::Type::MoleFrac);
 
   std::fill(a.w, a.w + AirParcel::Size, 1.0);

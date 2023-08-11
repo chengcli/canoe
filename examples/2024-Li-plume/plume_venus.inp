@@ -22,18 +22,18 @@ dt          = 100.          # time increment
 <time>
 cfl_number  = 0.9           # The Courant, Friedrichs, & Lewy (CFL) Number
 nlim        = -1            # cycle limit
-tlim        = 1000          # time limit
+tlim        = 10000          # time limit
 xorder      = 5             # horizontal reconstruction order
 integrator  = rk3           # integration method
 
 <mesh>
-nx1         = 800.          # Number of zones in X1-direction
+nx1         = 400.          # Number of zones in X1-direction
 x1min       = 0.            # minimum value of X1
 x1max       = 40.E3         # maximum value of X1
 ix1_bc      = reflecting    # inner-X1 boundary flag
 ox1_bc      = reflecting    # outer-X1 boundary flag
 
-nx2         = 400           # Number of zones in X2-direction
+nx2         = 200           # Number of zones in X2-direction
 x2min       = 0.            # minimum value of X2
 x2max       = 20.E3         # maximum value of X2
 ix2_bc      = reflecting    # inner-X2 boundary flag
@@ -46,8 +46,8 @@ ix3_bc      = periodic      # inner-X3 boundary flag
 ox3_bc      = periodic      # outer-X3 boundary flag
 
 <meshblock>
-nx1         = 800
-nx2         = 50
+nx1         = 400
+nx2         = 25
 nx3         = 1
 
 <hydro>

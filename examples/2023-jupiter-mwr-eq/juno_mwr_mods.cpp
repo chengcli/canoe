@@ -17,11 +17,12 @@
 #include <index_map.hpp>
 
 // thermodynamics
-#include <snap/thermodynamics/thermodynamcis.hpp>
-#include <snap/thermodynamics/vapors/water_vapors.hpp>
+#include <snap/thermodynamics/molecules.hpp>
+#include <snap/thermodynamics/thermodynamics.hpp>
 #include <snap/thermodynamics/vapors/ammonia_vapors.hpp>
 #include <snap/thermodynamics/vapors/ammonium_hydrosulfide_vapors.hpp>
 #include <snap/thermodynamics/vapors/hydrogen_sulfide_vapors.hpp>
+#include <snap/thermodynamics/vapors/water_vapors.hpp>
 
 // opacity
 #include <opacity/Giants/hydrogen_cia.hpp>
@@ -37,15 +38,7 @@
 
 namespace gp = GiantPlanets;
 
-// thermodynamics
-Real NullSatVaporPres1(AirParcel const& qfrac, int i, int j) {
-  Real g = 1.;
-
-#pragma omp simd reduction(+ : g)
-  for (int n = 0; n < NCLOUD; ++n) g += -qfrac.c[n];
-
-  return qfrac.w[i] / g * qfrac.w[IPR];
-}
+extern Real xHe, xCH4;
 
 void Thermodynamics::enrollVaporFunctions() {
   Application::Logger app("snap");

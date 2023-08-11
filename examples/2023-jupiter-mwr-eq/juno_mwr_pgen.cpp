@@ -31,7 +31,6 @@
 #include <climath/interpolation.h>
 
 // snap
-#include <snap/thermodynamics/molecules.hpp>
 #include <snap/thermodynamics/thermodynamics.hpp>
 #include <snap/thermodynamics/vapors/sodium_vapors.hpp>
 

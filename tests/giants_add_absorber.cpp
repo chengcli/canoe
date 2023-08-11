@@ -3,6 +3,7 @@
 
 // application
 #include <application/application.hpp>
+#include <application/exceptions.hpp>
 
 // harp
 #include <harp/radiation_band.hpp>
@@ -13,12 +14,13 @@
 #include <utils/parameter_map.hpp>
 
 // opacity
-#include <opacity/Giants/microwave/mwr_absorbers.hpp>
 #include <opacity/Giants/freedman.hpp>
 #include <opacity/Giants/hydrogen_cia.hpp>
+#include <opacity/Giants/microwave/mwr_absorbers.hpp>
 #include <opacity/correlatedk_absorber.hpp>
 #include <opacity/hitran_absorber.hpp>
 
+namespace gp = GiantPlanets;
 
 void RadiationBand::addAbsorberInfrared(YAML::Node &node) {
   auto name = node["name"].as<std::string>();
@@ -95,7 +97,7 @@ void RadiationBand::addAbsorberInfrared(YAML::Node &node) {
 }
 
 // radiation
-void RadiationBand::addAbsorberRadio(YAML::Node& node) {
+void RadiationBand::addAbsorberRadio(YAML::Node &node) {
   auto name = node["name"].as<std::string>();
   auto params = ToParameterMap(node["parameters"]);
 

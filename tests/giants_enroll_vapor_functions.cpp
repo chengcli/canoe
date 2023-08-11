@@ -1,15 +1,18 @@
+// application
+#include <application/application.hpp>
+
 // canoe
 #include <air_parcel.hpp>
 #include <configure.hpp>
 #include <index_map.hpp>
 
 // thermodynamics
-#include <snap/thermodynamics/thermodynamcis.hpp>
-#include <thermodynamics/vapors/ammonia_vapors.hpp>
-#include <thermodynamics/vapors/ammonium_hydrosulfide_vapors.hpp>
-#include <thermodynamics/vapors/hydrogen_sulfide_vapors.hpp>
-#include <thermodynamics/vapors/methane_vapors.hpp>
-#include <thermodynamics/vapors/water_vapors.hpp>
+#include <snap/thermodynamics/thermodynamics.hpp>
+#include <snap/thermodynamics/vapors/ammonia_vapors.hpp>
+#include <snap/thermodynamics/vapors/ammonium_hydrosulfide_vapors.hpp>
+#include <snap/thermodynamics/vapors/hydrogen_sulfide_vapors.hpp>
+#include <snap/thermodynamics/vapors/methane_vapors.hpp>
+#include <snap/thermodynamics/vapors/water_vapors.hpp>
 
 void Thermodynamics::enrollVaporFunctions() {
   Application::Logger app("snap");

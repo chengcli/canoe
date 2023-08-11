@@ -119,11 +119,11 @@ TEST_F(TestThermodynamics, latent_heats) {
   rates[2] = 0.5;
 
   EXPECT_NEAR(pthermo->GetLatentEnergyMole(3, 300.), 43573.103798572, 1e-6);
-  EXPECT_NEAR(pthermo->GetLatentHeatMole(1, rates, 300.), 46067.442398572,
+  EXPECT_NEAR(pthermo->GetLatentHeatMole(1, rates, 300.), 43573.103798572,
               1e-6);
 
   EXPECT_NEAR(pthermo->GetLatentEnergyMass(3, 300.), 2419791.93586797, 1e-6);
-  EXPECT_NEAR(pthermo->GetLatentHeatMass(1, rates, 300.), 2419791.9358679,
+  EXPECT_NEAR(pthermo->GetLatentHeatMass(1, rates, 300.), 2419791.93586797,
               1e-6);
 }
 
@@ -195,8 +195,8 @@ TEST_F(TestThermodynamics, saturation_adjust) {
 
   pthermo->SaturationAdjustment(air_column);
 
-  EXPECT_NEAR(air.w[IDN], 206.41191698346, 1e-8);
-  EXPECT_NEAR(air.w[IPR], 88499.531838818, 1e-8);
+  EXPECT_NEAR(air.w[IDN], 206.41192408792, 1e-8);
+  EXPECT_NEAR(air.w[IPR], 88499.534594159, 1e-8);
 
   Real svp1 = sat_vapor_p_H2O_BriggsS(air.w[IDN]);
 

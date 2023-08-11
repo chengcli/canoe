@@ -23,8 +23,8 @@
 #include <utils/parameter_map.hpp>
 
 // harp
-#include "absorber.hpp"
-#include "radiation_band.hpp"
+#include <harp/absorber.hpp>
+#include <harp/radiation_band.hpp>
 
 void RadiationBand::addAbsorberInfrared(YAML::Node &node) {
   auto name = node["name"].as<std::string>();
