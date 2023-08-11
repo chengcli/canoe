@@ -115,6 +115,7 @@ jobs:
   bryan-2d:
     if: github.event.pull_request.draft == false
     runs-on: [self-hosted, macOS, ARM64]
+    needs: [straka-2d]
     steps:
       - uses: actions/checkout@v3
         with:
