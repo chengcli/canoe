@@ -18,6 +18,14 @@ jobs:
     runs-on: [self-hosted, macOS]
     steps:
       - uses: actions/checkout@v3
+        with:
+          lfs: false
+
+      - name: set up git lfs
+        run: git lfs install
+
+      - name: fetch the needed lfs file
+        run: git lfs pull examples/examples/2019-Li-snap/bryan_output.nc
 
       - name: create build directory
         # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
@@ -45,6 +53,11 @@ jobs:
     runs-on: [self-hosted, macOS, ARM64]
     steps:
       - uses: actions/checkout@v3
+        with:
+          lfs: false
+
+      - name: fetch the needed lfs file
+        run: git lfs pull examples/examples/2019-Li-snap/bryan_output.nc
 
       - name: create build directory
         # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
@@ -72,6 +85,11 @@ jobs:
     runs-on: [self-hosted, macOS, ARM64]
     steps:
       - uses: actions/checkout@v3
+        with:
+          lfs: false
+
+      - name: fetch the needed lfs file
+        run: git lfs pull examples/examples/2019-Li-snap/bryan_output.nc
 
       - name: create build directory
         # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
@@ -94,16 +112,51 @@ jobs:
           ${{github.workspace}}/build/bin/robert-test-main.nc
           ${{github.workspace}}/examples/2019-Li-snap/robert3d_output.nc
 
+  bryan-2d:
+    if: github.event.pull_request.draft == false
+    runs-on: [self-hosted, macOS, ARM64]
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          lfs: false
+
+      - name: fetch the needed lfs file
+        run: git lfs pull examples/examples/2019-Li-snap/bryan_output.nc
+
+      - name: create build directory
+        # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
+        # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
+        run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DTASK=bryan
+
+      - name: Build
+        # Build your program with the given configuration
+        run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} -- -j4
+
+      - name: run simulation
+        run: cd ${{github.workspace}}/build/bin && mpiexec -n 4 ./bryan.release -i bryan.inp
+
+      - name: combile outputs
+        run: cd ${{github.workspace}}/build/bin && ./combine.py -o test
+
+      - name: compare result
+        run: >
+          ${{github.workspace}}/examples/2019-Li-snap/test_bryan.py
+          ${{github.workspace}}/build/bin/bryan-test-main.nc
+          ${{github.workspace}}/examples/2019-Li-snap/bryan_output.nc
+
   shallow-xy:
     if: github.event.pull_request.draft == false
     runs-on: macos-13
     steps:
       - uses: actions/checkout@v3
+        with:
+          lfs: false
 
       - name: set up git lfs
-        run: |
-          git lfs install
-          git lfs pull
+        run: git lfs install
+
+      - name: fetch the needed lfs file
+        run: git lfs pull examples/2020-Li-polar-vortex/swxy_output.nc
 
       - name: set up libraries
         run: brew bundle
