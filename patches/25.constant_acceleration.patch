@@ -1,0 +1,84 @@
+diff --git a/src/hydro/srcterms/constant_acc.cpp b/src/hydro/srcterms/constant_acc.cpp
+index c43e04f7..3afbadcf 100644
+--- a/src/hydro/srcterms/constant_acc.cpp
++++ b/src/hydro/srcterms/constant_acc.cpp
+@@ -15,9 +15,13 @@
+ #include "../../athena_arrays.hpp"
+ #include "../../coordinates/coordinates.hpp"
+ #include "../../mesh/mesh.hpp"
++#include "../../scalars/scalars.hpp"
+ #include "../hydro.hpp"
+ #include "hydro_srcterms.hpp"
+ 
++// canoe
++#include <configure.hpp>
++
+ //----------------------------------------------------------------------------------------
+ //! \fn void HydroSourceTerms::ConstantAcceleration
+ //! \brief Adds source terms for constant acceleration to conserved variables
+@@ -31,9 +35,19 @@ void HydroSourceTerms::ConstantAcceleration(const Real dt,const AthenaArray<Real
+   if (g1_!=0.0) {
+     for (int k=pmb->ks; k<=pmb->ke; ++k) {
+       for (int j=pmb->js; j<=pmb->je; ++j) {
+-#pragma omp simd
+         for (int i=pmb->is; i<=pmb->ie; ++i) {
+-          Real src = dt*prim(IDN,k,j,i)*g1_;
++          Real qd = 1.;
++#pragma omp simd reduction(+ : qd)
++          for (int n = 1; n <= NVAPOR; ++n) qd += -prim(n,k,j,i);
++
++          Real rho_dry = prim(IDN,k,j,i) * qd;
++          Real rho = prim(IDN,k,j,i);
++
++#pragma omp simd reduction(+ : rho)
++          for (int n = 0; n < NCLOUD; ++n)
++            rho += rho_dry * pmb->pscalars->r(n, k, j, i);
++
++          Real src = dt*rho*g1_;
+           cons(IM1,k,j,i) += src;
+           if (NON_BAROTROPIC_EOS) cons(IEN,k,j,i) += src*prim(IVX,k,j,i);
+         }
+@@ -45,9 +59,19 @@ void HydroSourceTerms::ConstantAcceleration(const Real dt,const AthenaArray<Real
+   if (g2_!=0.0) {
+     for (int k=pmb->ks; k<=pmb->ke; ++k) {
+       for (int j=pmb->js; j<=pmb->je; ++j) {
+-#pragma omp simd
+         for (int i=pmb->is; i<=pmb->ie; ++i) {
+-          Real src = dt*prim(IDN,k,j,i)*g2_;
++          Real qd = 1.;
++#pragma omp simd reduction(+ : qd)
++          for (int n = 1; n <= NVAPOR; ++n) qd += -prim(n,k,j,i);
++
++          Real rho_dry = prim(IDN,k,j,i) * qd;
++          Real rho = prim(IDN,k,j,i);
++
++#pragma omp simd reduction(+ : rho)
++          for (int n = 0; n < NCLOUD; ++n)
++            rho += rho_dry * pmb->pscalars->r(n, k, j, i);
++
++          Real src = dt*rho*g2_;
+           cons(IM2,k,j,i) += src;
+           if (NON_BAROTROPIC_EOS) cons(IEN,k,j,i) += src*prim(IVY,k,j,i);
+         }
+@@ -59,9 +83,19 @@ void HydroSourceTerms::ConstantAcceleration(const Real dt,const AthenaArray<Real
+   if (g3_!=0.0) {
+     for (int k=pmb->ks; k<=pmb->ke; ++k) {
+       for (int j=pmb->js; j<=pmb->je; ++j) {
+-#pragma omp simd
+         for (int i=pmb->is; i<=pmb->ie; ++i) {
+-          Real src = dt*prim(IDN,k,j,i)*g3_;
++          Real qd = 1.;
++#pragma omp simd reduction(+ : qd)
++          for (int n = 1; n <= NVAPOR; ++n) qd += -prim(n,k,j,i);
++
++          Real rho_dry = prim(IDN,k,j,i) * qd;
++          Real rho = prim(IDN,k,j,i);
++
++#pragma omp simd reduction(+ : rho)
++          for (int n = 0; n < NCLOUD; ++n)
++            rho += rho_dry * pmb->pscalars->r(n, k, j, i);
++
++          Real src = dt*rho*g3_;
+           cons(IM3,k,j,i) += src;
+           if (NON_BAROTROPIC_EOS) cons(IEN,k,j,i) += src*prim(IVZ,k,j,i);
+         }

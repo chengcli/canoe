@@ -17,7 +17,6 @@ set_if_empty(NTRACER 5)
 # canoe task set(TASKLIST InversionTasks)
 
 # canoe configure
-set(PLANET "Mars")
 set(CMAKE_INSTALL_PREFIX "$ENV{HOME}/opt/")
 set(HYDROSTATIC ON)
 set(RFM ON)

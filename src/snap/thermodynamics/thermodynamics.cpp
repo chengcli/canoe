@@ -130,17 +130,7 @@ Thermodynamics const* Thermodynamics::InitFromAthenaInput(ParameterInput* pin) {
   }
 
   // enroll vapor functions
-  if (strcmp(PLANET, "Earth") == 0) {
-    mythermo_->enrollVaporFunctionsEarth();
-  } else if (strcmp(PLANET, "Mars") == 0) {
-    mythermo_->enrollVaporFunctionsMars();
-  } else if (strcmp(PLANET, "Venus") == 0) {
-    mythermo_->enrollVaporFunctionsVenus();
-  } else if (strcmp(PLANET, "Jupiter") == 0 || strcmp(PLANET, "Saturn") == 0) {
-    mythermo_->enrollVaporFunctionsGasGiants();
-  } else if (strcmp(PLANET, "Uranus") == 0 || strcmp(PLANET, "Neptune") == 0) {
-    mythermo_->enrollVaporFunctionsIceGiants();
-  }
+  mythermo_->enrollVaporFunctions();
 
   // alias
   auto& Rd = mythermo_->Rd_;
@@ -418,9 +408,9 @@ Real Thermodynamics::GetMu(MeshBlock* pmb, int k, int j, int i) const {
 
 Real Thermodynamics::RelativeHumidity(MeshBlock* pmb, int n, int k, int j,
                                       int i) const {
-  AirParcel qfrac(AirParcel::Type::MoleFrac);
-  pmb->pimpl->GatherFromPrimitive(&qfrac, k, j, i);
-  return RelativeHumidity(qfrac, n);
+  AirParcel air(AirParcel::Type::MoleFrac);
+  pmb->pimpl->GatherFromPrimitive(&air, k, j, i);
+  return RelativeHumidity(air, n);
 }
 
 void Thermodynamics::Extrapolate(AirParcel* qfrac, Real dzORdlnp, Method method,

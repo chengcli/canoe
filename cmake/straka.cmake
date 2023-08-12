@@ -10,5 +10,4 @@ endmacro()
 set_if_empty(NUMBER_GHOST_CELLS 3)
 
 # canoe configure
-set(PLANET "Earth")
 set(NETCDF ON)

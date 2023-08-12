@@ -111,7 +111,7 @@ void Mesh::InitUserMeshData(ParameterInput *pin) {
   xCH4 = pin->GetReal("problem", "xCH4");
 }
 
-Real Thermodynamics::GetGammad(Variable const &qfrac) const {
+Real Thermodynamics::GetGammad(AirParcel const &qfrac) const {
   Real T = qfrac.w[IDN], cp_h2, cp_he, cp_ch4;
   if (T < 300.) {
     cp_h2 = Hydrogen::cp_norm(T);
@@ -157,7 +157,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
   int max_iter = 200, iter = 0;
   Real dlnp = pcoord->dx1f(is) / H0;
 
-  Variable var(Variable::Type::MoleFrac);
+  AirParcel var(AirParcel::Type::MoleFrac);
 
   // estimate surface temperature and pressure
   Real Ps = P0 * exp(-x1min / H0);

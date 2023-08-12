@@ -209,6 +209,9 @@ void Radiation::LoadAllRadiationBands(ParameterInput *pin) {
   if (pin->DoesParameterExist("radiation", "visible_bands"))
     LoadRadiationBands(pin, "visible_bands");
 
+  if (pin->DoesParameterExist("radiation", "visible_bands"))
+    LoadRadiationBands(pin, "ultraviolet_bands");
+
   if (pin->DoesParameterExist("radiation", "radio_bands"))
     LoadRadiationBands(pin, "radio_bands");
 }

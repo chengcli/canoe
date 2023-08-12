@@ -1,11 +1,9 @@
 string(TOLOWER ${CMAKE_BUILD_TYPE} buildl)
 string(TOUPPER ${CMAKE_BUILD_TYPE} buildu)
 
-# 1. Compile straka.cpp
+# 1. Compile straka and robert
 
-#set(namel straka)
-
-foreach(namel straka robert bryan)
+foreach(namel straka robert)
   add_executable(${namel}.${buildl} ${namel}.cpp
     ${CMAKE_BINARY_DIR}/main_${TASK}.cpp)
 
@@ -33,6 +31,36 @@ foreach(namel straka robert bryan)
       )
 endforeach()
 
+# 2. Compile bryan
+if (${NVAPOR} EQUAL 1 AND ${NCLOUD} EQUAL 1 AND ${NPHASE_LEGACY} EQUAL 2)
+  set(namel bryan)
+
+  add_executable(${namel}.${buildl} ${namel}_pgen.cpp ${namel}_mods.cpp
+    ${CMAKE_BINARY_DIR}/main_${TASK}.cpp)
+
+  set_target_properties(
+      ${namel}.${buildl}
+      PROPERTIES
+      RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+      COMPILE_FLAGS ${CMAKE_CXX_FLAGS_${buildu}}
+      )
+
+  target_link_libraries(${namel}.${buildl}
+      ${CANOE_LIBRARY_${buildu}}
+      ${NETCDF_LIBRARIES}
+      ${PNETCDF_LIBRARY}
+      ${MPI_CXX_LIBRARIES}
+      )
+
+  target_include_directories(${namel}.${buildl}
+      PRIVATE
+      ${CMAKE_BINARY_DIR}
+      ${CANOE_INCLUDE_DIR}
+      ${MPI_CXX_INCLUDE_PATH}
+      ${NETCDF_INCLUDES}
+      ${PNETCDF_INCLUDE_DIR}
+      )
+endif()
 
 # 1. Copy input file to run directory
 

@@ -16,7 +16,7 @@
 RealArrayX Thermodynamics::TryEquilibriumTP_VaporCloud(AirParcel const& qfrac,
                                                        int i, Real cv_hat,
                                                        bool misty) const {
-  Real xv = qfrac.w[i], xg = 1.;
+  Real xv = qfrac.w[i], xg = 1. - xv;
   Real t = qfrac.w[IDN] / t3_[i];
   std::vector<Real> rates(1 + cloud_index_set_[i].size(), 0.);
 
@@ -29,7 +29,7 @@ RealArrayX Thermodynamics::TryEquilibriumTP_VaporCloud(AirParcel const& qfrac,
     Real xc = qfrac.c[j];
 
     if (misty) {  // in a cloudy ambient environment
-      rates[0] += xs - xv / xg;
+      rates[0] += xs - xv / (xg + xv);
       continue;
     }
 
@@ -42,7 +42,6 @@ RealArrayX Thermodynamics::TryEquilibriumTP_VaporCloud(AirParcel const& qfrac,
     }
 
     Real alpha = 0.;
-    xg -= xv;
 
     Real lv = beta_[1 + NVAPOR + j] / t - delta_[1 + NVAPOR + j];
     if (cv_hat > 0.) alpha = (lv - 1.) / cv_hat;

@@ -40,8 +40,6 @@ set(EQUATION_OF_STATE ${EOS})
 
 set_if_empty(TASKLIST TimeIntegratorTaskList)
 
-set_if_empty(PLANET "UNKNOWN")
-
 if(NOT AFFINE OR NOT DEFINED AFFINE)
   set(AFFINE_OPTION "NOT_AFFINE")
 else()

@@ -24,25 +24,7 @@
 #include "absorber.hpp"
 #include "radiation_band.hpp"
 
-void RadiationBand::addAbsorberMars(ParameterInput *pin, YAML::Node &node) {
-  if (!node["parameters"]) {
-    node["parameters"] = {};
-  }
-
-  if (!node["model"]) {
-    node["model"] = "unspecified";
-  }
-
-  if (category_ == "infrared") {
-    addAbsorberMarsInfrared(node);
-  } else {
-    throw NotFoundError("addAbsorberMars", "Category: " + category_);
-  }
-
-  absorbers_.back()->SetModel(node["model"].as<std::string>());
-}
-
-void RadiationBand::addAbsorberMarsInfrared(YAML::Node &node) {
+void RadiationBand::addAbsorberInfrared(YAML::Node &node) {
   auto name = node["name"].as<std::string>();
   auto params = ToParameterMap(node["parameters"]);
 
@@ -70,6 +52,6 @@ void RadiationBand::addAbsorberMarsInfrared(YAML::Node &node) {
     auto ab = std::make_unique<HitranAbsorber>(name, species, params);
     absorbers_.push_back(std::move(ab));
   } else {
-    throw NotFoundError("addAbsorberMarsInfrared", "Absorber " + name);
+    throw NotFoundError("addAbsorberInfrared", "Absorber " + name);
   }
 }
