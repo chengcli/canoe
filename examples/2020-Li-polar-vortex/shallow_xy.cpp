@@ -1,4 +1,4 @@
-//! \file shallow_water.cpp
+//! \file shallow_xy.cpp
 //  \brief shallow water test model
 
 // C/C++

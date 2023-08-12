@@ -5,7 +5,9 @@ string(TOUPPER ${CMAKE_BUILD_TYPE} buildu)
 
 #set(namel straka)
 
-foreach(namel shallow_xy)
+foreach(namel shallow_xy polar_vortex)
+  find_package(Boost REQUIRED)
+
   add_executable(${namel}.${buildl} ${namel}.cpp
     ${CMAKE_BINARY_DIR}/main_${TASK}.cpp)
 
