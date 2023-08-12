@@ -406,7 +406,7 @@ jobs:
         run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} -- -j8
 
       - name: run simulation
-        run: cd ${{github.workspace}}/build/bin && mpiexec -n 12 ./polar_vortex.release -i shallow_water.inp
+        run: cd ${{github.workspace}}/build/bin && mpiexec -n 12 ./polar_vortex.release -i fig_g_intruder.inp
 
       - name: combile outputs
         run: cd ${{github.workspace}}/build/bin && ./combine.py -o test

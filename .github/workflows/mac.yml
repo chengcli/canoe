@@ -179,7 +179,7 @@ jobs:
 
       - name: compare result
         run: >
-          python3 ${{github.workspace}}/examples/2020-Li-polar-vortex/test_shallow.py
+          python3 ${{github.workspace}}/examples/2020-Li-polar-vortex/test_shallow_xy.py
           ${{github.workspace}}/build/bin/sw-test-main.nc
           ${{github.workspace}}/examples/2020-Li-polar-vortex/swxy_output.nc
 
@@ -203,14 +203,14 @@ jobs:
       - name: create build directory
         # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
         # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
-        run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DTASK=vortex
+        run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_Fortran_COMPILER=gfortran-12 -DTASK=vortex
 
       - name: Build
         # Build your program with the given configuration
         run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} -- -j3
 
       - name: run simulation
-        run: cd ${{github.workspace}}/build/bin && mpiexec -n 3 ./polar_vortex.release -i shallow_water.inp
+        run: cd ${{github.workspace}}/build/bin && mpiexec -n 3 ./polar_vortex.release -i fig_g_intruder.inp
 
       - name: combile outputs
         run: cd ${{github.workspace}}/build/bin && ./combine.py -o test
