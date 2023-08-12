@@ -11,7 +11,9 @@ macro(add_test_giants test)
   get_filename_component(name ${test} NAME_WE)
 
   add_executable(${name}.${buildl} ${name}.cpp
-	  globals.cpp giants_add_absorber.cpp giants_enroll_vapor_functions.cpp
+	  globals.cpp
+    ${CMAKE_SOURCE_DIR}/examples/giants_add_absorber.cpp
+    ${CMAKE_SOURCE_DIR}/examples/giants_enroll_vapor_functions.cpp
 	  )
 
   set_target_properties(

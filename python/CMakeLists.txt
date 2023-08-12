@@ -13,7 +13,7 @@ get_filename_component(PYTHON_VERSION_DIR ${PYTHON_PARENT_DIR} NAME)
 
 macro(add_python_module namel)
   # set module targets
-  pybind11_add_module(${namel} MODULE ${namel}.cpp)
+  pybind11_add_module(${namel} MODULE ${namel}.cpp ${USER_MODS}.cpp)
 
   target_include_directories(
     ${namel}
