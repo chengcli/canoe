@@ -1,28 +1,34 @@
 // changes: no time loop, exp v2, vphi = vmax (positive #), coriolis not
 // approximated, damping model--Model #2--ingersoll's equation n=2
-//! \file vortex.cpp
+//! \file polar_vortex.cpp
 //  \brief jupiter polar vortex model
 
-// C++ headers
-#include <boost/math/special_functions/gamma.hpp>
+// C/C++
 #include <cmath>
 #include <random>
 #include <sstream>
 #include <stdexcept>
 #include <vector>
 
-// Athena++ headers
-#include "../athena.hpp"
-#include "../athena_arrays.hpp"
-#include "../coordinates/coordinates.hpp"
-#include "../eos/eos.hpp"
-#include "../field/field.hpp"
-#include "../globals.hpp"
-#include "../hydro/hydro.hpp"
-#include "../math/core.h"  // sqr
-#include "../mesh/mesh.hpp"
-#include "../parameter_input.hpp"
-#include "../utils/utils.hpp"  // ReadDataTable
+// boost
+#include <boost/math/special_functions/gamma.hpp>
+
+// Athena++
+#include <athena/athena.hpp>
+#include <athena/athena_arrays.hpp>
+#include <athena/coordinates/coordinates.hpp>
+#include <athena/eos/eos.hpp>
+#include <athena/field/field.hpp>
+#include <athena/globals.hpp>
+#include <athena/hydro/hydro.hpp>
+#include <athena/mesh/mesh.hpp>
+#include <athena/parameter_input.hpp>
+
+// climath
+#include <climath/core.h>  // sqr
+
+// utils
+#include <utils/fileio.hpp>  // ReadDataTable
 
 // global parameters
 Real phi0, phi1, lambda, alpha, vphi, vrad, vis, polarity, skewness, omega,
@@ -55,8 +61,9 @@ Real Phib(Coordinates *pcoord, int j,
 }
 
 void PolarVortexForcing(MeshBlock *pmb, const Real time, const Real dt,
-                        const AthenaArray<Real> &w,
-                        AthenaArray<Real> const &bcc, AthenaArray<Real> &u) {
+                        AthenaArray<Real> const &w, AthenaArray<Real> const &r,
+                        AthenaArray<Real> const &bcc, AthenaArray<Real> &u,
+                        AthenaArray<Real> &s) {
   for (int j = pmb->js; j <= pmb->je; ++j)
     for (int i = pmb->is; i <= pmb->ie; ++i) {
       Real x1 = pmb->pcoord->x1v(i);
@@ -219,7 +226,7 @@ void MeshBlock::ProblemGenerator(
     ParameterInput *pin)  // sets initial conditions
 {
   AthenaArray<Real> vpos;
-  ReadDataTable(vpos, pin->GetString("problem", "vfile"));
+  ReadDataTable(&vpos, pin->GetString("problem", "vfile"));
   int vnum = vpos.GetDim2();  // input file allows positions
   // int vnum = 6;
   for (int i = 0; i < vnum; ++i) {
