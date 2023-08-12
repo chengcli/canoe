@@ -29,7 +29,7 @@ RealArrayX Thermodynamics::TryEquilibriumTP_VaporCloud(AirParcel const& qfrac,
     Real xc = qfrac.c[j];
 
     if (misty) {  // in a cloudy ambient environment
-      rates[0] += xs - xv / xg;
+      rates[0] += xs - xv / (xg + xv);
       continue;
     }
 

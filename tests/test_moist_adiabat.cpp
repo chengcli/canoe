@@ -263,7 +263,6 @@ TEST_F(TestMoistAdiabat, saturation_adjustment) {
 
   int ks = pmb->ks, js = pmb->js, is = pmb->is;
   pthermo->SaturationAdjustment(air_column);
-  std::cout << "air1 = " << air << std::endl;
 
   pmb->pimpl->DistributeToPrimitive(air, ks, js, is);
   pmb->pimpl->DistributeToConserved(air, ks, js, is);
@@ -279,23 +278,19 @@ TEST_F(TestMoistAdiabat, saturation_adjustment) {
   Real temp = air.w[IDN];
   pmb->phydro->u(iH2O, ks, js, is) += drho;
 
-  std::cout << pmb->phydro->u(IEN, ks, js, is) << std::endl;
   pmb->phydro->u(IVX, ks, js, is) += drho * vx;
   pmb->phydro->u(IVY, ks, js, is) += drho * vy;
   pmb->phydro->u(IVZ, ks, js, is) += drho * vz;
   pmb->phydro->u(IEN, ks, js, is) +=
       0.5 * drho * (vx * vx + vy * vy + vz * vz) + drho * cv * temp;
-  std::cout << pmb->phydro->u(IEN, ks, js, is) << std::endl;
 
   pmb->pimpl->pcloud->u(0, ks, js, is) -= drho;
   pmb->pimpl->GatherFromConserved(&air, ks, js, is);
-  std::cout << "air2 = " << air << std::endl;
   pmb->pimpl->DistributeToPrimitive(air, ks, js, is);
 
   Real theta_e1 = pthermo->EquivalentPotentialTemp(pmb, Ps, iH2O, ks, js, is);
 
   pthermo->SaturationAdjustment(air_column);
-  std::cout << "air3 = " << air << std::endl;
 
   pmb->pimpl->DistributeToPrimitive(air, ks, js, is);
   Real theta_e2 = pthermo->EquivalentPotentialTemp(pmb, Ps, iH2O, ks, js, is);

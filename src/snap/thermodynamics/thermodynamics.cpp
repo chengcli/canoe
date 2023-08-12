@@ -408,9 +408,9 @@ Real Thermodynamics::GetMu(MeshBlock* pmb, int k, int j, int i) const {
 
 Real Thermodynamics::RelativeHumidity(MeshBlock* pmb, int n, int k, int j,
                                       int i) const {
-  AirParcel qfrac(AirParcel::Type::MoleFrac);
-  pmb->pimpl->GatherFromPrimitive(&qfrac, k, j, i);
-  return RelativeHumidity(qfrac, n);
+  AirParcel air(AirParcel::Type::MoleFrac);
+  pmb->pimpl->GatherFromPrimitive(&air, k, j, i);
+  return RelativeHumidity(air, n);
 }
 
 void Thermodynamics::Extrapolate(AirParcel* qfrac, Real dzORdlnp, Method method,
