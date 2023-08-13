@@ -55,6 +55,12 @@ void mesh_setup(ParameterInput*& pinput, Mesh*& pmesh) {
     throw RuntimeError("main", ex.what());
   }
 
+  // index map
+  IndexMap::InitFromAthenaInput(pinput);
+
+  // thermodynamics
+  Thermodynamics::InitFromAthenaInput(pinput);
+
   try {
     if (cli->res_flag == 0) {
       pmesh = new Mesh(pinput, cli->mesh_flag);
@@ -97,12 +103,6 @@ void mesh_setup(ParameterInput*& pinput, Mesh*& pmesh) {
 #endif
     exit(0);
   }
-
-  // index map
-  IndexMap::InitFromAthenaInput(pinput);
-
-  // thermodynamics
-  Thermodynamics::InitFromAthenaInput(pinput);
 
   // set up additional components
   for (int b = 0; b < pmesh->nblocal; ++b) {
