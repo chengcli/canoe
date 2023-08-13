@@ -79,13 +79,18 @@ void MeshBlock::UserWorkBeforeOutput(ParameterInput *pin) {
 }
 
 void Mesh::InitUserMeshData(ParameterInput *pin) {
+  auto pindex = IndexMap::GetInstance();
+
   grav = -pin->GetReal("hydro", "grav_acc1");
   p0 = pin->GetReal("problem", "p0");
+
+  // index
+  iH2O = pindex->GetVaporId("H2O");
+  iH2Oc = pindex->GetCloudId("H2O(c)");
 }
 
 void MeshBlock::ProblemGenerator(ParameterInput *pin) {
   auto pthermo = Thermodynamics::GetInstance();
-  auto pindex = IndexMap::GetInstance();
 
   Real Ps = p0;
   Real Ts = pin->GetReal("problem", "Ts");
@@ -96,10 +101,6 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
   Real zr = pin->GetReal("problem", "zr");
   Real dT = pin->GetReal("problem", "dT");
   Real qt = pin->GetReal("problem", "qt");
-
-  // index
-  iH2O = pindex->GetVaporId("H2O");
-  iH2Oc = pindex->GetCloudId("H2O(c)");
 
   AirParcel air(AirParcel::Type::MassFrac);
   air.w[iH2O] = qt;
