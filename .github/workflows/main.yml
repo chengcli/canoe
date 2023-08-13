@@ -7,9 +7,11 @@ on:
     branches:
       - main
     types: [opened, synchronize, reopened, ready_for_review]
+
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Release
+  BUILD_FLAG: -fprofile-arcs -ftest-coverage
   ACCOUNT: chengcli
 
 jobs:
@@ -45,20 +47,42 @@ jobs:
         with:
           lfs: false
 
+      - name: install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y lcov
+
       - name: create build directory
         # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
         # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
-        run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+        run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS=${{ env.BUILD_FLAG }} -DCMAKE_C_FLAGS=${{ env.BUILD_FLAG }}
 
       - name: Build
         # Build your program with the given configuration
-        run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} -- -j2
+        run: cmake --build ${{github.workspace}}/build --config Debug -- -j2
 
       - name: Test
         working-directory: ${{github.workspace}}/build/tests
         # Execute tests defined by the CMake configuration.
         # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
         run: ctest -C ${{env.BUILD_TYPE}}
+
+      - name: Generate coverage report
+        working-directory: ${{github.workspace}}/build/tests
+        run: |
+          lcov --capture --directory . --output-file coverage.info
+          lcov --remove coverage.info '/usr/*' --output-file coverage.info  # filter out system files
+          lcov --list coverage.info
+
+      - name: upload coverage reports to Codecov
+        working-directory: ${{github.workspace}}/build/tests
+        uses: codecov/codecov-action@v3
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        with:
+          files: ./coverage.info
+          fail_ci_if_error: true
+          functionalities: fix
 
   build-hydrostatic:
     if: github.event.pull_request.draft == false
@@ -215,10 +239,19 @@ jobs:
         with:
           lfs: false
 
-      - name: set up git lfs
-        run: git lfs install
+      - name: check if artifact exists
+        run: |
+          echo "ARTIFACT_EXISTS=$(./tools/check_artifact.sh straka_output.nc)" >> $GITHUB_ENV
 
-      - name: fetch the needed lfs file
+      - name: download artifact
+        working-directory: ${{github.workspace}}/examples/2019-Li-snap
+        if: env.ARTIFACT_EXISTS == 'true'
+        uses: actions/download-artifact@v2
+        with:
+          name: straka_output.nc
+
+      - name: fetch the needed lfs file if the artifact does not exist
+        if: env.ARTIFACT_EXISTS == 'false'
         run: git lfs pull -I examples/2019-Li-snap/straka_output.nc
 
       - name: install dependencies
@@ -239,16 +272,25 @@ jobs:
         run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} -- -j4
 
       - name: run simulation
-        run: cd ${{github.workspace}}/build/bin && ./straka.release -i straka.inp
+        working-directory: ${{github.workspace}}/build/bin
+        run: ./straka.release -i straka.inp
 
       - name: combile outputs
-        run: cd ${{github.workspace}}/build/bin && ./combine.py -o test
+        working-directory: ${{github.workspace}}/build/bin
+        run: ./combine.py -o test
 
       - name: compare result
         run: >
           python3 ${{github.workspace}}/examples/2019-Li-snap/test_straka.py
           ${{github.workspace}}/build/bin/straka-test-main.nc
           ${{github.workspace}}/examples/2019-Li-snap/straka_output.nc
+
+      - name: upload artifact
+        if: env.ARTIFACT_EXISTS == 'false'
+        uses: actions/upload-artifact@v2
+        with:
+          name: straka_output.nc
+          path: ${{github.workspace}}/examples/2019-Li-snap/straka_output.nc
 
   robert-2d:
     if: github.event.pull_request.draft == false

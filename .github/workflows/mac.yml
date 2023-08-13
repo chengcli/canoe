@@ -10,6 +10,7 @@ on:
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Release
+  BUILD_FLAG: -fprofile-instr-generate -fcoverage-mapping
   ACCOUNT: chengcli
 
 jobs:
@@ -20,9 +21,6 @@ jobs:
       - uses: actions/checkout@v3
         with:
           lfs: false
-
-      - name: set up git lfs
-        run: git lfs install
 
       - name: fetch the needed lfs file
         run: git lfs pull -I examples/2019-Li-snap/straka_output.nc
