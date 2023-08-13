@@ -47,11 +47,12 @@ endif()
 
 message(STATUS "Include ${CMAKE_CURRENT_SOURCE_DIR}/cmake/parameters.cmake")
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/parameters.cmake)
+find_package(Eigen3 REQUIRED)
 
 ## 3. set up project system libraries ##
 message(STATUS "3. Set up system libraries")
-message(STATUS "Include ${CMAKE_SOURCE_DIR}/cmake/athena.cmake")
-include(${CMAKE_SOURCE_DIR}/cmake/eigen.cmake)
+#message(STATUS "Include ${CMAKE_SOURCE_DIR}/cmake/athena.cmake")
+#include(${CMAKE_SOURCE_DIR}/cmake/eigen.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/yamlpp.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/gtest.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/athena.cmake)

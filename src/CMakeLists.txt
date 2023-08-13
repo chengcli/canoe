@@ -11,11 +11,14 @@
 include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}
   ${CMAKE_BINARY_DIR}
+  ${EIGEN3_INCLUDE_DIR}
   ${NETCDF_INCLUDES}
   ${CFITSIO_INCLUDE_DIR}
   ${MPI_CXX_INCLUDE_PATH}
   ${PNETCDF_INCLUDE_DIR}
   )
+
+message(STATUS "eigen: ${EIGEN3_INCLUDE_DIR}")
 
 set(namel canoe)
 string(TOUPPER ${namel} nameu)

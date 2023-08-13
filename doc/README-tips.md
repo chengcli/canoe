@@ -26,3 +26,7 @@ Newer versions of git:
 ```
 git checkout <branch>
 ```
+- find where your package is installed
+```
+brew --prefix <package>
+```
