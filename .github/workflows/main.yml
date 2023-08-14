@@ -325,17 +325,19 @@ jobs:
         with:
           lfs: false
 
-      - name: check if artifact exists
-        run: echo "ARTIFACT_EXISTS=$(./tools/check_artifact.sh straka_output.nc)" >> $GITHUB_ENV
+      - uses: xSAVIKx/artifact-exists-action@v0
+        id: check_artifact
+        with:
+          name: 'straka_output.nc'
 
       - uses: actions/download-artifact@v3
-        if: env.ARTIFACT_EXISTS == 'true'
+        if: steps.check_artifact.outputs.exists
         with:
           name: straka_output.nc
           path: ${{github.workspace}}/examples/2019-Li-snap/
 
       - name: fetch the needed lfs file if the artifact does not exist
-        if: env.ARTIFACT_EXISTS == 'false'
+        if: steps.check_artifact.outputs.exists == false
         run: git lfs pull -I examples/2019-Li-snap/straka_output.nc
 
       - name: install dependencies
@@ -350,7 +352,6 @@ jobs:
         run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DTASK=straka
 
       - name: Build
-        # Build your program with the given configuration
         run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} -- -j4
 
       - name: run simulation
@@ -368,7 +369,7 @@ jobs:
           ${{github.workspace}}/examples/2019-Li-snap/straka_output.nc
 
       - uses: actions/upload-artifact@v3
-        if: env.ARTIFACT_EXISTS == 'false'
+        if: steps.check_artifact.outputs.exists == false
         with:
           name: straka_output.nc
           path: ${{github.workspace}}/examples/2019-Li-snap/straka_output.nc

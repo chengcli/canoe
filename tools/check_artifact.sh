@@ -7,11 +7,11 @@ ARTIFACT_NAME=$1
 # GitHub repository, like user/repo
 REPO_NAME=canoe
 # GitHub API token for authentication
-TOKEN=none
+TOKEN=$2
 
 # Fetch artifact details using GitHub API
 ARTIFACT_JSON=$(curl -s -H "Authorization: token $TOKEN" \
-  "https://api.github.com/repos/$REPO_NAME/actions/artifacts")
+  "https://api.github.com/repos/chengcli/canoe/actions/artifacts")
 
 # Check if the artifacts list is null
 if [[ $(echo "$ARTIFACT_JSON" | jq '.artifacts') == "null" ]]; then
