@@ -325,20 +325,18 @@ jobs:
         with:
           lfs: false
 
-     #- name: check if artifact exists
-     #   run: |
-     #     echo "ARTIFACT_EXISTS=$(./tools/check_artifact.sh straka_output.nc)" >> $GITHUB_ENV
+      - name: check if artifact exists
+        run: echo "ARTIFACT_EXISTS=$(./tools/check_artifact.sh robert_output.nc)" >> $GITHUB_ENV
 
-     #- name: download artifact
-     #   working-directory: ${{github.workspace}}/examples/2019-Li-snap
-     #   if: env.ARTIFACT_EXISTS == 'true'
-     #   uses: actions/download-artifact@v2
-     #   with:
-     #     name: straka_output.nc
+      - uses: actions/download-artifact@v3
+        if: env.ARTIFACT_EXISTS == 'true'
+        with:
+          name: straka_output.nc
+          path: ${{github.workspace}}/examples/2019-Li-snap/
 
-     # - name: fetch the needed lfs file if the artifact does not exist
-     #   if: env.ARTIFACT_EXISTS == 'false'
-     #   run: git lfs pull -I examples/2019-Li-snap/straka_output.nc
+      - name: fetch the needed lfs file if the artifact does not exist
+        if: env.ARTIFACT_EXISTS == 'false'
+        run: git lfs pull -I examples/2019-Li-snap/straka_output.nc
 
       - name: install dependencies
         run: |
@@ -349,12 +347,9 @@ jobs:
         run: pip3 install -r requirements.txt
 
       - name: create build directory
-        # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
-        # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
         run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DTASK=straka
 
       - name: Build
-        # Build your program with the given configuration
         run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} -- -j4
 
       - name: run simulation
@@ -371,8 +366,8 @@ jobs:
           ${{github.workspace}}/build/bin/straka-test-main.nc
           ${{github.workspace}}/examples/2019-Li-snap/straka_output.nc
 
-      - uses: actions/upload-artifact@v2
-      #  if: env.ARTIFACT_EXISTS == 'false'
+      - uses: actions/upload-artifact@v3
+        if: env.ARTIFACT_EXISTS == 'false'
         with:
           name: straka_output.nc
           path: ${{github.workspace}}/examples/2019-Li-snap/straka_output.nc
@@ -386,7 +381,17 @@ jobs:
         with:
           lfs: false
 
+      - name: check if artifact exists
+        run: echo "ARTIFACT_EXISTS=$(./tools/check_artifact.sh robert_output.nc)" >> $GITHUB_ENV
+
+      - uses: actions/download-artifact@v3
+        if: env.ARTIFACT_EXISTS == 'true'
+        with:
+          name: robert_output.nc
+          path: ${{github.workspace}}/examples/2019-Li-snap/
+
       - name: fetch the needed lfs file
+        if: env.ARTIFACT_EXISTS == 'false'
         run: git lfs pull -I examples/2019-Li-snap/robert_output.nc
 
       - name: create build directory
@@ -401,16 +406,24 @@ jobs:
       - name: run simulation
         env:
           PATH: $PATH:/usr/lib64/mpich/bin
-        run: cd ${{github.workspace}}/build/bin && mpiexec -n 8 ./robert.release -i robert2d.inp
+        working-directory: ${{github.workspace}}/build/bin
+        run: mpiexec -n 8 ./robert.release -i robert2d.inp
 
       - name: combile outputs
-        run: cd ${{github.workspace}}/build/bin && ./combine.py -o test
+        working-directory: ${{github.workspace}}/build/bin
+        run: ./combine.py -o test
 
       - name: compare result
         run: >
           python3 ${{github.workspace}}/examples/2019-Li-snap/test_robert.py
           ${{github.workspace}}/build/bin/robert-test-main.nc
           ${{github.workspace}}/examples/2019-Li-snap/robert_output.nc
+
+      - uses: actions/upload-artifact@v3
+        if: env.ARTIFACT_EXISTS == 'false'
+        with:
+          name: robert_output.nc
+          path: ${{github.workspace}}/examples/2019-Li-snap/robert_output.nc
 
   robert-3d:
     if: github.event.pull_request.draft == false
@@ -421,7 +434,17 @@ jobs:
         with:
           lfs: false
 
+      - name: check if artifact exists
+        run: echo "ARTIFACT_EXISTS=$(./tools/check_artifact.sh robert3d_output.nc)" >> $GITHUB_ENV
+
+      - uses: actions/download-artifact@v3
+        if: env.ARTIFACT_EXISTS == 'true'
+        with:
+          name: robert3d_output.nc
+          path: ${{github.workspace}}/examples/2019-Li-snap/
+
       - name: fetch the needed lfs file
+        if: env.ARTIFACT_EXISTS == 'false'
         run: git lfs pull -I examples/2019-Li-snap/robert3d_output.nc
 
       - name: create build directory
@@ -434,16 +457,24 @@ jobs:
         run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} -- -j8
 
       - name: run simulation
-        run: cd ${{github.workspace}}/build/bin && mpiexec -n 8 ./robert.release -i robert3d.inp
+        working-directory: ${{github.workspace}}/build/bin
+        run: mpiexec -n 8 ./robert.release -i robert3d.inp
 
       - name: combile outputs
-        run: cd ${{github.workspace}}/build/bin && ./combine.py -o test
+        working-directory: ${{github.workspace}}/build/bin
+        run: ./combine.py -o test
 
       - name: compare result
         run: >
           python3 ${{github.workspace}}/examples/2019-Li-snap/test_robert.py
           ${{github.workspace}}/build/bin/robert-test-main.nc
           ${{github.workspace}}/examples/2019-Li-snap/robert3d_output.nc
+
+      - uses: actions/upload-artifact@v3
+        if: env.ARTIFACT_EXISTS == 'false'
+        with:
+          name: robert3d_output.nc
+          path: ${{github.workspace}}/examples/2019-Li-snap/robert3d_output.nc
 
   bryan-2d:
     if: github.event.pull_request.draft == false
@@ -454,7 +485,17 @@ jobs:
         with:
           lfs: false
 
+      - name: check if artifact exists
+        run: echo "ARTIFACT_EXISTS=$(./tools/check_artifact.sh bryan_output.nc)" >> $GITHUB_ENV
+
+      - uses: actions/download-artifact@v3
+        if: env.ARTIFACT_EXISTS == 'true'
+        with:
+          name: bryan_output.nc
+          path: ${{github.workspace}}/examples/2019-Li-snap/
+
       - name: fetch the needed lfs file
+        if: env.ARTIFACT_EXISTS == 'false'
         run: git lfs pull -I examples/2019-Li-snap/bryan_output.nc
 
       - name: create build directory
@@ -480,6 +521,12 @@ jobs:
           ${{github.workspace}}/build/bin/bryan-test-main.nc
           ${{github.workspace}}/examples/2019-Li-snap/bryan_output.nc
 
+      - uses: actions/upload-artifact@v3
+        if: env.ARTIFACT_EXISTS == 'false'
+        with:
+          name: bryan_output.nc
+          path: ${{github.workspace}}/examples/2019-Li-snap/bryan_output.nc
+
   shallow-xy:
     if: github.event.pull_request.draft == false
     runs-on: [self-hosted, Linux, 4core]
@@ -489,7 +536,17 @@ jobs:
         with:
           lfs: false
 
+      - name: check if artifact exists
+        run: echo "ARTIFACT_EXISTS=$(./tools/check_artifact.sh swxy_output.nc)" >> $GITHUB_ENV
+
+      - uses: actions/download-artifact@v3
+        if: env.ARTIFACT_EXISTS == 'true'
+        with:
+          name: swxy_output.nc
+          path: ${{github.workspace}}/examples/2020-Li-polar-vortex/
+
       - name: fetch the needed lfs file
+        if: env.ARTIFACT_EXISTS == 'false'
         run: git lfs pull -I examples/2020-Li-polar-vortex/swxy_output.nc
 
       - name: create build directory
@@ -515,6 +572,12 @@ jobs:
           ${{github.workspace}}/build/bin/sw-test-main.nc
           ${{github.workspace}}/examples/2020-Li-polar-vortex/swxy_output.nc
 
+      - uses: actions/upload-artifact@v3
+        if: env.ARTIFACT_EXISTS == 'false'
+        with:
+          name: swxy_output.nc
+          path: ${{github.workspace}}/examples/2020-Li-polar-vortex/swxy_output.nc
+
   polar-vortex:
     if: github.event.pull_request.draft == false
     runs-on: [self-hosted, Linux, 16core]
@@ -524,7 +587,17 @@ jobs:
         with:
           lfs: false
 
+      - name: check if artifact exists
+        run: echo "ARTIFACT_EXISTS=$(./tools/check_artifact.sh intruder_output.nc)" >> $GITHUB_ENV
+
+      - uses: actions/download-artifact@v3
+        if: env.ARTIFACT_EXISTS == 'true'
+        with:
+          name: intruder_output.nc
+          path: ${{github.workspace}}/examples/2020-Li-polar-vortex/
+
       - name: fetch the needed lfs file
+        if: env.ARTIFACT_EXISTS == 'false'
         run: git lfs pull -I examples/2020-Li-polar-vortex/intruder_output.nc
 
       - name: create build directory
@@ -550,6 +623,12 @@ jobs:
           ${{github.workspace}}/build/bin/intruder-test-main.nc
           ${{github.workspace}}/examples/2020-Li-polar-vortex/intruder_output.nc
 
+      - uses: actions/upload-artifact@v3
+        if: env.ARTIFACT_EXISTS == 'false'
+        with:
+          name: intruder_output.nc
+          path: ${{github.workspace}}/examples/2020-Li-polar-vortex/intruder_output.nc
+
   juno-mwr:
     if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
@@ -558,7 +637,7 @@ jobs:
       - name: install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libnetcdf-dev libeigen3-dev libcfitsio-dev
+          sudo apt-get install -y libnetcdf-dev libeigen3-dev libcfitsio-dev nco
 
       - uses: actions/checkout@v3
         with:
