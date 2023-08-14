@@ -75,12 +75,11 @@ jobs:
           lcov --list coverage.info
 
       - name: upload coverage reports to Codecov
-        working-directory: ${{github.workspace}}/build/tests
         uses: codecov/codecov-action@v3
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
-          files: ./coverage.info
+          files: ${{github.workspace}}/coverage.info
           fail_ci_if_error: true
           functionalities: fix
 
