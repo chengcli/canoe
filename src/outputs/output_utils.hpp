@@ -10,12 +10,31 @@
 
 int get_num_variables(std::string grid, AthenaArray<Real> const& data);
 
-std::string get_grid_type(std::string name);
+class MetadataTable {
+ protected:
+  using StringTable = std::vector<std::vector<std::string>>;
 
-std::string get_units(std::string name);
+  //! Protected ctor access thru static member function Instance
+  MetadataTable();
 
-std::string get_long_name(std::string name);
+ public:
+  ~MetadataTable();
 
-using DiagnosticTable = std::vector<std::vector<std::string>>;
+  static MetadataTable const* GetInstance();
+
+  static void Destroy();
+
+  std::string GetGridType(std::string name) const;
+
+  std::string GetUnits(std::string name) const;
+
+  std::string GetLongName(std::string name) const;
+
+ private:
+  StringTable table_;
+
+  //! Pointer to the single MetadataTable instance
+  static MetadataTable* myptr_;
+};
 
 #endif  // SRC_OUTPUTS_OUTPUT_UTILS_HPP_

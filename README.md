@@ -3,6 +3,7 @@
 [![build](https://github.com/chengcli/canoe/actions/workflows/main.yml/badge.svg)](https://github.com/chengcli/canoe/actions/workflows/main.yml)
 [![build](https://github.com/chengcli/canoe/actions/workflows/mac.yml/badge.svg)](https://github.com/chengcli/canoe/actions/workflows/mac.yml)
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
+[![codecov](https://codecov.io/gh/chengcli/canoe/branch/main/graph/badge.svg?token=hKnnv79a09)](https://codecov.io/gh/chengcli/canoe)
 
 ## Install system libraries and toolchain
 Canoe can be installed on either a Linux distribution or on MacOS. Open a Linux or Mac terminal,
@@ -24,13 +25,13 @@ brew bundle
 ### Ubuntu Linux Installation Guide
 On a Ubuntu linux system, use `apt` to install
 ```
-sudo apt install clang-format cmake nco libnetcdf-dev libpnetcdf-dev libboost-all-dev
+sudo apt install clang-format cmake nco libnetcdf-dev libpnetcdf-dev libboost-all-dev libeigen3-dev
 ```
 
 ### Redhat Linux Installation Guide
 On a Redhat linux system, use `yum` to install
 ```
-sudo yum install clang-tools-extra cmake nco netcdf-devel boost boost-devel
+sudo yum install clang-tools-extra cmake nco netcdf-devel boost boost-devel eigen3-devel
 ```
 
 ## Install python libraries

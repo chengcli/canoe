@@ -57,6 +57,8 @@ PnetcdfOutput::PnetcdfOutput(OutputParameters oparams) : OutputType(oparams) {}
 void PnetcdfOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) {
   // create filename: "file_basename"+"."+"file_id"+"."+XXXXX+".nc",
   // where XXXXX = 5-digit file_number
+  auto pmeta = MetadataTable::GetInstance();
+
   std::string fname;
   char number[6];
   int err;
@@ -240,7 +242,7 @@ void PnetcdfOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) {
   // count total variables (vector variables are expanded into flat scalars)
   int total_vars = 0;
   while (pdata != nullptr) {
-    std::string grid = get_grid_type(pdata->name);
+    std::string grid = pmeta->GetGridType(pdata->name);
     int nvar = get_num_variables(grid, pdata->data);
     total_vars += nvar;
     pdata = pdata->pnext;
@@ -256,7 +258,7 @@ void PnetcdfOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) {
 
   pdata = pfirst_data_;
   while (pdata != nullptr) {
-    std::string grid = get_grid_type(pdata->name);
+    std::string grid = pmeta->GetGridType(pdata->name);
     std::string name, attr;
     std::vector<std::string> varnames;
     int nvar = get_num_variables(grid, pdata->data);
@@ -302,13 +304,13 @@ void PnetcdfOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) {
         ncmpi_def_var(ifile, name.c_str(), NC_FLOAT, 4, iaxis, ivar);
 
       // set units
-      attr = get_units(pdata->name);
+      attr = pmeta->GetUnits(pdata->name);
       if (attr != "") {
         ncmpi_put_att_text(ifile, *ivar, "units", attr.length(), attr.c_str());
       }
 
       // set long_name
-      attr = get_long_name(pdata->name);
+      attr = pmeta->GetLongName(pdata->name);
       if (attr != "") {
         ncmpi_put_att_text(ifile, *ivar, "long_name", attr.length(),
                            attr.c_str());
@@ -505,7 +507,7 @@ void PnetcdfOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) {
     ivar = var_ids;
     pdata = pfirst_data_;
     while (pdata != nullptr) {
-      std::string grid = get_grid_type(pdata->name);
+      std::string grid = pmeta->GetGridType(pdata->name);
       int nvar = get_num_variables(grid, pdata->data);
 
       if (grid == "RCC") {  // radiation rays

@@ -36,6 +36,9 @@
 #include <harp/absorber.hpp>
 #include <harp/radiation_band.hpp>
 
+// outputs
+#include <outputs/output_utils.hpp>
+
 namespace gp = GiantPlanets;
 
 extern Real xHe, xCH4;
@@ -188,4 +191,38 @@ void RadiationBand::addAbsorberRadio(YAML::Node& node) {
   } else {
     throw NotFoundError("addAbsorberRadio", "Absorber " + name);
   }
+}
+
+// outputs
+MetadataTable::MetadataTable() {
+  Application::Logger app("outputs");
+  app->Log("Initialize MetadataTable");
+
+  table_ = {// short name, long name, units, grid location
+            {"x1", "height at cell center", "m", "--C"},
+            {"x1f", "height at cell boundary", "m", "--F"},
+            {"x2", "distance at cell center", "m", "-C-"},
+            {"x2f", "distance at cell boundary", "m", "-F-"},
+            {"x3", "distance at cell center", "m", "C--"},
+            {"x3f", "distance at cell boundary", "m", "F--"},
+            {"rho", "density", "kg/m^3", "CCC"},
+            {"press", "pressure", "pa", "CCC"},
+            {"vel", "velocity", "m/s", "CCC"},
+            {"vapor", "mass mixing ratio of vapor", "kg/kg", "CCC"},
+            {"temp", "temperature", "K", "CCC"},
+            {"theta", "potential temperature", "K", "CCC"},
+            {"thetav", "virtual potential temperature", "K", "CCC"},
+            {"mse", "moist static energy", "J/kg", "CCC"},
+            {"rh1", "relative humidity 1", "1", "CCC"},
+            {"rh2", "relative humidity 2", "1", "CCC"},
+            {"eps", "turbulent dissipation", "w/kg", "CCC"},
+            {"tke", "turbulent kinetic energy", "J/kg", "CCC"},
+            {"mut", "dynamic turbulent viscosity", "kg/(m.s)", "CCC"},
+            {"CH1tau", "optical thickness", "1", "CCC"},
+            {"CH2tau", "optical thickness", "1", "CCC"},
+            {"CH3tau", "optical thickness", "1", "CCC"},
+            {"CH4tau", "optical thickness", "1", "CCC"},
+            {"CH5tau", "optical thickness", "1", "CCC"},
+            {"CH6tau", "optical thickness", "1", "CCC"},
+            {"radiance", "top-of-atmosphere radiance", "K", "RCC"}};
 }

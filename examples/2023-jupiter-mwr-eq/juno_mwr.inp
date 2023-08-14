@@ -25,10 +25,10 @@ file_type   = netcdf
 variable    = radtoa
 dt          = 1.E-9
 
-#<output5>
-#file_type   = netcdf
-#variable    = radtau
-#dt          = 1.E-9
+<output5>
+file_type   = netcdf
+variable    = radtau
+dt          = 1.E-9
 
 <time>
 cfl_number  = 1.
@@ -90,8 +90,8 @@ Ttriple2    = 195.4
 Ptriple2    = 6060.
 
 <radiation>
-control_file = mwr_channels.yaml
-outdir       = (0,) (15,) (30,) (45,)
+radio_bands = mwr_channels.yaml
+outdir      = (0,) (15,) (30,) (45,)
 
 #<inversion>
 #tasks        = JunoProfileInversion
@@ -116,6 +116,6 @@ xNa         = 3.97E-6
 xKCl        = 0.
 metallicity = -2
 
-adlnTdlnP   = 0.015
+adlnTdlnP   = 0.
 adlnTdlnP.pmin = 1.E5
 adlnTdlnP.pmax = 20.E5

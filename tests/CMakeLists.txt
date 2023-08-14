@@ -25,6 +25,7 @@ macro(add_test_giants test)
     PRIVATE
     ${CMAKE_BINARY_DIR}
     ${CANOE_INCLUDE_DIR}
+    ${EIGEN3_INCLUDE_DIR}
     ${MPI_CXX_INCLUDE_PATH}
     ${NETCDF_INCLUDES}
     ${PNETCDF_INCLUDE_DIR}
@@ -54,6 +55,7 @@ macro(add_test_case test)
     PRIVATE
     ${CMAKE_BINARY_DIR}
     ${CANOE_INCLUDE_DIR}
+    ${EIGEN3_INCLUDE_DIR}
     ${MPI_CXX_INCLUDE_PATH}
     ${NETCDF_INCLUDES}
     ${PNETCDF_INCLUDE_DIR}
