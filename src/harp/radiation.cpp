@@ -191,6 +191,8 @@ size_t Radiation::DumpRestartData(char *pdst) const {
 }
 
 size_t Radiation::LoadRestartData(char *psrc) {
+  Application::Logger app("harp");
+  app->Log("Radiation restarted");
   int offset = 0;
 
   std::memcpy(flxup.data(), psrc + offset, flxup.GetSizeInBytes());
@@ -202,16 +204,29 @@ size_t Radiation::LoadRestartData(char *psrc) {
 }
 
 void Radiation::LoadAllRadiationBands(ParameterInput *pin) {
+  Application::Logger app("harp");
+
   if (pin->DoesParameterExist("radiation", "infrared_bands")) {
     LoadRadiationBands(pin, "infrared_bands");
+  } else {
+    app->Log("No 'infrared_bands' found in input file");
   }
 
-  if (pin->DoesParameterExist("radiation", "visible_bands"))
+  if (pin->DoesParameterExist("radiation", "visible_bands")) {
     LoadRadiationBands(pin, "visible_bands");
+  } else {
+    app->Log("No 'visible_bands' found in input file");
+  }
 
-  if (pin->DoesParameterExist("radiation", "visible_bands"))
+  if (pin->DoesParameterExist("radiation", "visible_bands")) {
     LoadRadiationBands(pin, "ultraviolet_bands");
+  } else {
+    app->Log("No 'ultraviolet_bands' found in input file");
+  }
 
-  if (pin->DoesParameterExist("radiation", "radio_bands"))
+  if (pin->DoesParameterExist("radiation", "radio_bands")) {
     LoadRadiationBands(pin, "radio_bands");
+  } else {
+    app->Log("No 'radio_bands' found in input file");
+  }
 }

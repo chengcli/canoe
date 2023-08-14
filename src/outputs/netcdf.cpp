@@ -30,8 +30,6 @@
 // External library headers
 #include <netcdf.h>
 
-extern DiagnosticTable diag_table;
-
 //----------------------------------------------------------------------------------------
 // NetcdfOutput constructor
 // destructor - not needed for this derived class
@@ -45,6 +43,8 @@ NetcdfOutput::NetcdfOutput(OutputParameters oparams) : OutputType(oparams) {}
 //         MeshBlock per file
 
 void NetcdfOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) {
+  auto pmeta = MetadataTable::GetInstance();
+
   // Loop over MeshBlocks
   for (int b = 0; b < pm->nblocal; ++b) {
     MeshBlock *pmb = pm->my_blocks(b);
@@ -229,7 +229,7 @@ void NetcdfOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) {
     // count total variables (vector variables are expanded into flat scalars)
     int total_vars = 0;
     while (pdata != nullptr) {
-      std::string grid = get_grid_type(pdata->name);
+      std::string grid = pmeta->GetGridType(pdata->name);
       int nvar = get_num_variables(grid, pdata->data);
       total_vars += nvar;
       pdata = pdata->pnext;
@@ -247,7 +247,7 @@ void NetcdfOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) {
     while (pdata != nullptr) {
       std::string name, attr;
       std::vector<std::string> varnames;
-      std::string grid = get_grid_type(pdata->name);
+      std::string grid = pmeta->GetGridType(pdata->name);
       int nvar = get_num_variables(grid, pdata->data);
 
       for (int n = 0; n < nvar; ++n) {
@@ -291,13 +291,13 @@ void NetcdfOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) {
           nc_def_var(ifile, name.c_str(), NC_FLOAT, 4, iaxis, ivar);
 
         // set units
-        attr = get_units(pdata->name);
+        attr = pmeta->GetUnits(pdata->name);
         if (attr != "") {
           nc_put_att_text(ifile, *ivar, "units", attr.length(), attr.c_str());
         }
 
         // set long_name
-        attr = get_long_name(pdata->name);
+        attr = pmeta->GetLongName(pdata->name);
         if (attr != "") {
           nc_put_att_text(ifile, *ivar, "long_name", attr.length(),
                           attr.c_str());
@@ -373,7 +373,7 @@ void NetcdfOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) {
     ivar = var_ids;
     pdata = pfirst_data_;
     while (pdata != nullptr) {
-      std::string grid = get_grid_type(pdata->name);
+      std::string grid = pmeta->GetGridType(pdata->name);
       int nvar = get_num_variables(grid, pdata->data);
 
       if (grid == "RCC") {  // radiation rays

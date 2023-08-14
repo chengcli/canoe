@@ -5,8 +5,11 @@ string(TOUPPER ${CMAKE_BUILD_TYPE} buildu)
 
 set(namel juno_mwr)
 
-add_executable(${namel}.${buildl} ${namel}_pgen.cpp ${namel}_mods.cpp
-  ${CMAKE_BINARY_DIR}/main_${TASK}.cpp)
+add_executable(${namel}.${buildl}
+  ${namel}_pgen.cpp
+  ${namel}_mods.cpp
+  ${CMAKE_BINARY_DIR}/main_${TASK}.cpp
+  )
 
 set_target_properties(
     ${namel}.${buildl}
@@ -25,7 +28,8 @@ target_link_libraries(${namel}.${buildl}
 target_include_directories(${namel}.${buildl}
     PRIVATE
     ${CMAKE_BINARY_DIR}
-    ${CMAKE_SOURCE_DIR}/src
+    ${CANOE_INCLUDE_DIR}
+    ${EIGEN3_INCLUDE_DIR}
     ${MPI_CXX_INCLUDE_PATH}
     )
 

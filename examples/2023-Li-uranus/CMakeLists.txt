@@ -25,7 +25,8 @@ target_link_libraries(${namel}.${buildl}
 target_include_directories(${namel}.${buildl}
     PRIVATE
     ${CMAKE_BINARY_DIR}
-    ${CMAKE_SOURCE_DIR}/src
+    ${CANOE_INCLUDE_DIR}
+    ${EIGEN3_INCLUDE_DIR}
     ${MPI_CXX_INCLUDE_PATH}
     )
 
