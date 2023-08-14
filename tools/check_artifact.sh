@@ -10,16 +10,21 @@ REPO_NAME=canoe
 TOKEN=none
 
 # Fetch artifact details using GitHub API
-ARTIFACT_URL=$(curl -s -H "Authorization: token $TOKEN" \
-  "https://api.github.com/repos/$REPO_NAME/actions/artifacts" \
+ARTIFACT_JSON=$(curl -s -H "Authorization: token $TOKEN" \
+  "https://api.github.com/repos/$REPO_NAME/actions/artifacts")
+
+# Check if the artifacts list is null
+if [[ $(echo "$ARTIFACT_JSON" | jq '.artifacts') == "null" ]]; then
+  echo "false"
+else
+  ARTIFACT_URL=$(echo "$ARTIFACT_JSON" \
   | jq -r --arg ARTIFACT_NAME "$ARTIFACT_NAME" \
   '.artifacts[] | select(.name==$ARTIFACT_NAME) | .url')
 
-# Check and set environment variable
-if [[ -z "$ARTIFACT_URL" ]]; then
-  echo "Artifact not found."
-  echo "false"
-else
-  echo "Artifact found!"
-  echo "true"
+  # Check and set environment variable
+  if [[ -z "$ARTIFACT_URL" ]]; then
+    echo "false"
+  else
+    echo "true"
+  fi
 fi

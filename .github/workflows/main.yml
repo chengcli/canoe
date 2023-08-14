@@ -325,20 +325,20 @@ jobs:
         with:
           lfs: false
 
-     #- name: check if artifact exists
-     #   run: |
-     #     echo "ARTIFACT_EXISTS=$(./tools/check_artifact.sh straka_output.nc)" >> $GITHUB_ENV
+      - name: check if artifact exists
+        run: |
+           echo "ARTIFACT_EXISTS=$(./tools/check_artifact.sh straka_output.nc)" >> $GITHUB_ENV
 
-     #- name: download artifact
-     #   working-directory: ${{github.workspace}}/examples/2019-Li-snap
-     #   if: env.ARTIFACT_EXISTS == 'true'
-     #   uses: actions/download-artifact@v2
-     #   with:
-     #     name: straka_output.nc
+      - name: download artifact
+        working-directory: ${{github.workspace}}/examples/2019-Li-snap
+        if: env.ARTIFACT_EXISTS == 'true'
+        uses: actions/download-artifact@v2
+        with:
+          name: straka_output.nc
 
-     # - name: fetch the needed lfs file if the artifact does not exist
-     #   if: env.ARTIFACT_EXISTS == 'false'
-     #   run: git lfs pull -I examples/2019-Li-snap/straka_output.nc
+      - name: fetch the needed lfs file if the artifact does not exist
+        if: env.ARTIFACT_EXISTS == 'false'
+        run: git lfs pull -I examples/2019-Li-snap/straka_output.nc
 
       - name: install dependencies
         run: |
@@ -349,8 +349,6 @@ jobs:
         run: pip3 install -r requirements.txt
 
       - name: create build directory
-        # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
-        # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
         run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DTASK=straka
 
       - name: Build
@@ -372,7 +370,7 @@ jobs:
           ${{github.workspace}}/examples/2019-Li-snap/straka_output.nc
 
       - uses: actions/upload-artifact@v2
-      #  if: env.ARTIFACT_EXISTS == 'false'
+        if: env.ARTIFACT_EXISTS == 'false'
         with:
           name: straka_output.nc
           path: ${{github.workspace}}/examples/2019-Li-snap/straka_output.nc
@@ -558,7 +556,7 @@ jobs:
       - name: install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libnetcdf-dev libeigen3-dev libcfitsio-dev
+          sudo apt-get install -y libnetcdf-dev libeigen3-dev libcfitsio-dev nco
 
       - uses: actions/checkout@v3
         with:
