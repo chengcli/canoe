@@ -325,19 +325,17 @@ jobs:
         with:
           lfs: false
 
-      - uses: xSAVIKx/artifact-exists-action@v0
-        id: check_artifact
-        with:
-          name: 'straka_output.nc'
+      - name: check if artifact exists
+        run: echo "ARTIFACT_EXISTS=$(./tools/check_artifact.sh robert_output.nc)" >> $GITHUB_ENV
 
       - uses: actions/download-artifact@v3
-        if: steps.check_artifact.outputs.exists
+        if: env.ARTIFACT_EXISTS == 'true'
         with:
           name: straka_output.nc
           path: ${{github.workspace}}/examples/2019-Li-snap/
 
       - name: fetch the needed lfs file if the artifact does not exist
-        if: steps.check_artifact.outputs.exists == false
+        if: env.ARTIFACT_EXISTS == 'false'
         run: git lfs pull -I examples/2019-Li-snap/straka_output.nc
 
       - name: install dependencies
@@ -369,7 +367,7 @@ jobs:
           ${{github.workspace}}/examples/2019-Li-snap/straka_output.nc
 
       - uses: actions/upload-artifact@v3
-        if: steps.check_artifact.outputs.exists == false
+        if: env.ARTIFACT_EXISTS == 'false'
         with:
           name: straka_output.nc
           path: ${{github.workspace}}/examples/2019-Li-snap/straka_output.nc
@@ -385,6 +383,7 @@ jobs:
 
       - name: check if artifact exists
         run: echo "ARTIFACT_EXISTS=$(./tools/check_artifact.sh robert_output.nc)" >> $GITHUB_ENV
+
       - uses: actions/download-artifact@v3
         if: env.ARTIFACT_EXISTS == 'true'
         with:
@@ -407,10 +406,12 @@ jobs:
       - name: run simulation
         env:
           PATH: $PATH:/usr/lib64/mpich/bin
-        run: cd ${{github.workspace}}/build/bin && mpiexec -n 8 ./robert.release -i robert2d.inp
+        working-directory: ${{github.workspace}}/build/bin
+        run: mpiexec -n 8 ./robert.release -i robert2d.inp
 
       - name: combile outputs
-        run: cd ${{github.workspace}}/build/bin && ./combine.py -o test
+        working-directory: ${{github.workspace}}/build/bin
+        run: ./combine.py -o test
 
       - name: compare result
         run: >
@@ -456,10 +457,12 @@ jobs:
         run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} -- -j8
 
       - name: run simulation
-        run: cd ${{github.workspace}}/build/bin && mpiexec -n 8 ./robert.release -i robert3d.inp
+        working-directory: ${{github.workspace}}/build/bin
+        run: mpiexec -n 8 ./robert.release -i robert3d.inp
 
       - name: combile outputs
-        run: cd ${{github.workspace}}/build/bin && ./combine.py -o test
+        working-directory: ${{github.workspace}}/build/bin
+        run: ./combine.py -o test
 
       - name: compare result
         run: >
