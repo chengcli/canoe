@@ -329,12 +329,11 @@ jobs:
         run: |
            echo "ARTIFACT_EXISTS=$(./tools/check_artifact.sh straka_output.nc)" >> $GITHUB_ENV
 
-      - name: download artifact
-        working-directory: ${{github.workspace}}/examples/2019-Li-snap
+      - uses: actions/download-artifact@v2
         if: env.ARTIFACT_EXISTS == 'true'
-        uses: actions/download-artifact@v2
         with:
           name: straka_output.nc
+          path: ${{github.workspace}}/examples/2019-Li-snap/
 
       - name: fetch the needed lfs file if the artifact does not exist
         if: env.ARTIFACT_EXISTS == 'false'
