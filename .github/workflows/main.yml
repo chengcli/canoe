@@ -241,12 +241,12 @@ jobs:
         run: |
           echo "ARTIFACT_EXISTS=$(./tools/check_artifact.sh straka_output.nc)" >> $GITHUB_ENV
 
-      - name: download artifact
-        working-directory: ${{github.workspace}}/examples/2019-Li-snap
-        if: env.ARTIFACT_EXISTS == 'true'
-        uses: actions/download-artifact@v2
-        with:
-          name: straka_output.nc
+     #- name: download artifact
+     #   working-directory: ${{github.workspace}}/examples/2019-Li-snap
+     #   if: env.ARTIFACT_EXISTS == 'true'
+     #   uses: actions/download-artifact@v2
+     #   with:
+     #     name: straka_output.nc
 
       - name: fetch the needed lfs file if the artifact does not exist
         if: env.ARTIFACT_EXISTS == 'false'
@@ -283,12 +283,12 @@ jobs:
           ${{github.workspace}}/build/bin/straka-test-main.nc
           ${{github.workspace}}/examples/2019-Li-snap/straka_output.nc
 
-      - name: upload artifact
-        if: env.ARTIFACT_EXISTS == 'false'
-        uses: actions/upload-artifact@v2
-        with:
-          name: straka_output.nc
-          path: ${{github.workspace}}/examples/2019-Li-snap/straka_output.nc
+      #- name: upload artifact
+      #  if: env.ARTIFACT_EXISTS == 'false'
+      #  uses: actions/upload-artifact@v2
+      #  with:
+      #    name: straka_output.nc
+      #    path: ${{github.workspace}}/examples/2019-Li-snap/straka_output.nc
 
   robert-2d:
     if: github.event.pull_request.draft == false
