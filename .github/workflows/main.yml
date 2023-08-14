@@ -149,7 +149,7 @@ jobs:
       - name: create build directory
         # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
         # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
-        run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Debug -DNVAPOR=2 -DNCLOUD=4 >
+        run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Debug -DNVAPOR=2 -DNCLOUD=4
           -DCMAKE_CXX_FLAGS=${{ env.BUILD_FLAG }} -DCMAKE_C_FLAGS=${{ env.BUILD_FLAG }}
 
       - name: Build
@@ -196,7 +196,7 @@ jobs:
       - name: create build directory
         # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
         # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
-        run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Debug -DNVAPOR=2 -DNCLOUD=5 >
+        run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Debug -DNVAPOR=2 -DNCLOUD=5
           -DCMAKE_CXX_FLAGS=${{ env.BUILD_FLAG }} -DCMAKE_C_FLAGS=${{ env.BUILD_FLAG }}
 
       - name: Build
@@ -243,7 +243,7 @@ jobs:
       - name: create build directory
         # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
         # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
-        run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Debug -DNVAPOR=1 -DNCLOUD=1 -DNPHASE_LEGACY=2 >
+        run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Debug -DNVAPOR=1 -DNCLOUD=1 -DNPHASE_LEGACY=2
           -DCMAKE_CXX_FLAGS=${{ env.BUILD_FLAG }} -DCMAKE_C_FLAGS=${{ env.BUILD_FLAG }}
 
       - name: Build
