@@ -11,7 +11,7 @@ on:
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Release
-  BUILD_FLAG: -fprofile-arcs -ftest-coverage
+  BUILD_FLAG: "-fprofile-arcs -ftest-coverage"
   ACCOUNT: chengcli
 
 jobs:
@@ -90,7 +90,7 @@ jobs:
       - name: install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libnetcdf-dev
+          sudo apt-get install -y libnetcdf-dev libeigen3-dev
 
       - uses: actions/checkout@v3
         with:
@@ -197,7 +197,7 @@ jobs:
       - name: install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libnetcdf-dev
+          sudo apt-get install -y libnetcdf-dev libeigen3-dev
 
       - uses: actions/checkout@v3
         with:
@@ -255,7 +255,7 @@ jobs:
       - name: install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y cmake nco libnetcdf-dev libpnetcdf-dev
+          sudo apt-get install -y cmake nco libnetcdf-dev libpnetcdf-dev libeigen3-dev
 
       - name: set up python libraries
         run: pip3 install -r requirements.txt
@@ -467,7 +467,7 @@ jobs:
       - name: install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libnetcdf-dev
+          sudo apt-get install -y libnetcdf-dev libeigen3-dev
 
       - uses: actions/checkout@v3
         with:
