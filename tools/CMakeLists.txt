@@ -52,3 +52,7 @@ file(GLOB inputs *.inp *.yaml)
 foreach(input ${inputs})
     file(COPY ${input} DESTINATION ${CMAKE_BINARY_DIR}/bin/)
 endforeach()
+
+# copy shell scripts
+configure_file(debug.sh.in ${CMAKE_BINARY_DIR}/debug.sh COPYONLY)
+configure_file(release.sh.in ${CMAKE_BINARY_DIR}/release.sh COPYONLY)
