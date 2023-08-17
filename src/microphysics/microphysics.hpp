@@ -1,5 +1,5 @@
-#ifndef SRC_MICROPHYSICS_MICROPHYSICS_HPP_
-#define SRC_MICROPHYSICS_MICROPHYSICS_HPP_
+#ifndef SRC_MICROPHYSICS_MICROPHYSICAL_SCHEME_HPP_
+#define SRC_MICROPHYSICS_MICROPHYSICAL_SCHEME_HPP_
 
 // C/C++
 #include <map>
@@ -9,70 +9,17 @@
 // external
 #include <yaml-cpp/yaml.h>
 
-// athenapp
-#include <athena/athena.hpp>
-
 // snap
 #include <air_parcel.hpp>
+
+#include "microphysical_scheme.hpp"
 
 class MeshBlock;
 class ParameterInput;
 
-class MicrophysicsSystemBase {
- public:
-  MicrophysicsSystemBase() {}
-
-  virtual ~MicrophysicsSystemBase() {}
-
-  virtual void AssembleReactionMatrix(Real *rate, Real **jac,
-                                      AirParcel const &air, Real time) {}
-
-  virtual void EvolveOneStep(AthenaArray<Real> &u, Real time, Real dt) {}
-
-  virtual void SetSedimentationVelocity(int k, int j, int il, int iu) {}
-
-  Real *GetRatePtr() { return rate_; }
-
-  Real **GetJacobianPtr() { return jacobian_; }
-
- private:
-  Real *rate_;
-  Real **jacobian_;
-}
-
-using MicrophysicsSystemPtr = std::shared_ptr<MicrophysicsSystemBase>;
-
-template <int D>
-class MicrophysicsSystem : public MicrophysicsSystemBase {
- public:
-  enum { Dimension = D };
-
-  using Matrix = Eigen::Matrix<Real, D, D>;
-  using Vecor = Eigen::Matrix<Real, D, 1>;
-
-  MicrophysicsSystem(MeshBlock *pmb, ParameterInput *pin);
-
-  ~MicrophysicsSystem() {}
-
-  virtual void AssembleReactionMatrix(Real *rate, Real **jac,
-                                      AirParcel const &air, Real time) override;
-
-  virtual void EvolveOneStep(AirParcel *air, Real time, Real dt) override;
-
-  virtual void SetSedimentationVelocity(int k, int j, int il, int iu) override;
-
-  protectecd : Vector rate_;
-  Matrix jac_;
-
-  //! reaction coefficients
-  std::map<std::string, Real> coeffs_;
-
-  //! indices of cloud variables
-  std::vector<int> cloud_index_;
-};
-
 class Microphysics {
  public:
+  // tem, v1, v2, v3
   enum { NCLOUD_HYDRO = 4 };
 
   AthenaArray<Real> w, u;
@@ -99,9 +46,9 @@ class Microphysics {
 
   AthenaArray<Real> hydro_;
 
-  std::vector<MicrophysicsSystemPtr> systems_;
+  std::vector<MicrophysicalSchemePtr> systems_;
 
   MeshBlock *pmy_block_;
 };
 
-#endif  // SRC_MICROPHYSICS_MICROPHYSICS_HPP_
+#endif  // SRC_MICROPHYSICS_MICROPHYSICAL_SCHEME_HPP_

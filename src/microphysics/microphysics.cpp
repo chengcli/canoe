@@ -26,7 +26,7 @@ Microphysics::Microphysics(MeshBlock *pmb, ParameterInput *pin)
   // hydrodynamic variables
   vsed_.NewAthenaArray(NCLOUD, ncells1);
   vsedf_.NewAthenaArray(NCLOUD, ncells1 + 1);
-  hydro_.NewAthenaArray(NCLOUD_HYDRO, NHYDRO, ncells3, ncells2, ncells1);
+  hydro_.NewAthenaArray(NCLOUD_HYDRO, NCLOUD, ncells3, ncells2, ncells1);
 }
 
 Microphysics::~Microphysics() {
