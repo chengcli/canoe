@@ -1,3 +1,6 @@
+// C/C++
+#include <fstream>
+
 // athena
 #include <athena/athena.hpp>
 #include <athena/mesh/mesh.hpp>
@@ -6,12 +9,14 @@
 
 // application
 #include <application/application.hpp>
+#include <application/exceptions.hpp>
 
 // canoe
 #include <air_parcel.hpp>
 #include <configure.hpp>
 
 // microphysics
+#include "microphysical_scheme.hpp"
 #include "microphysics.hpp"
 
 Microphysics::Microphysics(MeshBlock *pmb, ParameterInput *pin)
@@ -32,6 +37,33 @@ Microphysics::Microphysics(MeshBlock *pmb, ParameterInput *pin)
   vsed_.NewAthenaArray(NCLOUD, ncells3, ncells2, ncells1);
   vsedf_.NewAthenaArray(NCLOUD, ncells3, ncells2, ncells1 + 1);
   hydro_.NewAthenaArray(NCLOUD_HYDRO, NCLOUD, ncells3, ncells2, ncells1);
+
+  // load all microphysics systems
+  std::string key = "microphysics_config";
+
+  if (pin->DoesParameterExist("chemistry", key)) {
+    std::string filename = pin->GetString("chemistry", key);
+    std::ifstream stream(filename);
+    if (stream.good() == false) {
+      app->Error("Cannot open microphysics config file: " + filename);
+    }
+
+    YAML::Node node = YAML::Load(stream);
+    if (!node["microphysics"]) {
+      throw NotFoundError("Microphysics", "microphysics");
+    }
+
+    for (auto sys : node["microphysics"]) {
+      std::string name = sys.as<std::string>();
+      std::string scheme = node[name]["scheme"].as<std::string>();
+      if (scheme == "Kessler94") {
+        auto p = std::make_unique<Kessler94>(name, node[name]);
+        systems_.push_back(std::move(p));
+      } else {
+        throw NotFoundError("Microphysics", scheme);
+      }
+    }
+  }
 }
 
 Microphysics::~Microphysics() {

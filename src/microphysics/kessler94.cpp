@@ -28,10 +28,10 @@
 #include "chemistry_solver.hpp"
 #include "microphysical_scheme.hpp"
 
-Kessler94::Kessler94(std::string name, YAML::Node &node)
+Kessler94::Kessler94(std::string name, YAML::Node const &node)
     : MicrophysicalScheme<3>(name, node) {
   Application::Logger app("microphysics");
-  app->Log("Initialize Kessler94 Scheme");
+  app->Log("Initialize Kessler94 Scheme for " + name);
 
   if (node["parameters"]) params_ = ToParameterMap(node["parameters"]);
 
@@ -48,7 +48,7 @@ Kessler94::Kessler94(std::string name, YAML::Node &node)
 
 Kessler94::~Kessler94() {
   Application::Logger app("microphysics");
-  app->Log("Destroy Kessler94 Scheme");
+  app->Log("Destroy Kessler94 Scheme for " + name_);
 }
 
 void Kessler94::AssembleReactionMatrix(Real *rate, Real **jac,

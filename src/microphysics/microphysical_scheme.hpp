@@ -63,7 +63,7 @@ class MicrophysicalScheme : public MicrophysicalSchemeBase {
   using RealVector = Eigen::Matrix<Real, Size, 1>;
   using RealMatrix = Eigen::Matrix<Real, Size, Size>;
 
-  MicrophysicalScheme(std::string name, YAML::Node &node)
+  MicrophysicalScheme(std::string name, YAML::Node const &node)
       : MicrophysicalSchemeBase(name) {
     rate_ = new Real[Size];
     NewCArray(jacobian_, Size, Size);
@@ -86,7 +86,7 @@ class Kessler94 : public MicrophysicalScheme<3> {
  public:
   using Base = MicrophysicalScheme<3>;
 
-  Kessler94(std::string name, YAML::Node &node);
+  Kessler94(std::string name, YAML::Node const &node);
 
   ~Kessler94();
 
