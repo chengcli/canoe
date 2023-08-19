@@ -24,11 +24,14 @@ Microphysics::Microphysics(MeshBlock *pmb, ParameterInput *pin)
   w.InitWithShallowSlice(pmb->pscalars->r, 4, 0, NCLOUD);
   u.InitWithShallowSlice(pmb->pscalars->s, 4, 0, NCLOUD);
 
+  int ncells1 = pmb->ncells1;
+  int ncells2 = pmb->ncells2;
+  int ncells3 = pmb->ncells3;
+
   // hydrodynamic variables
-  vsed_.NewAthenaArray(NCLOUD, pmb->ncells1);
-  vsedf_.NewAthenaArray(NCLOUD, pmb->ncells1 + 1);
-  hydro_.NewAthenaArray(NCLOUD_HYDRO, NCLOUD, pmb->ncells3, pmb->ncells2,
-                        pmb->ncells1);
+  vsed_.NewAthenaArray(NCLOUD, ncells3, ncells2, ncells1);
+  vsedf_.NewAthenaArray(NCLOUD, ncells3, ncells2, ncells1 + 1);
+  hydro_.NewAthenaArray(NCLOUD_HYDRO, NCLOUD, ncells3, ncells2, ncells1);
 }
 
 Microphysics::~Microphysics() {
@@ -38,7 +41,8 @@ Microphysics::~Microphysics() {
   app->Log("Destroy Microphysics");
 }
 
-void Microphysics::AddFrictionalHeating(std::vector<AirParcel> &air_column) {}
+void Microphysics::AddFrictionalHeating(
+    std::vector<AirParcel> &air_column) const {}
 
 void Microphysics::EvolveSystems(std::vector<AirParcel> &air_column, Real time,
                                  Real dt) {
@@ -59,4 +63,4 @@ void Microphysics::SetSedimentationVelocity(int k, int j, int il, int iu) {
 }
 
 void Microphysics::AddSedimentationFlux(AthenaArray<Real> &sflx, int k, int j,
-                                        int il, int iu) {}
+                                        int il, int iu) const {}

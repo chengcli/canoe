@@ -23,20 +23,21 @@ class Microphysics {
   // tem, v1, v2, v3
   enum { NCLOUD_HYDRO = 4 };
 
+  // access members
   AthenaArray<Real> w, u;
 
   Microphysics(MeshBlock *pmb, ParameterInput *pin);
 
   ~Microphysics();
 
-  void AddFrictionalHeating(std::vector<AirParcel> &air_column);
+  void AddFrictionalHeating(std::vector<AirParcel> &air_column) const;
 
   void EvolveSystems(std::vector<AirParcel> &air_column, Real time, Real dt);
 
   void SetSedimentationVelocity(int k, int j, int il, int iu);
 
   void AddSedimentationFlux(AthenaArray<Real> &sflx, int k, int j, int il,
-                            int iu);
+                            int iu) const;
 
  protected:
   AthenaArray<Real> vsed_, vsedf_;
@@ -45,7 +46,7 @@ class Microphysics {
 
   std::vector<MicrophysicalSchemePtr> systems_;
 
-  MeshBlock *pmy_block_;
+  MeshBlock *pmy_block_ = nullptr;
 };
 
 using MicrophysicsPtr = std::shared_ptr<Microphysics>;

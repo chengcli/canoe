@@ -1,4 +1,4 @@
-name: giant planet microphysics model
+name: giant planet chemistry model
 
 microphysics:
   - water-system
