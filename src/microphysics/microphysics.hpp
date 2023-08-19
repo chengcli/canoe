@@ -52,4 +52,6 @@ class Microphysics {
   MeshBlock *pmy_block_;
 };
 
+using MicrophysicsPtr = std::shared_ptr<Microphysics>;
+
 #endif  // SRC_MICROPHYSICS_MICROPHYSICS_HPP_

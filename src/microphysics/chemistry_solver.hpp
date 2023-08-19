@@ -1,14 +1,13 @@
-#ifndef CHEMISTRY_SOLVER_HPP
-#define CHEMISTRY_SOLVER_HPP
+#ifndef SRC_MICROPHYSICS_CHEMISTRY_SOLVER_HPP
+#define SRC_MICROPHYSICS_CHEMISTRY_SOLVER_HPP
 
-// #include "../math/linalg.h"
 //  Athena++ headers
-#include "../athena.hpp"
+#include <athena/athena.hpp>
 
 // Eigen header files
-#include "../math/eigen335/Eigen/Core"
-#include "../math/eigen335/Eigen/Dense"
-#include "../math/eigen335/Eigen/LU"
+#include <Eigen/Core>
+#include <Eigen/Dense>
+#include <Eigen/LU>
 
 template <int N>
 class ChemistrySolver {
@@ -22,8 +21,8 @@ class ChemistrySolver {
   // functions
   ChemistrySolver() { I_.setIdentity(); }
 
-  template <typename T1, typename T2>
-  T1 solveBDF1(T1 const& Rate, T2 const& Jac, Real dt) {
+  template <typename T1, typename T2, typename T3>
+  T1 solveBDF1(T2 const& Rate, T3 const& Jac, Real dt) {
     A_ = I_ / dt - Jac;
     if (N <= 4)
       return A_.inverse() * Rate;
@@ -31,11 +30,10 @@ class ChemistrySolver {
       return A_.partialPivLu().solve(Rate);
   }
 
-  template <typename T1, typename T2>
-  T1 solveTRBDF2(T1 const& Rate, T2 const& Jac, Real dt) {
-    int gamma = 2. - sqrt(2.);
-    A_ = I_ - gamma / 2. * dt * Jac;
-    B_ = dt * (1. - gamma / 2.) * Rate + dt * gamma / 2. * A_ * Rate;
+  template <typename T1, typename T2, typename T3>
+  T1 solveTRBDF2(T2 const& Rate, T3 const& Jac, Real dt) {
+    A_ = I_ - gamma_ / 2. * dt * Jac;
+    B_ = dt * (1. - gamma_ / 2.) * Rate + dt * gamma_ / 2. * A_ * Rate;
     A_ = A_ * A_;
     if (N <= 4)
       return A_.inverse() * B_;
@@ -43,8 +41,8 @@ class ChemistrySolver {
       return A_.partialPivLu().solve(B_);
   }
 
-  template <typename T1, typename T2>
-  T1 solveTRBDF2Blend(Real c[], T1 const& Rate, T2 const& Jac, int const indx[],
+  template <typename T1, typename T2, typename T3>
+  T1 solveTRBDF2Blend(Real c[], T2 const& Rate, T3 const& Jac, int const indx[],
                       Real dt) {
     // BDF1 solver
     Eigen::Matrix<Real, N, 1> sol = BDF1(Rate, Jac, dt);
@@ -66,6 +64,8 @@ class ChemistrySolver {
   }
 
  private:
+  int gamma_ = 2. - sqrt(2.);
+
   // scratch array
   Eigen::Matrix<Real, N, N> A_, I_;
   Eigen::Matrix<Real, N, 1> B_, S1_, S2_;

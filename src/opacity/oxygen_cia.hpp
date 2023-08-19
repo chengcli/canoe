@@ -9,7 +9,7 @@
 
 class O2O2CIA : public Absorber {
  public:
-  O2O2CIA(SpeciesNames const& species, ParameterMap params)
+  O2O2CIA(std::vector<std::string> const& species, ParameterMap params)
       : Absorber("O2-O2", species, params) {
     category_ = "cia";
   }

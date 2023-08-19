@@ -24,9 +24,10 @@ Microphysics::Microphysics(MeshBlock *pmb, ParameterInput *pin)
   u.InitWithShallowSlice(pmb->pscalars->s, 4, 0, NCLOUD);
 
   // hydrodynamic variables
-  vsed_.NewAthenaArray(NCLOUD, ncells1);
-  vsedf_.NewAthenaArray(NCLOUD, ncells1 + 1);
-  hydro_.NewAthenaArray(NCLOUD_HYDRO, NCLOUD, ncells3, ncells2, ncells1);
+  vsed_.NewAthenaArray(NCLOUD, pmb->ncells1);
+  vsedf_.NewAthenaArray(NCLOUD, pmb->ncells1 + 1);
+  hydro_.NewAthenaArray(NCLOUD_HYDRO, NCLOUD, pmb->ncells3, pmb->ncells2,
+                        pmb->ncells1);
 }
 
 Microphysics::~Microphysics() {

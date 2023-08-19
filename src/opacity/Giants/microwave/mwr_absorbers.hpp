@@ -26,7 +26,7 @@ namespace GiantPlanets {
 
 class MwrAbsorberCIA : public Absorber {
  public:
-  MwrAbsorberCIA(SpeciesNames const& species, ParameterMap params);
+  MwrAbsorberCIA(std::vector<std::string> const& species, ParameterMap params);
 
   Real GetAttenuation(Real wave1, Real wave2, AirParcel const& var) const;
 
@@ -36,7 +36,7 @@ class MwrAbsorberCIA : public Absorber {
 
 class MwrAbsorberNH3 : public Absorber {
  public:
-  MwrAbsorberNH3(SpeciesNames const& species, ParameterMap params);
+  MwrAbsorberNH3(std::vector<std::string> const& species, ParameterMap params);
 
   MwrAbsorberNH3& SetModelHanley() {
     model_name_ = "Hanley09";
@@ -64,7 +64,7 @@ class MwrAbsorberNH3 : public Absorber {
 
 class MwrAbsorberPH3 : public Absorber {
  public:
-  MwrAbsorberPH3(SpeciesNames const& species, ParameterMap params)
+  MwrAbsorberPH3(std::vector<std::string> const& species, ParameterMap params)
       : Absorber("PH3", species, params) {}
 
   MwrAbsorberPH3& SetModelRadtran() {
@@ -82,7 +82,7 @@ class MwrAbsorberPH3 : public Absorber {
 class MwrAbsorberH2O : public Absorber {
  public:
   // TODO(cli) check Karpowics model
-  MwrAbsorberH2O(SpeciesNames const& species, ParameterMap params);
+  MwrAbsorberH2O(std::vector<std::string> const& species, ParameterMap params);
 
   MwrAbsorberH2O& SetModeldeBoer() {
     model_name_ = "deBoer";
@@ -106,7 +106,7 @@ class MwrAbsorberH2O : public Absorber {
 
 class MwrAbsorberH2S : public Absorber {
  public:
-  MwrAbsorberH2S(SpeciesNames const& species, ParameterMap params)
+  MwrAbsorberH2S(std::vector<std::string> const& species, ParameterMap params)
       : Absorber("H2S", species, params) {}
 
   Real GetAttenuation(Real wave1, Real wave2, AirParcel const& var) const;
@@ -114,7 +114,8 @@ class MwrAbsorberH2S : public Absorber {
 
 class MwrAbsorberElectron : public Absorber {
  public:
-  MwrAbsorberElectron(SpeciesNames const& species, ParameterMap params)
+  MwrAbsorberElectron(std::vector<std::string> const& species,
+                      ParameterMap params)
       : Absorber("Electron", species, params) {}
 
   MwrAbsorberElectron& SetModelAppletonHartree() {

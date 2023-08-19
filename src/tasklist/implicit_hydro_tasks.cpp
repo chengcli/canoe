@@ -21,7 +21,7 @@
 #include <harp/radiation.hpp>
 
 // dusts
-#include <dusts/cloud.hpp>
+#include <microphysics/microphysics.hpp>
 
 // tasklist
 #include "extra_tasks.hpp"
@@ -215,7 +215,7 @@ TaskStatus ImplicitHydroTasks::AddFluxToConserved(MeshBlock *pmb, int stage) {
   int ie = pmb->ie, je = pmb->je, ke = pmb->ke;
 
   auto prad = pmb->pimpl->prad;
-  auto pcloud = pmb->pimpl->pcloud;
+  auto pmicro = pmb->pimpl->pmicro;
 
   if (stage <= nstages) {
     if (stage_wghts[stage - 1].main_stage) {

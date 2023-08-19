@@ -25,6 +25,9 @@
 #include "snap/implicit/implicit_solver.hpp"
 #include "snap/thermodynamics/thermodynamics.hpp"
 
+// microphysics
+#include "microphysics/microphysics.hpp"
+
 // canoe
 #include "impl.hpp"
 #include "index_map.hpp"
@@ -38,8 +41,8 @@ MeshBlock::Impl::Impl(MeshBlock *pmb, ParameterInput *pin) : pmy_block_(pmb) {
   // implicit methods
   phevi = std::make_shared<ImplicitSolver>(pmb, pin);
 
-  // cloud
-  pcloud = std::make_shared<Cloud>(pmb, pin);
+  // microphysics
+  pmicro = std::make_shared<Microphysics>(pmb, pin);
 
   // chemistry
   pchem = std::make_shared<Chemistry>(pmb, pin);
@@ -78,7 +81,7 @@ void MeshBlock::Impl::GatherFromPrimitive(AirParcel *var, int k, int j,
   for (int n = 0; n < NHYDRO; ++n) var->w[n] = phydro->w(n, k, j, i);
 
 #pragma omp simd
-  for (int n = 0; n < NCLOUD; ++n) var->c[n] = pcloud->w(n, k, j, i);
+  for (int n = 0; n < NCLOUD; ++n) var->c[n] = pmicro->w(n, k, j, i);
 
   // scale mass fractions
   Real rho = var->w[IDN], xd = 1.;
@@ -127,7 +130,7 @@ void MeshBlock::Impl::GatherFromConserved(AirParcel *var, int k, int j,
   for (int n = 0; n < NHYDRO; ++n) var->w[n] = phydro->u(n, k, j, i);
 
 #pragma omp simd
-  for (int n = 0; n < NCLOUD; ++n) var->c[n] = pcloud->u(n, k, j, i);
+  for (int n = 0; n < NCLOUD; ++n) var->c[n] = pmicro->u(n, k, j, i);
 
   Real rho = 0., cvt = 0.;
 #pragma omp simd reduction(+ : rho, cvt)
@@ -204,7 +207,7 @@ void MeshBlock::Impl::DistributeToPrimitive(AirParcel const &var_in, int k,
 
 #pragma omp simd
   for (int n = 0; n < NCLOUD; ++n)
-    pcloud->w(n, k, j, i) = var->c[n] * rho * inv_rhod;
+    pmicro->w(n, k, j, i) = var->c[n] * rho * inv_rhod;
 
 #pragma omp simd
   for (int n = 0; n < NCHEMISTRY; ++n)
@@ -236,7 +239,7 @@ void MeshBlock::Impl::DistributeToConserved(AirParcel const &var_in, int k,
   for (int n = 0; n < NHYDRO; ++n) phydro->u(n, k, j, i) = var->w[n];
 
 #pragma omp simd
-  for (int n = 0; n < NCLOUD; ++n) pcloud->u(n, k, j, i) = var->c[n];
+  for (int n = 0; n < NCLOUD; ++n) pmicro->u(n, k, j, i) = var->c[n];
 
   Real rho = 0., cvt = 0.;
 

@@ -16,22 +16,26 @@
 #include <air_parcel.hpp>
 
 // utils
-#include <utils/ndarray.hpp>
+#include <utils/ndarrays.hpp>
 #include <utils/parameter_map.hpp>
+
+// microphysics
+#include "chemistry_solver.hpp"
 
 class MeshBlock;
 class ParameterInput;
 
 class MicrophysicalSchemeBase {
  public:
-  MicrophysicalSchemeBase(std::string name) : name_(name) {}
+  MicrophysicalSchemeBase(std::string name)
+      : name_(name), rate_(nullptr), jacobian_(nullptr) {}
 
   virtual ~MicrophysicalSchemeBase() {}
 
   virtual void AssembleReactionMatrix(Real *rate, Real **jac,
                                       AirParcel const &air, Real time) = 0;
 
-  virtual void EvolveOneStep(AthenaArray<Real> &u, Real time, Real dt) = 0;
+  virtual void EvolveOneStep(AirParcel *Air, Real time, Real dt) = 0;
 
   Real *GetRatePtr() { return rate_; }
 
@@ -39,11 +43,11 @@ class MicrophysicalSchemeBase {
 
   std::string GetName() { return name_; }
 
- private:
+ protected:
   std::string name_;
   Real *rate_;
   Real **jacobian_;
-}
+};
 
 using MicrophysicalSchemePtr = std::shared_ptr<MicrophysicalSchemeBase>;
 
@@ -54,18 +58,18 @@ class MicrophysicalScheme : public MicrophysicalSchemeBase {
 
   MicrophysicalScheme(std::string name, YAML::Node &node)
       : MicrophysicalSchemeBase(name) {
-    NewCArray(rate_, Size);
+    rate_ = new Real[Size];
     NewCArray(jacobian_, Size, Size);
   }
 
   ~MicrophysicalScheme() {
-    FreeCArray(rate_);
+    delete[] rate_;
     FreeCArray(jacobian_);
   }
 
-  protectecd :
-      //! parameters
-      ParameterMap params_;
+ protected:
+  //! parameters
+  ParameterMap params_;
 
   //! indices of species
   std::array<int, D> species_index_;
@@ -74,6 +78,10 @@ class MicrophysicalScheme : public MicrophysicalSchemeBase {
 class Kessler94 : public MicrophysicalScheme<3> {
  public:
   using Base = MicrophysicalScheme<3>;
+  using MapVector = Eigen::Map<Eigen::Matrix<Real, Base::Size, 1>>;
+  using MapMatrix = Eigen::Map<Eigen::Matrix<Real, Base::Size, Base::Size>>;
+  using RealVector = Eigen::Matrix<Real, Base::Size, 1>;
+  using RealMatrix = Eigen::Matrix<Real, Base::Size, Base::Size>;
 
   Kessler94(std::string name, YAML::Node &node);
 
@@ -85,7 +93,7 @@ class Kessler94 : public MicrophysicalScheme<3> {
   void EvolveOneStep(AirParcel *air, Real time, Real dt) override;
 
  protected:
-  ChemistrySolve<Base::Size> solver_;
+  ChemistrySolver<Base::Size> solver_;
 };
 
 #endif  // SRC_MICROPHYSICS_MICROPHYSICAL_SCHEME_HPP_

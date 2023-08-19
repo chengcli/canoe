@@ -11,10 +11,11 @@
 // athena
 #include <athena/athena.hpp>
 
-using ParameterMap = std::map<std::string, Real>;
+using ParameterMap = std::unordered_map<std::string, Real>;
 
-inline std::map<std::string, Real> ToParameterMap(const YAML::Node &node) {
-  std::map<std::string, Real> map;
+inline std::unordered_map<std::string, Real> ToParameterMap(
+    const YAML::Node &node) {
+  std::unordered_map<std::string, Real> map;
   for (auto it = node.begin(); it != node.end(); ++it) {
     map[it->first.as<std::string>()] = it->second.as<Real>();
   }
