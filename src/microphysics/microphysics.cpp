@@ -8,9 +8,10 @@
 #include <application/application.hpp>
 
 // canoe
+#include <air_parcel.hpp>
 #include <configure.hpp>
 
-// dusts
+// microphysics
 #include "microphysics.hpp"
 
 Microphysics::Microphysics(MeshBlock *pmb, ParameterInput *pin)
@@ -36,3 +37,26 @@ Microphysics::~Microphysics() {
   Application::Logger app("microphysics");
   app->Log("Destroy Microphysics");
 }
+
+void Microphysics::AddFrictionalHeating(std::vector<AirParcel> &air_column) {}
+
+void Microphysics::EvolveSystems(std::vector<AirParcel> &air_column, Real time,
+                                 Real dt) {
+  for (auto &system : systems_)
+    for (auto &air : air_column) {
+      system->AssembleReactionMatrix(system->GetRatePtr(),
+                                     system->GetJacobianPtr(), air, time);
+      system->EvolveOneStep(&air, time, dt);
+    }
+}
+
+void Microphysics::SetSedimentationVelocity(int k, int j, int il, int iu) {
+  for (auto &system : systems_) {
+    system->SetSedimentationVelocity(vsed_, k, j, il, iu);
+  }
+
+  // interpolation to cell interface
+}
+
+void Microphysics::AddSedimentationFlux(AthenaArray<Real> &sflx, int k, int j,
+                                        int il, int iu) {}

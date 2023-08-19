@@ -20,7 +20,7 @@
 // harp
 #include <harp/radiation.hpp>
 
-// dusts
+// microphysics
 #include <microphysics/microphysics.hpp>
 
 // tasklist
@@ -222,7 +222,8 @@ TaskStatus ImplicitHydroTasks::AddFluxToConserved(MeshBlock *pmb, int stage) {
       for (int k = ks; k <= ke; ++k)
         for (int j = js; j <= je; ++j) {
           prad->AddRadiativeFlux(pmb->phydro, k, j, is, ie + 1);
-          // pcloud->AddSedimentationFlux(pmb->pscalar, k, j, is, ie+1);
+          pmicro->AddSedimentationFlux(pmb->pscalars->s_flux[X1DIR], k, j, is,
+                                       ie + 1);
         }
 
       if (stage == nstages) {           // last stage
@@ -234,6 +235,10 @@ TaskStatus ImplicitHydroTasks::AddFluxToConserved(MeshBlock *pmb, int stage) {
             for (int j = js; j <= je; ++j)
               prad->CalRadiativeFlux(pmb->pmy_mesh->time, k, j, is, ie + 1);
         }
+
+        for (int k = ks; k <= ke; ++k)
+          for (int j = js; j <= je; ++j)
+            pmicro->SetSedimentationVelocity(k, j, is, ie + 1);
       }
     }
     return TaskStatus::next;
@@ -304,13 +309,17 @@ TaskStatus ImplicitHydroTasks::UpdateAllConserved(MeshBlock *pmb, int stage) {
 
   auto pthermo = Thermodynamics::GetInstance();
 
+  auto pmicro = pmb->pimpl->pmicro;
+
   std::vector<AirParcel> air_column;
 
   for (int k = ks; k <= ke; k++)
     for (int j = js; j <= je; j++) {
       pmb->pimpl->GatherFromConserved(air_column, k, j, is, ie);
-      // add frictional heating
-      // pchem->AddFrictionalHeating(phydro);
+
+      pmicro->AddFrictionalHeating(air_column);
+
+      pmicro->EvolveSystems(air_column, pmb->pmy_mesh->time, pmb->pmy_mesh->dt);
 
       pthermo->SaturationAdjustment(air_column);
 

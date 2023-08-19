@@ -35,6 +35,9 @@ class MicrophysicalSchemeBase {
   virtual void AssembleReactionMatrix(Real *rate, Real **jac,
                                       AirParcel const &air, Real time) = 0;
 
+  virtual void SetSedimentationVelocity(AthenaArray<Real> &vsed, int k, int j,
+                                        int il, int iu) = 0;
+
   virtual void EvolveOneStep(AirParcel *Air, Real time, Real dt) = 0;
 
   Real *GetRatePtr() { return rate_; }
@@ -55,6 +58,10 @@ template <int D>
 class MicrophysicalScheme : public MicrophysicalSchemeBase {
  public:
   enum { Size = D };
+  using MapVector = Eigen::Map<Eigen::Matrix<Real, Size, 1>>;
+  using MapMatrix = Eigen::Map<Eigen::Matrix<Real, Size, Size>>;
+  using RealVector = Eigen::Matrix<Real, Size, 1>;
+  using RealMatrix = Eigen::Matrix<Real, Size, Size>;
 
   MicrophysicalScheme(std::string name, YAML::Node &node)
       : MicrophysicalSchemeBase(name) {
@@ -78,10 +85,6 @@ class MicrophysicalScheme : public MicrophysicalSchemeBase {
 class Kessler94 : public MicrophysicalScheme<3> {
  public:
   using Base = MicrophysicalScheme<3>;
-  using MapVector = Eigen::Map<Eigen::Matrix<Real, Base::Size, 1>>;
-  using MapMatrix = Eigen::Map<Eigen::Matrix<Real, Base::Size, Base::Size>>;
-  using RealVector = Eigen::Matrix<Real, Base::Size, 1>;
-  using RealMatrix = Eigen::Matrix<Real, Base::Size, Base::Size>;
 
   Kessler94(std::string name, YAML::Node &node);
 
@@ -91,6 +94,9 @@ class Kessler94 : public MicrophysicalScheme<3> {
                               Real time) override;
 
   void EvolveOneStep(AirParcel *air, Real time, Real dt) override;
+
+  void SetSedimentationVelocity(AthenaArray<Real> &vsed, int k, int j, int il,
+                                int iu) override;
 
  protected:
   ChemistrySolver<Base::Size> solver_;

@@ -9,7 +9,7 @@
 // external
 #include <yaml-cpp/yaml.h>
 
-// snap
+// canoe
 #include <air_parcel.hpp>
 
 // microphysics
@@ -29,18 +29,14 @@ class Microphysics {
 
   ~Microphysics();
 
-  void EvolveSystems(std::vector<AirParcel> &air_column, Real time, Real dt) {
-    for (auto &system : systems_)
-      for (auto &air : air_column) {
-        system->AssembleReactionMatrix(system->GetRatePtr(),
-                                       system->GetJacobianPtr(), air, time);
-        system->EvolveOneStep(&air, time, dt);
-      }
-  }
-
   void AddFrictionalHeating(std::vector<AirParcel> &air_column);
 
-  void AddSedimentationFlux(AthenaArray<Real> &u, int k, int j, int il, int iu);
+  void EvolveSystems(std::vector<AirParcel> &air_column, Real time, Real dt);
+
+  void SetSedimentationVelocity(int k, int j, int il, int iu);
+
+  void AddSedimentationFlux(AthenaArray<Real> &sflx, int k, int j, int il,
+                            int iu);
 
  protected:
   AthenaArray<Real> vsed_, vsedf_;

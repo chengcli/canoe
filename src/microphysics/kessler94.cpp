@@ -103,9 +103,17 @@ void Kessler94::AssembleReactionMatrix(Real *rate, Real **jac,
 }
 
 void Kessler94::EvolveOneStep(AirParcel *air, Real time, Real dt) {
-  MapVector rate(&rate_[0]);
-  MapMatrix jacobian(&jacobian_[0][0]);
+  Base::MapVector rate(&rate_[0]);
+  Base::MapMatrix jacobian(&jacobian_[0][0]);
 
-  auto sol = solver_.solveBDF1<RealVector>(rate, jacobian, dt);
+  auto sol = solver_.solveBDF1<Base::RealVector>(rate, jacobian, dt);
   for (int n = 0; n < Base::Size; ++n) air->w[species_index_[n]] += sol(n);
+}
+
+void Kessler94::SetSedimentationVelocity(AthenaArray<Real> &vsed, int k, int j,
+                                         int il, int iu) {
+  int ip = species_index_[2];
+  Real vel = params_["sedimentation"];
+
+  for (int i = il; i <= iu; ++i) vsed(ip, k, j, il, iu) = vel;
 }
