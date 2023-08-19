@@ -1,5 +1,5 @@
-#ifndef SRC_MICROPHYSICS_MICROPHYSICAL_SCHEME_HPP_
-#define SRC_MICROPHYSICS_MICROPHYSICAL_SCHEME_HPP_
+#ifndef SRC_MICROPHYSICS_MICROPHYSICS_HPP_
+#define SRC_MICROPHYSICS_MICROPHYSICS_HPP_
 
 // C/C++
 #include <map>
@@ -12,6 +12,7 @@
 // snap
 #include <air_parcel.hpp>
 
+// microphysics
 #include "microphysical_scheme.hpp"
 
 class MeshBlock;
@@ -51,4 +52,4 @@ class Microphysics {
   MeshBlock *pmy_block_;
 };
 
-#endif  // SRC_MICROPHYSICS_MICROPHYSICAL_SCHEME_HPP_
+#endif  // SRC_MICROPHYSICS_MICROPHYSICS_HPP_

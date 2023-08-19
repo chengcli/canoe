@@ -1,0 +1,15 @@
+name: giant planet microphysics model
+
+microphysics:
+  - water
+  - ammonia
+
+water:
+  scheme: Kessler94
+  dependent-species: [H2O, H2O(s), H2O(p)]
+  parameters: {autoconversion: 0.1, accretion: 0.1, evaporation: 0.1}
+
+ammonia:
+  scheme: Kessler94
+  dependent-species: [NH3, NH3(s), NH3(p)]
+  parameters: {autoconversion: 0.1, accretion: 0.1, evaporation: 0.1}

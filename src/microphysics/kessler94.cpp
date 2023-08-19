@@ -1,37 +1,45 @@
+// C/C++
+#include <string>
+
+// external
+#include <yaml-cpp/yaml.h>
+
+#include <Eigen/Core>
+
 // Athena++
+#include <athena/athena.hpp>
 #include <athena/mesh/mesh.hpp>
 
 // application
 #include <application/application.hpp>
 
+// utils
+#include <utils/parameter_map.hpp>
+
 // snap
 #include <index_map.hpp>
 #include <snap/thermodynamics/thermodynamics.hpp>
 
+// microphysics
 #include "chemistry_solver.hpp"
 #include "microphysical_scheme.hpp"
 
-void Kessler94::Kessler94(YAML::Node &node) : MicrophysicalScheme<3>(node) {
+void Kessler94::Kessler94(std::string name, YAML::Node &node)
+    : MicrophysicalScheme<3>(name, node) {
   Application::Logger app("microphysics");
   app->Log("Initialize Kessler94 Scheme");
 
-  Debugger *pdbg = pchem->pmy_block->pdebug;
-  std::stringstream &msg = pdbg->msg;
+  if (node["parameters"]) params_ = ToParameterMap(node["parameters"]);
 
-  myname = name;
-  particle_name = pin->GetString("chemistry", name + ".link_particle");
-  msg << "- particle " << particle_name << " linked to " << name << " chemistry"
-      << std::endl;
+  std::vector<std::string> species;
+  if (node["dependent-species"])
+    species = node["dependent-species"].as<std::vector<std::string>>();
 
-  coeffs_["condensation"] = pin->GetReal("chemistry", name + ".condensation");
-  coeffs_["autoconversion"] =
-      pin->GetReal("chemistry", name + ".autoconversion");
-  coeffs_["accretion"] = pin->GetReal("chemistry", name + ".accretion");
-  coeffs_["evaporation"] = pin->GetReal("chemistry", name + ".evaporation");
+  auto pindex = IndexMap::GetInstance();
 
-  species_index_[0] = pin->GetInteger("chemistry", name + ".link_vapor");
-  species_index_[1] = NHYDRO;
-  species_index_[2] = NHYDRO + 1;
+  for (int i = 0; i < Base::Size; ++i) {
+    species_index_[i] = pindex->GetSpeciesId(species[i]);
+  }
 }
 
 ~Kessler94::Kessler94() {
@@ -45,9 +53,9 @@ void Kessler94::AssembleReactionMatrix(Real *rate, Real **jac,
   int ic = species_index_[1];
   int ip = species_index_[2];
 
-  Real k1 = coeffs_["autoconversion"];
-  Real k2 = coeffs_["accretion"];
-  Real k3 = coeffs_["evaporation"];
+  Real k1 = param_["autoconversion"];
+  Real k2 = param_["accretion"];
+  Real k3 = param_["evaporation"];
 
   Real svp = pmy_block_->pthermo->SatVaporPressure(air.w[IDN], ic);
   Real qtol = 1.;  // total gas mols
@@ -78,11 +86,14 @@ void Kessler94::AssembleReactionMatrix(Real *rate, Real **jac,
   jac[ip][ip] += k2 * air.w[ic];
 }
 
+using Vector = Eigen::Map<Eigen::Matrix<Real, Base::Size, 1>>;
+using Matrix = Eigen::Map<Eigen::Matrix<Real, Base::Size, Base::Size>>;
+
 void Kessler94::EvolveOneStep(AirParcel *air, Real time, Real dt) {
-  Eigen::Map<Eigen::Matrix<Real, Size, 1>> rate(&rate_[0]);
-  Eigen::Map<Eigen::Matrix<Real, Size, Size>> jacobian(&jacobian_[0][0]);
+  Vector rate(&rate_[0]);
+  Matrix jacobian(&jacobian_[0][0]);
 
   auto sol = solve_.solveBDF1(rate, jac, dt);
 
-  for (int n = 0; n < Size; ++n) air->w[species_index_[n]] += sol(n);
+  for (int n = 0; n < Base::Size; ++n) air->w[species_index_[n]] += sol(n);
 }

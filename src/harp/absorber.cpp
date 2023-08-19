@@ -16,7 +16,7 @@ Absorber::Absorber(std::string name) : name_(name) {
   app->Log("Create Absorber " + name_);
 }
 
-Absorber::Absorber(std::string name, SpeciesNames const& names,
+Absorber::Absorber(std::string name, std::vector<std::string> const& names,
                    ParameterMap params)
     : name_(name), params_(params) {
   Application::Logger app("harp");

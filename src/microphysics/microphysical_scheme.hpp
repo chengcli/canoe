@@ -17,13 +17,14 @@
 
 // utils
 #include <utils/ndarray.hpp>
+#include <utils/parameter_map.hpp>
 
 class MeshBlock;
 class ParameterInput;
 
 class MicrophysicalSchemeBase {
  public:
-  MicrophysicalSchemeBase() {}
+  MicrophysicalSchemeBase(std::string name) : name_(name) {}
 
   virtual ~MicrophysicalSchemeBase() {}
 
@@ -36,7 +37,10 @@ class MicrophysicalSchemeBase {
 
   Real **GetJacobianPtr() { return jacobian_; }
 
+  std::string GetName() { return name_; }
+
  private:
+  std::string name_;
   Real *rate_;
   Real **jacobian_;
 }
@@ -48,7 +52,8 @@ class MicrophysicalScheme : public MicrophysicalSchemeBase {
  public:
   enum { Size = D };
 
-  MicrophysicalScheme(YAML::Node &node) {
+  MicrophysicalScheme(std::string name, YAML::Node &node)
+      : MicrophysicalSchemeBase(name) {
     NewCArray(rate_, Size);
     NewCArray(jacobian_, Size, Size);
   }
@@ -59,9 +64,8 @@ class MicrophysicalScheme : public MicrophysicalSchemeBase {
   }
 
   protectecd :
-      //! reaction coefficients
-      std::map<std::string, Real>
-          coeffs_;
+      //! parameters
+      ParameterMap params_;
 
   //! indices of species
   std::array<int, D> species_index_;
@@ -69,7 +73,9 @@ class MicrophysicalScheme : public MicrophysicalSchemeBase {
 
 class Kessler94 : public MicrophysicalScheme<3> {
  public:
-  Kessler94(YAML::Node &node);
+  using Base = MicrophysicalScheme<3>;
+
+  Kessler94(std::string name, YAML::Node &node);
 
   ~Kessler94();
 
@@ -79,7 +85,7 @@ class Kessler94 : public MicrophysicalScheme<3> {
   void EvolveOneStep(AirParcel *air, Real time, Real dt) override;
 
  protected:
-  ChemistrySolve<3> solver_;
+  ChemistrySolve<Base::Size> solver_;
 };
 
 #endif  // SRC_MICROPHYSICS_MICROPHYSICAL_SCHEME_HPP_

@@ -2,16 +2,16 @@
 #define SRC_UTILS_PARAMETER_MAP_HPP_
 
 // C/C++
+#include <map>
 #include <string>
 
 // external
 #include <yaml-cpp/yaml.h>
 
-// C/C++
-#include <map>
-
 // athena
 #include <athena/athena.hpp>
+
+using ParameterMap = std::map<std::string, Real>;
 
 inline std::map<std::string, Real> ToParameterMap(const YAML::Node &node) {
   std::map<std::string, Real> map;
