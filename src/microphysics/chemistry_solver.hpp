@@ -24,10 +24,11 @@ class ChemistrySolver {
   template <typename T1, typename T2, typename T3>
   T1 solveBDF1(T2 const& Rate, T3 const& Jac, Real dt) {
     A_ = I_ / dt - Jac;
-    if (N <= 4)
+    if (N <= 4) {
       return A_.inverse() * Rate;
-    else
+    } else {
       return A_.partialPivLu().solve(Rate);
+    }
   }
 
   template <typename T1, typename T2, typename T3>
@@ -35,31 +36,30 @@ class ChemistrySolver {
     A_ = I_ - gamma_ / 2. * dt * Jac;
     B_ = dt * (1. - gamma_ / 2.) * Rate + dt * gamma_ / 2. * A_ * Rate;
     A_ = A_ * A_;
-    if (N <= 4)
+    if (N <= 4) {
       return A_.inverse() * B_;
-    else
+    } else {
       return A_.partialPivLu().solve(B_);
+    }
   }
 
   template <typename T1, typename T2, typename T3>
-  T1 solveTRBDF2Blend(Real c[], T2 const& Rate, T3 const& Jac, int const indx[],
-                      Real dt) {
+  T1 solveTRBDF2Blend(T2 const& Rate, T3 const& Jac, Real dt, Real const c[],
+                      int const indx[]) {
     // BDF1 solver
-    Eigen::Matrix<Real, N, 1> sol = BDF1(Rate, Jac, dt);
+    auto sol = solveBDF1<T1>(Rate, Jac, dt);
     for (int n = 0; n < Size; ++n) S1_(n) = c[indx[n]] + sol(n);
 
     // TR-BDF2 solver
-    sol = TRBDF2(Rate, Jac, dt);
+    sol = solveTRBDF2<T1>(Rate, Jac, dt);
     for (int n = 0; n < Size; ++n) S2_(n) = c[indx[n]] + sol(n);
 
     // Blend solutions
     Real alpha = 1.;
     for (int n = 0; n < Size; ++n)
       if (S2_(n) < 0.) alpha = std::min(alpha, S1_(n) / (S1_(n) - S2_(n)));
-    for (int n = 0; n < Size; ++n) {
+    for (int n = 0; n < Size; ++n)
       sol(n) = (1. - alpha) * S1_(n) + alpha * S2_(n) - c[indx[n]];
-      c[indx[n]] += sol(n);
-    }
     return sol;
   }
 

@@ -41,7 +41,7 @@ Kessler94::Kessler94(std::string name, YAML::Node const &node)
 
   auto pindex = IndexMap::GetInstance();
 
-  for (int i = 0; i < Base::Size; ++i) {
+  for (int i = 0; i < Size; ++i) {
     species_index_[i] = pindex->GetSpeciesId(species[i]);
   }
 }
@@ -51,68 +51,63 @@ Kessler94::~Kessler94() {
   app->Log("Destroy Kessler94 Scheme for " + name_);
 }
 
-void Kessler94::AssembleReactionMatrix(Real *rate, Real **jac,
-                                       AirParcel const &air, Real time) {
+void Kessler94::AssembleReactionMatrix(AirParcel const &air, Real time) {
+  auto pthermo = Thermodynamics::GetInstance();
+
+  // get indices
   int iv = species_index_[0];
   int ic = species_index_[1];
   int ip = species_index_[2];
 
-  for (int i : {iv, ic, ip}) {
-    rate[i] = 0.;
-    for (int j : {iv, ic, ip}) {
-      jac[i][j] = 0.;
-    }
-  }
-
+  // get parameters
   Real k1 = params_["autoconversion"];
   Real k2 = params_["accretion"];
   Real k3 = params_["evaporation"];
 
-  auto pthermo = Thermodynamics::GetInstance();
+  // calculate saturatin deficit (negative means sub-saturation)
+  auto rates = pthermo->TryEquilibriumTP_VaporCloud(air, iv, 0., true);
+  Real dqv = -rates[0];
 
-  /*Real svp = pmy_block_->pthermo->SatVaporPressure(air.w[IDN], ic);
-  Real qtol = 1.;  // total gas mols
-  for (int n = 0; n < NCLOUD; ++n) qtol -= air.c[n];
-  Real dqH2O = air.w[iv] - svp / air.w[IPR] * qtol;  // q - qs*/
+  // assemble matrix
+  rate_.setZero();
+  jacb_.setZero();
 
-  Real rh = pthermo->RelativeHumidity(air, iv);
-  Real factor = 1. - rh;
-
-  if (rh < 1.) {  // evaporation
-    rate[iv] += -k3 * air.w[ip] * factor;
-    rate[ip] += k3 * air.w[ip] * factor;
-    jac[iv][iv] += -k3 * air.w[ip];
-    jac[iv][ip] += -k3 * factor;
-    jac[ip][iv] += k3 * air.w[ip];
-    jac[ip][ip] += k3 * factor;
+  if (dqv < 0.) {  // evaporation
+    rate_(0) += -k3 * air.w[ip] * dqv;
+    rate_(2) += k3 * air.w[ip] * dqv;
+    jacb_(0, 0) += -k3 * air.w[ip];
+    jacb_(0, 2) += -k3 * dqv;
+    jacb_(2, 0) += k3 * air.w[ip];
+    jacb_(2, 2) += k3 * dqv;
   }
 
   // autoconversion
-  rate[ic] += -k1 * air.w[ic];
-  rate[ip] += k1 * air.w[ic];
-  jac[ic][ic] += -k1;
-  jac[ip][ic] += k1;
+  rate_(1) += -k1 * air.w[ic];
+  rate_(2) += k1 * air.w[ic];
+  jacb_(1, 1) += -k1;
+  jacb_(2, 1) += k1;
 
   // accretion
-  rate[ic] += -k2 * air.w[ic] * air.w[ip];
-  rate[ip] += k2 * air.w[ic] * air.w[ip];
-  jac[ic][ic] += -k2 * air.w[ip];
-  jac[ic][ip] += -k2 * air.w[ic];
-  jac[ip][ic] += k2 * air.w[ip];
-  jac[ip][ip] += k2 * air.w[ic];
+  rate_(1) += -k2 * air.w[ic] * air.w[ip];
+  rate_(2) += k2 * air.w[ic] * air.w[ip];
+  jacb_(1, 1) += -k2 * air.w[ip];
+  jacb_(1, 2) += -k2 * air.w[ic];
+  jacb_(2, 1) += k2 * air.w[ip];
+  jacb_(2, 2) += k2 * air.w[ic];
 }
 
 void Kessler94::EvolveOneStep(AirParcel *air, Real time, Real dt) {
-  Base::MapVector rate(&rate_[0]);
-  Base::MapMatrix jacobian(&jacobian_[0][0]);
+  // auto sol = solver_.solveBDF1<Base::RealVector>(rate_, jacb_, dt);
+  // auto sol = solver_.solveTRBDF2<Base::RealVector>(rate_, jacb_, dt);
+  auto sol = solver_.solveTRBDF2Blend<Base::RealVector>(
+      rate_, jacb_, dt, air->w, species_index_.data());
 
-  auto sol = solver_.solveBDF1<Base::RealVector>(rate, jacobian, dt);
-  for (int n = 0; n < Base::Size; ++n) air->w[species_index_[n]] += sol(n);
+  for (int n = 0; n < Size; ++n) air->w[species_index_[n]] += sol(n);
 }
 
 void Kessler94::SetSedimentationVelocity(AthenaArray<Real> &vsed, int k, int j,
                                          int il, int iu) {
-  int ip = species_index_[2];
+  int ip = species_index_[2] - NHYDRO;
   Real vel = params_["sedimentation"];
 
   for (int i = il; i <= iu; ++i) vsed(ip, k, j, il, iu) = vel;

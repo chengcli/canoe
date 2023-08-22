@@ -80,8 +80,7 @@ void Microphysics::EvolveSystems(std::vector<AirParcel> &air_column, Real time,
                                  Real dt) {
   for (auto &system : systems_)
     for (auto &air : air_column) {
-      system->AssembleReactionMatrix(system->GetRatePtr(),
-                                     system->GetJacobianPtr(), air, time);
+      system->AssembleReactionMatrix(air, time);
       system->EvolveOneStep(&air, time, dt);
     }
 }

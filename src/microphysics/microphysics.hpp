@@ -30,6 +30,12 @@ class Microphysics {
 
   ~Microphysics();
 
+  size_t GetNumSystems() const { return systems_.size(); }
+
+  std::string GetSystemName(int i) const { return systems_[i]->GetName(); }
+
+  MicrophysicalSchemePtr GetSystem(int i) const { return systems_[i]; }
+
   void AddFrictionalHeating(std::vector<AirParcel> &air_column) const;
 
   void EvolveSystems(std::vector<AirParcel> &air_column, Real time, Real dt);
