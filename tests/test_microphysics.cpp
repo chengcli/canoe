@@ -20,6 +20,9 @@ class TestMicrophysics : public testing::Test {
   ParameterInput *pinput;
   Mesh *pmesh;
 
+  int iH2O, iH2Oc, iH2Op;
+  int iNH3, iNH3c, iNH3p;
+
   virtual void SetUp() {
     IOWrapper infile;
     infile.Open("test_microphysics.inp", IOWrapper::FileMode::read);
@@ -43,6 +46,16 @@ class TestMicrophysics : public testing::Test {
     }
 
     pmesh->Initialize(restart, pinput);
+
+    auto pindex = IndexMap::GetInstance();
+
+    iH2O = pindex->GetSpeciesId("vapor.H2O");
+    iH2Oc = pindex->GetSpeciesId("cloud.H2O(c)");
+    iH2Op = pindex->GetSpeciesId("cloud.H2O(p)");
+
+    iNH3 = pindex->GetSpeciesId("vapor.NH3");
+    iNH3c = pindex->GetSpeciesId("cloud.NH3(c)");
+    iNH3p = pindex->GetSpeciesId("cloud.NH3(p)");
   }
 
   virtual void TearDown() {
@@ -59,6 +72,11 @@ TEST_F(TestMicrophysics, microphysics) {
   EXPECT_EQ(pmicro->GetNumSystems(), 2);
   EXPECT_EQ(pmicro->GetSystemName(0), "water-system");
   EXPECT_EQ(pmicro->GetSystemName(1), "ammonia-system");
+
+  EXPECT_EQ(iH2Oc, 7);
+  EXPECT_EQ(iNH3c, 8);
+  EXPECT_EQ(iH2Op, 9);
+  EXPECT_EQ(iNH3p, 10);
 }
 
 TEST_F(TestMicrophysics, assemble_matrix) {
@@ -69,19 +87,6 @@ TEST_F(TestMicrophysics, assemble_matrix) {
   auto &air = air_column[0];
   air.SetType(AirParcel::Type::MoleFrac);
   air.SetZero();
-
-  int iH2O = pindex->GetSpeciesId("vapor.H2O");
-  int iH2Oc = pindex->GetSpeciesId("cloud.H2O(c)");
-  int iH2Op = pindex->GetSpeciesId("cloud.H2O(p)");
-
-  int iNH3 = pindex->GetSpeciesId("vapor.NH3");
-  int iNH3c = pindex->GetSpeciesId("cloud.NH3(c)");
-  int iNH3p = pindex->GetSpeciesId("cloud.NH3(p)");
-
-  EXPECT_EQ(iH2Oc, 7);
-  EXPECT_EQ(iNH3c, 8);
-  EXPECT_EQ(iH2Op, 9);
-  EXPECT_EQ(iNH3p, 10);
 
   air.w[IDN] = 160.;
   air.w[IPR] = 7e4;
@@ -140,14 +145,6 @@ TEST_F(TestMicrophysics, evolve_one_step) {
   air.SetType(AirParcel::Type::MoleFrac);
   air.SetZero();
 
-  int iH2O = pindex->GetSpeciesId("vapor.H2O");
-  int iH2Oc = pindex->GetSpeciesId("cloud.H2O(c)");
-  int iH2Op = pindex->GetSpeciesId("cloud.H2O(p)");
-
-  int iNH3 = pindex->GetSpeciesId("vapor.NH3");
-  int iNH3c = pindex->GetSpeciesId("cloud.NH3(c)");
-  int iNH3p = pindex->GetSpeciesId("cloud.NH3(p)");
-
   air.w[IDN] = 160.;
   air.w[IPR] = 7e4;
   air.w[iH2O] = 0.02;
@@ -155,7 +152,7 @@ TEST_F(TestMicrophysics, evolve_one_step) {
 
   pthermo->SaturationAdjustment(air_column);
 
-  air.w[iNH3p] = air.w[iNH3c];
+  air.w[iNH3p] = air.w[iNH3] + air.w[iNH3c];
   air.w[iNH3c] = 0.;
   air.w[iNH3] = 0.;
 
@@ -165,13 +162,48 @@ TEST_F(TestMicrophysics, evolve_one_step) {
   psys_h2o->AssembleReactionMatrix(air, 0.);
   psys_h2o->EvolveOneStep(&air, 0., 1.e5);
 
-  EXPECT_NEAR(air.w[iH2O], 1.98769e-05, 1e-8);
+  EXPECT_NEAR(air.w[iH2O], 1.9192099186e-5, 1e-8);
   EXPECT_NEAR(air.w[iH2Oc], 0., 1e-8);
-  EXPECT_NEAR(air.w[iH2Op], 0.0199801231, 1e-8);
+  EXPECT_NEAR(air.w[iH2Op], 0.0199808079, 1e-8);
 
   auto psys_nh3 = pmicro->GetSystem(1);
   psys_nh3->AssembleReactionMatrix(air, 0.);
   psys_nh3->EvolveOneStep(&air, 0., 1.e5);
+
+  EXPECT_NEAR(air.w[iNH3], 0.3, 1e-8);
+  EXPECT_NEAR(air.w[iNH3c], 0., 1e-8);
+  EXPECT_NEAR(air.w[iNH3p], 0., 1e-8);
+}
+
+TEST_F(TestMicrophysics, evolve_system) {
+  auto pindex = IndexMap::GetInstance();
+  auto pthermo = Thermodynamics::GetInstance();
+  auto pmicro = pmesh->my_blocks(0)->pimpl->pmicro;
+
+  std::vector<AirParcel> air_column(1);
+  auto &air = air_column[0];
+  air.SetType(AirParcel::Type::MoleFrac);
+  air.SetZero();
+
+  air.w[IDN] = 160.;
+  air.w[IPR] = 7e4;
+  air.w[iH2O] = 0.02;
+  air.w[iNH3] = 0.30;
+
+  pthermo->SaturationAdjustment(air_column);
+
+  air.w[iNH3p] = air.w[iNH3] + air.w[iNH3c];
+  air.w[iNH3c] = 0.;
+  air.w[iNH3] = 0.;
+
+  pmicro->EvolveSystems(air_column, 0., 1.e5);
+
+  EXPECT_NEAR(air.w[iH2O], 1.9192099186e-5, 1e-8);
+  EXPECT_NEAR(air.w[iH2Oc], 0., 1e-8);
+  EXPECT_NEAR(air.w[iH2Op], 0.0199808079, 1e-8);
+  EXPECT_NEAR(air.w[iNH3], 0.3, 1e-8);
+  EXPECT_NEAR(air.w[iNH3c], 0., 1e-8);
+  EXPECT_NEAR(air.w[iNH3p], 0., 1e-8);
 }
 
 int main(int argc, char *argv[]) {
