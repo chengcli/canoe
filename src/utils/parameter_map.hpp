@@ -4,6 +4,7 @@
 // C/C++
 #include <map>
 #include <string>
+#include <unordered_map>
 
 // external
 #include <yaml-cpp/yaml.h>
