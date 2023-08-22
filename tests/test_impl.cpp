@@ -17,6 +17,9 @@
 #include <impl.hpp>
 #include <index_map.hpp>
 
+// microphysics
+#include <microphysics/microphysics.hpp>
+
 class TestImpl : public testing::Test {
  protected:
   ParameterInput *pinput;
@@ -50,7 +53,7 @@ class TestImpl : public testing::Test {
     // set up variables
     auto pmb = pmesh->my_blocks(0);
     auto phydro = pmb->phydro;
-    auto pcloud = pmb->pimpl->pcloud;
+    auto pmicro = pmb->pimpl->pmicro;
     auto ptracer = pmb->pimpl->ptracer;
     auto pfield = pmb->pfield;
     auto pcoord = pmb->pcoord;
@@ -70,7 +73,7 @@ class TestImpl : public testing::Test {
           1. / (1 + NVAPOR + 2 * NCLOUD + 3 * NCHEMISTRY);
 
     for (int n = 0; n < NCLOUD; ++n)
-      pcloud->w(n, ks, js, is) =
+      pmicro->w(n, ks, js, is) =
           2. / (1 + NVAPOR + 2 * NCLOUD + 3 * NCHEMISTRY);
 
     for (int n = 0; n < NTRACER; ++n) ptracer->w(n, ks, js, is) = 2.;
@@ -98,7 +101,7 @@ TEST_F(TestImpl, GatherPrimitive) {
   auto pmb = pmesh->my_blocks(0);
   auto pimpl = pmb->pimpl;
   auto phydro = pmb->phydro;
-  auto pcloud = pimpl->pcloud;
+  auto pmicro = pimpl->pmicro;
   auto ptracer = pimpl->ptracer;
 
   int ks = pmb->ks, js = pmb->js, is = pmb->is;
@@ -116,7 +119,7 @@ TEST_F(TestImpl, GatherPrimitive) {
                      1. / (1 + NVAPOR + 2 * NCLOUD + 3 * NCHEMISTRY));
 
   for (int n = 0; n < NCLOUD; ++n)
-    EXPECT_DOUBLE_EQ(pcloud->w(n, ks, js, is),
+    EXPECT_DOUBLE_EQ(pmicro->w(n, ks, js, is),
                      2. / (1 + NVAPOR + 2 * NCLOUD + 3 * NCHEMISTRY));
 
   for (int n = 0; n < NTRACER; ++n)
@@ -128,7 +131,7 @@ TEST_F(TestImpl, GatherConserved) {
   auto pmb = pmesh->my_blocks(0);
   auto pimpl = pmb->pimpl;
   auto phydro = pmb->phydro;
-  auto pcloud = pimpl->pcloud;
+  auto pmicro = pimpl->pmicro;
   auto ptracer = pimpl->ptracer;
 
   int ks = pmb->ks, js = pmb->js, is = pmb->is;
@@ -146,7 +149,7 @@ TEST_F(TestImpl, GatherConserved) {
     EXPECT_NEAR(phydro->u(n, ks, js, is), 0.0909091, 1e-8);
 
   for (int n = 0; n < NCLOUD; ++n)
-    EXPECT_NEAR(pcloud->u(n, ks, js, is), 0.1487603305785, 1e-10);
+    EXPECT_NEAR(pmicro->u(n, ks, js, is), 0.1487603305785, 1e-10);
 
   for (int n = 0; n < NTRACER; ++n)
     EXPECT_NEAR(ptracer->u(n, ks, js, is), 1.6363636363636, 1e-10);

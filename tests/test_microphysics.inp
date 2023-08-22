@@ -31,6 +31,9 @@ gamma       = 1.4
 vapor = H2O, NH3
 cloud = H2O(c), NH3(c), H2O(p), NH3(p)
 
+<chemistry>
+microphysics_config = example_chemistry.yaml
+
 <thermodynamics>
 Rd          = 3777.   # mu = 2.3175 g/mol
 eps1        = 8.18    8.18    8.18
@@ -45,6 +48,6 @@ beta2       = 0.      23.67   23.67
 Ttriple2    = 195.4
 Ptriple2    = 6060.
 
-sa.max_iter = 10
-sa.releax   = 0.8
+sa.relax    = 0.8
+sa.max_iter = 20
 sa.ftol     = 1.e-4

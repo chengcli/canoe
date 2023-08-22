@@ -1,0 +1,15 @@
+name: giant planet chemistry model
+
+microphysics:
+  - water-system
+  - ammonia-system
+
+water-system:
+  scheme: Kessler94
+  dependent-species: [vapor.H2O, cloud.H2O(c), cloud.H2O(p)]
+  parameters: {autoconversion: 1., accretion: 0.0, evaporation: 1., sedimentation: -20.}
+
+ammonia-system:
+  scheme: Kessler94
+  dependent-species: [vapor.NH3, cloud.NH3(c), cloud.NH3(p)]
+  parameters: {autoconversion: 1., accretion: 0.0, evaporation: 1., sedimentation: -20.}

@@ -10,7 +10,7 @@
 
 class XizH2H2CIA : public Absorber {
  public:
-  XizH2H2CIA(SpeciesNames const& species, ParameterMap params)
+  XizH2H2CIA(std::vector<std::string> const& species, ParameterMap params)
       : Absorber("H2-H2-CIA", species, params) {
     category_ = "cia";
   }
@@ -27,7 +27,7 @@ class XizH2H2CIA : public Absorber {
 
 class XizH2HeCIA : public Absorber {
  public:
-  XizH2HeCIA(SpeciesNames const& species, ParameterMap params)
+  XizH2HeCIA(std::vector<std::string> const& species, ParameterMap params)
       : Absorber("H2-He-CIA", species, params) {
     category_ = "cia";
   }
@@ -45,7 +45,7 @@ class XizH2HeCIA : public Absorber {
 
 class OrtonCIA : public Absorber {
  public:
-  OrtonCIA(SpeciesNames const& species, ParameterMap params)
+  OrtonCIA(std::vector<std::string> const& species, ParameterMap params)
       : Absorber("Orthon-CIA", species, params) {
     category_ = "cia";
   }

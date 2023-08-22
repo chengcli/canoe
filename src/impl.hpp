@@ -21,13 +21,13 @@
 // harp
 #include "harp/radiation.hpp"
 
-// cloud
-#include "dusts/cloud.hpp"
+// microphysics
+#include "microphysics/microphysics.hpp"
 
 // tracer
 #include "tracer/tracer.hpp"
 
-// tracer
+// chemistry
 #include "c3m/chemistry.hpp"
 
 // inversion
@@ -48,7 +48,7 @@ class MeshBlock::Impl {
   DecompositionPtr pdec;
   ImplicitSolverPtr phevi;
 
-  CloudPtr pcloud;
+  MicrophysicsPtr pmicro;
   ChemistryPtr pchem;
   TracerPtr ptracer;
   // StaticVariablePtr pstatic;
@@ -96,7 +96,7 @@ class MeshBlock::Impl {
   // TODO(cli) : more needs to be changed
   // called in task_list/time_integration.cpp
   void MapScalarsConserved(AthenaArray<Real> &s) {
-    if (NCLOUD > 0) pcloud->u.InitWithShallowSlice(s, 4, 0, NCLOUD);
+    if (NCLOUD > 0) pmicro->u.InitWithShallowSlice(s, 4, 0, NCLOUD);
   }
 
  private:

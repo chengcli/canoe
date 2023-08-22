@@ -10,7 +10,7 @@
 
 class CorrelatedKAbsorber : public Absorber {
  public:
-  CorrelatedKAbsorber(std::string name, SpeciesNames const& species,
+  CorrelatedKAbsorber(std::string name, std::vector<std::string> const& species,
                       ParameterMap params)
       : Absorber(name, species, params) {}
   virtual ~CorrelatedKAbsorber() {}

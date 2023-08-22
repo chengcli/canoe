@@ -23,16 +23,17 @@
 // athena
 #include <athena/athena.hpp>
 
-class AirParcel;
+// utils
+#include <utils/parameter_map.hpp>
 
-using ParameterMap = std::map<std::string, Real>;
-using SpeciesNames = std::vector<std::string>;
+class AirParcel;
 
 class Absorber {
  public:
   explicit Absorber(std::string name);
 
-  Absorber(std::string name, SpeciesNames const& names, ParameterMap params);
+  Absorber(std::string name, std::vector<std::string> const& names,
+           ParameterMap params);
 
   std::string GetName() const { return name_; }
 

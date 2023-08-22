@@ -12,6 +12,9 @@
 // snap
 #include <snap/thermodynamics/thermodynamics.hpp>
 
+// microphysics
+#include <microphysics/microphysics.hpp>
+
 double sat_vapor_p_H2O(double T) {
   double betal = 24.845, gammal = 4.986009, tr = 273.16, pr = 611.7;
   return SatVaporPresIdeal(T / tr, pr, betal, gammal);
@@ -273,7 +276,7 @@ TEST_F(TestMoistAdiabat, saturation_adjustment) {
   EXPECT_NEAR(air.w[iH2O] + air.w[iH2Oc], 0.0196, 1e-8);
   air.ToMoleFraction();
 
-  Real drho = pmb->pimpl->pcloud->u(0, ks, js, is) / 2.;
+  Real drho = pmb->pimpl->pmicro->u(0, ks, js, is) / 2.;
   Real cv = pthermo->GetCvMassRef(iH2O);
   Real temp = air.w[IDN];
   pmb->phydro->u(iH2O, ks, js, is) += drho;
@@ -284,7 +287,7 @@ TEST_F(TestMoistAdiabat, saturation_adjustment) {
   pmb->phydro->u(IEN, ks, js, is) +=
       0.5 * drho * (vx * vx + vy * vy + vz * vz) + drho * cv * temp;
 
-  pmb->pimpl->pcloud->u(0, ks, js, is) -= drho;
+  pmb->pimpl->pmicro->u(0, ks, js, is) -= drho;
   pmb->pimpl->GatherFromConserved(&air, ks, js, is);
   pmb->pimpl->DistributeToPrimitive(air, ks, js, is);
 

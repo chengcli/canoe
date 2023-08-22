@@ -13,7 +13,8 @@
 
 class FuWaterLiquidCloud : public Absorber {
  public:
-  FuWaterLiquidCloud(SpeciesNames const& species, ParameterMap params)
+  FuWaterLiquidCloud(std::vector<std::string> const& species,
+                     ParameterMap params)
       : Absorber("H2O(l)", species, params) {}
 
   Real GetAttenuation(Real wave1, Real wave2,
@@ -40,7 +41,7 @@ class FuWaterLiquidCloud : public Absorber {
 
 class FuWaterIceCloud : public Absorber {
  public:
-  FuWaterIceCloud(SpeciesNames const& species, ParameterMap params)
+  FuWaterIceCloud(std::vector<std::string> const& species, ParameterMap params)
       : Absorber("H2O(s)", species, params) {}
 
   Real GetAttenuation(Real wave1, Real wave2,
@@ -73,7 +74,7 @@ class FuWaterIceCloud : public Absorber {
 
 class XuWaterIceCloud : public Absorber {
  public:
-  XuWaterIceCloud(SpeciesNames const& species, ParameterMap params)
+  XuWaterIceCloud(std::vector<std::string> const& species, ParameterMap params)
       : Absorber("H2O(s)", species, params) {}
 
   void LoadCoefficient(std::string fname, size_t bid) override;

@@ -31,4 +31,4 @@ repos:
         name: Fix *.py
         entry: black
         language: system
-        files: ^(tools|examples)/.*\.(py|in)$
+        files: ^(tools|examples)/.*\.(py|.py.in)$

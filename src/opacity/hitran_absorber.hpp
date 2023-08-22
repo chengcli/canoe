@@ -13,7 +13,7 @@ class HitranAbsorber : public Absorber {
   // friend HitranAbsorber const& MakeCKAbsorber<>(HitranAbsorber const& albl,
   //   int const *ck_axis, Real const *ck_wave, int nbins);
  public:
-  HitranAbsorber(std::string name, SpeciesNames const& species,
+  HitranAbsorber(std::string name, std::vector<std::string> const& species,
                  ParameterMap params)
       : Absorber(name, species, params) {
     category_ = "hitran";
