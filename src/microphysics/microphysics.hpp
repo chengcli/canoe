@@ -25,7 +25,7 @@ class Microphysics {
 
   // access members
   AthenaArray<Real> w, u;
-  AthenaArray<Real> diff_mass_flux[3];
+  AthenaArray<Real> mass_flux[3], vsedf[3];
 
   Microphysics(MeshBlock *pmb, ParameterInput *pin);
 
@@ -41,10 +41,13 @@ class Microphysics {
 
   void EvolveSystems(std::vector<AirParcel> &air_column, Real time, Real dt);
 
-  void SetDifferentialMassFlux(int k, int j, int il, int iu);
+  void DoSedimentation();
 
  protected:
-  AthenaArray<Real> vdiff_, vsedf_;
+  bool do_sedimentation_x2_ = false;
+  bool do_sedimentation_x3_ = false;
+
+  AthenaArray<Real> vsed_;
 
   AthenaArray<Real> hydro_;
 

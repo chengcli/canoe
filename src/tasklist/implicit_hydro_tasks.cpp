@@ -222,8 +222,6 @@ TaskStatus ImplicitHydroTasks::AddFluxToConserved(MeshBlock *pmb, int stage) {
       for (int k = ks; k <= ke; ++k)
         for (int j = js; j <= je; ++j) {
           prad->AddRadiativeFlux(pmb->phydro, k, j, is, ie + 1);
-          pmicro->AddSedimentationFlux(pmb->pscalars->s_flux[X1DIR], k, j, is,
-                                       ie + 1);
         }
 
       if (stage == nstages) {           // last stage
@@ -236,9 +234,7 @@ TaskStatus ImplicitHydroTasks::AddFluxToConserved(MeshBlock *pmb, int stage) {
               prad->CalRadiativeFlux(pmb->pmy_mesh->time, k, j, is, ie + 1);
         }
 
-        for (int k = ks; k <= ke; ++k)
-          for (int j = js; j <= je; ++j)
-            pmicro->SetSedimentationVelocity(k, j, is, ie + 1);
+        pmicro->DoSedimentation();
       }
     }
     return TaskStatus::next;
