@@ -6,7 +6,7 @@
  *
  * Year: 2023
  * Contact: chengcli@umich.edu
- * Reference: Test sedimentation 
+ * Reference: Test sedimentation
  * -------------------------------------------------------------------------------------
  */
 
@@ -105,6 +105,9 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
   int iH2O = pindex->GetVaporId("H2O");
   int iNH3 = pindex->GetVaporId("NH3");
 
+  int iH2Op = pindex->GetCloudId("H2O(p)");
+  int iNH3p = pindex->GetCloudId("NH3(p)");
+
   app->Log("index of H2O", iH2O);
   app->Log("index of NH3", iNH3);
 
@@ -128,7 +131,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
 
     // stop at just above P0
     for (int i = is; i <= ie; ++i) {
-      pthermo->Extrapolate(&air, pcoord->dx1f(i) / 2.,
+      pthermo->Extrapolate(&air, pcoord->dx1f(i),
                            Thermodynamics::Method::PseudoAdiabat, grav);
       if (air.w[IPR] < P0) break;
     }
@@ -156,18 +159,31 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
 
       int i = is;
       for (; i <= ie; ++i) {
-        pimpl->DistributeToPrimitive(air, k, j, i);
-        pthermo->Extrapolate(&air, pcoord->dx1f(i),
-            Thermodynamics::Method::PseudoAdiabat, grav);
-
         if (air.w[IDN] < Tmin) break;
+
+        pimpl->DistributeToConserved(air, k, j, i);
+        pthermo->Extrapolate(&air, pcoord->dx1f(i),
+                             Thermodynamics::Method::PseudoAdiabat, grav);
       }
 
       // Replace adiabatic atmosphere with isothermal atmosphere if temperature
       // is too low
       for (; i <= ie; ++i) {
-        pimpl->DistributeToPrimitive(air, k, j, i);
-        pthermo->Extrapolate(&air, pcoord->dx1f(i), Thermodynamics::Method::Isothermal);
+        pimpl->DistributeToConserved(air, k, j, i);
+        pthermo->Extrapolate(&air, pcoord->dx1f(i),
+                             Thermodynamics::Method::Isothermal, grav);
       }
     }
+
+  // add precipitation
+  for (int k = ks; k <= ke; ++k)
+    for (int j = js; j <= je; ++j)
+      for (int i = is; i <= ie; ++i) {
+        if (pcoord->x1v(i) > -100.E3 && pcoord->x1v(i) < 0.) {
+          pimpl->GatherFromConserved(&air, k, j, i);
+          air.c[iH2Op] = 0.01;
+          air.c[iNH3p] = 0.01;
+          pimpl->DistributeToConserved(air, k, j, i);
+        }
+      }
 }

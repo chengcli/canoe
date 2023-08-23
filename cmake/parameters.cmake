@@ -21,6 +21,12 @@ set_if_empty(NTRACER 0)
 
 set_if_empty(NSTATIC 0)
 
+set_if_empty(TASKLIST ImplicitHydroTasks)
+
+set_if_empty(RSOLVER lmars)
+
+set_if_empty(NUMBER_GHOST_CELLS 3)
+
 set_if_empty(EOS "ideal_moist")
 
 if(EOS STREQUAL "shallow_xy")
