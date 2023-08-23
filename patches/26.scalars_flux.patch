@@ -1,0 +1,97 @@
+diff --git a/src/scalars/scalars.hpp b/src/scalars/scalars.hpp
+index 9f33b3b3..63535fd9 100644
+--- a/src/scalars/scalars.hpp
++++ b/src/scalars/scalars.hpp
+@@ -99,7 +99,7 @@ class PassiveScalars {
+   AthenaArray<Real> laplacian_l_fc_, laplacian_r_fc_;
+ 
+   void ComputeUpwindFlux(const int k, const int j, const int il,
+-                         const int iu, // CoordinateDirection dir,
++                         const int iu, CoordinateDirection dir,
+                          AthenaArray<Real> &rl, AthenaArray<Real> &rr,
+                          AthenaArray<Real> &mass_flx,
+                          AthenaArray<Real> &flx_out);
+diff --git a/src/scalars/calculate_scalar_fluxes.cpp b/src/scalars/calculate_scalar_fluxes.cpp
+index 25e16d23..027f062e 100644
+--- a/src/scalars/calculate_scalar_fluxes.cpp
++++ b/src/scalars/calculate_scalar_fluxes.cpp
+@@ -25,6 +25,11 @@
+ #include <omp.h>
+ #endif
+ 
++// canoe injection
++#include <configure.hpp>
++#include <impl.hpp>
++#include <microphysics/microphysics.hpp>
++
+ //----------------------------------------------------------------------------------------
+ //! \fn  void PassiveScalars::CalculateFluxes
+ //! \brief Calculate passive scalar fluxes using reconstruction + weighted upwinding rule
+@@ -40,9 +45,6 @@
+ //!   in Hydro class but each flux dir is temp. stored in 4D scratch array scr1_nkji_)
+ void PassiveScalars::CalculateFluxes(AthenaArray<Real> &r, const int order) {
+   MeshBlock *pmb = pmy_block;
+-
+-
+-
+   Hydro &hyd = *(pmb->phydro);
+ 
+   AthenaArray<Real> &x1flux = s_flux[X1DIR];
+@@ -93,7 +95,7 @@ void PassiveScalars::CalculateFluxes(AthenaArray<Real> &r, const int order) {
+         }
+       }
+ 
+-      ComputeUpwindFlux(k, j, is, ie+1, rl_, rr_, mass_flux, x1flux);
++      ComputeUpwindFlux(k, j, is, ie+1, X1DIR, rl_, rr_, mass_flux, x1flux);
+ 
+       if (order == 4) {
+         for (int n=0; n<NSCALARS; n++) {
+@@ -205,7 +207,7 @@ void PassiveScalars::CalculateFluxes(AthenaArray<Real> &r, const int order) {
+           }
+         }
+ 
+-        ComputeUpwindFlux(k, j, il, iu, rl_, rr_, mass_flux, x2flux);
++        ComputeUpwindFlux(k, j, il, iu, X2DIR, rl_, rr_, mass_flux, x2flux);
+ 
+         if (order == 4) {
+           for (int n=0; n<NSCALARS; n++) {
+@@ -314,7 +316,7 @@ void PassiveScalars::CalculateFluxes(AthenaArray<Real> &r, const int order) {
+           }
+         }
+ 
+-        ComputeUpwindFlux(k, j, il, iu, rl_, rr_, mass_flux, x3flux);
++        ComputeUpwindFlux(k, j, il, iu, X3DIR, rl_, rr_, mass_flux, x3flux);
+ 
+         if (order == 4) {
+           for (int n=0; n<NSCALARS; n++) {
+@@ -382,13 +384,27 @@ void PassiveScalars::CalculateFluxes_STS() {
+ 
+ 
+ void PassiveScalars::ComputeUpwindFlux(const int k, const int j, const int il,
+-                                       const int iu, // CoordinateDirection dir,
++                                       const int iu, CoordinateDirection dir,
+                                        AthenaArray<Real> &rl, AthenaArray<Real> &rr, // 2D
+                                        AthenaArray<Real> &mass_flx,  // 3D
+                                        AthenaArray<Real> &flx_out) { // 4D
+-  const int nu = NSCALARS - 1;
++  // TODO(cli): does not work with 4-th order
++  auto pmicro = pmy_block->pimpl->pmicro;
+ 
+-  for (int n=0; n<=nu; n++) {
++  for (int n=0; n < NCLOUD; n++) {
++#pragma omp simd
++    for (int i=il; i<=iu; i++) {
++      Real fluid_flx = pmicro->mass_flux[dir](n,k,j,i);
++      if (fluid_flx >= 0.0)
++        flx_out(n,k,j,i) = fluid_flx*rl_(n,i);
++      else
++        flx_out(n,k,j,i) = fluid_flx*rr_(n,i);
++    }
++  }
++
++  const int nu = NSCALARS - 1;
++  
++  for (int n=NCLOUD; n<=nu; n++) {
+ #pragma omp simd
+     for (int i=il; i<=iu; i++) {
+       Real fluid_flx = mass_flx(k,j,i);

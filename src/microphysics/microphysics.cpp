@@ -33,6 +33,14 @@ Microphysics::Microphysics(MeshBlock *pmb, ParameterInput *pin)
   int ncells2 = pmb->ncells2;
   int ncells3 = pmb->ncells3;
 
+  diff_mass_flx[0].NewAthenaArray(ncells3, ncells2, ncells1 + 1);
+  diff_mass_flx[1].NewAthenaArray(ncells3, ncells2 + 1, ncells1);
+  diff_mass_flx[2].NewAthenaArray(ncells3 + 1, ncells2, ncells1);
+
+  diff_mass_flx[0].SetZero();
+  diff_mass_flx[1].SetZero();
+  diff_mass_flx[2].SetZero();
+
   // hydrodynamic variables
   vsed_.NewAthenaArray(NCLOUD, ncells3, ncells2, ncells1);
   vsedf_.NewAthenaArray(NCLOUD, ncells3, ncells2, ncells1 + 1);
@@ -85,13 +93,10 @@ void Microphysics::EvolveSystems(std::vector<AirParcel> &air_column, Real time,
     }
 }
 
-void Microphysics::SetSedimentationVelocity(int k, int j, int il, int iu) {
+void Microphysics::SetDifferentialMassFlux(int k, int j, int il, int iu) {
   for (auto &system : systems_) {
-    system->SetSedimentationVelocity(vsed_, k, j, il, iu);
+    system->SetDifferentialVelocity(vdiff_, k, j, il, iu);
   }
 
   // interpolation to cell interface
 }
-
-void Microphysics::AddSedimentationFlux(AthenaArray<Real> &sflx, int k, int j,
-                                        int il, int iu) const {}

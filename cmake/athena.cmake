@@ -7,7 +7,8 @@ set(patch_command
     ${CMAKE_CURRENT_SOURCE_DIR}/patches/21.implicit_dt.patch
     ${CMAKE_CURRENT_SOURCE_DIR}/patches/23.exo3_coord.patch
     ${CMAKE_CURRENT_SOURCE_DIR}/patches/24.time_integrator.patch
-    ${CMAKE_CURRENT_SOURCE_DIR}/patches/25.constant_acceleration.patch)
+    ${CMAKE_CURRENT_SOURCE_DIR}/patches/25.constant_acceleration.patch
+    ${CMAKE_CURRENT_SOURCE_DIR}/patches/26.scalars_flux.patch)
 
 FetchContent_Declare(
   athenapp

@@ -18,14 +18,19 @@
 // snap
 #include <snap/thermodynamics/thermodynamics.hpp>
 
+// microphysics
+#include <microphysics/microphysics.hpp>
+
 void Hydro::RiemannSolver(int const k, int const j, int const il, int const iu,
                           int const ivx, AthenaArray<Real> &wl,
                           AthenaArray<Real> &wr, AthenaArray<Real> &flx,
                           const AthenaArray<Real> &dxw) {
   int ivy = IVX + ((ivx - IVX) + 1) % 3;
   int ivz = IVX + ((ivx - IVX) + 2) % 3;
+  int dir = ivx - IVX;
 
   auto pthermo = Thermodynamics::GetInstance();
+  auto pmicro = pmy_block->pimpl->pmicro;
 
   Real rhobar, pbar, cbar, ubar, hl, hr;
   Real gamma = pmy_block->peos->GetGamma();
@@ -68,12 +73,14 @@ void Hydro::RiemannSolver(int const k, int const j, int const il, int const iu,
     ubar = 0.5 * (wli[ivx] + wri[ivx]) +
            0.5 / (rhobar * cbar) * (wli[IPR] - wri[IPR]);
 
-    Real rd = 1.;
-    if (ubar > 0.) {
-      // volume mixing ratio to mass mixing ratio
-      for (int n = 1; n <= NVAPOR; ++n) rd -= wli[n];
+    Real rdl = 1., rdr = 1.;
+    for (int n = 1; n <= NVAPOR; ++n) {
+      rdl -= wli[n];
+      rdr -= wri[n];
+    }
 
-      flx(IDN, k, j, i) = ubar * wli[IDN] * rd;
+    if (ubar > 0.) {
+      flx(IDN, k, j, i) = ubar * wli[IDN] * rdl;
       for (int n = 1; n <= NVAPOR; ++n)
         flx(n, k, j, i) = ubar * wli[IDN] * wli[n];
       flx(ivx, k, j, i) = ubar * wli[IDN] * wli[ivx] + pbar;
@@ -81,16 +88,23 @@ void Hydro::RiemannSolver(int const k, int const j, int const il, int const iu,
       flx(ivz, k, j, i) = ubar * wli[IDN] * wli[ivz];
       flx(IEN, k, j, i) = ubar * wli[IDN] * hl;
     } else {
-      // volume mixing ratio to mass mixing ratio
-      for (int n = 1; n <= NVAPOR; ++n) rd -= wri[n];
-
-      flx(IDN, k, j, i) = ubar * wri[IDN] * rd;
+      flx(IDN, k, j, i) = ubar * wri[IDN] * rdr;
       for (int n = 1; n <= NVAPOR; ++n)
         flx(n, k, j, i) = ubar * wri[IDN] * wri[n];
       flx(ivx, k, j, i) = ubar * wri[IDN] * wri[ivx] + pbar;
       flx(ivy, k, j, i) = ubar * wri[IDN] * wri[ivy];
       flx(ivz, k, j, i) = ubar * wri[IDN] * wri[ivz];
       flx(IEN, k, j, i) = ubar * wri[IDN] * hr;
+    }
+
+    // sedimentation flux
+    for (int n = 0; n < NCLOUD; ++n) {
+      Real vsed = ubar + pmicro->vsedf[dir](k, j, i);
+      if (vsed > 0.) {
+        pmicro->mass_flux[dir](n, k, j, i) = vsed * wli[IDN] * rdl;
+      } else {
+        pmicro->mass_flux[dir](n, k, j, i) = vsed * wri[IDN] * rdr;
+      }
     }
   }
 }
