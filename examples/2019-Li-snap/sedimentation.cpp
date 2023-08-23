@@ -129,7 +129,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
     // stop at just above P0
     for (int i = is; i <= ie; ++i) {
       pthermo->Extrapolate(&air, pcoord->dx1f(i) / 2.,
-                           Thermodynamics::Method::ReversibleAdiabat, grav);
+                           Thermodynamics::Method::PseudoAdiabat, grav);
       if (air.w[IPR] < P0) break;
     }
 
@@ -158,7 +158,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
       for (; i <= ie; ++i) {
         pimpl->DistributeToPrimitive(air, k, j, i);
         pthermo->Extrapolate(&air, pcoord->dx1f(i),
-            Thermodynamics::Method::ReversibleAdiabat, grav);
+            Thermodynamics::Method::PseudoAdiabat, grav);
 
         if (air.w[IDN] < Tmin) break;
       }

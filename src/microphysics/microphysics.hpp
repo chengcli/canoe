@@ -43,16 +43,16 @@ class Microphysics {
 
   void EvolveSystems(std::vector<AirParcel> &air_column, Real time, Real dt);
 
-  AthenaArray<Real> const& GetSedimentationVelocityFace(CoordinateDirection dir) const { 
+  AthenaArray<Real> const& GetSedimentationVelocityFace(int dir) const { 
     return vsedf_[dir];
   }
 
   // set by Riemann Solver
-  void SetFluidMassFlux(CoordinateDirection dir, int n, int k, int j, int i, Real val) {
+  void SetFluidMassFlux(int dir, int n, int k, int j, int i, Real val) {
     mass_flux_[dir](n, k, j, i) = val;
   }
 
-  AthenaArray<Real> const& GetFluidMassFlux(CoordinateDirection dir) const {
+  AthenaArray<Real> const& GetFluidMassFlux(int dir) const {
     return mass_flux_[dir];
   }
 
