@@ -108,7 +108,7 @@ index 25e16d23..416bfb31 100644
 +  for (int n=0; n < NCLOUD; n++) {
 +#pragma omp simd
 +    for (int i=il; i<=iu; i++) {
-+      Real fluid_flx = pmicro->mass_flux[dir](n,k,j,i);
++      Real fluid_flx = pmicro->GetFluidMassFlux(dir)(n,k,j,i);
 +      if (fluid_flx >= 0.0)
 +        flx_out(n,k,j,i) = fluid_flx*rl_(n,i);
 +      else

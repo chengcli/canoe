@@ -105,7 +105,7 @@ void Kessler94::EvolveOneStep(AirParcel *air, Real time, Real dt) {
   for (int n = 0; n < Size; ++n) air->w[species_index_[n]] += sol(n);
 }
 
-void Kessler94::SetSedimentationVelocityX1(AthenaArray<Real> &vsed,
+void Kessler94::SetSedimentationVelocityFromConservedX1(AthenaArray<Real> &vsed,
                                            MeshBlock *pmb) {
   int ip = species_index_[2] - NHYDRO;
   Real vel = params_["sedimentation"];

@@ -99,11 +99,11 @@ void Hydro::RiemannSolver(int const k, int const j, int const il, int const iu,
 
     // sedimentation flux
     for (int n = 0; n < NCLOUD; ++n) {
-      Real vsed = ubar + pmicro->vsedf[dir](k, j, i);
+      Real vsed = ubar + pmicro->GetSedimentationVelocityFace(dir)(k, j, i);
       if (vsed > 0.) {
-        pmicro->mass_flux[dir](n, k, j, i) = vsed * wli[IDN] * rdl;
+        pmicro->SetFluidMassFlux(dir, n, k, j, i, vsed * wli[IDN] * rdl);
       } else {
-        pmicro->mass_flux[dir](n, k, j, i) = vsed * wri[IDN] * rdr;
+        pmicro->SetFluidMassFlux(dir, n, k, j, i, vsed * wri[IDN] * rdr);
       }
     }
   }

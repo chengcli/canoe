@@ -34,20 +34,20 @@ Microphysics::Microphysics(MeshBlock *pmb, ParameterInput *pin)
   int ncells2 = pmb->ncells2;
   int ncells3 = pmb->ncells3;
 
-  mass_flux[0].NewAthenaArray(ncells3, ncells2, ncells1 + 1);
-  mass_flux[1].NewAthenaArray(ncells3, ncells2 + 1, ncells1);
-  mass_flux[2].NewAthenaArray(ncells3 + 1, ncells2, ncells1);
+  mass_flux_[0].NewAthenaArray(ncells3, ncells2, ncells1 + 1);
+  mass_flux_[1].NewAthenaArray(ncells3, ncells2 + 1, ncells1);
+  mass_flux_[2].NewAthenaArray(ncells3 + 1, ncells2, ncells1);
 
-  vsedf[0].NewAthenaArray(NCLOUD, ncells3, ncells2, ncells1 + 1);
-  vsedf[1].NewAthenaArray(NCLOUD, ncells3, ncells2 + 1, ncells1);
-  vsedf[2].NewAthenaArray(NCLOUD, ncells3 + 1, ncells2, ncells1);
+  vsedf_[0].NewAthenaArray(NCLOUD, ncells3, ncells2, ncells1 + 1);
+  vsedf_[1].NewAthenaArray(NCLOUD, ncells3, ncells2 + 1, ncells1);
+  vsedf_[2].NewAthenaArray(NCLOUD, ncells3 + 1, ncells2, ncells1);
 
-  // hydrodynamic variables
+  // temporary storage for sedimentation velocity
   vsed_.NewAthenaArray(NCLOUD, ncells3, ncells2, ncells1);
   vsed_.ZeroClear();
 
-  hydro_.NewAthenaArray(NCLOUD_HYDRO, NCLOUD, ncells3, ncells2, ncells1);
-  hydro_.ZeroClear();
+  //hydro_.NewAthenaArray(NCLOUD_HYDRO, NCLOUD, ncells3, ncells2, ncells1);
+  //hydro_.ZeroClear();
 
   // load all microphysics systems
   std::string key = "microphysics_config";
@@ -90,8 +90,8 @@ Microphysics::~Microphysics() {
   app->Log("Destroy Microphysics");
 }
 
-void Microphysics::AddFrictionalHeating(
-    std::vector<AirParcel> &air_column) const {}
+//void Microphysics::AddFrictionalHeating(
+//    std::vector<AirParcel> &air_column) const {}
 
 void Microphysics::EvolveSystems(std::vector<AirParcel> &air_column, Real time,
                                  Real dt) {
@@ -102,48 +102,49 @@ void Microphysics::EvolveSystems(std::vector<AirParcel> &air_column, Real time,
     }
 }
 
-void Microphysics::UpdateSedimentationVelocity() {
+void Microphysics::UpdateSedimentationVelocityFromConserved() {
   MeshBlock *pmb = pmy_block_;
   int ks = pmb->ks, js = pmb->js, is = pmb->is;
   int ke = pmb->ke, je = pmb->je, ie = pmb->ie;
 
   // X1DIR
-  for (auto &system : systems_) system->SetSedimentationVelocityX1(vsed_, pmb);
+  for (auto &system : systems_)
+    system->SetSedimentationVelocityFromConservedX1(vsed_, pmb);
 
   // interpolation to cell interface
   for (int n = 0; n < NCLOUD; ++n)
     for (int k = ks; k <= ke; ++k)
       for (int j = js; j <= je; ++j) {
         for (int i = is + 1; i <= ie; ++i) {
-          vsedf[X1DIR](n, k, j, i) =
+          vsedf_[X1DIR](n, k, j, i) =
               interp_cp4(vsed_(n, k, j, i - 2), vsed_(n, k, j, i - 1),
                          vsed_(n, k, j, i), vsed_(n, k, j, i + 1));
         }
 
         // no sedimentation velocity at the boundary
-        vsedf[X1DIR](n, k, j, is) = 0.;
-        vsedf[X1DIR](n, k, j, ie + 1) = 0.;
+        vsedf_[X1DIR](n, k, j, is) = 0.;
+        vsedf_[X1DIR](n, k, j, ie + 1) = 0.;
       }
 
   // X2DIR
   if (pmy_block_->pmy_mesh->f2 && do_sedimentation_x2_) {
     for (auto &system : systems_)
-      system->SetSedimentationVelocityX2(vsed_, pmb);
+      system->SetSedimentationVelocityFromConservedX2(vsed_, pmb);
 
     // interpolation to cell interface
     for (int n = 0; n < NCLOUD; ++n)
       for (int k = ks; k <= ke; ++k) {
         for (int j = js + 1; j <= je; ++j)
           for (int i = is; i <= ie; ++i) {
-            vsedf[X2DIR](n, k, j, i) =
+            vsedf_[X2DIR](n, k, j, i) =
                 interp_cp4(vsed_(n, k, j - 2, i), vsed_(n, k, j - 1, i),
                            vsed_(n, k, j, i), vsed_(n, k, j + 1, i));
           }
 
         // no sedimentation velocity at the boundary
         for (int i = is; i <= ie; ++i) {
-          vsedf[X2DIR](n, k, js, i) = 0.;
-          vsedf[X2DIR](n, k, je + 1, i) = 0.;
+          vsedf_[X2DIR](n, k, js, i) = 0.;
+          vsedf_[X2DIR](n, k, je + 1, i) = 0.;
         }
       }
   }
@@ -151,14 +152,14 @@ void Microphysics::UpdateSedimentationVelocity() {
   // X3DIR
   if (pmy_block_->pmy_mesh->f3 && do_sedimentation_x3_) {
     for (auto &system : systems_)
-      system->SetSedimentationVelocityX3(vsed_, pmb);
+      system->SetSedimentationVelocityFromConservedX3(vsed_, pmb);
 
     // interpolation to cell interface
     for (int n = 0; n < NCLOUD; ++n) {
       for (int k = ks + 1; k <= ke; ++k)
         for (int j = js; j <= je; ++j)
           for (int i = is; i <= ie; ++i) {
-            vsedf[X3DIR](n, k, j, i) =
+            vsedf_[X3DIR](n, k, j, i) =
                 interp_cp4(vsed_(n, k - 2, j, i), vsed_(n, k - 1, j, i),
                            vsed_(n, k, j, i), vsed_(n, k + 1, j, i));
           }
@@ -166,8 +167,8 @@ void Microphysics::UpdateSedimentationVelocity() {
       // no sedimentation velocity at the boundary
       for (int j = js; j <= je; ++j)
         for (int i = is; i <= ie; ++i) {
-          vsedf[X3DIR](n, ks, j, i) = 0.;
-          vsedf[X3DIR](n, ke + 1, j, i) = 0.;
+          vsedf_[X3DIR](n, ks, j, i) = 0.;
+          vsedf_[X3DIR](n, ke + 1, j, i) = 0.;
         }
     }
   }

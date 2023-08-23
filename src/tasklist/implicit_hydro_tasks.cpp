@@ -177,7 +177,6 @@ TaskStatus ImplicitHydroTasks::IntegrateHydro(MeshBlock *pmb, int stage) {
                                              ph->u2);
       }
 
-      pmb->pimpl->pmicro->UpdateSedimentationVelocity();
     }
     return TaskStatus::next;
   }
@@ -296,7 +295,13 @@ TaskStatus ImplicitHydroTasks::ImplicitCorrection(MeshBlock *pmb, int stage) {
 }
 
 TaskStatus ImplicitHydroTasks::UpdateAllConserved(MeshBlock *pmb, int stage) {
-  // only do at last rk step
+  if (stage <= nstages) {
+    pmb->pimpl->pmicro->UpdateSedimentationVelocityFromConserved();
+  } else {
+    return TaskStatus::fail;
+  }
+
+  // only do chemistry and thermodynamcis at last rk step
   if (stage != nstages) return TaskStatus::next;
 
   int is = pmb->is, js = pmb->js, ks = pmb->ks;
@@ -312,7 +317,7 @@ TaskStatus ImplicitHydroTasks::UpdateAllConserved(MeshBlock *pmb, int stage) {
     for (int j = js; j <= je; j++) {
       pmb->pimpl->GatherFromConserved(air_column, k, j, is, ie);
 
-      pmicro->AddFrictionalHeating(air_column);
+      //pmicro->AddFrictionalHeating(air_column);
 
       pmicro->EvolveSystems(air_column, pmb->pmy_mesh->time, pmb->pmy_mesh->dt);
 
