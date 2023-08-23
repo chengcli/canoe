@@ -97,12 +97,19 @@ void Kessler94::AssembleReactionMatrix(AirParcel const &air, Real time) {
 }
 
 void Kessler94::EvolveOneStep(AirParcel *air, Real time, Real dt) {
+  auto pthermo = Thermodynamics::GetInstance();
+
   // auto sol = solver_.solveBDF1<Base::RealVector>(rate_, jacb_, dt);
   // auto sol = solver_.solveTRBDF2<Base::RealVector>(rate_, jacb_, dt);
   auto sol = solver_.solveTRBDF2Blend<Base::RealVector>(
       rate_, jacb_, dt, air->w, species_index_.data());
 
-  for (int n = 0; n < Size; ++n) air->w[species_index_[n]] += sol(n);
+  // 0 is a special buffer place for cloud in equilibrium with vapor at the same
+  // temperature
+  int jbuf = pthermo->GetCloudIndex(species_index_[0], 0);
+
+  air->c[jbuf] += sol(0);
+  for (int n = 1; n < Size; ++n) air->w[species_index_[n]] += sol(n);
 }
 
 void Kessler94::SetSedimentationVelocityFromConservedX1(AthenaArray<Real> &vsed,

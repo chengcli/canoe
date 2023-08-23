@@ -70,8 +70,8 @@ beta2       = 0.      23.67   23.67
 Ttriple2    = 195.4
 Ptriple2    = 6060.
 
-sa.relax    = 0.8
-sa.max_iter = 20
+sa.relax    = 1.0
+sa.max_iter = 4
 sa.ftol     = 1.e-4
 
 <problem>
