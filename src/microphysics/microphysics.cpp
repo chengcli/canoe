@@ -34,9 +34,9 @@ Microphysics::Microphysics(MeshBlock *pmb, ParameterInput *pin)
   int ncells2 = pmb->ncells2;
   int ncells3 = pmb->ncells3;
 
-  mass_flx[0].NewAthenaArray(ncells3, ncells2, ncells1 + 1);
-  mass_flx[1].NewAthenaArray(ncells3, ncells2 + 1, ncells1);
-  mass_flx[2].NewAthenaArray(ncells3 + 1, ncells2, ncells1);
+  mass_flux[0].NewAthenaArray(ncells3, ncells2, ncells1 + 1);
+  mass_flux[1].NewAthenaArray(ncells3, ncells2 + 1, ncells1);
+  mass_flux[2].NewAthenaArray(ncells3 + 1, ncells2, ncells1);
 
   vsedf[0].NewAthenaArray(NCLOUD, ncells3, ncells2, ncells1 + 1);
   vsedf[1].NewAthenaArray(NCLOUD, ncells3, ncells2 + 1, ncells1);
@@ -44,10 +44,10 @@ Microphysics::Microphysics(MeshBlock *pmb, ParameterInput *pin)
 
   // hydrodynamic variables
   vsed_.NewAthenaArray(NCLOUD, ncells3, ncells2, ncells1);
-  vsed_.SetZero();
+  vsed_.ZeroClear();
 
   hydro_.NewAthenaArray(NCLOUD_HYDRO, NCLOUD, ncells3, ncells2, ncells1);
-  hydro_.SetZero();
+  hydro_.ZeroClear();
 
   // load all microphysics systems
   std::string key = "microphysics_config";
@@ -102,7 +102,7 @@ void Microphysics::EvolveSystems(std::vector<AirParcel> &air_column, Real time,
     }
 }
 
-void Microphysics::DoSedimentation() {
+void Microphysics::UpdateSedimentationVelocity() {
   MeshBlock *pmb = pmy_block_;
   int ks = pmb->ks, js = pmb->js, is = pmb->is;
   int ke = pmb->ke, je = pmb->je, ie = pmb->ie;

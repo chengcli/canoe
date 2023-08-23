@@ -41,7 +41,7 @@ class Microphysics {
 
   void EvolveSystems(std::vector<AirParcel> &air_column, Real time, Real dt);
 
-  void DoSedimentation();
+  void UpdateSedimentationVelocity();
 
  protected:
   bool do_sedimentation_x2_ = false;

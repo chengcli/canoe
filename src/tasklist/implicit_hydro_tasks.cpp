@@ -176,6 +176,8 @@ TaskStatus ImplicitHydroTasks::IntegrateHydro(MeshBlock *pmb, int stage) {
         pmb->pcoord->AddCoordTermsDivergence(wght_ssp, ph->flux, ph->w, pf->bcc,
                                              ph->u2);
       }
+
+      pmb->pimpl->pmicro->UpdateSedimentationVelocity();
     }
     return TaskStatus::next;
   }
@@ -215,7 +217,6 @@ TaskStatus ImplicitHydroTasks::AddFluxToConserved(MeshBlock *pmb, int stage) {
   int ie = pmb->ie, je = pmb->je, ke = pmb->ke;
 
   auto prad = pmb->pimpl->prad;
-  auto pmicro = pmb->pimpl->pmicro;
 
   if (stage <= nstages) {
     if (stage_wghts[stage - 1].main_stage) {
@@ -233,8 +234,6 @@ TaskStatus ImplicitHydroTasks::AddFluxToConserved(MeshBlock *pmb, int stage) {
             for (int j = js; j <= je; ++j)
               prad->CalRadiativeFlux(pmb->pmy_mesh->time, k, j, is, ie + 1);
         }
-
-        pmicro->DoSedimentation();
       }
     }
     return TaskStatus::next;

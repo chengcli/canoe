@@ -36,17 +36,14 @@ class MicrophysicalSchemeBase {
 
   virtual void AssembleReactionMatrix(AirParcel const &air, Real time) = 0;
 
-  virtual void SetSedimentationVelocityX1(AthenaArray<Real> &vsed, int kl,
-                                          int ku, int jl, int ju, int il,
-                                          int iu) = 0;
+  virtual void SetSedimentationVelocityX1(AthenaArray<Real> &vsed,
+                                          MeshBlock *pmb) = 0;
 
-  virtual void SetSedimentationVelocityX2(AthenaArray<Real> &vsed, int kl,
-                                          int ku, int jl, int ju, int il,
-                                          int iu) = 0;
+  virtual void SetSedimentationVelocityX2(AthenaArray<Real> &vsed,
+                                          MeshBlock *pmb) = 0;
 
-  virtual void SetSedimentationVelocityX3(AthenaArray<Real> &vsed, int kl,
-                                          int ku, int jl, int ju, int il,
-                                          int iu) = 0;
+  virtual void SetSedimentationVelocityX3(AthenaArray<Real> &vsed,
+                                          MeshBlock *pmb) = 0;
 
   virtual void EvolveOneStep(AirParcel *Air, Real time, Real dt) = 0;
 
@@ -74,7 +71,7 @@ class MicrophysicalScheme : public MicrophysicalSchemeBase {
   ~MicrophysicalScheme() {}
 
   void SetSedimentationVelocityX1(AthenaArray<Real> &vsed,
-                                  Meshblock *pmb) override {
+                                  MeshBlock *pmb) override {
     int ks = pmb->ks, js = pmb->js, is = pmb->is;
     int ke = pmb->ke, je = pmb->je, ie = pmb->ie;
 
