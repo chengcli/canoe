@@ -58,6 +58,9 @@ inline Real SatVaporPresIdeal(Real t, Real p3, Real beta, Real delta) {
 // 1..NVAPOR: moist air (condensible gas)
 // NVAPOR+1..NVAPOR+NCLOUD: clouds
 
+// 0 is a special buffer place for cloud in equilibrium with vapor at the same
+// temperature
+
 class Thermodynamics {
  protected:
   enum { NPHASE = NPHASE_LEGACY };

@@ -170,8 +170,10 @@ TEST_F(TestMicrophysics, evolve_one_step) {
   psys_nh3->AssembleReactionMatrix(air, 0.);
   psys_nh3->EvolveOneStep(&air, 0., 1.e5);
 
-  EXPECT_NEAR(air.w[iNH3], 0.3, 1e-8);
-  EXPECT_NEAR(air.w[iNH3c], 0., 1e-8);
+  pthermo->SaturationAdjustment(air_column);
+
+  EXPECT_NEAR(air.w[iNH3], 0.0232124591028, 1e-8);
+  EXPECT_NEAR(air.w[iNH3c], 0.276787540897, 1e-8);
   EXPECT_NEAR(air.w[iNH3p], 0., 1e-8);
 }
 
@@ -198,11 +200,13 @@ TEST_F(TestMicrophysics, evolve_system) {
 
   pmicro->EvolveSystems(air_column, 0., 1.e5);
 
-  EXPECT_NEAR(air.w[iH2O], 1.9192099186e-5, 1e-8);
-  EXPECT_NEAR(air.w[iH2Oc], 0., 1e-8);
+  pthermo->SaturationAdjustment(air_column);
+
+  EXPECT_NEAR(air.w[iH2O], 1.8309401367e-7, 1e-8);
+  EXPECT_NEAR(air.w[iH2Oc], 1.90090051729e-5, 1e-8);
   EXPECT_NEAR(air.w[iH2Op], 0.0199808079, 1e-8);
-  EXPECT_NEAR(air.w[iNH3], 0.3, 1e-8);
-  EXPECT_NEAR(air.w[iNH3c], 0., 1e-8);
+  EXPECT_NEAR(air.w[iNH3], 0.0232124591, 1e-8);
+  EXPECT_NEAR(air.w[iNH3c], 0.27678754089, 1e-8);
   EXPECT_NEAR(air.w[iNH3p], 0., 1e-8);
 }
 

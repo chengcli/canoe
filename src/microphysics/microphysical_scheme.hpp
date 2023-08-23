@@ -12,10 +12,11 @@
 #include <Eigen/Core>
 #include <Eigen/Dense>
 
-// athenapp
+// athena
 #include <athena/athena.hpp>
+#include <athena/mesh/mesh.hpp>
 
-// snap
+// canoe
 #include <air_parcel.hpp>
 
 // utils
@@ -35,8 +36,14 @@ class MicrophysicalSchemeBase {
 
   virtual void AssembleReactionMatrix(AirParcel const &air, Real time) = 0;
 
-  virtual void SetSedimentationVelocity(AthenaArray<Real> &vsed, int k, int j,
-                                        int il, int iu) = 0;
+  virtual void SetSedimentationVelocityFromConservedX1(AthenaArray<Real> &vsed,
+                                          MeshBlock *pmb) = 0;
+
+  virtual void SetSedimentationVelocityFromConservedX2(AthenaArray<Real> &vsed,
+                                          MeshBlock *pmb) = 0;
+
+  virtual void SetSedimentationVelocityFromConservedX3(AthenaArray<Real> &vsed,
+                                          MeshBlock *pmb) = 0;
 
   virtual void EvolveOneStep(AirParcel *Air, Real time, Real dt) = 0;
 
@@ -62,6 +69,39 @@ class MicrophysicalScheme : public MicrophysicalSchemeBase {
       : MicrophysicalSchemeBase(name) {}
 
   ~MicrophysicalScheme() {}
+
+  void SetSedimentationVelocityFromConservedX1(AthenaArray<Real> &vsed,
+                                  MeshBlock *pmb) override {
+    int ks = pmb->ks, js = pmb->js, is = pmb->is;
+    int ke = pmb->ke, je = pmb->je, ie = pmb->ie;
+
+    for (auto n : species_index_)
+      for (int k = ks; k <= ke; ++k)
+        for (int j = js; j <= je; ++j)
+          for (int i = is; i <= ie; ++i) vsed(n - NHYDRO, k, j, i) = 0.0;
+  }
+
+  void SetSedimentationVelocityFromConservedX2(AthenaArray<Real> &vsed,
+                                  MeshBlock *pmb) override {
+    int ks = pmb->ks, js = pmb->js, is = pmb->is;
+    int ke = pmb->ke, je = pmb->je, ie = pmb->ie;
+
+    for (auto n : species_index_)
+      for (int k = ks; k <= ke; ++k)
+        for (int j = js; j <= je; ++j)
+          for (int i = is; i <= ie; ++i) vsed(n - NHYDRO, k, j, i) = 0.0;
+  }
+
+  void SetSedimentationVelocityFromConservedX3(AthenaArray<Real> &vsed,
+                                  MeshBlock *pmb) override {
+    int ks = pmb->ks, js = pmb->js, is = pmb->is;
+    int ke = pmb->ke, je = pmb->je, ie = pmb->ie;
+
+    for (auto n : species_index_)
+      for (int k = ks; k <= ke; ++k)
+        for (int j = js; j <= je; ++j)
+          for (int i = is; i <= ie; ++i) vsed(n - NHYDRO, k, j, i) = 0.0;
+  }
 
   Real const *GetRatePtr() const { return rate_.data(); }
 
@@ -92,8 +132,8 @@ class Kessler94 : public MicrophysicalScheme<3> {
 
   void EvolveOneStep(AirParcel *air, Real time, Real dt) override;
 
-  void SetSedimentationVelocity(AthenaArray<Real> &vsed, int k, int j, int il,
-                                int iu) override;
+  void SetSedimentationVelocityFromConservedX1(AthenaArray<Real> &vsed,
+                                  MeshBlock *pmb) override;
 
  protected:
   ChemistrySolver<Size> solver_;

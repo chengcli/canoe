@@ -97,18 +97,30 @@ void Kessler94::AssembleReactionMatrix(AirParcel const &air, Real time) {
 }
 
 void Kessler94::EvolveOneStep(AirParcel *air, Real time, Real dt) {
+  auto pthermo = Thermodynamics::GetInstance();
+
   // auto sol = solver_.solveBDF1<Base::RealVector>(rate_, jacb_, dt);
   // auto sol = solver_.solveTRBDF2<Base::RealVector>(rate_, jacb_, dt);
   auto sol = solver_.solveTRBDF2Blend<Base::RealVector>(
       rate_, jacb_, dt, air->w, species_index_.data());
 
-  for (int n = 0; n < Size; ++n) air->w[species_index_[n]] += sol(n);
+  // 0 is a special buffer place for cloud in equilibrium with vapor at the same
+  // temperature
+  int jbuf = pthermo->GetCloudIndex(species_index_[0], 0);
+
+  air->c[jbuf] += sol(0);
+  for (int n = 1; n < Size; ++n) air->w[species_index_[n]] += sol(n);
 }
 
-void Kessler94::SetSedimentationVelocity(AthenaArray<Real> &vsed, int k, int j,
-                                         int il, int iu) {
+void Kessler94::SetSedimentationVelocityFromConservedX1(AthenaArray<Real> &vsed,
+                                                        MeshBlock *pmb) {
   int ip = species_index_[2] - NHYDRO;
   Real vel = params_["sedimentation"];
 
-  for (int i = il; i <= iu; ++i) vsed(ip, k, j, il, iu) = vel;
+  int ks = pmb->ks, js = pmb->js, is = pmb->is;
+  int ke = pmb->ke, je = pmb->je, ie = pmb->ie;
+
+  for (int k = ks; k <= ke; ++k)
+    for (int j = js; j <= je; ++j)
+      for (int i = is; i <= ie; ++i) vsed(ip, k, j, i) = vel;
 }

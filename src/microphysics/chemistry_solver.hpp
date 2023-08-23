@@ -56,8 +56,13 @@ class ChemistrySolver {
 
     // Blend solutions
     Real alpha = 1.;
-    for (int n = 0; n < Size; ++n)
-      if (S2_(n) < 0.) alpha = std::min(alpha, S1_(n) / (S1_(n) - S2_(n)));
+    for (int n = 0; n < Size; ++n) {
+      if (S2_(n) < S1_(n)) {
+        alpha = std::min(alpha, S1_(n) / (S1_(n) - S2_(n)));
+      }
+    }
+    alpha = std::max(alpha, 0.);
+
     for (int n = 0; n < Size; ++n)
       sol(n) = (1. - alpha) * S1_(n) + alpha * S2_(n) - c[indx[n]];
     return sol;
