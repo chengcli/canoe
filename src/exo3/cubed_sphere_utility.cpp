@@ -394,6 +394,7 @@ void PackData(const AthenaArray<Real> &src, Real *buf, int sn, int en, int si,
     PackDataR0(src, buf, sn, en, si, ei, sj, ej, sk, ek, offset);
     return;
   }
+
   // Get the local indices
   int lv2_lx2 = loc.lx2 >> (loc.level - 2);
   int lv2_lx3 = loc.lx3 >> (loc.level - 2);

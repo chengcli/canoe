@@ -1,0 +1,90 @@
+diff --git a/src/mesh/mesh.cpp b/src/mesh/mesh.cpp
+index 082eaf1e..9fc59d8c 100644
+--- a/src/mesh/mesh.cpp
++++ b/src/mesh/mesh.cpp
+@@ -60,6 +60,9 @@
+ #include <mpi.h>
+ #endif
+ 
++// canoe injection
++#include <configure.hpp>
++
+ //----------------------------------------------------------------------------------------
+ //! Mesh constructor, builds mesh at start of calculation using parameters in input file
+ 
+@@ -1561,6 +1564,75 @@ void Mesh::Initialize(int res_flag, ParameterInput *pin) {
+           pmb->pnrrad->rad_bvar.ClearBoundary(BoundaryCommSubset::radiation);
+       }
+ 
++// CUBED SPHERE needs to sync twice
++#ifdef CUBED_SPHERE
++      // prepare to receive conserved variables
++#pragma omp for private(pmb,pbval)
++      for (int i=0; i<nblocal; ++i) {
++        pmb = my_blocks(i); pbval = pmb->pbval;
++        if (shear_periodic) {
++          pbval->ComputeShear(time, time);
++        }
++        pbval->StartReceivingSubset(BoundaryCommSubset::mesh_init,
++                                    pbval->bvars_main_int);
++        if (IM_RADIATION_ENABLED)
++          pmb->pnrrad->rad_bvar.StartReceiving(BoundaryCommSubset::radiation);
++      }
++
++      // send conserved variables
++#pragma omp for private(pmb,pbval)
++      for (int i=0; i<nblocal; ++i) {
++        pmb = my_blocks(i); pbval = pmb->pbval;
++        pmb->phydro->hbvar.SwapHydroQuantity(pmb->phydro->u,
++                                               HydroBoundaryQuantity::cons);
++        pmb->phydro->hbvar.SendBoundaryBuffers();
++        if (MAGNETIC_FIELDS_ENABLED)
++          pmb->pfield->fbvar.SendBoundaryBuffers();
++        // and (conserved variable) passive scalar masses:
++        if (NSCALARS > 0) {
++          pmb->pscalars->sbvar.var_cc = &(pmb->pscalars->s);
++          if (pmb->pmy_mesh->multilevel) {
++            pmb->pscalars->sbvar.coarse_buf = &(pmb->pscalars->coarse_s_);
++          }
++          pmb->pscalars->sbvar.SendBoundaryBuffers();
++        }
++
++
++        if (NR_RADIATION_ENABLED || IM_RADIATION_ENABLED) {
++          pmb->pnrrad->rad_bvar.SendBoundaryBuffers();
++        }
++        if (CR_ENABLED) {
++          pmb->pcr->cr_bvar.SendBoundaryBuffers();
++        }
++      }
++      // wait to receive conserved variables
++#pragma omp for private(pmb,pbval)
++      for (int i=0; i<nblocal; ++i) {
++        pmb = my_blocks(i); pbval = pmb->pbval;
++        pmb->phydro->hbvar.ReceiveAndSetBoundariesWithWait();
++        if (MAGNETIC_FIELDS_ENABLED)
++          pmb->pfield->fbvar.ReceiveAndSetBoundariesWithWait();
++        if (NSCALARS > 0)
++          pmb->pscalars->sbvar.ReceiveAndSetBoundariesWithWait();
++
++        if (NR_RADIATION_ENABLED || IM_RADIATION_ENABLED)
++          pmb->pnrrad->rad_bvar.ReceiveAndSetBoundariesWithWait();
++        if (CR_ENABLED)
++          pmb->pcr->cr_bvar.ReceiveAndSetBoundariesWithWait();
++
++        if (shear_periodic && orbital_advection==0) {
++          pmb->phydro->hbvar.AddHydroShearForInit();
++
++          if (NR_RADIATION_ENABLED || IM_RADIATION_ENABLED)
++            pmb->pnrrad->rad_bvar.AddRadShearForInit();
++        }
++        pbval->ClearBoundarySubset(BoundaryCommSubset::mesh_init,
++                                   pbval->bvars_main_int);
++        if (IM_RADIATION_ENABLED)
++          pmb->pnrrad->rad_bvar.ClearBoundary(BoundaryCommSubset::radiation);
++      }
++#endif  // CUBED_SPHERE
++
+       // With AMR/SMR GR send primitives to enable cons->prim before prolongation
+       if (GENERAL_RELATIVITY && multilevel) {
+         // prepare to receive primitives
