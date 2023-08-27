@@ -51,6 +51,31 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
                              js, je, ks, ke);
 }
 
+void Forcing(MeshBlock *pmb, Real const time, Real const dt,
+             AthenaArray<Real> const &w, const AthenaArray<Real> &prim_scalar,
+             AthenaArray<Real> const &bcc, AthenaArray<Real> &u,
+             AthenaArray<Real> &cons_scalar) {
+  auto pexo3 = pmb->pimpl->pexo3;
+  int is = pmb->is;
+  Real omega = 2. * PI / (24. * 3600.);
+  for (int k = pmb->ks; k <= pmb->ke; ++k)
+    for (int j = pmb->js; j <= pmb->je; ++j) {
+      Real lat, lon;
+      pexo3->GetLatLon(&lat, &lon, k, j, is);
+      // coriolis force
+      Real f = 2. * omega * sin(lat);
+      Real U, V;
+      pexo3->GetUV(&U, &V, w(IVY, k, j, is), w(IVZ, k, j, is), k, j, is);
+      Real ll_acc_U = -f * V;
+      Real ll_acc_V = f * U;
+      Real acc1, acc2, acc3;
+      pexo3->GetVyVz(&acc2, &acc3, ll_acc_U, ll_acc_V, k, j, is);
+      pexo3->ContravariantVectorToCovariant(j, k, acc2, acc3, &acc2, &acc3);
+      u(IM2, k, j, is) += dt * w(IDN, k, j, is) * acc2;
+      u(IM3, k, j, is) += dt * w(IDN, k, j, is) * acc3;
+    }
+}
+
 void MeshBlock::UserWorkBeforeOutput(ParameterInput *pin) {
   // Calculate lat, lon, U, V for output and visualization
   for (int k = ks - NGHOST; k <= ke + NGHOST; ++k)
@@ -88,3 +113,9 @@ void MeshBlock::InitUserMeshBlockData(ParameterInput *pin) {
   SetUserOutputVariableName(3, "V");
   SetUserOutputVariableName(4, "sqrtg");
 }
+
+// Uncomment the following to turn on Coriolis force
+// void Mesh::InitUserMeshData(ParameterInput *pin) {
+//   // Real gamma = pin->GetReal("hydro", "gamma");
+//   EnrollUserExplicitSourceFunction(Forcing);
+// }

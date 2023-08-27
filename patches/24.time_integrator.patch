@@ -1,18 +1,119 @@
 diff --git a/src/task_list/time_integrator.cpp b/src/task_list/time_integrator.cpp
-index 097afa53..de5df53f 100644
+index 097afa53..225ab61f 100644
 --- a/src/task_list/time_integrator.cpp
 +++ b/src/task_list/time_integrator.cpp
-@@ -36,6 +36,9 @@
+@@ -36,6 +36,10 @@
  #include "../scalars/scalars.hpp"
  #include "task_list.hpp"
  
 +// canoe injection
++#include <configure.hpp>
 +#include <impl.hpp>
 +
  //----------------------------------------------------------------------------------------
  //! TimeIntegratorTaskList constructor
  
-@@ -2388,6 +2391,7 @@ TaskStatus TimeIntegratorTaskList::IntegrateScalars(MeshBlock *pmb, int stage) {
+@@ -998,6 +1002,14 @@ TimeIntegratorTaskList::TimeIntegratorTaskList(ParameterInput *pin, Mesh *pm) {
+       AddTask(SEND_HYD,src_aterm);
+       AddTask(RECV_HYD,NONE);
+       AddTask(SETB_HYD,(RECV_HYD|SRC_TERM));
++
++#ifdef CUBED_SPHERE
++      AddTask(CLEAR_ALLBND2, SETB_HYD);
++      AddTask(RESTART_RECV, CLEAR_ALLBND2);
++      AddTask(SEND_HYD2, CLEAR_ALLBND2);
++      AddTask(RECV_HYD2, RESTART_RECV);
++      AddTask(SETB_HYD2, RECV_HYD2);
++#endif  // CUBED_SPHERE
+     }
+ 
+     if (SHEAR_PERIODIC) {
+@@ -1156,9 +1168,17 @@ TimeIntegratorTaskList::TimeIntegratorTaskList(ParameterInput *pin, Mesh *pm) {
+           }
+         } else {
+           if (NSCALARS > 0) {
++#ifdef CUBED_SPHERE
++            AddTask(CONS2PRIM,(SETB_HYD2|SETB_SCLR));
++#else
+             AddTask(CONS2PRIM,(SETB_HYD|SETB_SCLR));
++#endif  // CUBED_SPHERE
+           } else {
++#ifdef CUBED_SPHERE
++            AddTask(CONS2PRIM,SETB_HYD2);
++#else
+             AddTask(CONS2PRIM,SETB_HYD);
++#endif  // CUBED_SPHERE
+           }
+         }
+       }
+@@ -1224,11 +1244,16 @@ void TimeIntegratorTaskList::AddTask(const TaskID& id, const TaskID& dep) {
+   //!   SRC_TERM and SourceTerms(), USERWORK, PHY_BVAL, PROLONG, CONS2PRIM,
+   //!   ... Although, AMR_FLAG = "flag blocks for AMR" should be FLAG_AMR in VERB_OBJECT
+   using namespace HydroIntegratorTaskNames; // NOLINT (build/namespace)
+-  if (id == CLEAR_ALLBND) {
++  if (id == CLEAR_ALLBND or id == CLEAR_ALLBND2) {
+     task_list_[ntasks].TaskFunc=
+         static_cast<TaskStatus (TaskList::*)(MeshBlock*,int)>
+         (&TimeIntegratorTaskList::ClearAllBoundary);
+     task_list_[ntasks].lb_time = false;
++  } else if (id == RESTART_RECV) {
++    task_list_[ntasks].TaskFunc=
++        static_cast<TaskStatus (TaskList::*)(MeshBlock*,int)>
++        (&TimeIntegratorTaskList::RestartReceiving);
++    task_list_[ntasks].lb_time = false;
+   } else if (id == CALC_HYDFLX) {
+     task_list_[ntasks].TaskFunc=
+         static_cast<TaskStatus (TaskList::*)(MeshBlock*,int)>
+@@ -1274,7 +1299,7 @@ void TimeIntegratorTaskList::AddTask(const TaskID& id, const TaskID& dep) {
+         static_cast<TaskStatus (TaskList::*)(MeshBlock*,int)>
+         (&TimeIntegratorTaskList::AddSourceTerms);
+     task_list_[ntasks].lb_time = true;
+-  } else if (id == SEND_HYD) {
++  } else if (id == SEND_HYD or id == SEND_HYD2) {
+     task_list_[ntasks].TaskFunc=
+         static_cast<TaskStatus (TaskList::*)(MeshBlock*,int)>
+         (&TimeIntegratorTaskList::SendHydro);
+@@ -1284,17 +1309,16 @@ void TimeIntegratorTaskList::AddTask(const TaskID& id, const TaskID& dep) {
+         static_cast<TaskStatus (TaskList::*)(MeshBlock*,int)>
+         (&TimeIntegratorTaskList::SendField);
+     task_list_[ntasks].lb_time = true;
+-  } else if (id == RECV_HYD) {
++  } else if (id == RECV_HYD or id == RECV_HYD2) {
+     task_list_[ntasks].TaskFunc=
+         static_cast<TaskStatus (TaskList::*)(MeshBlock*,int)>
+         (&TimeIntegratorTaskList::ReceiveHydro);
+-    task_list_[ntasks].lb_time = false;
+   } else if (id == RECV_FLD) {
+     task_list_[ntasks].TaskFunc=
+         static_cast<TaskStatus (TaskList::*)(MeshBlock*,int)>
+         (&TimeIntegratorTaskList::ReceiveField);
+     task_list_[ntasks].lb_time = false;
+-  } else if (id == SETB_HYD) {
++  } else if (id == SETB_HYD or id == SETB_HYD2) {
+     task_list_[ntasks].TaskFunc=
+         static_cast<TaskStatus (TaskList::*)(MeshBlock*,int)>
+         (&TimeIntegratorTaskList::SetBoundariesHydro);
+@@ -1683,6 +1707,19 @@ TaskStatus TimeIntegratorTaskList::ClearAllBoundary(MeshBlock *pmb, int stage) {
+   return TaskStatus::success;
+ }
+ 
++//----------------------------------------------------------------------------------------
++//! Functions to receive Hydro variables between MeshBlocks for the second time
++
++TaskStatus TimeIntegratorTaskList::RestartReceiving(MeshBlock *pmb, int stage) {
++  if (stage <= nstages) {
++    if (stage_wghts[stage-1].main_stage) {
++      pmb->pbval->StartReceivingSubset(BoundaryCommSubset::all, pmb->pbval->bvars_main_int);
++    }
++  }
++
++  return TaskStatus::success;
++}
++
+ //----------------------------------------------------------------------------------------
+ // Functions to calculates Hydro fluxes
+ 
+@@ -2388,6 +2425,7 @@ TaskStatus TimeIntegratorTaskList::IntegrateScalars(MeshBlock *pmb, int stage) {
        ave_wghts[2] = stage_wghts[stage-1].gamma_3;
        if (ave_wghts[0] == 0.0 && ave_wghts[1] == 1.0 && ave_wghts[2] == 0.0) {
          ps->s.SwapAthenaArray(ps->s1);

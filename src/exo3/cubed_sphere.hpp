@@ -30,6 +30,16 @@ class CubedSphere {
   void GetUV(Real *U, Real *V, Real V2, Real V3, int k, int j, int i) const;
   void GetVyVz(Real *V2, Real *V3, Real U, Real V, int k, int j, int i) const;
 
+  void CalculateCoriolisForce2(int i2, int i3, Real v2, Real v3, Real Omega,
+                               Real den, Real *cF2, Real *cF3) const;
+  void CalculateCoriolisForce3(int i2, int i3, Real v1, Real v2, Real v3,
+                               Real Omega, Real den, Real *cF1, Real *cF2,
+                               Real *cF3) const;
+  void ContravariantVectorToCovariant(int i2, int i3, Real v2, Real v3,
+                                      Real *v2c, Real *v3c) const;
+  void CovariantVectorToContravariant(int i2, int i3, Real v2, Real v3,
+                                      Real *v2c, Real *v3c) const;
+
   void TransformOX(int *ox2, int *ox3, int *tox2, int *tox3) const {
     return TransformOX(ox2, ox3, tox2, tox3, pmy_block_->loc);
   }

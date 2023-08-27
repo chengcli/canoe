@@ -24,8 +24,6 @@ void CubedSphere::TransformOX(int *ox2, int *ox3, int *tox2, int *tox3,
   // No need to consider the corner cases, abandon in reading buffers.
   int target_block = -1;           // Block id of target
   int target_loc_2, target_loc_3;  // local x2 and x3 in target block
-  // std::cout << "|Block ID: " << block_id << "||ox2: " << *ox2 << "|ox3: " <<
-  // *ox3 << std::endl;
 
   switch (block_id) {
     case 1:                                    // Special: left, top, right

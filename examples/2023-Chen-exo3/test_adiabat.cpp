@@ -13,6 +13,7 @@
 #include <application/exceptions.hpp>
 
 // canoe
+#include <air_parcel.hpp>
 #include <impl.hpp>
 #include <index_map.hpp>
 
@@ -56,7 +57,7 @@ void Mesh::InitUserMeshData(ParameterInput *pin) {
 void MeshBlock::ProblemGenerator(ParameterInput *pin) {
   auto pthermo = Thermodynamics::GetInstance();
 
-  Variable air(Variable::Type::MoleFrac);
+  AirParcel air(AirParcel::Type::MoleFrac);
 
   // construct a reversible adiabat
   for (int k = ks; k <= ke; ++k)
@@ -65,7 +66,8 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
       air.w[IDN] = Ts;
       for (int i = is; i <= ie; ++i) {
         pimpl->DistributeToConserved(air, k, j, i);
-        pthermo->Extrapolate(&air, pcoord->dx1f(i), Thermodynamics::Method::DryAdiabat, grav);
+        pthermo->Extrapolate(&air, pcoord->dx1f(i),
+                             Thermodynamics::Method::DryAdiabat, grav);
       }
     }
 }

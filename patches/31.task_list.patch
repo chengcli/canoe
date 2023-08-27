@@ -1,0 +1,24 @@
+diff --git a/src/task_list/task_list.hpp b/src/task_list/task_list.hpp
+index fab49508..fc6d136c 100644
+--- a/src/task_list/task_list.hpp
++++ b/src/task_list/task_list.hpp
+@@ -146,6 +146,7 @@ class TimeIntegratorTaskList : public TaskList {
+ 
+   // functions
+   TaskStatus ClearAllBoundary(MeshBlock *pmb, int stage);
++  TaskStatus RestartReceiving(MeshBlock *pmb, int stage);
+ 
+   TaskStatus CalculateHydroFlux(MeshBlock *pmb, int stage);
+   TaskStatus CalculateEMF(MeshBlock *pmb, int stage);
+@@ -401,5 +402,11 @@ const TaskID RECV_RADSH(74);
+ 
+ const TaskID SRCTERM_IMRAD(75);
+ 
++const TaskID SEND_HYD2(101);
++const TaskID RECV_HYD2(102);
++const TaskID SETB_HYD2(103);
++const TaskID CLEAR_ALLBND2(104);
++const TaskID RESTART_RECV(105);
++
+ }  // namespace HydroIntegratorTaskNames
+ #endif  // TASK_LIST_TASK_LIST_HPP_
