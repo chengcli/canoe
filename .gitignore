@@ -25,3 +25,6 @@ tests/Testing
 
 # mac
 .DS_Store
+
+# external
+external/*.tar.gz

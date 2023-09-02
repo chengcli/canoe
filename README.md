@@ -34,6 +34,30 @@ On a Redhat linux system, use `yum` to install
 sudo yum install clang-tools-extra cmake nco netcdf-devel boost boost-devel eigen3-devel
 ```
 
+### Multi-core execution
+If multi-core parallelization is needed, these extra pacakges should be install
+- mpich parallel library
+Ubuntu linux:
+```
+sudo apt install libmpich-dev
+```
+Redhat linux:
+```
+sudo yum install mpich-devel
+source ~/.bash_profile
+```
+- pnetcdf output
+Redhat linux does not support pnetcdf natively. So it should be downloaded and install.
+The default installation directory is $HOME/opt/
+```
+cd external
+./fetch_pnetcdf.sh
+./install_pnetcdf.sh
+cd ..
+```
+
+
+
 ## Install python libraries
 All needed python libraries are collected in `requirements.txt`. We suggest using a
 python [virtual environment](https://docs.python.org/3/library/venv.html) to install
