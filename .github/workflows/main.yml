@@ -319,7 +319,7 @@ jobs:
       - name: install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y lcov libnetcdf-dev libeigen3-dev
+          sudo apt-get install -y lcov libnetcdf-dev libeigen3-dev nco
 
       - uses: actions/checkout@v3
         with:
@@ -452,6 +452,8 @@ jobs:
         run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} -- -j8
 
       - name: run simulation
+        env:
+          PATH: $PATH:/usr/lib64/mpich/bin
         working-directory: ${{github.workspace}}/build/bin
         run: mpiexec -n 8 ./robert.release -i robert3d.inp
 
@@ -605,6 +607,8 @@ jobs:
         run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} -- -j8
 
       - name: run simulation
+        env:
+          PATH: $PATH:/usr/lib64/mpich/bin
         working-directory: ${{github.workspace}}/build/bin
         run: mpiexec -n 12 ./polar_vortex.release -i fig_g_intruder.inp
 

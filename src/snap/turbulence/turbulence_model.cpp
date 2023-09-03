@@ -1,27 +1,18 @@
-//========================================================================================
-// Athena++ astrophysical MHD code
-// Copyright(C) 2014 James M. Stone <jmstone@princeton.edu> and other code
-// contributors Licensed under the 3-clause BSD License, see LICENSE file for
-// details
-//========================================================================================
-//! \file scalars.cpp
-//  \brief implementation of functions in class TurbulenceModel
-
-// C headers
-
-// C++ headers
+// C/C++ headers
 #include <algorithm>
 #include <string>
 #include <vector>
 
 // Athena++ headers
-#include "../athena.hpp"
-#include "../athena_arrays.hpp"
-#include "../coordinates/coordinates.hpp"
-#include "../eos/eos.hpp"
-#include "../hydro/hydro.hpp"
-#include "../mesh/mesh.hpp"
-#include "../reconstruct/reconstruction.hpp"
+#include <athena/athena.hpp>
+#include <athena/athena_arrays.hpp>
+#include <athena/coordinates/coordinates.hpp>
+#include <athena/eos/eos.hpp>
+#include <athena/hydro/hydro.hpp>
+#include <athena/mesh/mesh.hpp>
+#include <athena/reconstruct/reconstruction.hpp>
+
+// snap
 #include "turbulence_model.hpp"
 
 // constructor, initializes data structures and parameters
@@ -45,7 +36,7 @@ TurbulenceModel::TurbulenceModel(MeshBlock *pmb, ParameterInput *pin, int nvar)
           nvar, pmb->ncc3, pmb->ncc2, pmb->ncc1,
           (pmb->pmy_mesh->multilevel ? AthenaArray<Real>::DataStatus::allocated
                                      : AthenaArray<Real>::DataStatus::empty)),
-      sbvar(pmb, &s, &coarse_s_, s_flux),
+      sbvar(pmb, &s, &coarse_s_, s_flux, true),
       mut(pmb->ncells3, pmb->ncells2, pmb->ncells1),
       pmy_block(pmb) {
   int nc1 = pmb->ncells1, nc2 = pmb->ncells2, nc3 = pmb->ncells3;
@@ -56,9 +47,10 @@ TurbulenceModel::TurbulenceModel(MeshBlock *pmb, ParameterInput *pin, int nvar)
   // If user-requested time integrator is type 3S*, allocate additional memory
   // registers
   std::string integrator = pin->GetOrAddString("time", "integrator", "vl2");
-  if (integrator == "ssprk5_4" || STS_ENABLED)
+  if (integrator == "ssprk5_4" || STS_ENABLED) {
     // future extension may add "int nregister" to Hydro class
     s2.NewAthenaArray(nvar, nc3, nc2, nc1);
+  }
 
   // "Enroll" in SMR/AMR by adding to vector of pointers in MeshRefinement class
   if (pm->multilevel) {

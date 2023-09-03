@@ -25,6 +25,7 @@ file(GLOB src_files
     decomposition/*.cpp
     riemann/${RSOLVER}.cpp
     implicit/*.cpp
+    turbulence/*.cpp
     )
 
 string(TOLOWER ${CMAKE_BUILD_TYPE} buildl)

@@ -50,6 +50,9 @@ MeshBlock::Impl::Impl(MeshBlock *pmb, ParameterInput *pin) : pmy_block_(pmb) {
   // tracer
   ptracer = std::make_shared<Tracer>(pmb, pin);
 
+  // turbulence
+  pturb = std::make_shared<TurbulenceModel>(pmb, pin);
+
   // radiation
   prad = std::make_shared<Radiation>(pmb, pin);
 

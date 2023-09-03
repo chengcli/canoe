@@ -30,6 +30,9 @@
 // chemistry
 #include "c3m/chemistry.hpp"
 
+// turbulence
+#include "snap/turbulence/turbulence_model.hpp"
+
 // inversion
 #include "inversion/inversion.hpp"
 
@@ -52,6 +55,8 @@ class MeshBlock::Impl {
   ChemistryPtr pchem;
   TracerPtr ptracer;
   // StaticVariablePtr pstatic;
+
+  TurbulenceModelPtr pturb;
 
   RadiationPtr prad;
   InversionQueue fitq;

@@ -5,6 +5,7 @@
 #include <array>
 #include <cfloat>
 #include <iosfwd>
+#include <map>
 #include <memory>
 #include <set>
 #include <utility>

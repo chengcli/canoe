@@ -15,8 +15,9 @@ void Thermodynamics::rk4IntegrateLnp(AirParcel *air, Real dlnp, Method method,
 
   for (int rk = 0; rk < 4; ++rk) {
     EquilibrateTP(air);
-    if (method != Method::ReversibleAdiabat)
+    if (method != Method::ReversibleAdiabat) {
       for (int j = 0; j < NCLOUD; ++j) air->c[j] = 0;
+    }
 
     for (int i = 1; i <= NVAPOR; ++i) {
       // make a trial run to get latent heat
@@ -52,6 +53,7 @@ void Thermodynamics::rk4IntegrateLnp(AirParcel *air, Real dlnp, Method method,
 
   // recondensation
   EquilibrateTP(air);
-  if (method != Method::ReversibleAdiabat)
+  if (method != Method::ReversibleAdiabat) {
     for (int j = 0; j < NCLOUD; ++j) air->c[j] = 0;
+  }
 }
