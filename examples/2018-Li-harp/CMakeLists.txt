@@ -15,11 +15,12 @@ set_target_properties(
     COMPILE_FLAGS ${CMAKE_CXX_FLAGS_${buildu}}
     )
 
-target_link_libraries(${namel}.${buildl} glog::glog
+target_link_libraries(${namel}.${buildl}
     ${ATHENAPP_LIBRARY_${buildu}}
     ${CANOE_LIBRARY_${buildu}}
     ${NETCDF_LIBRARIES}
     ${CPPDISORT_LIBRARY_${buildu}}
+    ${GLOG_LIBRARIES}
     )
 
 target_include_directories(${namel}.${buildl}

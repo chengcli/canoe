@@ -31,11 +31,12 @@ macro(add_test_giants test)
     ${PNETCDF_INCLUDE_DIR}
     )
 
-  target_link_libraries(${name}.${buildl} gtest_main glog::glog
+  target_link_libraries(${name}.${buildl} gtest_main
     ${CANOE_LIBRARY_${buildu}}
     ${NETCDF_LIBRARIES}
     ${PNETCDF_LIBRARY}
     ${MPI_CXX_LIBRARIES}
+    ${GLOG_LIBRARIES}
     )
 
   add_test(NAME ${name}.${buildl} COMMAND ${name}.${buildl})
@@ -61,11 +62,12 @@ macro(add_test_case test)
     ${PNETCDF_INCLUDE_DIR}
     )
 
-  target_link_libraries(${name}.${buildl} gtest_main glog::glog
+  target_link_libraries(${name}.${buildl} gtest_main
     ${CANOE_LIBRARY_${buildu}}
     ${NETCDF_LIBRARIES}
     ${PNETCDF_LIBRARY}
     ${MPI_CXX_LIBRARIES}
+    ${GLOG_LIBRARIES}
     )
 
   add_test(NAME ${name}.${buildl} COMMAND ${name}.${buildl})

@@ -9,11 +9,12 @@ macro(setup_problem namel)
       COMPILE_FLAGS ${CMAKE_CXX_FLAGS_${buildu}}
       )
 
-  target_link_libraries(${namel}.${buildl} glog::glog
+  target_link_libraries(${namel}.${buildl}
       ${CANOE_LIBRARY_${buildu}}
       ${NETCDF_LIBRARIES}
       ${PNETCDF_LIBRARY}
       ${MPI_CXX_LIBRARIES}
+      ${GLOG_LIBRARIES}
       )
 
   target_include_directories(${namel}.${buildl}

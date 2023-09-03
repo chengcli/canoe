@@ -44,10 +44,10 @@ jobs:
 
     steps:
       - name: update pacakge
-        run: sudo apt update
+        run: sudo apt-get update
 
       - name: install dependencies
-        run: sudo apt install -y lcov libeigen3-dev libgoogle-glog-dev
+        run: sudo apt-get install -y lcov libeigen3-dev
 
       - uses: actions/checkout@v3
         with:
@@ -90,10 +90,10 @@ jobs:
     needs: style-checker
     steps:
       - name: update pacakge
-        run: sudo apt update
+        run: sudo apt-get update
 
       - name: install dependencies
-        run: sudo apt install -y lcov libeigen3-dev libgoogle-glog-dev
+        run: sudo apt-get install -y lcov libeigen3-dev
 
       - uses: actions/checkout@v3
         with:
@@ -140,10 +140,10 @@ jobs:
 
     steps:
       - name: update pacakge
-        run: sudo apt update
+        run: sudo apt-get update
 
       - name: install dependencies
-        run: sudo apt install -y lcov libeigen3-dev libgoogle-glog-dev
+        run: sudo apt-get install -y lcov libeigen3-dev
 
       - uses: actions/checkout@v3
         with:
@@ -188,10 +188,10 @@ jobs:
 
     steps:
       - name: update pacakge
-        run: sudo apt update
+        run: sudo apt-get update
 
       - name: install dependencies
-        run: sudo apt install -y lcov libeigen3-dev libgoogle-glog-dev
+        run: sudo apt-get install -y lcov libeigen3-dev
 
       - uses: actions/checkout@v3
         with:
@@ -236,10 +236,10 @@ jobs:
 
     steps:
       - name: update pacakge
-        run: sudo apt update
+        run: sudo apt-get update
 
       - name: install dependencies
-        run: sudo apt install -y lcov libeigen3-dev libgoogle-glog-dev
+        run: sudo apt-get install -y lcov libeigen3-dev
 
       - uses: actions/checkout@v3
         with:
@@ -283,10 +283,10 @@ jobs:
     needs: style-checker
     steps:
       - name: update pacakge
-        run: sudo apt update
+        run: sudo apt-get update
 
       - name: install dependencies
-        run: sudo apt install -y lcov libeigen3-dev libgoogle-glog-dev
+        run: sudo apt-get install -y lcov libeigen3-dev
 
       - uses: actions/checkout@v3
         with:
@@ -323,10 +323,10 @@ jobs:
     needs: build-non-hydrostatic
     steps:
       - name: update pacakge
-        run: sudo apt update
+        run: sudo apt-get update
 
       - name: install dependencies
-        run: sudo apt install -y lcov libeigen3-dev libgoogle-glog-dev
+        run: sudo apt-get install -y lcov libeigen3-dev
 
       - uses: actions/checkout@v3
         with:
@@ -637,10 +637,10 @@ jobs:
     needs: build-hydrostatic
     steps:
       - name: update pacakge
-        run: sudo apt update
+        run: sudo apt-get update
 
       - name: install dependencies
-        run: sudo apt install -y libnetcdf-dev libeigen3-dev libcfitsio-dev nco libgoogle-glog-dev
+        run: sudo apt-get install -y libnetcdf-dev libeigen3-dev libcfitsio-dev nco
 
       - uses: actions/checkout@v3
         with:
