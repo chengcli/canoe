@@ -25,7 +25,7 @@ brew bundle
 ### Ubuntu Linux Installation Guide
 On a Ubuntu linux system, use `apt` to install
 ```
-sudo apt install clang-format cmake nco libnetcdf-dev libpnetcdf-dev libboost-all-dev libeigen3-dev libgoogle-dev
+sudo apt install clang-format cmake nco libnetcdf-dev libpnetcdf-dev libboost-all-dev libeigen3-dev libgoogle-glog-dev
 ```
 
 ### Redhat Linux Installation Guide
