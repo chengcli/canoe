@@ -43,11 +43,10 @@ jobs:
     needs: style-checker
 
     steps:
-      - name: update pacakge
-        run: sudo apt-get update
-
       - name: install dependencies
-        run: sudo apt-get install -y lcov libeigen3-dev
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y lcov libeigen3-dev
 
       - uses: actions/checkout@v3
         with:
@@ -89,11 +88,10 @@ jobs:
     runs-on: ubuntu-latest
     needs: style-checker
     steps:
-      - name: update pacakge
-        run: sudo apt-get update
-
       - name: install dependencies
-        run: sudo apt-get install -y lcov libeigen3-dev
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y lcov libeigen3-dev
 
       - uses: actions/checkout@v3
         with:
@@ -139,11 +137,10 @@ jobs:
     needs: style-checker
 
     steps:
-      - name: update pacakge
-        run: sudo apt-get update
-
       - name: install dependencies
-        run: sudo apt-get install -y lcov libeigen3-dev
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y lcov libeigen3-dev
 
       - uses: actions/checkout@v3
         with:
@@ -187,11 +184,10 @@ jobs:
     needs: style-checker
 
     steps:
-      - name: update pacakge
-        run: sudo apt-get update
-
       - name: install dependencies
-        run: sudo apt-get install -y lcov libeigen3-dev
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y lcov libeigen3-dev
 
       - uses: actions/checkout@v3
         with:
@@ -235,11 +231,10 @@ jobs:
     needs: style-checker
 
     steps:
-      - name: update pacakge
-        run: sudo apt-get update
-
       - name: install dependencies
-        run: sudo apt-get install -y lcov libeigen3-dev
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y lcov libeigen3-dev
 
       - uses: actions/checkout@v3
         with:
@@ -282,11 +277,10 @@ jobs:
     runs-on: ubuntu-latest
     needs: style-checker
     steps:
-      - name: update pacakge
-        run: sudo apt-get update
-
       - name: install dependencies
-        run: sudo apt-get install -y lcov libeigen3-dev
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libnetcdf-dev libeigen3-dev
 
       - uses: actions/checkout@v3
         with:
@@ -322,11 +316,10 @@ jobs:
     runs-on: ubuntu-latest
     needs: build-non-hydrostatic
     steps:
-      - name: update pacakge
-        run: sudo apt-get update
-
       - name: install dependencies
-        run: sudo apt-get install -y lcov libeigen3-dev
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y lcov libnetcdf-dev libeigen3-dev
 
       - uses: actions/checkout@v3
         with:
@@ -636,11 +629,10 @@ jobs:
     runs-on: ubuntu-latest
     needs: build-hydrostatic
     steps:
-      - name: update pacakge
-        run: sudo apt-get update
-
       - name: install dependencies
-        run: sudo apt-get install -y libnetcdf-dev libeigen3-dev libcfitsio-dev nco
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libnetcdf-dev libeigen3-dev libcfitsio-dev nco
 
       - uses: actions/checkout@v3
         with:
