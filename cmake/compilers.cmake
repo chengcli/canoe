@@ -7,25 +7,23 @@
 #
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
   set(CMAKE_CXX_FLAGS_RELEASE
-      "-O3 -funroll-loops -funroll-all-loops -fstrict-aliasing -lglog -fPIC")
-
-  set(CMAKE_CXX_FLAGS_DEBUG "-g3 -lglog -fPIC")
+      "-O3 -funroll-loops -funroll-all-loops -fstrict-aliasing -fPIC")
   set(CMAKE_C_FLAGS_RELEASE
-      "-O3 -funroll-loops -funroll-all-loops -fstrict-aliasing -lglog -fPIC")
+      "-O3 -funroll-loops -funroll-all-loops -fstrict-aliasing -fPIC")
 
-  set(CMAKE_C_FLAGS_DEBUG "-g3 -lglog -fPIC")
+  set(CMAKE_CXX_FLAGS_DEBUG "-g3 -fPIC")
+  set(CMAKE_C_FLAGS_DEBUG "-g3 -fPIC")
 
   # set(CMAKE_Fortran_FLAGS_RELEASE "-O3" )
   set(KNOWN_COMPILER TRUE)
 endif()
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  set(CMAKE_CXX_FLAGS_RELEASE "-O3 -funroll-loops -fstrict-aliasing -lglog")
+  set(CMAKE_CXX_FLAGS_RELEASE "-O3 -funroll-loops -fstrict-aliasing")
+  set(CMAKE_C_FLAGS_RELEASE "-O3 -funroll-loops -fstrict-aliasing")
 
-  set(CMAKE_CXX_FLAGS_DEBUG "-g3 -lglog")
-  set(CMAKE_C_FLAGS_RELEASE "-O3 -funroll-loops -fstrict-aliasing -lglog")
-
-  set(CMAKE_C_FLAGS_DEBUG "-g3 -lglog")
+  set(CMAKE_CXX_FLAGS_DEBUG "-g3")
+  set(CMAKE_C_FLAGS_DEBUG "-g3")
 
   # set(CMAKE_Fortran_FLAGS_RELEASE "-O3" )
   set(KNOWN_COMPILER TRUE)
@@ -36,12 +34,12 @@ endif()
 #
 if(CMAKE_CXX_COMPILER_ID MATCHES "Intel")
   set(CMAKE_CXX_FLAGS_RELEASE
-      "-O3 -inline-forceinline -fopenmp -qopenmp-simd -qoverride-limits -lglog")
-  set(CMAKE_CXX_FLAGS_DEBUG "-g3 -lglog")
-
+      "-O3 -inline-forceinline -fopenmp -qopenmp-simd -qoverride-limits")
   set(CMAKE_C_FLAGS_RELEASE
-      "-O3 -inline-forceinline -fopenmp -qopenmp-simd -qoverride-limits -lglog")
-  set(CMAKE_C_FLAGS_DEBUG "-g3 -lglog")
+      "-O3 -inline-forceinline -fopenmp -qopenmp-simd -qoverride-limits")
+
+  set(CMAKE_CXX_FLAGS_DEBUG "-g3")
+  set(CMAKE_C_FLAGS_DEBUG "-g3")
 
   set(KNOWN_COMPILER TRUE)
 endif()

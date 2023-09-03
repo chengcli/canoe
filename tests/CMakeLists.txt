@@ -31,7 +31,7 @@ macro(add_test_giants test)
     ${PNETCDF_INCLUDE_DIR}
     )
 
-  target_link_libraries(${name}.${buildl} gtest_main
+  target_link_libraries(${name}.${buildl} gtest_main glog::glog
     ${CANOE_LIBRARY_${buildu}}
     ${NETCDF_LIBRARIES}
     ${PNETCDF_LIBRARY}
@@ -61,7 +61,7 @@ macro(add_test_case test)
     ${PNETCDF_INCLUDE_DIR}
     )
 
-  target_link_libraries(${name}.${buildl} gtest_main
+  target_link_libraries(${name}.${buildl} gtest_main glog::glog
     ${CANOE_LIBRARY_${buildu}}
     ${NETCDF_LIBRARIES}
     ${PNETCDF_LIBRARY}

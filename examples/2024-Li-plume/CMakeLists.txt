@@ -15,7 +15,7 @@ set_target_properties(
     COMPILE_FLAGS ${CMAKE_CXX_FLAGS_${buildu}}
     )
 
-target_link_libraries(${namel}.${buildl}
+target_link_libraries(${namel}.${buildl} glog::glog
     ${CANOE_LIBRARY_${buildu}}
     ${NETCDF_LIBRARIES}
     ${PNETCDF_LIBRARY}
