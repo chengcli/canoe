@@ -18,12 +18,10 @@
 #include <exo3/cubed_sphere_utility.hpp>
 
 // Parameters
-Real h0 = 8000.;
 Real g = 9.80616;
-Real omega = 7.848E-6;
+Real h0 = 2.94E4 / g;
 Real a = 6.37122E6;
-Real K = 7.848E-6;
-Real R = 4.0;
+Real u0 = 2 * PI * a / 86400 / 12;
 Real om_earth = 7.292E-5;
 
 void Forcing(MeshBlock *pmb, Real const time, Real const dt,
@@ -31,8 +29,6 @@ void Forcing(MeshBlock *pmb, Real const time, Real const dt,
              AthenaArray<Real> const &bcc, AthenaArray<Real> &u,
              AthenaArray<Real> &cons_scalar) {
   auto pexo3 = pmb->pimpl->pexo3;
-  int is = pmb->is;
-  Real omega = 2. * PI / (24. * 3600.);
   for (int k = pmb->ks; k <= pmb->ke; ++k)
     for (int j = pmb->js; j <= pmb->je; ++j) {
       for (int i = pmb->is; i <= pmb->ie; ++i) {
@@ -82,26 +78,10 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
         Real y = tan(pcoord->x3v(k));
         Real lat, lon;
         pexo3->GetLatLon(&lat, &lon, k, j, i);
-
-        // h terms, formatted to avoid singularity at poles
-        Real A = 0.5 * omega * (2 * om_earth + omega) * cos(lat) * cos(lat) +
-                 0.25 * K * K *
-                     ((R + 1) * pow(cos(lat), 2 * R + 2) +
-                      (2 * R * R - R - 2) * pow(cos(lat), 2 * R) -
-                      2 * R * R * pow(cos(lat), 2 * R - 2));
-        Real B =
-            2 * (om_earth + omega) * K / (R + 1) / (R + 2) * pow(cos(lat), R) *
-            ((R * R + 2 * R + 2) - (R + 1) * (R + 1) * cos(lat) * cos(lat));
-        Real C = 0.25 * K * K * pow(cos(lat), 2 * R) *
-                 ((R + 1) * cos(lat) * cos(lat) - (R + 2));
-
-        phydro->w(IDN, k, j, i) = g * h0 + a * a * A +
-                                  a * a * B * cos(lon * R) +
-                                  a * a * C * cos(2 * lon * R);
-        Real U = a * omega * cos(lat) +
-                 a * K * pow(cos(lat), R - 1) * cos(lon * R) *
-                     (R * sin(lat) * sin(lat) - cos(lat) * cos(lat));
-        Real V = -a * K * R * pow(cos(lat), R - 1) * sin(lon * R) * sin(lat);
+        phydro->w(IDN, k, j, i) =
+            g * h0 - (a * om_earth * u0 + u0 * u0 / 2) * sin(lat) * sin(lat);
+        Real U = u0 * cos(lat);
+        Real V = 0.0;
         Real Vy, Vz;
         pexo3->GetVyVz(&Vy, &Vz, U, V, k, j, i);
         phydro->w(IVY, k, j, i) = Vy;
