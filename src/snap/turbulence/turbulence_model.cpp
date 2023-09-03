@@ -47,9 +47,10 @@ TurbulenceModel::TurbulenceModel(MeshBlock *pmb, ParameterInput *pin, int nvar)
   // If user-requested time integrator is type 3S*, allocate additional memory
   // registers
   std::string integrator = pin->GetOrAddString("time", "integrator", "vl2");
-  if (integrator == "ssprk5_4" || STS_ENABLED)
+  if (integrator == "ssprk5_4" || STS_ENABLED) {
     // future extension may add "int nregister" to Hydro class
     s2.NewAthenaArray(nvar, nc3, nc2, nc1);
+  }
 
   // "Enroll" in SMR/AMR by adding to vector of pointers in MeshRefinement class
   if (pm->multilevel) {

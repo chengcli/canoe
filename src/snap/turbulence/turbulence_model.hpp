@@ -1,6 +1,9 @@
 #ifndef SRC_SNAP_TURBULENCE_TURBULENCE_MODEL_HPP_
 #define SRC_SNAP_TURBULENCE_TURBULENCE_MODEL_HPP_
 
+// C/C++
+#include <memory>
+
 // Athena++ headers
 #include <athena/athena.hpp>
 #include <athena/athena_arrays.hpp>
@@ -74,6 +77,8 @@ class TurbulenceModel {
   AthenaArray<Real> cell_volume_;
   AthenaArray<Real> dflx_;
 };
+
+using TurbulenceModelPtr = std::shared_ptr<TurbulenceModel>;
 
 class KEpsilonTurbulence : public TurbulenceModel {
  public:
