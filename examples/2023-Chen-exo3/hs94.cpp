@@ -45,6 +45,8 @@ using namespace std;
 static Real p0, Omega, Rd, cp, sigmab, Kf, Ts, dT, dtheta, Ka, Ks, Rp, scaled_z,
     z_iso, sponge_tau, sponge_width, grav;
 
+Real piso = 1E4;
+
 std::default_random_engine generator;
 std::normal_distribution<double> distribution(0.0, 1.0);
 
@@ -59,19 +61,46 @@ void Forcing(MeshBlock *pmb, Real const time, Real const dt,
              AthenaArray<Real> const &bcc, AthenaArray<Real> &u,
              AthenaArray<Real> &cons_scalar) {
   auto pexo3 = pmb->pimpl->pexo3;
-  for (int k = pmb->ks; k <= pmb->ke; ++k) {
-    for (int j = pmb->js; j <= pmb->je; ++j) {
-      for (int i = pmb->is; i <= pmb->ie; ++i) {
-        Real cF1, cF2, cF3;
-        pexo3->CalculateCoriolisForce3(j, k, w(IVX, k, j, i), w(IVY, k, j, i),
-                                       w(IVZ, k, j, i), Omega, w(IDN, k, j, i),
-                                       &cF1, &cF2, &cF3);
-        u(IM1, k, j, i) += dt * cF1;
-        u(IM2, k, j, i) += dt * cF2;
-        u(IM3, k, j, i) += dt * cF3;
-      }
-    }
-  }
+  // for (int k = pmb->ks; k <= pmb->ke; ++k) {
+  //   for (int j = pmb->js; j <= pmb->je; ++j) {
+  //     for (int i = pmb->is; i <= pmb->ie; ++i) {
+  //       Real cF1, cF2, cF3;
+  //       pexo3->CalculateCoriolisForce3(j, k, w(IVX, k, j, i), w(IVY, k, j,
+  //       i),
+  //                                      w(IVZ, k, j, i), Omega, w(IDN, k, j,
+  //                                      i), &cF1, &cF2, &cF3);
+  //       u(IM1, k, j, i) += dt * cF1;
+  //       u(IM2, k, j, i) += dt * cF2;
+  //       u(IM3, k, j, i) += dt * cF3;
+  //     }
+  //   }
+  // }
+  Real om_earth = Omega;
+
+  // for (int k = pmb->ks; k <= pmb->ke; ++k)
+  //   for (int j = pmb->js; j <= pmb->je; ++j)
+  //     for (int i = pmb->is; i<= pmb->ie; ++i){
+  //       Real lat, lon;
+  //       pexo3->GetLatLon(&lat, &lon, k, j, i);
+  //       // coriolis force
+  //       Real f = 2. * om_earth * sin(lat);
+  //       Real f2 = 2. * om_earth * cos(lat);
+  //       Real U, V;
+
+  //       pexo3->GetUV(&U, &V, w(IVY, k, j, i), w(IVZ, k, j, i), k, j, i);
+
+  //       Real m1 = w(IDN,k,j,i)*w(IVX,k,j,i);
+  //       Real m2 = w(IDN,k,j,i)*U;
+  //       Real m3 = w(IDN,k,j,i)*V;
+
+  //       u(IM1,k,j,i) += dt * f * m2;
+  //       Real ll_acc_U = f * m3 - f2 * m1;
+  //       Real ll_acc_V = -f * m2;
+  //       Real acc1, acc2, acc3;
+  //       pexo3->GetVyVz(&acc2, &acc3, ll_acc_U, ll_acc_V, k, j, i);
+  //       pexo3->ContravariantVectorToCovariant(j, k, acc2, acc3, &acc2,
+  //       &acc3); u(IM2, k, j, i) += dt * acc2; u(IM3, k, j, i) += dt * acc3;
+  //     }
 
   Real kappa;  // Rd/Cp
   kappa = Rd / cp;
@@ -109,12 +138,27 @@ void Forcing(MeshBlock *pmb, Real const time, Real const dt,
 
         pexo3->ContravariantVectorToCovariant(j, k, m2, m3, &m2, &m3);
 
-        u(IM1, k, j, i) += -dt * Kv * m1;
-        u(IM2, k, j, i) += -dt * Kv * m2;
-        u(IM3, k, j, i) += -dt * Kv * m3;
+        // u(IM1, k, j, i) += -dt * Kv * m1;
+        // u(IM2, k, j, i) += -dt * Kv * m2;
+        // u(IM3, k, j, i) += -dt * Kv * m3;
         u(IEN, k, j, i) +=
             -dt * (cp - Rd) * w(IDN, k, j, i) * Kt * (temp - Teq);
       }
+
+  // Sponge Layer
+  for (int k = pmb->ks; k <= pmb->ke; ++k) {
+    for (int j = pmb->js; j <= pmb->je; ++j) {
+      for (int i = pmb->is; i <= pmb->ie; ++i) {
+        Real pres = w(IPR, k, j, i);
+        if (pres < piso) {  // sponge layer at top
+          Real tau = sponge_tau * pow(pres / piso, 2);
+          u(IVX, k, j, i) = u(IVX, k, j, i) / (1 + dt / tau);
+          u(IVY, k, j, i) = u(IVY, k, j, i) / (1 + dt / tau);
+          u(IVZ, k, j, i) = u(IVZ, k, j, i) / (1 + dt / tau);
+        }
+      }
+    }
+  }
 }
 
 Real AngularMomentum(MeshBlock *pmb, int iout) {

@@ -1,0 +1,75 @@
+<comment>
+problem   = One layer shallow water model at the pole
+reference =
+configure = --patch=drum --prob=vortex --eos=shallow_water --nghost=3 -pnetcdf -mpi
+
+<job>
+problem_id = vortex       # problem ID: basename of output filenames
+
+<output0>
+file_type  = hst          # History data dump
+dt         = 1.E5         # time increment between outputs
+
+<output1>
+file_type  = rst          # restart dump
+dt         = 50.E5
+
+<output2>
+file_type  = netcdf      # netcdf data dump
+variable   = prim         # variables to be output
+dt         = 5.E4         # time increment between outputs
+
+<output3>
+file_type  = netcdf      # netcdf data dump
+variable   = uov          # variables to be output
+dt         = 5.E4         # time increment between outputs
+
+<time>
+cfl_number = 0.4          # The Courant, Friedrichs, & Lewy (CFL) Number
+nlim       = -1           # cycle limit
+tlim       = 500.E5         # time limit
+xorder     = 5            # horizontal reconstruction order
+#integrator = rk3          # integration method
+integrator = vl2         # integration method
+
+<mesh>
+nx1        = 3          # Number of zones in X1-direction (longitude)
+x1min      = 7.14E7       # minimum value of X1
+x1max      = 7.141E7        # maximum value of X1, 120 degree
+ix1_bc     = reflecting     # inner-X1 boundary flag. It is important to set x1 bc reflecting!!
+ox1_bc     = reflecting     # inner-X1 boundary flag
+
+nx2        = 256          # Number of zones in X2-direction (latitude)
+x2min      = 0.       # minimum value of X2
+x2max      = 1.E3        # maximum value of X2, 70 degree
+ix2_bc     = periodic     # inner-X2 boundary flag
+ox2_bc     = periodic     # inner-X2 boundary flag
+
+nx3        = 384            # Number of zones in X3-direction (height)
+x3min      = 0.           # minimum value of X3
+x3max      = 1.E3           # maximum value of X3
+ix3_bc     = periodic     # inner-X3 boundary flag
+ox3_bc     = periodic     # inner-X3 boundary flag
+
+ReferencePressure = 1.E5
+PressureScaleHeight = 10.E3
+
+<hydro>
+gamma      = 1.4
+
+<meshblock>
+nx1       = 3
+nx2       = 64
+nx3       = 64
+
+<problem>
+vrad    = 3000.E3
+vphi    = -5.E4
+
+vis       = 100.
+interval  = 1.E4
+polarity = 0.5
+skewness = 1.
+
+phi0    = 5.E5
+omega   = 1.74E-4

@@ -86,6 +86,7 @@ void CubedSphere::GetLatLon(Real *lat, Real *lon, int k, int j, int i) const {
   Real dX = tan(pcoord->x2v(j));
   Real dY = tan(pcoord->x3v(k));
   cs::RLLFromXYP(dY, -dX, blockID - 1, *lon, *lat);
+  *lon = 2.0 * PI - *lon;
 }
 
 // Obtain Lat and Lon (radians) from x2 and x3
@@ -104,6 +105,7 @@ void CubedSphere::GetLatLonFace2(Real *lat, Real *lon, int k, int j,
   Real dX = tan(pcoord->x2f(j));
   Real dY = tan(pcoord->x3v(k));
   cs::RLLFromXYP(dY, -dX, blockID - 1, *lon, *lat);
+  *lon = 2.0 * PI - *lon;
 }
 
 // Obtain Lat and Lon (radians) from x2 and x3
@@ -122,6 +124,7 @@ void CubedSphere::GetLatLonFace3(Real *lat, Real *lon, int k, int j,
   Real dX = tan(pcoord->x2v(j));
   Real dY = tan(pcoord->x3f(k));
   cs::RLLFromXYP(dY, -dX, blockID - 1, *lon, *lat);
+  *lon = 2.0 * PI - *lon;
 }
 
 // Obtain U and V (Lat-Lon) from V2 and V3 (Gnomonic Equiangle)
@@ -138,6 +141,7 @@ void CubedSphere::GetUV(Real *U, Real *V, Real V2, Real V3, int k, int j,
   Real X = tan(pcoord->x2v(j));
   Real Y = tan(pcoord->x3v(k));
   cs::VecTransRLLFromABP(X, Y, blockID, V2, V3, U, V);
+  *U = -*U;
 }
 
 // Convert U and V (Lat-Lon) to V2 and V3 (Gnomonic Equiangle)
@@ -154,7 +158,7 @@ void CubedSphere::GetVyVz(Real *V2, Real *V3, Real U, Real V, int k, int j,
   // Calculate the needed parameters
   Real X = tan(pcoord->x2v(j));
   Real Y = tan(pcoord->x3v(k));
-  cs::VecTransABPFromRLL(X, Y, blockID, U, V, V2, V3);
+  cs::VecTransABPFromRLL(X, Y, blockID, -U, V, V2, V3);
 }
 
 void CubedSphere::CalculateCoriolisForce2(int i2, int i3, Real v2, Real v3,

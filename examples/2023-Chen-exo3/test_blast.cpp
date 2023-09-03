@@ -41,6 +41,11 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
         } else {
           phydro->w(IDN, k, j, i) = 500.0;
         }
+        rad = (PI / 2.0 + lat) * R;
+        if ((rad < R0) && (lat < -PI / 4.0)) {
+          phydro->w(IDN, k, j, i) = 500.0 + 10.0 * cos(PI / 2.0 * rad / R0);
+        }
+
         Real Vy, Vz;
         pexo3->GetVyVz(&Vy, &Vz, U, V, k, j, i);
         phydro->w(IVY, k, j, i) = Vy;
@@ -60,19 +65,13 @@ void Forcing(MeshBlock *pmb, Real const time, Real const dt,
   Real omega = 2. * PI / (24. * 3600.);
   for (int k = pmb->ks; k <= pmb->ke; ++k)
     for (int j = pmb->js; j <= pmb->je; ++j) {
-      Real lat, lon;
-      pexo3->GetLatLon(&lat, &lon, k, j, is);
-      // coriolis force
-      Real f = 2. * omega * sin(lat);
-      Real U, V;
-      pexo3->GetUV(&U, &V, w(IVY, k, j, is), w(IVZ, k, j, is), k, j, is);
-      Real ll_acc_U = -f * V;
-      Real ll_acc_V = f * U;
-      Real acc1, acc2, acc3;
-      pexo3->GetVyVz(&acc2, &acc3, ll_acc_U, ll_acc_V, k, j, is);
-      pexo3->ContravariantVectorToCovariant(j, k, acc2, acc3, &acc2, &acc3);
-      u(IM2, k, j, is) += dt * w(IDN, k, j, is) * acc2;
-      u(IM3, k, j, is) += dt * w(IDN, k, j, is) * acc3;
+      for (int i = pmb->is; i <= pmb->ie; ++i) {
+        Real cF2, cF3;
+        pexo3->CalculateCoriolisForce2(j, k, w(IVY, k, j, i), w(IVZ, k, j, i),
+                                       omega, w(IDN, k, j, i), &cF2, &cF3);
+        u(IVY, k, j, i) += dt * cF2;
+        u(IVZ, k, j, i) += dt * cF3;
+      }
     }
 }
 
@@ -115,7 +114,7 @@ void MeshBlock::InitUserMeshBlockData(ParameterInput *pin) {
 }
 
 // Uncomment the following to turn on Coriolis force
-// void Mesh::InitUserMeshData(ParameterInput *pin) {
-//   // Real gamma = pin->GetReal("hydro", "gamma");
-//   EnrollUserExplicitSourceFunction(Forcing);
-// }
+void Mesh::InitUserMeshData(ParameterInput *pin) {
+  // Real gamma = pin->GetReal("hydro", "gamma");
+  EnrollUserExplicitSourceFunction(Forcing);
+}
