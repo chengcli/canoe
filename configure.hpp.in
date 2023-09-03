@@ -30,4 +30,7 @@ enum {
 // MPI parallelization (MPI_PARALLEL or NOT_MPI_PARALLEL)
 #define @MPI_OPTION@
 
+// Google log option (ENABLE_GLOG or DISABLE_GLOG)
+#define @GLOG_OPTION@
+
 #endif  // CONFIGURE_HPP_

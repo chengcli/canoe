@@ -25,22 +25,48 @@ brew bundle
 ### Ubuntu Linux Installation Guide
 On a Ubuntu linux system, use `apt` to install
 ```
-sudo apt install clang-format cmake nco libnetcdf-dev libpnetcdf-dev libboost-all-dev libeigen3-dev
+sudo apt install clang-format cmake nco libnetcdf-dev libpnetcdf-dev libboost-all-dev libeigen3-dev libgoogle-glog-dev
 ```
 
 ### Redhat Linux Installation Guide
 On a Redhat linux system, use `yum` to install
 ```
-sudo yum install clang-tools-extra cmake nco netcdf-devel boost boost-devel eigen3-devel
+sudo yum install clang-tools-extra cmake nco netcdf-devel boost boost-devel eigen3-devel glog-devel
 ```
 
+### Multi-core execution
+If multi-core parallelization is needed, these extra pacakges should be install
+- mpich parallel library
+
+Ubuntu linux:
+```
+sudo apt install libmpich-dev
+```
+Redhat linux:
+```
+sudo yum install mpich-devel
+source ~/.bash_profile
+```
+- pnetcdf output
+
+Redhat linux does not support pnetcdf natively. So it should be downloaded and install.
+The default installation directory is $HOME/opt/
+```
+cd external
+./fetch_pnetcdf.sh
+./install_pnetcdf.sh
+cd ..
+```
+
+
 ## Install python libraries
+The minimum python version is 3.8.
 All needed python libraries are collected in `requirements.txt`. We suggest using a
 python [virtual environment](https://docs.python.org/3/library/venv.html) to install
 these packages. If you are already using a virtual enviroment, install python packages
 by
 ```
-pip install -r requirements.txt
+pip3 install -r requirements.txt
 ```
 Otherwise, to create a python virtual environment:
 ```

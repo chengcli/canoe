@@ -14,6 +14,7 @@ macro(setup_problem namel)
       ${NETCDF_LIBRARIES}
       ${PNETCDF_LIBRARY}
       ${MPI_CXX_LIBRARIES}
+      ${GLOG_LIBRARIES}
       )
 
   target_include_directories(${namel}.${buildl}

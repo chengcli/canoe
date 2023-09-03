@@ -3,6 +3,9 @@
 #include <sstream>
 #include <stdexcept>
 
+// application
+#include <application/exceptions.hpp>
+
 // athena
 #include <athena/athena.hpp>
 #include <athena/athena_arrays.hpp>
@@ -14,11 +17,29 @@
 #include <athena/parameter_input.hpp>
 
 // canoe
+#include <configure.hpp>
 #include <impl.hpp>
 
 // snap
 #include "../thermodynamics/thermodynamics.hpp"
 #include "eos_helper.hpp"
+
+#ifdef ENABLE_GLOG
+#include <glog/logging.h>
+#endif
+
+std::string str_grid_ij(AthenaArray<Real> const& var, int n, int k, int j,
+                        int i, int il, int iu, int jl, int ju) {
+  std::stringstream msg;
+  for (int ii = std::max(i - 3, il); ii <= std::min(i + 3, iu); ++ii) {
+    msg << "i = " << ii << " ";
+    for (int jj = std::max(j - 3, jl); jj <= std::min(j + 3, ju); ++jj)
+      msg << var(n, k, jj, ii) << " ";
+    msg << std::endl;
+  }
+
+  return msg.str();
+}
 
 // EquationOfState constructor
 
@@ -58,6 +79,10 @@ void EquationOfState::ConservedToPrimitive(
         Real& u_m3 = cons(IM3, k, j, i);
         Real& u_e = cons(IEN, k, j, i);
 
+        if (u_e < 0.) {
+          throw RuntimeError("ideal_moist_hydro", "negative energy");
+        }
+
         Real& w_d = prim(IDN, k, j, i);
         Real& w_vx = prim(IVX, k, j, i);
         Real& w_vy = prim(IVY, k, j, i);
@@ -76,52 +101,52 @@ void EquationOfState::ConservedToPrimitive(
         for (int n = 1; n <= NVAPOR; ++n)
           prim(n, k, j, i) = cons(n, k, j, i) * di;
 
-#if DEBUG_LEVEL > 3
-        if (std::isnan(w_d) || (w_d < density_floor_)) {  // IDN may be NAN
-          msg << "### FATAL ERROR in function ConservedToPrimitive" << std::endl
-              << "Density reaches lowest value: " << w_d << std::endl
-              << "At position (" << k << "," << j << "," << i << ") in rank "
-              << Globals::my_rank << std::endl;
-          for (int ii = std::max(i - 3, il); ii <= std::min(i + 3, iu); ++ii) {
-            msg << "i = " << ii << " ";
-            for (int jj = std::max(j - 3, jl); jj <= std::min(j + 3, ju); ++jj)
-              msg << cons(IDN, k, jj, ii) << " ";
-            msg << std::endl;
-          }
-          ATHENA_ERROR(msg);
-        }
+#ifdef ENABLED_GLOG
+        LOG_IF(ERROR, std::isnan(w_d) || (w_d < density_floor_))
+            << "rank = " << Globals::my_rank << ", (k,j,i) = "
+            << "(" << k << "," << j << "," << i << ")"
+            << ", w_d = " << w_d << std::endl;
+
+        LOG_IF(INFO, std::isnan(w_d) || (w_d < density_floor_))
+            << str_grid_ij(cons, IDN, k, j, i, il, iu, jl, ju);
 #endif
 
-        // Real di = 1.0/u_d;
-        w_vx = u_m1 * di;
-        w_vy = u_m2 * di;
-        w_vz = u_m3 * di;
-
-        // internal energy
-        Real KE = 0.5 * di * (u_m1 * u_m1 + u_m2 * u_m2 + u_m3 * u_m3);
-        Real fsig = 1., feps = 1.;
+        Real KE, fsig = 1., feps = 1.;
         // vapors
         for (int n = 1; n <= NVAPOR; ++n) {
           fsig += prim(n, k, j, i) * (pthermo->GetCvRatioMass(n) - 1.);
           feps += prim(n, k, j, i) * (pthermo->GetInvMuRatio(n) - 1.);
         }
-        w_p = gm1 * (u_e - KE) * feps / fsig;
+
+        int decay_factor = 1;
+        do {
+          u_m1 /= decay_factor;
+          u_m2 /= decay_factor;
+          u_m3 /= decay_factor;
+
+          // Real di = 1.0/u_d;
+          w_vx = u_m1 * di;
+          w_vy = u_m2 * di;
+          w_vz = u_m3 * di;
+
+          // internal energy
+          KE = 0.5 * di * (u_m1 * u_m1 + u_m2 * u_m2 + u_m3 * u_m3);
+          w_p = gm1 * (u_e - KE) * feps / fsig;
+
+#ifdef ENABLE_GLOG
+          LOG_IF(ERROR, w_p < 0.)
+              << "rank = " << Globals::my_rank << ", (k,j,i) = "
+              << "(" << k << "," << j << "," << i << ")"
+              << ", w_p = " << w_p << std::endl;
+#endif
+          decay_factor = 2;
+        } while (w_p < 0.);
 
         // apply pressure floor, correct total energy
         u_e = (w_p > pressure_floor_)
                   ? u_e
                   : ((pressure_floor_ / gm1) * fsig / feps + KE);
         w_p = (w_p > pressure_floor_) ? w_p : pressure_floor_;
-
-#if DEBUG_LEVEL > 3
-        if (std::isnan(w_p) || (w_p < pressure_floor_)) {
-          msg << "### FATAL ERROR in function ConservedToPrimitive" << std::endl
-              << "Pressure reaches lowest value: " << w_p << std::endl
-              << "At position (" << k << "," << j << "," << i << ") in rank "
-              << Globals::my_rank << std::endl;
-          ATHENA_ERROR(msg);
-        }
-#endif
       }
     }
   }

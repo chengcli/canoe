@@ -30,3 +30,11 @@ git checkout <branch>
 ```
 brew --prefix <package>
 ```
+- cache your github password
+```
+git config --global credential.helper cache
+```
+- change the default password cache timeout,
+```
+git config --global credential.helper 'cache --timeout=86400'
+```

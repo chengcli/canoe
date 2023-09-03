@@ -36,6 +36,7 @@ macro(add_test_giants test)
     ${NETCDF_LIBRARIES}
     ${PNETCDF_LIBRARY}
     ${MPI_CXX_LIBRARIES}
+    ${GLOG_LIBRARIES}
     )
 
   add_test(NAME ${name}.${buildl} COMMAND ${name}.${buildl})
@@ -66,6 +67,7 @@ macro(add_test_case test)
     ${NETCDF_LIBRARIES}
     ${PNETCDF_LIBRARY}
     ${MPI_CXX_LIBRARIES}
+    ${GLOG_LIBRARIES}
     )
 
   add_test(NAME ${name}.${buildl} COMMAND ${name}.${buildl})

@@ -2,14 +2,18 @@
 #include <iostream>
 #include <memory>
 
+// canoe
+#include <configure.hpp>
+
+#ifdef ENABLE_GLOG
+#include <glog/logging.h>
+#endif
+
 // athena
 #include <athena/parameter_input.hpp>
 #include <athena/mesh/mesh.hpp>
 #include <athena/outputs/outputs.hpp>
 #include <athena/task_list/task_list.hpp>
-
-// canoe
-#include <configure.hpp>
 
 // tasklist
 #include <tasklist/extra_tasks.hpp>
@@ -39,6 +43,10 @@ using OutputsPtr = std::unique_ptr<Outputs>;
 using TaskListPtr = std::unique_ptr<@TASKLIST@>;
 
 int main(int argc, char **argv)  {
+#ifdef ENABLE_GLOG
+  google::InitGoogleLogging(argv[0]);
+#endif
+
   Application::Start(argc, argv);
 
   auto cli = CommandLine::GetInstance();
