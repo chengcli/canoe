@@ -1,22 +1,10 @@
-#ifndef TURBULENCE_MODEL_HPP_
-#define TURBULENCE_MODEL_HPP_
-//========================================================================================
-// Athena++ astrophysical MHD code
-// Copyright(C) 2014 James M. Stone <jmstone@princeton.edu> and other code
-// contributors Licensed under the 3-clause BSD License, see LICENSE file for
-// details
-//========================================================================================
-//! \file scalars.hpp
-//  \brief definitions for TurbulenceModel class
-
-// C headers
-
-// C++ headers
+#ifndef SRC_SNAP_TURBULENCE_TURBULENCE_MODEL_HPP_
+#define SRC_SNAP_TURBULENCE_TURBULENCE_MODEL_HPP_
 
 // Athena++ headers
-#include "../athena.hpp"
-#include "../athena_arrays.hpp"
-#include "../bvals/cc/bvals_cc.hpp"
+#include <athena/athena.hpp>
+#include <athena/athena_arrays.hpp>
+#include <athena/bvals/cc/bvals_cc.hpp>
 
 class MeshBlock;
 class ParameterInput;
@@ -103,4 +91,4 @@ class KEpsilonTurbulence : public TurbulenceModel {
   Real cmu_, c1_, c2_, sigk_, sige_;
 };
 
-#endif  // TURBULENCE_MODEL_HPP_
+#endif  // SRC_SNAP_TURBULENCE_TURBULENCE_MODEL_HPP_

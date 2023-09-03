@@ -38,6 +38,7 @@ cpplint --filter=${filters} --recursive src/snap/thermodynamics
 cpplint --filter=${filters} --recursive src/snap/reconstruct
 cpplint --filter=${filters} --recursive src/snap/decomposition
 cpplint --filter=${filters} --recursive src/snap/implicit
+cpplint --filter=${filters} --recursive src/snap/turbulence
 
 # tools
 cpplint --filter=${filters} tools/*.cpp

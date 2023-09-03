@@ -5,10 +5,12 @@
 #include <iostream>
 
 // Athena++ headers
-#include "../hydro/hydro.hpp"
-#include "../mesh/mesh.hpp"
-#include "../task_list/task_list.hpp"
-#include "../turbulence/turbulence_model.hpp"
+#include <athena/hydro/hydro.hpp>
+#include <athena/mesh/mesh.hpp>
+#include <athena/task_list/task_list.hpp>
+
+// snap
+#include "turbulence_model.hpp"
 
 TaskStatus TimeIntegratorTaskList::CalculateTurbulenceFlux(MeshBlock *pmb,
                                                            int stage) {

@@ -28,8 +28,9 @@ double Methane::cp_nist(double T) {
 
   if (T < 1300.) {
     pdata = nist_shomate1_;
-  } else
+  } else {
     pdata = nist_shomate2_;
+  }
 
   double result;
   T /= 1.E3;

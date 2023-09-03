@@ -1,18 +1,18 @@
 //! \file k_epsilon_turbulence.cpp
 //  \brief implement K-Epsilon turbulence
 
-// C headers
-
-// C++ headers
+// C/C++ headers
 #include <algorithm>  // min,max
 
 // Athena++ headers
-#include "../athena.hpp"
-#include "../athena_arrays.hpp"
-#include "../coordinates/coordinates.hpp"
-#include "../eos/eos.hpp"  // reapply floors to face-centered reconstructed states
-#include "../hydro/hydro.hpp"
-#include "../reconstruct/reconstruction.hpp"
+#include <athena/athena.hpp>
+#include <athena/athena_arrays.hpp>
+#include <athena/coordinates/coordinates.hpp>
+#include <athena/eos/eos.hpp>  // reapply floors to face-centered reconstructed states
+#include <athena/hydro/hydro.hpp>
+#include <athena/reconstruct/reconstruction.hpp>
+
+// snap
 #include "turbulence_model.hpp"
 
 KEpsilonTurbulence::KEpsilonTurbulence(MeshBlock *pmb, ParameterInput *pin)

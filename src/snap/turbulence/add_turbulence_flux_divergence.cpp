@@ -1,23 +1,10 @@
-//========================================================================================
-// Athena++ astrophysical MHD code
-// Copyright(C) 2014 James M. Stone <jmstone@princeton.edu> and other code
-// contributors Licensed under the 3-clause BSD License, see LICENSE file for
-// details
-//========================================================================================
-//! \file add_scalar_flux_divergence.cpp
-//  \brief Computes divergence of the passive scalar fluxes and adds that to a
-//  conserved
-// variable register (passive scalar mass)
-
-// C headers
-
-// C++ headers
-
 // Athena++ headers
-#include "../athena.hpp"
-#include "../athena_arrays.hpp"
-#include "../coordinates/coordinates.hpp"
-#include "../mesh/mesh.hpp"
+#include <athena/athena.hpp>
+#include <athena/athena_arrays.hpp>
+#include <athena/coordinates/coordinates.hpp>
+#include <athena/mesh/mesh.hpp>
+
+// snap
 #include "turbulence_model.hpp"
 
 // OpenMP header
