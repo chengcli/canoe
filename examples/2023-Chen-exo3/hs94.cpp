@@ -50,6 +50,8 @@ Real piso = 1E4;
 std::default_random_engine generator;
 std::normal_distribution<double> distribution(0.0, 1.0);
 
+namespace cs = CubedSphereUtility;
+
 // \brief Held-Suarez atmosphere benchmark test. Refernce: Held & Suarez,
 // (1994). Forcing parameters are given in the paper.
 
@@ -58,7 +60,7 @@ std::normal_distribution<double> distribution(0.0, 1.0);
 //  &u) \brief Pseudo radiative damping of Earth atmosphere for HS94 test.
 void Forcing(MeshBlock *pmb, Real const time, Real const dt,
              AthenaArray<Real> const &w, const AthenaArray<Real> &prim_scalar,
-             AthenaArray<Real> const &bcc, AthenaArray<Real> &u,
+             AthenaArray<Real> const &bcc, AthenaArray<Real> &du,
              AthenaArray<Real> &cons_scalar) {
   auto pexo3 = pmb->pimpl->pexo3;
   // for (int k = pmb->ks; k <= pmb->ke; ++k) {
@@ -125,8 +127,7 @@ void Forcing(MeshBlock *pmb, Real const time, Real const dt,
             Ts - dT * _sqr(sin(lat)) - dtheta * log(scaled_z) * _sqr(cos(lat));
         Teq_p *= pow(scaled_z, kappa);
         Real Teq = (Teq_p > 200.) ? Teq_p : 200.;
-        Real temp =
-            pmb->phydro->w(IPR, k, j, i) / pmb->phydro->w(IDN, k, j, i) / Rd;
+        Real temp = w(IPR, k, j, i) / w(IDN, k, j, i) / Rd;
         // Temperature damping coefficient, Kt
         sigma_p = (sigma_p < 0.0) ? 0.0 : sigma_p * _qur(cos(lat));
         Real Kt = Ka + (Ks - Ka) * sigma_p;
@@ -138,14 +139,14 @@ void Forcing(MeshBlock *pmb, Real const time, Real const dt,
 
         pexo3->ContravariantVectorToCovariant(j, k, m2, m3, &m2, &m3);
 
-        // u(IM1, k, j, i) += -dt * Kv * m1;
-        // u(IM2, k, j, i) += -dt * Kv * m2;
-        // u(IM3, k, j, i) += -dt * Kv * m3;
-        u(IEN, k, j, i) +=
+        du(IM1, k, j, i) += -dt * Kv * m1;
+        du(IM2, k, j, i) += -dt * Kv * m2;
+        du(IM3, k, j, i) += -dt * Kv * m3;
+        du(IEN, k, j, i) +=
             -dt * (cp - Rd) * w(IDN, k, j, i) * Kt * (temp - Teq);
       }
 
-  // Sponge Layer
+  /* Sponge Layer
   for (int k = pmb->ks; k <= pmb->ke; ++k) {
     for (int j = pmb->js; j <= pmb->je; ++j) {
       for (int i = pmb->is; i <= pmb->ie; ++i) {
@@ -158,7 +159,7 @@ void Forcing(MeshBlock *pmb, Real const time, Real const dt,
         }
       }
     }
-  }
+  }*/
 }
 
 Real AngularMomentum(MeshBlock *pmb, int iout) {
@@ -272,7 +273,8 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
         pthermo->Extrapolate(&air, pcoord->dx1f(i),
                              Thermodynamics::Method::DryAdiabat, grav);
         // add noise
-        air.w[IVX] = 0.01 * distribution(generator);
+        air.w[IVY] = 10. * distribution(generator);
+        air.w[IVZ] = 10. * distribution(generator);
       }
 
       // construct isothermal atmosphere

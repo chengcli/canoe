@@ -166,13 +166,17 @@ void ImplicitSolver::PartialCorrection(AthenaArray<Real>& du,
         b[i] = -(Am2 + dfdq2[i - 1]) * aleft / (2. * vol);
         c[i] = -(Ap2 - dfdq2[i + 1]) * aright / (2. * vol);
 
-        // flux correction
-        // dqm << du_(IVX+(IVY-IVX+mydir_)%3,k,j,i  ),
-        // du_(IVX+(IVZ-IVX+mydir_)%3,k,j,i  ); dqp <<
-        // du_(IVX+(IVY-IVX+mydir_)%3,k,j,i+1),
-        // du_(IVX+(IVZ-IVX+mydir_)%3,k,j,i+1); sm = 0.5*((dfdq1[i-1] + Am1)*dqm
-        // + (dfdq1[i] - Am1)*dqp); sp = 0.5*((dfdq1[i] + Ap1)*dqm + (dfdq1[i+1]
-        // - Ap1)*dqp); corr[i] = (sp*aright - sm*aleft)/vol;
+        /* flux correction
+        dqm << du_(IVX+(IVY-IVX+mydir_)%3,k,j,i  ),
+               du_(IVX+(IVZ-IVX+mydir_)%3,k,j,i  );
+
+        dqp << du_(IVX+(IVY-IVX+mydir_)%3,k,j,i+1),
+               du_(IVX+(IVZ-IVX+mydir_)%3,k,j,i+1);
+
+        sm = 0.5*((dfdq1[i-1] + Am1)*dqm + (dfdq1[i] - Am1)*dqp);
+        sp = 0.5*((dfdq1[i] + Ap1)*dqm + (dfdq1[i+1] - Ap1)*dqp);
+
+        corr[i] = (sp*aright - sm*aleft)/vol; */
         corr[i].setZero();
 
         // Shift one cell: i -> i+1
