@@ -414,6 +414,7 @@ Real GnomonicEquiangle::GetCellVolume(const int k, const int j, const int i) {
 
 //----------------------------------------------------------------------------------------
 // For Affine coordinate: the metrics are all the same for volume, faces
+// TODO(cli): Is this wrong?
 void GnomonicEquiangle::CellMetric(const int k, const int j, const int il,
                                    const int iu, AthenaArray<Real> &g,
                                    AthenaArray<Real> &g_inv) {
@@ -451,6 +452,7 @@ void GnomonicEquiangle::CellMetric(const int k, const int j, const int il,
   return;
 }
 
+// TODO(cli): Is this wrong?
 void GnomonicEquiangle::Face1Metric(const int k, const int j, const int il,
                                     const int iu, AthenaArray<Real> &g,
                                     AthenaArray<Real> &g_inv) {
@@ -488,6 +490,7 @@ void GnomonicEquiangle::Face1Metric(const int k, const int j, const int il,
   return;
 }
 
+// TODO(cli): Is this wrong?
 void GnomonicEquiangle::Face2Metric(const int k, const int j, const int il,
                                     const int iu, AthenaArray<Real> &g,
                                     AthenaArray<Real> &g_inv) {
@@ -526,6 +529,7 @@ void GnomonicEquiangle::Face2Metric(const int k, const int j, const int il,
   return;
 }
 
+// TODO(cli): Is this wrong?
 void GnomonicEquiangle::Face3Metric(const int k, const int j, const int il,
                                     const int iu, AthenaArray<Real> &g,
                                     AthenaArray<Real> &g_inv) {
@@ -564,6 +568,27 @@ void GnomonicEquiangle::Face3Metric(const int k, const int j, const int il,
   return;
 }
 
+void GnomonicEquiangle::PrimToLocal1(
+    const int k, const int j, const int il, const int iu,
+    const AthenaArray<Real> &bb1, AthenaArray<Real> &prim_l, AthenaArray<Real> &prim_r,
+    AthenaArray<Real> &bbx) {
+
+  Real cos_theta = cosine_cell_kj_(k, j);
+  Real sin_theta = sine_cell_kj_(k, j);
+
+  for (int i = il; i <= iu; ++i) {
+    Real vy_l = prim_l(IVY, i);
+    Real vz_l = prim_l(IVZ, i);
+    Real vy_r = prim_r(IVY, i);
+    Real vz_r = prim_r(IVZ, i);
+
+    prim_l(IVY, i) += vz_l * cos_theta;
+    prim_l(IVZ, i) *= sin_theta;
+    prim_r(IVY, i) += vz_r * cos_theta;
+    prim_r(IVZ, i) *= sin_theta;
+  }
+}
+
 //----------------------------------------------------------------------------------------
 // Function for transforming primitives to locally flat frame: r-interface
 // Inputs:
@@ -578,7 +603,7 @@ void GnomonicEquiangle::Face3Metric(const int k, const int j, const int il,
 
 void GnomonicEquiangle::PrimToLocal2(const int k, const int j, const int il,
                                      const int iu,
-                                     const AthenaArray<Real> &b1_vals,
+                                     const AthenaArray<Real> &b2_vals,
                                      AthenaArray<Real> &prim_left,
                                      AthenaArray<Real> &prim_right,
                                      AthenaArray<Real> &bx) {
@@ -635,7 +660,7 @@ void GnomonicEquiangle::PrimToLocal2(const int k, const int j, const int il,
 
 void GnomonicEquiangle::PrimToLocal3(const int k, const int j, const int il,
                                      const int iu,
-                                     const AthenaArray<Real> &b1_vals,
+                                     const AthenaArray<Real> &b3_vals,
                                      AthenaArray<Real> &prim_left,
                                      AthenaArray<Real> &prim_right,
                                      AthenaArray<Real> &bx) {
@@ -689,6 +714,23 @@ void GnomonicEquiangle::PrimToLocal3(const int k, const int j, const int il,
     prim_right(IVX, i) = ux_r;
     prim_right(IVY, i) = uy_r;
     prim_right(IVZ, i) = uz_r;
+  }
+}
+
+void GnomonicEquiangle::FluxToGlobal1(
+    const int k, const int j, const int il, const int iu,
+    const AthenaArray<Real> &cons, const AthenaArray<Real> &bbx, AthenaArray<Real> &flux,
+    AthenaArray<Real> &ey, AthenaArray<Real> &ez) {
+
+  Real cos_theta = cosine_cell_kj_(k, j);
+  Real sin_theta = sine_cell_kj_(k, j);
+
+  for (int i = il; i <= iu; ++i) {
+    Real txy = flux(IM2, k, j, i);
+    Real txz = flux(IM3, k, j, i);
+
+    flux(IM2, k, j, i) -= txz / sin_theta * cos_theta;
+    flux(IM3, k, j, i) /= sin_theta;
   }
 }
 

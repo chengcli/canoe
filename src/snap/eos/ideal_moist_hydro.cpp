@@ -96,6 +96,16 @@ void EquationOfState::ConservedToPrimitive(
         Real& w_vz = prim(IVZ, k, j, i);
         Real& w_p = prim(IPR, k, j, i);
 
+#ifdef ENABLED_GLOG
+        LOG_IF(ERROR, std::isnan(w_d) || (w_d < density_floor_))
+            << "rank = " << Globals::my_rank << ", (k,j,i) = "
+            << "(" << k << "," << j << "," << i << ")"
+            << ", w_d = " << w_d << std::endl;
+
+        LOG_IF(INFO, std::isnan(w_d) || (w_d < density_floor_))
+            << str_grid_ij(cons, IDN, k, j, i, il, iu, jl, ju);
+#endif
+
         // apply density floor, without changing momentum or energy
         u_d = (u_d > density_floor_) ? u_d : density_floor_;
 
@@ -125,8 +135,11 @@ void EquationOfState::ConservedToPrimitive(
           fsig += prim(n, k, j, i) * (pthermo->GetCvRatioMass(n) - 1.);
           feps += prim(n, k, j, i) * (pthermo->GetInvMuRatio(n) - 1.);
         }
-        Real cos_theta = 
-          static_cast<GnomonicEquiangle *>(pco)->GetCosineCell(k, j);
+
+#ifdef CUBED_SPHERE
+        Real cos_theta =
+            static_cast<GnomonicEquiangle*>(pco)->GetCosineCell(k, j);
+#endif
 
         int decay_factor = 1;
         do {
@@ -207,8 +220,9 @@ void EquationOfState::PrimitiveToConserved(const AthenaArray<Real>& prim,
         u_m3 = w_vz * w_d;
 
 #ifdef CUBED_SPHERE
-        cs::ContravariantToCovariant(cons.at(k, j, i),
-            static_cast<GnomonicEquiangle *>(pco)->GetCosineCell(k, j));
+        cs::ContravariantToCovariant(
+            cons.at(k, j, i),
+            static_cast<GnomonicEquiangle*>(pco)->GetCosineCell(k, j));
 #endif
 
         // total energy
