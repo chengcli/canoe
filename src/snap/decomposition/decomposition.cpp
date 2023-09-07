@@ -29,6 +29,7 @@ Decomposition::Decomposition(MeshBlock *pmb)
   int nc1 = pmb->ncells1, nc2 = pmb->ncells2, nc3 = pmb->ncells3;
   // allocate hydrostatic and nonhydrostatic pressure
   psf_.NewAthenaArray(nc3, nc2, nc1 + 1);
+  psv_.NewAthenaArray(nc3, nc2, nc1);
   pres_.NewAthenaArray(nc3, nc2, nc1);
   dens_.NewAthenaArray(nc3, nc2, nc1);
 
@@ -43,6 +44,7 @@ Decomposition::Decomposition(MeshBlock *pmb)
 
   // allocate polytropic index and pseudo entropy
   entropy_.NewAthenaArray(2, nc3, nc2);
+  gamma_.NewAthenaArray(nc3, nc2, nc1);
 }
 
 Decomposition::~Decomposition() {

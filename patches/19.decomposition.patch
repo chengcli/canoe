@@ -17,7 +17,7 @@ index eeaf381b..679e6401 100644
    }
 
 +  // decompose pressure to pertubation pressure and hydrostatic pressure
-+  pmb->pimpl->pdec->ChangeToPerturbation(w, kl, ku, jl, ju);
++  pmb->pimpl->pdec->ChangeToEntropy(w, kl, ku, jl, ju);
 +
    for (int k=kl; k<=ku; ++k) {
      for (int j=jl; j<=ju; ++j) {
@@ -27,7 +27,7 @@ index eeaf381b..679e6401 100644
        }
 
 +      // assemble pressure pertubation
-+      pmb->pimpl->pdec->RestoreFromPerturbation(w, wl_, wr_, k, j, is, ie + 1);
++      pmb->pimpl->pdec->RestoreFromEntropy(w, wl_, wr_, k, j, is, ie + 1);
 +
        pmb->pcoord->CenterWidth1(k, j, is, ie+1, dxw_);
  #if !MAGNETIC_FIELDS_ENABLED  // Hydro:

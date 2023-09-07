@@ -36,9 +36,6 @@ class Decomposition {
                         int ju);
   void WaitToFinishSync(AthenaArray<Real> &w, int kl, int ku, int jl, int ju);
 
-  void ChangeToBuoyancy(AthenaArray<Real> &w, int kl, int ku, int jl, int ju);
-  void RestoreFromBuoyancy(AthenaArray<Real> &w, AthenaArray<Real> &wl,
-                           AthenaArray<Real> &wr, int k, int j, int il, int iu);
   void ApplyHydroBoundary(AthenaArray<Real> &w, AthenaArray<Real> &psf, int kl,
                           int ku, int jl, int ju);
 
@@ -55,19 +52,28 @@ class Decomposition {
                                AthenaArray<Real> &wr, int k, int j, int il,
                                int iu);
 
+  void ChangeToBuoyancy(AthenaArray<Real> &w, int kl, int ku, int jl, int ju);
+  void RestoreFromBuoyancy(AthenaArray<Real> &w, AthenaArray<Real> &wl,
+                           AthenaArray<Real> &wr, int k, int j, int il, int iu);
+
+  void ChangeToEntropy(AthenaArray<Real> &w, int kl, int ku, int jl, int ju);
+  void RestoreFromEntropy(AthenaArray<Real> &w, AthenaArray<Real> &wl,
+                          AthenaArray<Real> &wr, int k, int j, int il, int iu);
+
  private:
   MeshBlock *pmy_block_;
 
   // pressure decomposition
-  AthenaArray<Real>
-      psf_;  // hydrostatic pressure and polytropic index at cell face
+  AthenaArray<Real> psf_, psv_;
   AthenaArray<Real> pres_, dens_;  // save of original w
+                                   //
   Real *buffer_, *send_buffer_;    // MPI data buffer
   Real *wsend_top_, *wrecv_top_;   // MPI data buffer
   Real *wsend_bot_, *wrecv_bot_;   // MPI data buffer
   int *brank_, *color_;            // bottom block rank and color
 
   AthenaArray<Real> entropy_;  // adiabatic index and pseudo entropy
+  AthenaArray<Real> gamma_;    // adiabatic index
 
 #ifdef MPI_PARALLEL
   MPI_Request req_send_top_;
