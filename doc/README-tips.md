@@ -38,3 +38,7 @@ git config --global credential.helper cache
 ```
 git config --global credential.helper 'cache --timeout=86400'
 ```
+- delete a remote branch
+```
+git push origin --delete <branch>
+```
