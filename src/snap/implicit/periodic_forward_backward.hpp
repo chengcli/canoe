@@ -176,66 +176,58 @@ template <typename T1, typename T2>
 void ImplicitSolver::PeriodicBackwardSubstitution(std::vector<T1> &ainv,
                                                   std::vector<T1> &diagU,
                                                   std::vector<T2> &delta,
-                                                  int kl, int ku, int jl,
-                                                  int ju, int il, int iu) {
+                                                  int k, int j, int il, int iu) {
   T2 delta_last;
   std::vector<T1> gamma(diagU.size());
   std::vector<T2> zeta(diagU.size());
 
-  for (int k = kl; k <= ku; ++k)
-    for (int j = jl; j <= ju; ++j) {
-      LoadCoefficients(ainv, gamma, zeta, diagU, k, j, il, iu);
-      if (last_block) {  // I'm the last block
-        // a[n-1] = 0
-        diagU[iu - 1].setZero();
-        //           -1
-        // x[n] = c[n]*r[n]
-        delta[iu] = ainv[iu] * zeta[iu];
-        delta_last = delta[iu];
-      } else {
-        RecvBuffer(delta[iu + 1], delta_last, k, j, tblock);
-        delta[iu] = ainv[iu] * (zeta[iu] - diagU[iu] * delta[iu + 1] -
-                                gamma[iu] * delta_last);
-      }
+  LoadCoefficients(ainv, gamma, zeta, diagU, k, j, il, iu);
+  if (last_block) {  // I'm the last block
+    // a[n-1] = 0
+    diagU[iu - 1].setZero();
+    //           -1
+    // x[n] = c[n]*r[n]
+    delta[iu] = ainv[iu] * zeta[iu];
+    delta_last = delta[iu];
+  } else {
+    RecvBuffer(delta[iu + 1], delta_last, k, j, tblock);
+    delta[iu] = ainv[iu] * (zeta[iu] - diagU[iu] * delta[iu + 1] -
+                            gamma[iu] * delta_last);
+  }
 
-      // backward substitution
-      for (int i = iu - 1; i >= il; --i)
-        //           -1
-        // x[i] = c[i]*(r[i] - a[i]*x[i+1] - v[i]*x[n])
-        delta[i] = ainv[i] *
-                   (zeta[i] - diagU[i] * delta[i + 1] - gamma[i] * delta_last);
+  // backward substitution
+  for (int i = iu - 1; i >= il; --i)
+    //           -1
+    // x[i] = c[i]*(r[i] - a[i]*x[i+1] - v[i]*x[n])
+    delta[i] = ainv[i] *
+               (zeta[i] - diagU[i] * delta[i + 1] - gamma[i] * delta_last);
 
-      // update conserved variables
-      for (int i = il; i <= iu; ++i) {
-        if (T2::RowsAtCompileTime == 3) {  // partial matrix
-          du_(IDN, k, j, i) = delta[i](0);
-          du_(IVX + mydir_, k, j, i) = delta[i](1);
-          du_(IEN, k, j, i) = delta[i](2);
-        } else {  // full matrix
-          du_(IDN, k, j, i) = delta[i](0);
-          du_(IVX + mydir_, k, j, i) = delta[i](1);
-          du_(IVX + (IVY - IVX + mydir_) % 3, k, j, i) = delta[i](2);
-          du_(IVX + (IVZ - IVX + mydir_) % 3, k, j, i) = delta[i](3);
-          du_(IEN, k, j, i) = delta[i](4);
-        }
-        for (int n = 1; n <= NVAPOR; ++n) du_(IDN, k, j, i) -= du_(n, k, j, i);
-      }
-
-      if (!first_block) SendBuffer(delta[il], delta_last, k, j, bblock);
+  // update conserved variables
+  for (int i = il; i <= iu; ++i) {
+    if (T2::RowsAtCompileTime == 3) {  // partial matrix
+      du_(IDN, k, j, i) = delta[i](0);
+      du_(IVX + mydir_, k, j, i) = delta[i](1);
+      du_(IEN, k, j, i) = delta[i](2);
+    } else {  // full matrix
+      du_(IDN, k, j, i) = delta[i](0);
+      du_(IVX + mydir_, k, j, i) = delta[i](1);
+      du_(IVX + (IVY - IVX + mydir_) % 3, k, j, i) = delta[i](2);
+      du_(IVX + (IVZ - IVX + mydir_) % 3, k, j, i) = delta[i](3);
+      du_(IEN, k, j, i) = delta[i](4);
     }
+    for (int n = 1; n <= NVAPOR; ++n) du_(IDN, k, j, i) -= du_(n, k, j, i);
+  }
+
+  if (!first_block) SendBuffer(delta[il], delta_last, k, j, bblock);
 
 #ifdef MPI_PARALLEL
   MPI_Status status;
 
-  if (!last_block && (tblock.snb.rank != Globals::my_rank)) {
-    for (int k = kl; k <= ku; ++k)
-      for (int j = jl; j <= ju; ++j) MPI_Wait(&req_send_data6_[k][j], &status);
-  }
+  if (!last_block && (tblock.snb.rank != Globals::my_rank))
+    MPI_Wait(&req_send_data6_[k][j], &status);
 
-  if (!first_block && (bblock.snb.rank != Globals::my_rank)) {
-    for (int k = kl; k <= ku; ++k)
-      for (int j = jl; j <= ju; ++j) MPI_Wait(&req_send_data2_[k][j], &status);
-  }
+  if (!first_block && (bblock.snb.rank != Globals::my_rank))
+    MPI_Wait(&req_send_data2_[k][j], &status);
 #endif
 }
 

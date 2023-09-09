@@ -43,14 +43,14 @@ ImplicitSolver::ImplicitSolver(MeshBlock *pmb, ParameterInput *pin)
   Application::Logger app("snap");
   app->Log("Initialize ImplicitSolver");
 
-  implicit_flag = pin->GetOrAddInteger("hydro", "implicit_flag", 0);
+  implicit_flag_ = pin->GetOrAddInteger("hydro", "implicit_flag", 0);
   int nc1 = pmb->ncells1, nc2 = pmb->ncells2, nc3 = pmb->ncells3;
   int n2max = nc2, n3max = nc3;
-  if (implicit_flag & 2) {
+  if (implicit_flag_ & 2) {
     n2max = std::max(n2max, nc3);
     n3max = std::max(n3max, nc1);
   }
-  if (implicit_flag & 3) {
+  if (implicit_flag_ & 3) {
     n2max = std::max(n2max, nc1);
     n3max = std::max(n3max, nc2);
   }

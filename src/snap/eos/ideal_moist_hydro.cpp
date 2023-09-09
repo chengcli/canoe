@@ -141,8 +141,9 @@ void EquationOfState::ConservedToPrimitive(
             static_cast<GnomonicEquiangle*>(pco)->GetCosineCell(k, j);
 #endif
 
-        int decay_factor = 1;
+        int decay_factor = 1, iter = 0, max_iter = 10;
         do {
+          iter++;
           u_m1 /= decay_factor;
           u_m2 /= decay_factor;
           u_m3 /= decay_factor;
@@ -167,6 +168,9 @@ void EquationOfState::ConservedToPrimitive(
               << ", w_p = " << w_p << std::endl;
 #endif
           decay_factor = 2;
+          if (iter > max_iter) {
+            throw RuntimeError("ideal_moist_hydro", "negative pressure");
+          }
         } while (w_p < 0.);
 
         // apply pressure floor, correct total energy
