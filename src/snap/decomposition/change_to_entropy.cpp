@@ -38,13 +38,12 @@ inline void IntegrateDownwards(AthenaArray<Real> &psf,
 
 void Decomposition::ChangeToEntropy(AthenaArray<Real> &w, int kl, int ku,
                                     int jl, int ju) {
-  // Need to integrate upwards
   MeshBlock *pmb = pmy_block_;
   Coordinates *pco = pmb->pcoord;
   auto pthermo = Thermodynamics::GetInstance();
 
-  Real grav =
-      pmb->phydro->hsrc.GetG1();  // positive in the x-increasing direction
+  // positive in the x-increasing direction
+  Real grav = pmb->phydro->hsrc.GetG1();
   Real gamma = pmb->peos->GetGamma();
   Real Rd = pthermo->GetRd();
 
@@ -54,7 +53,7 @@ void Decomposition::ChangeToEntropy(AthenaArray<Real> &w, int kl, int ku,
   FindNeighbors();
 
   if (has_top_neighbor) {
-    RecvBuffer(psf_, kl, ku, jl, ju, ie + 1, ie + NGHOST + 1, tblock);
+    RecvFromTop(psf_, kl, ku, jl, ju);
   } else {
     // isothermal extrapolation to find the pressure at top boundary
     for (int k = kl; k <= ku; ++k)
@@ -67,7 +66,7 @@ void Decomposition::ChangeToEntropy(AthenaArray<Real> &w, int kl, int ku,
   IntegrateDownwards(psf_, w, pco, grav, kl, ku, jl, ju, is, ie);
 
   // populate ghost cells
-  SendBuffer(psf_, kl, ku, jl, ju);
+  if (has_bot_neighbor) SendToBottom(psf_, kl, ku, jl, ju);
 
   // boundary condition
   if (pmb->pbval->block_bcs[inner_x1] == BoundaryFlag::reflect) {
@@ -82,8 +81,6 @@ void Decomposition::ChangeToEntropy(AthenaArray<Real> &w, int kl, int ku,
   } else {  // block boundary
     IntegrateUpwards(psf_, w, pco, grav, kl, ku, jl, ju, ie + 1, ie + NGHOST);
   }
-
-  RecvBuffer(psf_, kl, ku, jl, ju, is - NGHOST, is, bblock);
 
   // decompose pressure and density
   for (int k = kl; k <= ku; ++k)
