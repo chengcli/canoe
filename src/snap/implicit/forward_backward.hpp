@@ -85,51 +85,43 @@ void ImplicitSolver::ForwardSweep(std::vector<T1> &a, std::vector<T1> &b,
 
 template <typename T1, typename T2>
 void ImplicitSolver::BackwardSubstitution(std::vector<T1> &a,
-                                          std::vector<T2> &delta, int kl,
-                                          int ku, int jl, int ju, int il,
-                                          int iu) {
-  for (int k = kl; k <= ku; ++k)
-    for (int j = jl; j <= ju; ++j) {
-      LoadCoefficients(a, delta, k, j, il, iu);
-      if (!last_block) {
-        RecvBuffer(delta[iu + 1], k, j, tblock);
-        delta[iu] -= a[iu] * delta[iu + 1];
-      }
+                                          std::vector<T2> &delta, int k,
+                                          int j, int il, int iu) {
+  LoadCoefficients(a, delta, k, j, il, iu);
+  if (!last_block) {
+    RecvBuffer(delta[iu + 1], k, j, tblock);
+    delta[iu] -= a[iu] * delta[iu + 1];
+  }
 
-      // update solutions, i=iu
-      for (int i = iu - 1; i >= il; --i) delta[i] -= a[i] * delta[i + 1];
+  // update solutions, i=iu
+  for (int i = iu - 1; i >= il; --i) delta[i] -= a[i] * delta[i + 1];
 
-      // 7. update conserved variables, i = iu
-      for (int i = il; i <= iu; ++i) {
-        if (T2::RowsAtCompileTime == 3) {  // partial matrix
-          du_(IDN, k, j, i) = delta[i](0);
-          du_(IVX + mydir_, k, j, i) = delta[i](1);
-          du_(IEN, k, j, i) = delta[i](2);
-        } else {  // full matrix
-          du_(IDN, k, j, i) = delta[i](0);
-          du_(IVX + mydir_, k, j, i) = delta[i](1);
-          du_(IVX + (IVY - IVX + mydir_) % 3, k, j, i) = delta[i](2);
-          du_(IVX + (IVZ - IVX + mydir_) % 3, k, j, i) = delta[i](3);
-          du_(IEN, k, j, i) = delta[i](4);
-        }
-        for (int n = 1; n <= NVAPOR; ++n) du_(IDN, k, j, i) -= du_(n, k, j, i);
-      }
-
-      if (!first_block) SendBuffer(delta[il], k, j, bblock);
+  // 7. update conserved variables, i = iu
+  for (int i = il; i <= iu; ++i) {
+    if (T2::RowsAtCompileTime == 3) {  // partial matrix
+      du_(IDN, k, j, i) = delta[i](0);
+      du_(IVX + mydir_, k, j, i) = delta[i](1);
+      du_(IEN, k, j, i) = delta[i](2);
+    } else {  // full matrix
+      du_(IDN, k, j, i) = delta[i](0);
+      du_(IVX + mydir_, k, j, i) = delta[i](1);
+      du_(IVX + (IVY - IVX + mydir_) % 3, k, j, i) = delta[i](2);
+      du_(IVX + (IVZ - IVX + mydir_) % 3, k, j, i) = delta[i](3);
+      du_(IEN, k, j, i) = delta[i](4);
     }
+    for (int n = 1; n <= NVAPOR; ++n) du_(IDN, k, j, i) -= du_(n, k, j, i);
+  }
+
+  if (!first_block) SendBuffer(delta[il], k, j, bblock);
 
 #ifdef MPI_PARALLEL
   MPI_Status status;
 
-  if (!last_block && (tblock.snb.rank != Globals::my_rank)) {
-    for (int k = kl; k <= ku; ++k)
-      for (int j = jl; j <= ju; ++j) MPI_Wait(&req_send_data2_[k][j], &status);
-  }
+  if (!last_block && (tblock.snb.rank != Globals::my_rank))
+    MPI_Wait(&req_send_data2_[k][j], &status);
 
-  if (!first_block && (bblock.snb.rank != Globals::my_rank)) {
-    for (int k = kl; k <= ku; ++k)
-      for (int j = jl; j <= ju; ++j) MPI_Wait(&req_send_data1_[k][j], &status);
-  }
+  if (!first_block && (bblock.snb.rank != Globals::my_rank)) 
+    MPI_Wait(&req_send_data1_[k][j], &status);
 #endif
 }
 

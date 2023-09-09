@@ -82,6 +82,10 @@ class GnomonicEquiangle : public Coordinates {
     return cosine_cell_kj_(k, j);
   }
 
+  Real GetSineCell(const int k, const int j) const {
+    return sine_cell_kj_(k, j);
+  }
+
  protected:
   Real sphericalTri(Real x1, Real x2, Real x3, Real y1, Real y2, Real y3);
 

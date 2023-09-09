@@ -28,9 +28,6 @@
 // tasklist
 #include "extra_tasks.hpp"
 
-#ifdef ENABLE_GLOG
-#include <glog/logging.h>
-#endif
 
 using TaskFunction = TaskStatus (TaskList::*)(MeshBlock *, int);
 
@@ -247,51 +244,12 @@ TaskStatus ImplicitHydroTasks::AddFluxToConserved(MeshBlock *pmb, int stage) {
 TaskStatus ImplicitHydroTasks::ImplicitCorrection(MeshBlock *pmb, int stage) {
   Hydro *ph = pmb->phydro;
   auto phevi = pmb->pimpl->phevi;
-  Real dt = pmb->pmy_mesh->dt;
-
-#ifdef CUBED_SPHERE
-  // project to orthogonal coordinates
-#endif // CUBED_SPHERE
 
   if (stage <= nstages) {
     if (stage_wghts[stage - 1].main_stage) {
       // do implicit coorection at every stage
-      // X3DIR
-      if ((phevi->implicit_flag & (1 << 2)) && (pmb->ncells3 > 1)) {
-        phevi->SetDirection(X3DIR);
-        if (phevi->implicit_flag & (1 << 3))
-          phevi->FullCorrection(pmb->pimpl->du, ph->w,
-                                stage_wghts[stage - 1].beta * dt);
-        else
-          phevi->PartialCorrection(pmb->pimpl->du, ph->w,
-                                   stage_wghts[stage - 1].beta * dt);
-      }
-
-      // X2DIR
-      if ((phevi->implicit_flag & (1 << 1)) && (pmb->ncells2 > 1)) {
-        phevi->SetDirection(X2DIR);
-        if (phevi->implicit_flag & (1 << 3))
-          phevi->FullCorrection(pmb->pimpl->du, ph->w,
-                                stage_wghts[stage - 1].beta * dt);
-        else
-          phevi->PartialCorrection(pmb->pimpl->du, ph->w,
-                                   stage_wghts[stage - 1].beta * dt);
-      }
-
-      // X1DIR
-      if (phevi->implicit_flag & 1) {
-        phevi->SetDirection(X1DIR);
-        if (phevi->implicit_flag & (1 << 3))
-          phevi->FullCorrection(pmb->pimpl->du, ph->w,
-                                stage_wghts[stage - 1].beta * dt);
-        else
-          phevi->PartialCorrection(pmb->pimpl->du, ph->w,
-                                   stage_wghts[stage - 1].beta * dt);
-      }
-
-#ifdef CUBED_SPHERE
-  // project back to gnomonic
-#endif // CUBED_SPHERE
+      Real dt = stage_wghts[stage - 1].beta * pmb->pmy_mesh->dt;
+      phevi->SolveImplicit3D(pmb->pimpl->du, ph->w, dt);
 
       Real wghts[5];
       wghts[0] = 1.;
@@ -300,23 +258,6 @@ TaskStatus ImplicitHydroTasks::ImplicitCorrection(MeshBlock *pmb, int stage) {
       wghts[3] = 0.;
       wghts[4] = 0.;
       pmb->WeightedAve(ph->u, pmb->pimpl->du, ph->u2, ph->u2, ph->u2, wghts);
-#ifdef ENABLE_GLOG
-      for (int k = pmb->ks; k <= pmb->ke; k++)
-        for (int j = pmb->js; j <= pmb->je; j++)
-          for (int i = pmb->is; i <= pmb->ie; i++) {
-            LOG_IF(ERROR, ph->u(IEN,k,j,i) < 0.)
-                << "rank = " << Globals::my_rank << ", (k,j,i) = "
-                << "(" << k << "," << j << "," << i << ")"
-                << ", u[IEN] = " << ph->u(IEN,k,j,i)
-                << ", u[IVX] = " << ph->u(IVX,k,j,i) << std::endl;
-
-            LOG_IF(ERROR, ph->u(IDN,k,j,i) < 0.)
-                << "rank = " << Globals::my_rank << ", (k,j,i) = "
-                << "(" << k << "," << j << "," << i << ")"
-                << ", u[IDN] = " << ph->u(IDN,k,j,i)
-                << ", u[IVX] = " << ph->u(IVX,k,j,i) << std::endl;
-          }
-#endif
     }
     return TaskStatus::next;
   }

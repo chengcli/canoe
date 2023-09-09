@@ -36,13 +36,13 @@ class ImplicitSolver {
   bool periodic_boundary;
   bool pole_at_bot, pole_at_top;
   NeighborBlock tblock, bblock;
-  int implicit_flag;
 
   // functions
   ImplicitSolver(MeshBlock *pmb, ParameterInput *pin);
   ~ImplicitSolver();
   void SetDirection(CoordinateDirection dir);
-  int GetImplicitFlag() { return implicit_flag; }
+  int GetImplicitFlag() const { return implicit_flag_; }
+  void SolveImplicit3D(AthenaArray<Real> &du, AthenaArray<Real> &w, Real dt);
 
   // utility functions
   void FindNeighbors();
@@ -50,9 +50,9 @@ class ImplicitSolver {
 
   // correction methods
   void PartialCorrection(AthenaArray<Real> &du, AthenaArray<Real> const &w,
-                         Real dt);
+                         Real dt, int k, int j, int is, int ie);
   void FullCorrection(AthenaArray<Real> &du, AthenaArray<Real> const &w,
-                      Real dt);
+                      Real dt, int k, int j, int is, int ie);
 
   // tri-diagonal solver
   template <typename T1, typename T2>
@@ -61,8 +61,8 @@ class ImplicitSolver {
                     int k, int j, int il, int iu);
 
   template <typename T1, typename T2>
-  void BackwardSubstitution(std::vector<T1> &a, std::vector<T2> &delta, int kl,
-                            int ku, int jl, int ju, int il, int iu);
+  void BackwardSubstitution(std::vector<T1> &a, std::vector<T2> &delta,
+                            int k, int j, int il, int iu);
 
   // periodic solver
   template <typename T1, typename T2>
@@ -72,8 +72,8 @@ class ImplicitSolver {
 
   template <typename T1, typename T2>
   void PeriodicBackwardSubstitution(std::vector<T1> &a, std::vector<T1> &c,
-                                    std::vector<T2> &delta, int kl, int ku,
-                                    int jl, int ju, int il, int iu);
+                                    std::vector<T2> &delta, int k, int j,
+                                    int il, int iu);
 
   // forcing jacobians
   template <typename T>
@@ -140,6 +140,7 @@ class ImplicitSolver {
   // dir);
 
  private:
+  int implicit_flag_;
   MeshBlock const *pmy_block_;
 
   CoordinateDirection mydir_;

@@ -84,7 +84,7 @@ void Hydro::RiemannSolver(const int k, const int j, const int il, const int iu,
         << "rank = " << Globals::my_rank << ", (k,j,i) = "
         << "(" << k << "," << j << "," << i << ")"
         << ", wri[IPR] = " << wri[IPR] << std::endl;
-#endif
+#endif  // ENABLE_GLOG
 
     //--- Step 2.  Compute middle state estimates with PVRS (Toro 10.5.2)
 

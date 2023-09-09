@@ -79,30 +79,31 @@ void Forcing(MeshBlock *pmb, Real const time, Real const dt,
   // }
   Real om_earth = Omega;
 
-  // for (int k = pmb->ks; k <= pmb->ke; ++k)
-  //   for (int j = pmb->js; j <= pmb->je; ++j)
-  //     for (int i = pmb->is; i<= pmb->ie; ++i){
-  //       Real lat, lon;
-  //       pexo3->GetLatLon(&lat, &lon, k, j, i);
-  //       // coriolis force
-  //       Real f = 2. * om_earth * sin(lat);
-  //       Real f2 = 2. * om_earth * cos(lat);
-  //       Real U, V;
+  for (int k = pmb->ks; k <= pmb->ke; ++k)
+    for (int j = pmb->js; j <= pmb->je; ++j)
+      for (int i = pmb->is; i <= pmb->ie; ++i) {
+        Real lat, lon;
+        pexo3->GetLatLon(&lat, &lon, k, j, i);
+        // coriolis force
+        Real f = 2. * om_earth * sin(lat);
+        Real f2 = 2. * om_earth * cos(lat);
+        Real U, V;
 
-  //       pexo3->GetUV(&U, &V, w(IVY, k, j, i), w(IVZ, k, j, i), k, j, i);
+        pexo3->GetUV(&U, &V, w(IVY, k, j, i), w(IVZ, k, j, i), k, j, i);
 
-  //       Real m1 = w(IDN,k,j,i)*w(IVX,k,j,i);
-  //       Real m2 = w(IDN,k,j,i)*U;
-  //       Real m3 = w(IDN,k,j,i)*V;
+        Real m1 = w(IDN, k, j, i) * w(IVX, k, j, i);
+        Real m2 = w(IDN, k, j, i) * U;
+        Real m3 = w(IDN, k, j, i) * V;
 
-  //       u(IM1,k,j,i) += dt * f * m2;
-  //       Real ll_acc_U = f * m3 - f2 * m1;
-  //       Real ll_acc_V = -f * m2;
-  //       Real acc1, acc2, acc3;
-  //       pexo3->GetVyVz(&acc2, &acc3, ll_acc_U, ll_acc_V, k, j, i);
-  //       pexo3->ContravariantVectorToCovariant(j, k, acc2, acc3, &acc2,
-  //       &acc3); u(IM2, k, j, i) += dt * acc2; u(IM3, k, j, i) += dt * acc3;
-  //     }
+        du(IM1, k, j, i) += dt * f * m2;
+        Real ll_acc_U = f * m3 - f2 * m1;
+        Real ll_acc_V = -f * m2;
+        Real acc1, acc2, acc3;
+        pexo3->GetVyVz(&acc2, &acc3, ll_acc_U, ll_acc_V, k, j, i);
+        pexo3->ContravariantVectorToCovariant(j, k, acc2, acc3, &acc2, &acc3);
+        du(IM2, k, j, i) += dt * acc2;
+        du(IM3, k, j, i) += dt * acc3;
+      }
 
   Real kappa;  // Rd/Cp
   kappa = Rd / cp;
@@ -116,6 +117,9 @@ void Forcing(MeshBlock *pmb, Real const time, Real const dt,
         Real lat, lon;
         pexo3->GetLatLon(&lat, &lon, k, j, i);
         // Momentum damping coefficient, Kv
+        Real p0_now =
+            w(IPR, k, j, 0) + w(IDN, k, j, 0) * grav *
+                                  (pmb->pcoord->x1v(0) - pmb->pcoord->x1f(0));
         Real scaled_z = w(IPR, k, j, i) / p0;
         Real sigma = w(IPR, k, j, i) / p0;  // pmb->phydro->pbot(k,j);
         Real sigma_p = (sigma - sigmab) / (1. - sigmab);
@@ -271,7 +275,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
 
         pimpl->DistributeToConserved(air, k, j, i);
         pthermo->Extrapolate(&air, pcoord->dx1f(i),
-                             Thermodynamics::Method::DryAdiabat, grav);
+                             Thermodynamics::Method::DryAdiabat, grav, 0.001);
         // add noise
         air.w[IVY] = 10. * distribution(generator);
         air.w[IVZ] = 10. * distribution(generator);
