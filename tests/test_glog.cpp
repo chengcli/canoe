@@ -1,12 +1,9 @@
 // C/C++
 #include <algorithm>
 #include <cmath>
-#include <filesystem>
 
 // external
 #include <gtest/gtest.h>
-#include <sys/stat.h>
-#include <sys/types.h>
 
 // athena
 #include <athena/reconstruct/interpolation.hpp>
@@ -16,6 +13,8 @@
 
 #ifdef ENABLE_GLOG
 #include <glog/logging.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <unistd.h>
 
 TEST(glob, test_log_info) {

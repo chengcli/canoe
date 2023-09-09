@@ -55,7 +55,9 @@ int main(int argc, char **argv)  {
 
   // Extract the base name
   size_t last_slash_pos = prog_name.find_last_of("/");
-  std::string base_name = (last_slash_pos == std::string::npos) ? prog_name : prog_name.substr(last_slash_pos + 1);
+  std::string base_name = (last_slash_pos == std::string::npos)
+                              ? prog_name
+                              : prog_name.substr(last_slash_pos + 1);
   std::string log_dir_name = base_name + ".glog";
 
   struct stat st = {0};
@@ -70,13 +72,6 @@ int main(int argc, char **argv)  {
   }
 
   google::InitGoogleLogging(argv[0]);
-  FLAGS_log_dir = log_dir_name;
-  int my_rank = 0;
-  char log_name[FILENAME_MAX];
-  snprintf(log_name, FILENAME_MAX, "%s.%d", base_name.c_str(), my_rank);
-  google::SetLogSymlink(google::GLOG_INFO, log_name);
-  google::SetLogSymlink(google::GLOG_WARNING, log_name);
-  google::SetLogSymlink(google::GLOG_ERROR, log_name);
 #endif
 
   auto cli = CommandLine::GetInstance();
@@ -95,6 +90,15 @@ int main(int argc, char **argv)  {
   catch(std::bad_alloc& ba) {
     throw RuntimeError("main", "TaskList memory allocation failed");
   }
+
+#ifdef ENABLE_GLOG
+  FLAGS_log_dir = log_dir_name;
+  char log_name[FILENAME_MAX];
+  snprintf(log_name, FILENAME_MAX, "%s.%d", base_name.c_str(), Globals::my_rank);
+  google::SetLogSymlink(google::GLOG_INFO, log_name);
+  google::SetLogSymlink(google::GLOG_WARNING, log_name);
+  google::SetLogSymlink(google::GLOG_ERROR, log_name);
+#endif
 
   // CHANGE TO RUN DIRECTORY, INITIALIZE OUTPUTS OBJECT, AND MAKE OUTPUT OF ICs
   OutputsPtr pouts;
