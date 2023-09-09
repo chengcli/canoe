@@ -78,6 +78,7 @@ enable_testing()
 
 # Add test cases
 add_test_case(test_weno.cpp)
+add_test_case(test_glog.cpp)
 add_test_giants(test_absorber.cpp)
 add_test_giants(test_yaml_read.cpp)
 
