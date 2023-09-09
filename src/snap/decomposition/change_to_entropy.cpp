@@ -127,8 +127,12 @@ void Decomposition::ChangeToEntropy(AthenaArray<Real> &w, int kl, int ku,
       }
     }
 
-  // finish send top pressure
-  WaitToFinishSend();
+    // finish send top pressure
+#ifdef MPI_PARALLEL
+  MPI_Status status;
+  if (has_bot_neighbor && (bblock.snb.rank != Globals::my_rank))
+    MPI_Wait(&req_send_bot_, &status);
+#endif
 }
 
 void Decomposition::RestoreFromEntropy(AthenaArray<Real> &w,
