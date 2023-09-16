@@ -60,7 +60,7 @@ void EquationOfState::ConservedToPrimitive(
         cs::CovariantToContravariant(
             prim.at(k, j, i),
             static_cast<GnomonicEquiangle *>(pco)->GetCosineCell(k, j));
-#endif
+#endif  // CUBED_SPHERE
         prim(IVY, k, j, i) *= di;
         prim(IVZ, k, j, i) *= di;
       }
@@ -91,7 +91,7 @@ void EquationOfState::PrimitiveToConserved(const AthenaArray<Real> &prim,
         cs::ContravariantToCovariant(
             cons.at(k, j, i),
             static_cast<GnomonicEquiangle *>(pco)->GetCosineCell(k, j));
-#endif
+#endif  // CUBED_SPHERE
         cons(IVY, k, j, i) *= wd;
         cons(IVZ, k, j, i) *= wd;
       }
