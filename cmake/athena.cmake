@@ -3,11 +3,11 @@ include(FetchContent)
 set(FETCHCONTENT_QUIET FALSE)
 
 set(patch_command
-    git apply ${CMAKE_CURRENT_SOURCE_DIR}/patches/19.decomposition.patch
-    ${CMAKE_CURRENT_SOURCE_DIR}/patches/21.implicit_dt.patch
-    ${CMAKE_CURRENT_SOURCE_DIR}/patches/23.exo3_coord.patch
+    git apply ${CMAKE_CURRENT_SOURCE_DIR}/patches/19.calculate_fluxes.patch
+    ${CMAKE_CURRENT_SOURCE_DIR}/patches/21.new_blockdt.patch
+    ${CMAKE_CURRENT_SOURCE_DIR}/patches/23.meshblock.patch
     ${CMAKE_CURRENT_SOURCE_DIR}/patches/24.time_integrator.patch
-    ${CMAKE_CURRENT_SOURCE_DIR}/patches/25.constant_acceleration.patch
+    ${CMAKE_CURRENT_SOURCE_DIR}/patches/25.constant_acc.patch
     ${CMAKE_CURRENT_SOURCE_DIR}/patches/26.scalars_flux.patch)
 
 FetchContent_Declare(
