@@ -9,12 +9,11 @@ set(patch_command
     ${CMAKE_CURRENT_SOURCE_DIR}/patches/24.time_integrator.patch
     ${CMAKE_CURRENT_SOURCE_DIR}/patches/25.constant_acc.patch
     ${CMAKE_CURRENT_SOURCE_DIR}/patches/26.scalars_flux.patch
-    ${CMAKE_CURRENT_SOURCE_DIR}/patches/25.cs_meshblock.patch
-    ${CMAKE_CURRENT_SOURCE_DIR}/patches/26.cs_adiabatic_hydro.patch
-    ${CMAKE_CURRENT_SOURCE_DIR}/patches/27.cs_coordinates.patch
-    ${CMAKE_CURRENT_SOURCE_DIR}/patches/28.cs_bvals_cc.patch
-    ${CMAKE_CURRENT_SOURCE_DIR}/patches/29.cs_mesh.patch
-    ${CMAKE_CURRENT_SOURCE_DIR}/patches/30.cs_bvals_base.patch
+    ${CMAKE_CURRENT_SOURCE_DIR}/patches/26.adiabatic_hydro.patch
+    ${CMAKE_CURRENT_SOURCE_DIR}/patches/27.coordinates.patch
+    ${CMAKE_CURRENT_SOURCE_DIR}/patches/28.bvals_cc.patch
+    ${CMAKE_CURRENT_SOURCE_DIR}/patches/29.mesh.patch
+    ${CMAKE_CURRENT_SOURCE_DIR}/patches/30.bvals_base.patch
     ${CMAKE_CURRENT_SOURCE_DIR}/patches/31.task_list.patch)
 
 FetchContent_Declare(
