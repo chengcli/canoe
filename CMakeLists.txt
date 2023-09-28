@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 project(canoe
-	LANGUAGES CXX C Fortran
+  LANGUAGES CXX C Fortran
 	)
 
 message(STATUS "")
