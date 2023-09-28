@@ -90,7 +90,10 @@ if(NOT MPI OR NOT DEFINED MPI)
   set(MPI_OPTION "NOT_MPI_PARALLEL")
 else()
   set(MPI_OPTION "MPI_PARALLEL")
-  find_package(MPI REQUIRED)
+  find_package(
+    MPI
+    COMPONENTS C CXX
+    REQUIRED)
 endif()
 
 if(NOT GLOG OR NOT DEFINED GLOG)
