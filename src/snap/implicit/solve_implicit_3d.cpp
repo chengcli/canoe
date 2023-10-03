@@ -119,57 +119,33 @@ void ImplicitSolver::SolveImplicit3D(AthenaArray<Real> &du, AthenaArray<Real> &w
         }
 #endif  // CUBED_SPHERE
         
-        // save a copy of du for redo
-        for (int n = 0; n < NHYDRO; ++n)
-          for (int i = 0; i < du_.GetDim1(); ++i)
-            du(n, k, j, i) = du_(n, k, j, i);
+        // do implicit
+        if (implicit_flag_ & (1 << 3))
+          FullCorrection(du_, w, dt, k, j, is, ie);
+        else
+          PartialCorrection(du_, w, dt, k, j, is, ie);
 
-        bool redo;
-        int factor = 1, iter = 0, max_iter = 5;
-        do {
-          redo = false;
-          iter++;
-          // reset du
-          if (factor > 1) {
-            for (int n = 0; n < NHYDRO; ++n)
-              for (int i = 0; i < du_.GetDim1(); ++i)
-                du_(n, k, j, i) = du(n, k, j, i);
-          }
-
-          // do implicit
-          if (implicit_flag_ & (1 << 3))
-            FullCorrection(du_, w, dt * factor, k, j, is, ie);
-          else
-            PartialCorrection(du_, w, dt * factor, k, j, is, ie);
-
-          // check for negative density and internal energy
-          for (int i = is; i <= ie; i++) {
 #ifdef ENABLE_GLOG
-            LOG_IF(ERROR, ph->u(IEN,k,j,i) + du_(IEN,k,j,i) < 0.)
-                << "rank = " << Globals::my_rank << ", (k,j,i) = "
-                << "(" << k << "," << j << "," << i << ")"
-                << ", u[IEN] = " << ph->u(IEN,k,j,i) + du_(IEN,k,j,i)
-                << ", u[IVX] = " << ph->u(IVX,k,j,i) << std::endl;
+        // check for negative density and internal energy
+        for (int i = is; i <= ie; i++) {
+          LOG_IF(WARNING, ph->u(IEN,k,j,i) + du_(IEN,k,j,i) < 0.)
+              << "rank = " << Globals::my_rank << ", (k,j,i) = "
+              << "(" << k << "," << j << "," << i << ")"
+              << ", u[IEN](before) = " << ph->u(IEN,k,j,i) + du(IEN,k,j,i)
+              << ", u[IEN](after) = " << ph->u(IEN,k,j,i) + du_(IEN,k,j,i)
+              << ", u[IVX](before) = " << ph->u(IVX,k,j,i) + du(IVX,k,j,i) << std::endl
+              << ", u[IVX](after) = " << ph->u(IVX,k,j,i) + du_(IVX,k,j,i) << std::endl;
 
-            LOG_IF(ERROR, ph->u(IDN,k,j,i) + du_(IDN,k,j,i) < 0.)
-                << "rank = " << Globals::my_rank << ", (k,j,i) = "
-                << "(" << k << "," << j << "," << i << ")"
-                << ", u[IDN] = " << ph->u(IDN,k,j,i) + du_(IDN,k,j,i)
-                << ", u[IVX] = " << ph->u(IVX,k,j,i) << std::endl;
+          LOG_IF(WARNING, ph->u(IDN,k,j,i) + du_(IDN,k,j,i) < 0.)
+              << "rank = " << Globals::my_rank << ", (k,j,i) = "
+              << "(" << k << "," << j << "," << i << ")"
+              << ", u[IDN](before) = " << ph->u(IDN,k,j,i) + du(IDN,k,j,i)
+              << ", u[IDN](after) = " << ph->u(IDN,k,j,i) + du_(IDN,k,j,i)
+              << ", u[IVX](before) = " << ph->u(IVX,k,j,i) + du(IVX,k,j,i) << std::endl
+              << ", u[IVX](after) = " << ph->u(IVX,k,j,i) + du_(IVX,k,j,i) << std::endl;
+        }
 #endif  // ENABLE_GLOG
-            if ((ph->u(IEN,k,j,i) + du_(IEN,k,j,i) < 0.) ||
-                (ph->u(IDN,k,j,i) + du_(IDN,k,j,i) < 0.)) {
-              factor *= 2;
-              redo = true;
-              break;
-            }
-          }
           
-          if (iter > max_iter) {
-            throw RuntimeError("solver_implicit_3d", "negative density or internal energy");
-          }
-        } while (redo);
-
         // project back
 #ifdef CUBED_SPHERE
         for (int i = 0; i < w.GetDim1(); ++i) {
