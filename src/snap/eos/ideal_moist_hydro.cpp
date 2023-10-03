@@ -2,6 +2,7 @@
 #include <cmath>  // sqrt()
 #include <sstream>
 #include <stdexcept>
+#include <iomanip>
 
 // application
 #include <application/exceptions.hpp>
@@ -36,11 +37,17 @@
 std::string str_grid_ij(AthenaArray<Real> const& var, int n, int k, int j,
                         int i, int il, int iu, int jl, int ju) {
   std::stringstream msg;
-  for (int ii = std::max(i - 3, il); ii <= std::min(i + 3, iu); ++ii) {
-    msg << "i = " << ii << " ";
-    for (int jj = std::max(j - 3, jl); jj <= std::min(j + 3, ju); ++jj)
-      msg << var(n, k, jj, ii) << " ";
-    msg << std::endl;
+  msg << std::endl << std::setw(8) << " ";
+  for (int jj = std::max(j - NGHOST, jl); jj <= std::min(j + NGHOST, ju); ++jj) {
+    msg << "j = " << jj << ", ";
+  }
+  msg << std::endl;
+
+  for (int ii = std::max(i - NGHOST, il); ii <= std::min(i + NGHOST, iu); ++ii) {
+    msg << "i = " << ii << " |";
+    for (int jj = std::max(j - NGHOST, jl); jj <= std::min(j + NGHOST, ju); ++jj)
+      msg << std::setw(8) << var(n, k, jj, ii) << ", ";
+    msg << " |" << std::endl;
   }
 
   return msg.str();
@@ -71,12 +78,13 @@ void EquationOfState::ConservedToPrimitive(
     AthenaArray<Real>& cons, const AthenaArray<Real>& prim_old,
     const FaceField& b, AthenaArray<Real>& prim, AthenaArray<Real>& bcc,
     Coordinates* pco, int il, int iu, int jl, int ju, int kl, int ku) {
-  Real gm1 = GetGamma() - 1.0;
-  std::stringstream msg;
   auto pthermo = Thermodynamics::GetInstance();
+  auto pmb = pmy_block_;
+  pmb->pimpl->SetStateValid();
 
   apply_vapor_limiter(&cons, pmy_block_);
 
+  Real gm1 = GetGamma() - 1.0;
   for (int k = kl; k <= ku; ++k)
     for (int j = jl; j <= ju; ++j)
       for (int i = il; i <= iu; ++i) {
@@ -86,18 +94,21 @@ void EquationOfState::ConservedToPrimitive(
         Real& u_m3 = cons(IM3, k, j, i);
         Real& u_e = cons(IEN, k, j, i);
 
-        if (u_e < 0.) {
-          throw RuntimeError("ideal_moist_hydro", "negative energy");
-        }
-
         Real& w_d = prim(IDN, k, j, i);
         Real& w_vx = prim(IVX, k, j, i);
         Real& w_vy = prim(IVY, k, j, i);
         Real& w_vz = prim(IVZ, k, j, i);
         Real& w_p = prim(IPR, k, j, i);
 
-#ifdef ENABLED_GLOG
+        Real density = 0.;
+        for (int n = 0; n <= NVAPOR; ++n) density += cons(n, k, j, i);
+        w_d = density;
+        Real di = 1. / density;
+
+        if ((w_d < 0.) || std::isnan(w_d)) pmb->pimpl->SetStateInvalid();
+#ifdef ENABLE_GLOG
         LOG_IF(ERROR, std::isnan(w_d) || (w_d < density_floor_))
+            << "cycle = " << pmb->pmy_mesh->ncycle << ", "
             << "rank = " << Globals::my_rank << ", (k,j,i) = "
             << "(" << k << "," << j << "," << i << ")"
             << ", w_d = " << w_d << std::endl;
@@ -105,14 +116,6 @@ void EquationOfState::ConservedToPrimitive(
         LOG_IF(INFO, std::isnan(w_d) || (w_d < density_floor_))
             << str_grid_ij(cons, IDN, k, j, i, il, iu, jl, ju);
 #endif
-
-        // apply density floor, without changing momentum or energy
-        u_d = (u_d > density_floor_) ? u_d : density_floor_;
-
-        Real density = 0.;
-        for (int n = 0; n <= NVAPOR; ++n) density += cons(n, k, j, i);
-        w_d = density;
-        Real di = 1. / density;
 
         // mass mixing ratio
         for (int n = 1; n <= NVAPOR; ++n)
@@ -141,43 +144,27 @@ void EquationOfState::ConservedToPrimitive(
             static_cast<GnomonicEquiangle*>(pco)->GetCosineCell(k, j);
 #endif
 
-        int decay_factor = 1, iter = 0, max_iter = 10;
-        do {
-          iter++;
-          u_m1 /= decay_factor;
-          u_m2 /= decay_factor;
-          u_m3 /= decay_factor;
-
-          // Real di = 1.0/u_d;
-          w_vx = u_m1 * di;
-          w_vy = u_m2 * di;
-          w_vz = u_m3 * di;
+        // Real di = 1.0/u_d;
+        w_vx = u_m1 * di;
+        w_vy = u_m2 * di;
+        w_vz = u_m3 * di;
 
 #ifdef CUBED_SPHERE
-          cs::CovariantToContravariant(prim.at(k, j, i), cos_theta);
+        cs::CovariantToContravariant(prim.at(k, j, i), cos_theta);
 #endif
 
-          // internal energy
-          KE = 0.5 * (u_m1 * w_vx + u_m2 * w_vy + u_m3 * w_vz);
-          w_p = gm1 * (u_e - KE) * feps / fsig;
+        // internal energy
+        KE = 0.5 * (u_m1 * w_vx + u_m2 * w_vy + u_m3 * w_vz);
+        w_p = gm1 * (u_e - KE) * feps / fsig;
 
+        if ((w_p < 0.) || std::isnan(w_p)) pmb->pimpl->SetStateInvalid();
 #ifdef ENABLE_GLOG
-          LOG_IF(ERROR, w_p < 0.)
-              << "rank = " << Globals::my_rank << ", (k,j,i) = "
-              << "(" << k << "," << j << "," << i << ")"
-              << ", w_p = " << w_p << std::endl;
+        LOG_IF(WARNING, (w_p < 0.) || std::isnan(w_p))
+            << "cycle = " << pmb->pmy_mesh->ncycle << ", "
+            << "rank = " << Globals::my_rank << ", (k,j,i) = "
+            << "(" << k << "," << j << "," << i << ")"
+            << ", w_p = " << w_p << std::endl;
 #endif
-          decay_factor = 2;
-          if (iter > max_iter) {
-            throw RuntimeError("ideal_moist_hydro", "negative pressure");
-          }
-        } while (w_p < 0.);
-
-        // apply pressure floor, correct total energy
-        u_e = (w_p > pressure_floor_)
-                  ? u_e
-                  : ((pressure_floor_ / gm1) * fsig / feps + KE);
-        w_p = (w_p > pressure_floor_) ? w_p : pressure_floor_;
       }
 }
 

@@ -116,17 +116,31 @@ int main(int argc, char **argv)  {
   }
 
   std::uint64_t mbcnt = 0;
+  bool redo = false;
 
   while ((pmesh->time < pmesh->tlim) &&
          (pmesh->nlim < 0 || pmesh->ncycle < pmesh->nlim)) {
     if (Globals::my_rank == 0)
       pmesh->OutputCycleDiagnostics();
 
+    if (!redo) {
+      pmesh->SaveAllStates();
+    }
+
     for (int stage=1; stage<=ptlist->nstages; ++stage) {
       ptlist->DoTaskListOneStage(pmesh, stage);
     }
 
     pmesh->UserWorkInLoop();
+
+    if (pmesh->CheckAllValid()) {
+      redo = false;
+    } else {
+      pmesh->LoadAllStates();
+      pmesh->DecreaseTimeStep();
+      redo = true;
+      continue;
+    }
 
     pmesh->ncycle++;
     pmesh->time += pmesh->dt;
