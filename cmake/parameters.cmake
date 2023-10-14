@@ -19,6 +19,8 @@ set_if_empty(NCHEMISTRY 0)
 
 set_if_empty(NTRACER 0)
 
+set_if_empty(NTURBULENCE 0)
+
 set_if_empty(NSTATIC 0)
 
 # set_if_empty(TASKLIST ImplicitHydroTasks)

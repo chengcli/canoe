@@ -6,11 +6,9 @@
 
 // Athena++ headers
 #include <athena/athena.hpp>
-#include <athena/athena_arrays.hpp>
 #include <athena/coordinates/coordinates.hpp>
-#include <athena/eos/eos.hpp>  // reapply floors to face-centered reconstructed states
 #include <athena/hydro/hydro.hpp>
-#include <athena/reconstruct/reconstruction.hpp>
+#include <athena/mesh/mesh.hpp>
 
 // snap
 #include "turbulence_model.hpp"
@@ -22,6 +20,7 @@ KEpsilonTurbulence::KEpsilonTurbulence(MeshBlock *pmb, ParameterInput *pin)
   c2_ = pin->GetOrAddReal("turbulence", "kepsilon.c2", 1.92);
   sigk_ = pin->GetOrAddReal("turbulence", "kepsilon.sigk", 1.0);
   sige_ = pin->GetOrAddReal("turbulence", "kepsilon.sige", 1.3);
+
   // velocity scale, v ~ 1 m/s, tke ~ v^2 ~ 1 m^2/s^2
   Real tke0 = pin->GetOrAddReal("turbulence", "kepsilon.tke0", 1.);
 
@@ -43,23 +42,26 @@ KEpsilonTurbulence::KEpsilonTurbulence(MeshBlock *pmb, ParameterInput *pin)
   for (int k = kl; k <= ku; ++k)
     for (int j = jl; j <= ju; ++j)
       for (int i = il; i <= iu; ++i) {
-        r(1, k, j, i) = tke0;
+        w(1, k, j, i) = tke0;
         // eps ~ tke/T ~ v^2/(dx/v) ~ v^3/dx
         Real volume = pmb->pcoord->GetCellVolume(k, j, i);
         Real eps0 = pow(tke0, 1.5) / pow(volume, 1. / 3.);
-        r(0, k, j, i) = eps0;
+        w(0, k, j, i) = eps0;
       }
 }
 
-void KEpsilonTurbulence::Initialize(AthenaArray<Real> const &w) {
-  MeshBlock *pmb = pmy_block;
+void KEpsilonTurbulence::Initialize() {
+  auto pmb = pmy_block;
+  auto phydro = pmb->phydro;
+
   for (int k = pmb->ks; k <= pmb->ke; ++k)
     for (int j = pmb->js; j <= pmb->je; ++j)
       for (int i = pmb->is; i <= pmb->ie; ++i) {
-        s(0, k, j, i) = r(0, k, j, i) * w(IDN, k, j, i);
-        s(1, k, j, i) = r(1, k, j, i) * w(IDN, k, j, i);
-        mut(k, j, i) = cmu_ * w(IDN, k, j, i) * r(1, k, j, i) * r(1, k, j, i) /
-                       r(0, k, j, i);
+        Real rhod = phydro->w(IDN, k, j, i);
+        u(0, k, j, i) = w(0, k, j, i) * rhod;
+        u(1, k, j, i) = w(1, k, j, i) * rhod;
+        mut(k, j, i) =
+            cmu_ * rhod * w(1, k, j, i) * w(1, k, j, i) / w(0, k, j, i);
       }
 }
 
@@ -143,22 +145,23 @@ inline Real ShearProduction_(AthenaArray<Real> const &w, int k, int j, int i,
   return result;
 }
 
-void KEpsilonTurbulence::driveTurbulence(AthenaArray<Real> &s,
-                                         AthenaArray<Real> const &r,
-                                         AthenaArray<Real> const &w, Real dt) {
+void KEpsilonTurbulence::DriveTurbulence(Real dt) {
   // std::cout << "driving turbulence" << std::endl;
-  MeshBlock *pmb = pmy_block;
+  auto pmb = pmy_block;
+  auto phydro = pmb->phydro;
+
   int ks = pmb->ks, js = pmb->js, is = pmb->is;
   int ke = pmb->ke, je = pmb->je, ie = pmb->ie;
 
   AthenaArray<Real> eps, tke;
-  eps.InitWithShallowSlice(const_cast<AthenaArray<Real> &>(r), 4, 0, 1);
-  tke.InitWithShallowSlice(const_cast<AthenaArray<Real> &>(r), 4, 1, 1);
+  eps.InitWithShallowSlice(w, 4, 0, 1);
+  tke.InitWithShallowSlice(w, 4, 1, 1);
 
   Real s1, s2, s3;
   for (int k = ks; k <= ke; ++k)
     for (int j = js; j <= je; ++j)
       for (int i = is; i <= ie; ++i) {
+        Real rhod = phydro->w(IDN, k, j, i);
         // shear production
         Real shear = ShearProduction_(w, k, j, i, pmb->pcoord);
         // std::cout << "shear = " << shear << std::endl;
@@ -166,36 +169,35 @@ void KEpsilonTurbulence::driveTurbulence(AthenaArray<Real> &s,
         // turbulent dissipation, de/dt, eq2.2-1
         s1 = c1_ * mut(k, j, i) * eps(k, j, i) / tke(k, j, i) * shear;
         s2 = Laplace_(mut, eps, k, j, i, pmb->pcoord) / sige_;
-        s3 =
-            -c2_ * eps(k, j, i) * eps(k, j, i) / tke(k, j, i) * w(IDN, k, j, i);
-        s(0, k, j, i) += (s1 + s2) * dt;
-        if (s(0, k, j, i) + s3 * dt > 0)
-          s(0, k, j, i) += s3 * dt;
+        s3 = -c2_ * eps(k, j, i) * eps(k, j, i) / tke(k, j, i) * rhod;
+        u(0, k, j, i) += (s1 + s2) * dt;
+        if (u(0, k, j, i) + s3 * dt > 0)
+          u(0, k, j, i) += s3 * dt;
         else
-          s(0, k, j, i) /= 2.;
-        // std::cout << "s = " << s(0,k,j,i) << std::endl;
+          u(0, k, j, i) /= 2.;
+        // std::cout << "u = " << u(0,k,j,i) << std::endl;
 
         // turbulent kinetic energy, dk/dt, eq 2.2-2
         s1 = mut(k, j, i) * shear;
         s2 = Laplace_(mut, tke, k, j, i, pmb->pcoord) / sigk_;
-        s3 = -eps(k, j, i) * w(IDN, k, j, i);
-        s(1, k, j, i) += (s1 + s2) * dt;
-        if (s(1, k, j, i) + s3 * dt > 0.)
-          s(1, k, j, i) += s3 * dt;
+        s3 = -eps(k, j, i) * rhod;
+        u(1, k, j, i) += (s1 + s2) * dt;
+        if (u(1, k, j, i) + s3 * dt > 0.)
+          u(1, k, j, i) += s3 * dt;
         else
-          s(1, k, j, i) /= 2.;
+          u(1, k, j, i) /= 2.;
       }
 }
 
-void KEpsilonTurbulence::setDiffusivity(AthenaArray<Real> &nu,
+void KEpsilonTurbulence::SetDiffusivity(AthenaArray<Real> &nu,
                                         AthenaArray<Real> &kappa,
                                         const AthenaArray<Real> &prim,
                                         const AthenaArray<Real> &bcc, int il,
                                         int iu, int jl, int ju, int kl,
                                         int ku) {
   AthenaArray<Real> eps, tke;
-  eps.InitWithShallowSlice(r, 4, 0, 1);
-  tke.InitWithShallowSlice(r, 4, 1, 1);
+  eps.InitWithShallowSlice(w, 4, 0, 1);
+  tke.InitWithShallowSlice(w, 4, 1, 1);
 
   for (int k = kl; k <= ku; ++k) {
     for (int j = jl; j <= ju; ++j) {
