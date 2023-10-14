@@ -15,7 +15,9 @@
 //  \brief a collection of all physical data in a computational cell
 class AirParcel {
  public:
-  enum { Size = NHYDRO + NCLOUD + NCHEMISTRY + NTRACER + NSTATIC };
+  enum {
+    Size = NHYDRO + NCLOUD + NCHEMISTRY + NTRACER + NTURBULENCE + NSTATIC
+  };
 
   enum class Type { MassFrac = 0, MassConc = 1, MoleFrac = 2, MoleConc = 3 };
 
@@ -24,16 +26,19 @@ class AirParcel {
 
   //! data pointers
   //! hydro data
-  Real *w;
+  Real *const w;
 
   //! cloud data
-  Real *c;
+  Real *const c;
 
   //! chemistry data
-  Real *q;
+  Real *const q;
 
   //! tracer data
-  Real *x;
+  Real *const x;
+
+  //! turbulence data
+  Real *const t;
 
   //! static data
   Real const *s;
@@ -42,26 +47,29 @@ class AirParcel {
   Real const *d;
 
   // constructor
-  explicit AirParcel(Type type = Type::MoleFrac) : mytype_(type) {
-    w = data_.data();
-    c = w + NHYDRO;
-    q = c + NCLOUD;
-    x = q + NCHEMISTRY;
-    s = x + NTRACER;
-    d = s + NSTATIC;
+  explicit AirParcel(Type type = Type::MoleFrac)
+      : mytype_(type),
+        w(data_.data()),
+        c(w + NHYDRO),
+        q(c + NCLOUD),
+        x(q + NCHEMISTRY),
+        t(x + NTRACER),
+        s(t + NTURBULENCE),
+        d(s + NSTATIC) {
     std::fill(data_.begin(), data_.end(), 0.0);
   }
 
   // copy constructor
-  AirParcel(AirParcel const &other) : mytype_(other.mytype_) {
-    data_ = other.data_;
-    w = data_.data();
-    c = w + NHYDRO;
-    q = c + NCLOUD;
-    x = q + NCHEMISTRY;
-    s = x + NTRACER;
-    d = s + NSTATIC;
-  }
+  AirParcel(AirParcel const &other)
+      : mytype_(other.mytype_),
+        data_(other.data_),
+        w(data_.data()),
+        c(w + NHYDRO),
+        q(c + NCLOUD),
+        x(q + NCHEMISTRY),
+        t(x + NTRACER),
+        s(x + NTURBULENCE),
+        d(s + NSTATIC) {}
 
   // Assignment operator
   AirParcel &operator=(const AirParcel &other) {

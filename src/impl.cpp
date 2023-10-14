@@ -24,6 +24,7 @@
 #include "snap/decomposition/decomposition.hpp"
 #include "snap/implicit/implicit_solver.hpp"
 #include "snap/thermodynamics/thermodynamics.hpp"
+#include "snap/turbulence/turbulence_model.hpp"
 
 // microphysics
 #include "microphysics/microphysics.hpp"
@@ -51,8 +52,19 @@ MeshBlock::Impl::Impl(MeshBlock *pmb, ParameterInput *pin) : pmy_block_(pmb) {
   ptracer = std::make_shared<Tracer>(pmb, pin);
 
   // turbulence
-  // pturb = std::make_shared<KEpsilonTurbulence>(pmb, pin);
-  // pmb->pbval->AdvanceCounterPhysID(CellCenteredBoundaryVariable::max_phys_id);
+  if (pin->DoesParameterExist("hydro", "turbulence")) {
+    std::string turbulence_model = pin->GetString("hydro", "turbulence");
+    if (turbulence_model == "none") {
+      pturb = std::make_shared<TurbulenceModel>(pmb, pin);
+    } else if (turbulence_model == "kepsilon") {
+      pturb = std::make_shared<KEpsilonTurbulence>(pmb, pin);
+      if (NTURBULENCE < 2)
+        throw NotImplementedError(
+            "NTURBULENCE must be at least 2 for k-epsilon model");
+    } else {
+      throw NotImplementedError(turbulence_model);
+    }
+  }
 
   // radiation
   prad = std::make_shared<Radiation>(pmb, pin);
@@ -60,8 +72,8 @@ MeshBlock::Impl::Impl(MeshBlock *pmb, ParameterInput *pin) : pmy_block_(pmb) {
   // inversion queue
   fitq = Inversion::NewInversionQueue(pmb, pin);
 
-  // reference pressure
 #ifdef HYDROSTATIC
+  // reference pressure
   reference_pressure_ = pin->GetReal("mesh", "ReferencePressure");
 
   // pressure scale height
