@@ -12,6 +12,10 @@
 #include <athena/mesh/mesh.hpp>
 #include <athena/reconstruct/reconstruction.hpp>
 
+// application
+#include <application/application.hpp>
+#include <application/exceptions.hpp>
+
 // snap
 #include "turbulence_model.hpp"
 
@@ -42,6 +46,9 @@ TurbulenceModel::TurbulenceModel(MeshBlock *pmb, ParameterInput *pin, int nvar)
   int nc1 = pmb->ncells1, nc2 = pmb->ncells2, nc3 = pmb->ncells3;
   Mesh *pm = pmy_block->pmy_mesh;
 
+  Application::Logger app("snap");
+  app->Log("Initialize Turbulence");
+
   pmb->RegisterMeshBlockData(s);
 
   // If user-requested time integrator is type 3S*, allocate additional memory
@@ -59,6 +66,7 @@ TurbulenceModel::TurbulenceModel(MeshBlock *pmb, ParameterInput *pin, int nvar)
 
   // enroll CellCenteredBoundaryVariable object
   sbvar.bvar_index = pmb->pbval->bvars.size();
+  std::cout << "bvar_index = " << sbvar.bvar_index << std::endl;
   pmb->pbval->bvars.push_back(&sbvar);
   pmb->pbval->bvars_main_int.push_back(&sbvar);
 

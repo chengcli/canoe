@@ -52,6 +52,7 @@ MeshBlock::Impl::Impl(MeshBlock *pmb, ParameterInput *pin) : pmy_block_(pmb) {
 
   // turbulence
   // pturb = std::make_shared<KEpsilonTurbulence>(pmb, pin);
+  // pmb->pbval->AdvanceCounterPhysID(CellCenteredBoundaryVariable::max_phys_id);
 
   // radiation
   prad = std::make_shared<Radiation>(pmb, pin);

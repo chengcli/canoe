@@ -1,0 +1,107 @@
+diff --git a/src/mesh/mesh.cpp b/src/mesh/mesh.cpp
+index 082eaf1e..9a860036 100644
+--- a/src/mesh/mesh.cpp
++++ b/src/mesh/mesh.cpp
+@@ -60,6 +60,10 @@
+ #include <mpi.h>
+ #endif
+ 
++// canoe injection
++#include <impl.hpp>
++#include <snap/turbulence/turbulence_model.hpp>
++
+ //----------------------------------------------------------------------------------------
+ //! Mesh constructor, builds mesh at start of calculation using parameters in input file
+ 
+@@ -1463,6 +1467,7 @@ void Mesh::Initialize(int res_flag, ParameterInput *pin) {
+         MeshBlock *pmb = my_blocks(i);
+         pmb->ProblemGenerator(pin);
+         pmb->pbval->CheckUserBoundaries();
++        pmb->pimpl->pturb->Initialize(pmb->phydro->w);
+       }
+     }
+ 
+@@ -1525,7 +1530,7 @@ void Mesh::Initialize(int res_flag, ParameterInput *pin) {
+           }
+           pmb->pscalars->sbvar.SendBoundaryBuffers();
+         }
+-
++        pmb->pimpl->pturb->sbvar.SendBoundaryBuffers();
+ 
+         if (NR_RADIATION_ENABLED || IM_RADIATION_ENABLED) {
+           pmb->pnrrad->rad_bvar.SendBoundaryBuffers();
+@@ -1543,6 +1548,7 @@ void Mesh::Initialize(int res_flag, ParameterInput *pin) {
+           pmb->pfield->fbvar.ReceiveAndSetBoundariesWithWait();
+         if (NSCALARS > 0)
+           pmb->pscalars->sbvar.ReceiveAndSetBoundariesWithWait();
++        pmb->pimpl->pturb->sbvar.ReceiveAndSetBoundariesWithWait();
+ 
+         if (NR_RADIATION_ENABLED || IM_RADIATION_ENABLED)
+           pmb->pnrrad->rad_bvar.ReceiveAndSetBoundariesWithWait();
+@@ -1585,6 +1591,7 @@ void Mesh::Initialize(int res_flag, ParameterInput *pin) {
+             }
+             pmb->pscalars->sbvar.SendBoundaryBuffers();
+           }
++          pmb->pimpl->pturb->sbvar.SendBoundaryBuffers();
+         }
+ 
+         // wait to receive AMR/SMR GR primitives
+@@ -1595,6 +1602,7 @@ void Mesh::Initialize(int res_flag, ParameterInput *pin) {
+           if (NSCALARS > 0) {
+             pmb->pscalars->sbvar.ReceiveAndSetBoundariesWithWait();
+           }
++          pmb->pimpl->pturb->sbvar.ReceiveAndSetBoundariesWithWait();
+           pbval->ClearBoundarySubset(BoundaryCommSubset::gr_amr,
+                                      pbval->bvars_main_int);
+           pmb->phydro->hbvar.SwapHydroQuantity(pmb->phydro->u,
+@@ -1605,6 +1613,7 @@ void Mesh::Initialize(int res_flag, ParameterInput *pin) {
+               pmb->pscalars->sbvar.coarse_buf = &(pmb->pscalars->coarse_s_);
+             }
+           }
++          pmb->pimpl->pturb->sbvar.var_cc = &(pmb->pimpl->pturb->s);
+         }
+       } // multilevel
+ 
+@@ -1680,6 +1689,7 @@ void Mesh::Initialize(int res_flag, ParameterInput *pin) {
+               ps->sbvar.coarse_buf = &(ps->coarse_r_);
+             }
+           }
++          pmb->pimpl->pturb->sbvar.var_cc = &(pmb->pimpl->pturb->r);
+           pbval->ApplyPhysicalBoundaries(time, 0.0, pbval->bvars_main_int);
+           // Perform 4th order W(U)
+           pmb->peos->ConservedToPrimitiveCellAverage(ph->u, ph->w1, pf->b,
+@@ -1702,6 +1712,7 @@ void Mesh::Initialize(int res_flag, ParameterInput *pin) {
+             ps->sbvar.coarse_buf = &(ps->coarse_r_);
+           }
+         }
++        pmb->pimpl->pturb->sbvar.var_cc = &(pmb->pimpl->pturb->r);
+ 
+         pbval->ApplyPhysicalBoundaries(time, 0.0, pbval->bvars_main_int);
+       }
+@@ -1980,6 +1991,8 @@ void Mesh::CorrectMidpointInitialCondition() {
+       }
+       pmb->pscalars->sbvar.SendBoundaryBuffers();
+     }
++    pmb->pimpl->pturb->sbvar.var_cc = &(pmb->pimpl->pturb->s);
++    pmb->pimpl->pturb->sbvar.SendBoundaryBuffers();
+ 
+     if (NR_RADIATION_ENABLED || IM_RADIATION_ENABLED)
+       pmb->pnrrad->rad_bvar.SendBoundaryBuffers();
+@@ -2003,6 +2016,8 @@ void Mesh::CorrectMidpointInitialCondition() {
+       }
+       pmb->pscalars->sbvar.ReceiveAndSetBoundariesWithWait();
+     }
++    pmb->pimpl->pturb->sbvar.var_cc = &(pmb->pimpl->pturb->s);
++    pmb->pimpl->pturb->sbvar.ReceiveAndSetBoundariesWithWait();
+ 
+ 
+     if (NR_RADIATION_ENABLED || IM_RADIATION_ENABLED)
+@@ -2073,6 +2088,8 @@ void Mesh::ReserveMeshBlockPhysIDs() {
+   if (NSCALARS > 0) {
+     ReserveTagPhysIDs(CellCenteredBoundaryVariable::max_phys_id);
+   }
++  // for turbulence
++  ReserveTagPhysIDs(CellCenteredBoundaryVariable::max_phys_id);
+ 
+   if (NR_RADIATION_ENABLED || IM_RADIATION_ENABLED)
+     ReserveTagPhysIDs(RadBoundaryVariable::max_phys_id);

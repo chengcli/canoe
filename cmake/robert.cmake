@@ -12,3 +12,4 @@ set_if_empty(NUMBER_GHOST_CELLS 3)
 # canoe configure
 set(MPI ON)
 set(PNETCDF ON)
+set(TASKLIST ImplicitHydroTasks)
