@@ -51,6 +51,7 @@ class CubedSphere {
 
   void SynchronizeFluxesSend();
   void SynchronizeFluxesRecv();
+  void SynchronizeFluxesWait();
 
  protected:
   void sendNeighborBlocks(int ox2, int ox3, int tg_rank, int tg_gid);
@@ -59,6 +60,7 @@ class CubedSphere {
   AthenaArray<Real> L3DValues[3], R3DValues[3];
 
 #ifdef MPI_PARALLEL
+  int send_flag_[4], recv_flag_[4];
   MPI_Request send_request_[4];
   MPI_Request recv_request_[4];
 #endif

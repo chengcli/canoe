@@ -288,6 +288,8 @@ void CubedSphere::LoadLR3DValues(AthenaArray<Real> &L_in,
 
 void CubedSphere::SynchronizeFluxesSend() {
   MeshBlock *pmb = pmy_block_;
+  for (int i = 0; i < 4; ++i) send_flag_[i] = 0;
+
   for (int n = 0; n < pmb->pbval->nneighbor; n++) {
     NeighborBlock &nb = pmb->pbval->neighbor[n];
     if (nb.ni.ox1 == 0 &&
@@ -299,6 +301,8 @@ void CubedSphere::SynchronizeFluxesSend() {
 
 void CubedSphere::SynchronizeFluxesRecv() {
   MeshBlock *pmb = pmy_block_;
+  for (int i = 0; i < 4; ++i) recv_flag_[i] = 0;
+
   for (int n = 0; n < pmb->pbval->nneighbor; n++) {
     NeighborBlock &nb = pmb->pbval->neighbor[n];
     if (nb.ni.ox1 == 0 &&
@@ -306,6 +310,17 @@ void CubedSphere::SynchronizeFluxesRecv() {
       recvNeighborBlocks(nb.ni.ox2, nb.ni.ox3, nb.snb.rank, nb.snb.gid);
     }
   }
+}
+
+void CubedSphere::SynchronizeFluxesWait() {
+#ifdef MPI_PARALLEL
+  MPI_Status status;
+
+  for (int i = 0; i < 4; ++i) {
+    if (send_flag_[i])
+      MPI_Wait(&send_request_[i], &status);
+  }
+#endif
 }
 
 void CubedSphere::sendNeighborBlocks(int ox2, int ox3, int tg_rank,
@@ -556,6 +571,7 @@ void CubedSphere::sendNeighborBlocks(int ox2, int ox3, int tg_rank,
 #ifdef MPI_PARALLEL
   MPI_Isend(data, dsize, MPI_DOUBLE, tg_rank, DirTag, MPI_COMM_WORLD,
             &send_request_[ownTag]);
+  send_flag_[ownTag] = 1;
 #endif
 }
 
