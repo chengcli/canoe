@@ -117,6 +117,8 @@ int main(int argc, char **argv)  {
 
   std::uint64_t mbcnt = 0;
   bool redo = false;
+  int max_redo = 1;
+  int attempts = 0;
 
   while ((pmesh->time < pmesh->tlim) &&
          (pmesh->nlim < 0 || pmesh->ncycle < pmesh->nlim)) {
@@ -139,6 +141,9 @@ int main(int argc, char **argv)  {
       pmesh->LoadAllStates();
       pmesh->DecreaseTimeStep();
       redo = true;
+      if (attempts++ > max_redo) {
+        throw RuntimeError("main", "Too many attempts to redo the step");
+      }
       continue;
     }
 

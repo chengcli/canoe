@@ -8,7 +8,7 @@ problem_id = hs94        # problem ID: basename of output filenames
 
 <output0>
 file_type  = rst
-dt         = 1.0368E8
+dt         = 1.0368E6
 
 <output1>
 file_type   = hst         # History data dump
@@ -18,24 +18,24 @@ data_format = %15.12e
 <output2>
 file_type  = netcdf     # netcdf data dump
 variable   = prim        # variables to be output
-dt         = 1.456E5     # time increment between outputs
+dt         = 3.456E5     # time increment between outputs
 
 <output3>
 file_type  = netcdf     # netcdf data dump
 variable   = uov         # variables to be output
-dt         = 1.456E5     # time increment between outputs
+dt         = 3.456E5     # time increment between outputs
 
-<output4>
-file_type  = dbg          # netcdf data dump
-dt         = 1.456E2     # time increment between outputs
+#<output4>
+#file_type  = dbg          # netcdf data dump
+#dt         = 3.456E3     # time increment between outputs
 
 <time>
 cfl_number = 0.9          # The Courant, Friedrichs, & Lewy (CFL) Number
 integrator = rk3          # integration method
 xorder     = 5            # horizontal reconstruction order
 nlim       = -1          # cycle limit
-tlim       = 2.0368E6    # time limit
-shock_capture = true
+tlim       = 1000.0368E5    # time limit
+#shock_capture = true
 
 <mesh>
 nx1        = 40          # Number of zones in X1-direction (radial)
@@ -67,7 +67,7 @@ nx3        = 20
 <hydro>
 gamma          = 1.4         # gamma = C_p/C_v
 grav_acc1      = -9.81         # gravity accelaration
-implicit_flag  = 1
+implicit_flag  = 9
 
 
 <thermodynamics>
@@ -77,7 +77,7 @@ Rd         = 287.
 cp         = 1004.
 
 <problem>
-Omega      = 0. # 7.292E-5
+Omega      = 7.292E-5
 Rp         = 6.371E6
 p0         = 1.E5      # surface pressure
 Ts         = 315.      # surface temperature

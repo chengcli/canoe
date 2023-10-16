@@ -52,7 +52,13 @@ void ImplicitSolver::FullCorrection(AthenaArray<Real>& du,
   // 0. forcing and volume matrix
 
   Real gamma = pmy_block_->peos->GetGamma();
+  Real grav = pmy_block_->phydro->hsrc.GetG1();
   Eigen::Matrix<Real, 5, 5> Phi, Dt, Bnds, Bnde, tmp;
+  Phi.setZero();
+  if (mydir_ == X1DIR) {
+    Phi(ivx, idn) = grav;
+    Phi(ien, ivx) = grav;
+  }
 
   Dt.setIdentity();
   Dt *= 1. / dt;
@@ -140,7 +146,6 @@ void ImplicitSolver::FullCorrection(AthenaArray<Real>& du,
 
   // 5. fix boundary condition
   if (first_block && !periodic_boundary) a[is] += b[is] * Bnds;
-
   if (last_block && !periodic_boundary) a[ie] += c[ie] * Bnde;
 
   // 6. solve tridiagonal system

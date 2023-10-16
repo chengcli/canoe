@@ -1,6 +1,7 @@
 // athena
 #include <athena/mesh/mesh.hpp>
 #include <athena/hydro/hydro.hpp>
+#include <athena/stride_iterator.hpp>
 
 // application
 #include <application/exceptions.hpp>
@@ -8,14 +9,19 @@
 // canoe
 #include <configure.hpp>
 
-// canoe
+// exo3
 #include <exo3/gnomonic_equiangle.hpp>
+#include <exo3/cubed_sphere_utility.hpp>
 
 // snap
 #include "implicit_solver.hpp"
 
 #ifdef ENABLE_GLOG
 #include <glog/logging.h>
+#endif
+
+#ifdef CUBED_SPHERE
+namespace cs = CubedSphereUtility;
 #endif
 
 void ImplicitSolver::SolveImplicit3D(AthenaArray<Real> &du, AthenaArray<Real> &w,
@@ -112,47 +118,58 @@ void ImplicitSolver::SolveImplicit3D(AthenaArray<Real> &du, AthenaArray<Real> &w
         Real sin_theta = pco->GetSineCell(k, j);
 
         for (int i = 0; i < w.GetDim1(); ++i) {
-          Real vy = w(IVY, k, j, i);
-          Real vz = w(IVZ, k, j, i);
-          w(IVY, k, j, i) += vz * cos_theta;
+          w(IVY, k, j, i) += w(IVZ, k, j, i) * cos_theta;
           w(IVZ, k, j, i) *= sin_theta;
+
+          //cs::CovariantToContravariant(du_.at(k,j,i), cos_theta);
+          //du_(IVY, k, j, i) += du_(IVZ, k, j, i) * cos_theta;
+          //du_(IVZ, k, j, i) *= sin_theta;
         }
 #endif  // CUBED_SPHERE
         
         // do implicit
-        if (implicit_flag_ & (1 << 3))
+        if (implicit_flag_ & (1 << 3)) {
           FullCorrection(du_, w, dt, k, j, is, ie);
-        else
+        } else {
           PartialCorrection(du_, w, dt, k, j, is, ie);
+        }
 
 #ifdef ENABLE_GLOG
         // check for negative density and internal energy
         for (int i = is; i <= ie; i++) {
           LOG_IF(WARNING, ph->u(IEN,k,j,i) + du_(IEN,k,j,i) < 0.)
               << "rank = " << Globals::my_rank << ", (k,j,i) = "
-              << "(" << k << "," << j << "," << i << ")"
-              << ", u[IEN](before) = " << ph->u(IEN,k,j,i) + du(IEN,k,j,i)
-              << ", u[IEN](after) = " << ph->u(IEN,k,j,i) + du_(IEN,k,j,i)
-              << ", u[IVX](before) = " << ph->u(IVX,k,j,i) + du(IVX,k,j,i) << std::endl
-              << ", u[IVX](after) = " << ph->u(IVX,k,j,i) + du_(IVX,k,j,i) << std::endl;
+              << "(" << k << "," << j << "," << i << ")" << std::endl
+              << "(before) u[IDN] = " << ph->u(IDN,k,j,i) + du(IDN,k,j,i)
+              << ", u[IVX] = " << ph->u(IVX,k,j,i) + du(IVX,k,j,i)
+              << ", u[IEN] = " << ph->u(IEN,k,j,i) + du(IEN,k,j,i) << std::endl
+
+              << "(after) u[IDN] = " << ph->u(IDN,k,j,i) + du_(IDN,k,j,i)
+              << ", u[IVX] = " << ph->u(IVX,k,j,i) + du_(IVX,k,j,i)
+              << ", u[IEN] = " << ph->u(IEN,k,j,i) + du_(IEN,k,j,i) << std::endl;
 
           LOG_IF(WARNING, ph->u(IDN,k,j,i) + du_(IDN,k,j,i) < 0.)
               << "rank = " << Globals::my_rank << ", (k,j,i) = "
               << "(" << k << "," << j << "," << i << ")"
-              << ", u[IDN](before) = " << ph->u(IDN,k,j,i) + du(IDN,k,j,i)
-              << ", u[IDN](after) = " << ph->u(IDN,k,j,i) + du_(IDN,k,j,i)
-              << ", u[IVX](before) = " << ph->u(IVX,k,j,i) + du(IVX,k,j,i) << std::endl
-              << ", u[IVX](after) = " << ph->u(IVX,k,j,i) + du_(IVX,k,j,i) << std::endl;
+              << "(before) u[IDN] = " << ph->u(IDN,k,j,i) + du(IDN,k,j,i)
+              << ", u[IVX] = " << ph->u(IVX,k,j,i) + du(IVX,k,j,i)
+              << ", u[IEN] = " << ph->u(IEN,k,j,i) + du(IEN,k,j,i) << std::endl
+
+              << "(after) u[IDN] = " << ph->u(IDN,k,j,i) + du_(IDN,k,j,i)
+              << ", u[IVX] = " << ph->u(IVX,k,j,i) + du_(IVX,k,j,i)
+              << ", u[IEN] = " << ph->u(IEN,k,j,i) + du_(IEN,k,j,i) << std::endl;
         }
 #endif  // ENABLE_GLOG
           
-        // project back
+        // de-project velocity
 #ifdef CUBED_SPHERE
         for (int i = 0; i < w.GetDim1(); ++i) {
-          Real vy = w(IVY, k, j, i);
-          Real vz = w(IVZ, k, j, i);
-          w(IVY, k, j, i) -= vz / sin_theta * cos_theta;
           w(IVZ, k, j, i) /= sin_theta;
+          w(IVY, k, j, i) -= w(IVZ, k, j, i) * cos_theta;
+
+          //du_(IVZ, k, j, i) /= sin_theta;
+          //du_(IVY, k, j, i) -= du_(IVZ, k, j) * cos_theta;
+          //cs::ContravariantToCovariant(du_.at(k, j, i), cos_theta);
         }
 #endif  // CUBED_SPHERE
       }
