@@ -291,13 +291,16 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
 }
 
 void MeshBlock::InitUserMeshBlockData(ParameterInput *pin) {
-  AllocateUserOutputVariables(6);
+  AllocateUserOutputVariables(9);
   SetUserOutputVariableName(0, "temp");
   SetUserOutputVariableName(1, "theta");
   SetUserOutputVariableName(2, "lat");
   SetUserOutputVariableName(3, "lon");
   SetUserOutputVariableName(4, "vlat");
   SetUserOutputVariableName(5, "vlon");
+  SetUserOutputVariableName(6, "Teq");
+  SetUserOutputVariableName(7, "Kv");
+  SetUserOutputVariableName(8, "Kt");
 }
 
 // \brif Output distributions of temperature and potential temperature.
@@ -321,5 +324,24 @@ void MeshBlock::UserWorkBeforeOutput(ParameterInput *pin) {
         user_out_var(3, k, j, i) = lon;
         user_out_var(4, k, j, i) = U;
         user_out_var(5, k, j, i) = V;
+
+        Real kappa;  // Rd/Cp
+        kappa = Rd / cp;
+
+        Real scaled_z = phydro->w(IPR, k, j, i) / p0;
+        Real Teq_p =
+            Ts - dT * _sqr(sin(lat)) - dtheta * log(scaled_z) * _sqr(cos(lat));
+        Teq_p *= pow(scaled_z, kappa);
+        Real Teq = (Teq_p > 200.) ? Teq_p : 200.;
+        user_out_var(6, k, j, i) = Teq;
+
+        Real sigma = phydro->w(IPR, k, j, i) / p0;  // pmb->phydro->pbot(k,j);
+        Real sigma_p = (sigma - sigmab) / (1. - sigmab);
+        Real Kv = (sigma_p < 0.0) ? 0.0 : sigma_p * Kf;
+        user_out_var(7, k, j, i) = Kv;
+
+        sigma_p = (sigma_p < 0.0) ? 0.0 : sigma_p * _qur(cos(lat));
+        Real Kt = Ka + (Ks - Ka) * sigma_p;
+        user_out_var(8, k, j, i) = Kt;
       }
 }
