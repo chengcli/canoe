@@ -24,6 +24,14 @@ class AirParcel {
   friend std::ostream &operator<<(std::ostream &os, Type const &type);
   friend std::ostream &operator<<(std::ostream &os, AirParcel const &var);
 
+ protected:
+  // data holder
+  std::array<Real, Size> data_;
+
+  // type
+  Type mytype_;
+
+ public:
   //! data pointers
   //! hydro data
   Real *const w;
@@ -113,12 +121,6 @@ class AirParcel {
 
   void massFractionToMoleConcentration();
   void moleConcentrationToMassFraction();
-
-  // data holder
-  std::array<Real, Size> data_;
-
-  // type
-  Type mytype_;
 };
 
 #endif  // SRC_AIR_PARCEL_HPP_
