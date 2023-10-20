@@ -59,6 +59,7 @@ include(${CMAKE_SOURCE_DIR}/cmake/athena.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/application.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/rfm.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/disort.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/pvfmm.cmake)
 
 ## 4. set up project configure file and library ##
 message(STATUS "4. Set up project libraries")

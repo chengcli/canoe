@@ -1,4 +1,4 @@
-# Canoe: Comprehensive Atmosphere N' Ocean Engine
+# Athena-nbody: an n-nbody code based on Athena++
 
 [![build](https://github.com/chengcli/canoe/actions/workflows/main.yml/badge.svg)](https://github.com/chengcli/canoe/actions/workflows/main.yml)
 [![build](https://github.com/chengcli/canoe/actions/workflows/mac.yml/badge.svg)](https://github.com/chengcli/canoe/actions/workflows/mac.yml)
@@ -31,7 +31,7 @@ sudo apt install clang-format cmake nco libnetcdf-dev libpnetcdf-dev libboost-al
 ### Redhat Linux Installation Guide
 On a Redhat linux system, use `yum` to install
 ```
-sudo yum install clang-tools-extra cmake nco netcdf-devel boost boost-devel eigen3-devel glog-devel
+sudo yum install clang-tools-extra cmake nco netcdf-devel boost-devel eigen3-devel glog-devel fftw-devel
 ```
 
 ### Multi-core execution

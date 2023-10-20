@@ -88,6 +88,13 @@ else()
   set(DISORT_OPTION "RT_DISORT")
 endif()
 
+if(NOT PVFMM OR NOT DEFINED PVFMM)
+  set(PVFMM_OPTION "DISABLE_PVFMM")
+else()
+  set(PVFMM_OPTION "ENABLE_PVFMM")
+  option(MPI "Enable MPI" ON)
+endif()
+
 if(NOT MPI OR NOT DEFINED MPI)
   set(MPI_OPTION "NOT_MPI_PARALLEL")
 else()

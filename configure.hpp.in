@@ -25,11 +25,14 @@ enum {
 // HYDROSTATIC option (HYDROSTATIC or NOT_HYDROSTATIC)
 #define @HYDROSTATIC_OPTION@
 
+// MPI parallelization (MPI_PARALLEL or NOT_MPI_PARALLEL)
+#define @MPI_OPTION@
+
 // DISORT option (RT_DISORT or NOT_RT_DISORT)
 #define @DISORT_OPTION@
 
-// MPI parallelization (MPI_PARALLEL or NOT_MPI_PARALLEL)
-#define @MPI_OPTION@
+// PVFMM option (ENABLE_PVFMM or DISABLE_PVFMM)
+#define @PVFMM_OPTION@
 
 // Google log option (ENABLE_GLOG or DISABLE_GLOG)
 #define @GLOG_OPTION@
