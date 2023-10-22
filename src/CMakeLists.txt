@@ -18,8 +18,6 @@ include_directories(
   ${PNETCDF_INCLUDE_DIR}
   )
 
-message(STATUS "eigen: ${EIGEN3_INCLUDE_DIR}")
-
 set(namel canoe)
 string(TOUPPER ${namel} nameu)
 
@@ -51,6 +49,8 @@ add_subdirectory(c3m)
 add_subdirectory(tracer)
 add_subdirectory(tasklist)
 add_subdirectory(exo3)
+add_subdirectory(communicator)
+add_subdirectory(nbody)
 
 set(CANOE_LIBRARY_${buildu}
   "canoe_${buildl}"
@@ -69,6 +69,7 @@ set(CANOE_LIBRARY_${buildu}
   "tracer_${buildl}"
   "tasklist_${buildl}"
   "exo3_${buildl}"
+  "nbody_${buildl}"
   "yaml-cpp"
   ${CDISORT_LIBRARY_${buildu}}
   ${PYDISORT_LIBRARY_${buildu}}

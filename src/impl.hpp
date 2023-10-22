@@ -37,15 +37,14 @@
 #include "inversion/inversion.hpp"
 
 class ParameterInput;
+class ParticleBase;
 
 //! \class MeshBlock::Impl
 //  \brief opaque pointer class implements additional functionality of Athena
 //  MeshBlock
 class MeshBlock::Impl {
  public:
-  Impl(MeshBlock *pmb, ParameterInput *pin);
-  ~Impl();
-
+  /// public data
   AthenaArray<Real> du;  // stores tendency
 
   DecompositionPtr pdec;
@@ -60,6 +59,15 @@ class MeshBlock::Impl {
 
   RadiationPtr prad;
   InversionQueue fitq;
+
+  std::vector<std::shared_ptr<ParticleBase>> all_particles;
+
+  /// constructor and destructor
+  Impl(MeshBlock *pmb, ParameterInput *pin);
+  ~Impl();
+
+  /// functions
+  void *GetExchanger(int n) const { return boundary_exchanger_[n]; }
 
   Real GetReferencePressure() const { return reference_pressure_; }
   Real GetPressureScaleHeight() const { return pressure_scale_height_; }
@@ -104,13 +112,17 @@ class MeshBlock::Impl {
     if (NCLOUD > 0) pmicro->u.InitWithShallowSlice(s, 4, 0, NCLOUD);
   }
 
- private:
-  MeshBlock *pmy_block_;
+ protected:
+  std::vector<void *> boundary_exchanger_;
 
   Real reference_pressure_;
   Real pressure_scale_height_;
+
+ private:
+  MeshBlock *pmy_block_;
 };
 
+// helper functions
 int find_pressure_level_lesser(Real pmax, AthenaArray<Real> const &w, int k,
                                int j, int is, int ie);
 

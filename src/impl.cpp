@@ -29,6 +29,9 @@
 // microphysics
 #include "microphysics/microphysics.hpp"
 
+// n-body
+#include "nbody/particles.hpp"
+
 // canoe
 #include "impl.hpp"
 #include "index_map.hpp"
@@ -71,6 +74,9 @@ MeshBlock::Impl::Impl(MeshBlock *pmb, ParameterInput *pin) : pmy_block_(pmb) {
 
   // inversion queue
   fitq = Inversion::NewInversionQueue(pmb, pin);
+
+  // particles
+  all_particles = ParticlesFactory::create_all_particles(pmb, pin);
 
 #ifdef HYDROSTATIC
   // reference pressure

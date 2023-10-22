@@ -2,12 +2,19 @@
 #define CONFIGURE_HPP_
 
 enum {
+  // thermodynamics data
   NPHASE_LEGACY = @NPHASE_LEGACY@,
+
+  // air-parcle data
   NCLOUD = @NCLOUD@,
   NCHEMISTRY = @NCHEMISTRY@,
   NTRACER = @NTRACER@,
   NTURBULENCE = @NTURBULENCE@,
-  NSTATIC = @NSTATIC@
+  NSTATIC = @NSTATIC@,
+
+  // n-body data
+  NINT_PARTICLE_DATA = @NINT_PARTICLE_DATA@,
+  NREAL_PARTICLE_DATA = @NREAL_PARTICLE_DATA@
 };
 
 // Affine option (AFFINE or NOT_AFFINE)
