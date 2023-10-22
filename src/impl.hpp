@@ -12,6 +12,7 @@
 #include <athena/mesh/mesh.hpp>
 
 class ParameterInput;
+class ParticleBase;
 
 class Decomposition;
 class ImplicitSolver;
