@@ -117,7 +117,7 @@ int main(int argc, char **argv)  {
 
   std::uint64_t mbcnt = 0;
   bool redo = false;
-  int max_redo = 1;
+  int max_redo = 0;
   int attempts = 0;
 
   while ((pmesh->time < pmesh->tlim) &&
@@ -125,7 +125,7 @@ int main(int argc, char **argv)  {
     if (Globals::my_rank == 0)
       pmesh->OutputCycleDiagnostics();
 
-    if (!redo) {
+    if ((!redo) && (max_redo > 0)) {
       pmesh->SaveAllStates();
     }
 
@@ -135,16 +135,18 @@ int main(int argc, char **argv)  {
 
     pmesh->UserWorkInLoop();
 
-    if (pmesh->CheckAllValid()) {
-      redo = false;
-    } else {
-      pmesh->LoadAllStates();
-      pmesh->DecreaseTimeStep();
-      redo = true;
-      if (attempts++ > max_redo) {
-        throw RuntimeError("main", "Too many attempts to redo the step");
+    if (max_redo > 0) {
+      if (pmesh->CheckAllValid()) {
+        redo = false;
+      } else {
+        pmesh->LoadAllStates();
+        pmesh->DecreaseTimeStep();
+        redo = true;
+        if (attempts++ > max_redo) {
+          throw RuntimeError("main", "Too many attempts to redo the step");
+        }
+        continue;
       }
-      continue;
     }
 
     pmesh->ncycle++;
