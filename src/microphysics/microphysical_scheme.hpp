@@ -37,13 +37,13 @@ class MicrophysicalSchemeBase {
   virtual void AssembleReactionMatrix(AirParcel const &air, Real time) = 0;
 
   virtual void SetSedimentationVelocityFromConservedX1(AthenaArray<Real> &vsed,
-                                          MeshBlock *pmb) = 0;
+                                                       MeshBlock *pmb) = 0;
 
   virtual void SetSedimentationVelocityFromConservedX2(AthenaArray<Real> &vsed,
-                                          MeshBlock *pmb) = 0;
+                                                       MeshBlock *pmb) = 0;
 
   virtual void SetSedimentationVelocityFromConservedX3(AthenaArray<Real> &vsed,
-                                          MeshBlock *pmb) = 0;
+                                                       MeshBlock *pmb) = 0;
 
   virtual void EvolveOneStep(AirParcel *Air, Real time, Real dt) = 0;
 
@@ -71,7 +71,7 @@ class MicrophysicalScheme : public MicrophysicalSchemeBase {
   ~MicrophysicalScheme() {}
 
   void SetSedimentationVelocityFromConservedX1(AthenaArray<Real> &vsed,
-                                  MeshBlock *pmb) override {
+                                               MeshBlock *pmb) override {
     int ks = pmb->ks, js = pmb->js, is = pmb->is;
     int ke = pmb->ke, je = pmb->je, ie = pmb->ie;
 
@@ -82,7 +82,7 @@ class MicrophysicalScheme : public MicrophysicalSchemeBase {
   }
 
   void SetSedimentationVelocityFromConservedX2(AthenaArray<Real> &vsed,
-                                  MeshBlock *pmb) override {
+                                               MeshBlock *pmb) override {
     int ks = pmb->ks, js = pmb->js, is = pmb->is;
     int ke = pmb->ke, je = pmb->je, ie = pmb->ie;
 
@@ -93,7 +93,7 @@ class MicrophysicalScheme : public MicrophysicalSchemeBase {
   }
 
   void SetSedimentationVelocityFromConservedX3(AthenaArray<Real> &vsed,
-                                  MeshBlock *pmb) override {
+                                               MeshBlock *pmb) override {
     int ks = pmb->ks, js = pmb->js, is = pmb->is;
     int ke = pmb->ke, je = pmb->je, ie = pmb->ie;
 
@@ -133,7 +133,7 @@ class Kessler94 : public MicrophysicalScheme<3> {
   void EvolveOneStep(AirParcel *air, Real time, Real dt) override;
 
   void SetSedimentationVelocityFromConservedX1(AthenaArray<Real> &vsed,
-                                  MeshBlock *pmb) override;
+                                               MeshBlock *pmb) override;
 
  protected:
   ChemistrySolver<Size> solver_;

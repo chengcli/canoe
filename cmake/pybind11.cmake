@@ -4,8 +4,8 @@ set(FETCHCONTENT_QUIET FALSE)
 
 option(PYTHON_BINDINGS "Build Python Bindings" OFF)
 
-if (PYTHON_BINDINGS)
-# Execute python3-config to get the include flags
+if(PYTHON_BINDINGS)
+  # Execute python3-config to get the include flags
   find_package(Python COMPONENTS Interpreter Development)
   set(PYTHON_INCLUDE_DIR
       ${_Python_INCLUDE_DIR}

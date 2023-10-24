@@ -11,8 +11,8 @@
 // harp
 #include <harp/absorber.hpp>
 
-class SimpleCloud: public Absorber {
-public:
+class SimpleCloud : public Absorber {
+ public:
   SimpleCloud(std::vector<std::string> const& species, ParameterMap params)
       : Absorber("H2O(c)", species, params) {}
 

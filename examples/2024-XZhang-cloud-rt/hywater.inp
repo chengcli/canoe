@@ -1,6 +1,6 @@
 <comment>
 problem   = Cloud radiative dynamics + Hydrogen Atm + Ocean below
-reference = 
+reference =
 #configure = --coord=spherical_polar --prob=rtcld --rt=disort --nvapor=2 --nghost=3 -pnetcdf -mpi -netcdf --pnetcdf_path=/home3/xzhang11/pnetcdf
 #configure = --prob=rtcld --rt=disort --nvapor=2 --nghost=3 -pnetcdf -mpi -netcdf --pnetcdf_path=/home3/xzhang11/pnetcdf
 configure = --prob=hywater --flux=lmars --rt=disort --nvapor=1 --nghost=3 -pnetcdf -mpi -netcdf --pnetcdf_path=/home3/xzhang11/pnetcdf
@@ -96,7 +96,7 @@ Ttriple1    = 273.16
 Ptriple1    = 611.7
 
 <particles>
-particles = scp.c1p 
+particles = scp.c1p
 
 c1p.mu = 18.E-3
 c1p.cc = 4.2E3
@@ -104,7 +104,7 @@ c1p.seeds_per_cell = 1
 c1p.nmax_per_cell = 5
 
 <chemistry>
-chemistry   = kessler94.c1 
+chemistry   = kessler94.c1
 
 c1.condensation  = 10.
 c1.autoconversion = 1.e-4
@@ -161,7 +161,7 @@ b2.fbeam_K    = 265.
 P0            = 5.E5
 T0            = 4.3E2
 Z0            = 0.9E8
-min_tem    	  = 100. 
+min_tem    	  = 100.
 radius        = 0.9E8
 qRelaxT       = 1.E-4
 #qvapor1       = 0.
