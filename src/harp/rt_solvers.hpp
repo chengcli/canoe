@@ -15,7 +15,7 @@
 
 // pydisort
 #ifdef RT_DISORT
-#include <pydisort/cppdisort.hpp>
+#include <cppdisort/cppdisort.hpp>
 #endif
 
 // harp

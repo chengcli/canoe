@@ -1,4 +1,4 @@
-# configure file for bryan test case
+# configure file for hydroge-water world
 
 macro(SET_IF_EMPTY _variable)
   if("${${_variable}}" STREQUAL "")
@@ -16,5 +16,7 @@ set(NPHASE_LEGACY 2)
 set(NETCDF ON)
 set(PNETCDF ON)
 set(MPI ON)
+set(DISORT ON)
+set(PYTHON_BINDINGS OFF)
 set(TASKLIST ImplicitHydroTasks)
 set(RSOLVER lmars)

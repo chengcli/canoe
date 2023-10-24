@@ -72,7 +72,7 @@ set(CANOE_LIBRARY_${buildu}
   "nbody_${buildl}"
   "yaml-cpp"
   ${CDISORT_LIBRARY_${buildu}}
-  ${PYDISORT_LIBRARY_${buildu}}
+  ${CPPDISORT_LIBRARY_${buildu}}
   ${PYTHON_LIBRARY_RELEASE}
   ${CFITSIO_LIBRARY}
   CACHE INTERNAL "canoe library")
