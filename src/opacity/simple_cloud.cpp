@@ -5,33 +5,24 @@
 #include <iostream>
 #include <stdexcept>
 
-// Athena++ headers
-// #include "../math_funcs.hpp"
-#include "absorber.hpp"
-#include "radiation_utils.hpp"  // getPhaseHenyeyGreenstein
+// canoe
+#include <air_parcel.hpp>
+
+// harp
+#include <harp/radiation_utils.hpp>
+
+// opacity
 #include "water_cloud.hpp"
 
-SimpleCloud::SimpleCloud(RadiationBand* pband, int id, ParameterInput* pin)
-    : Absorber(pband, "simplecloud", id) {
-  char str[80];
-  sprintf(str, "%s.%s.qext", pband->myname.c_str(), myname.c_str());
-  qext = pin->GetOrAddReal("radiation", str, 1.);
-  sprintf(str, "%s.%s.ssa", pband->myname.c_str(), myname.c_str());
-  ww = pin->GetOrAddReal("radiation", str, 1.);
-  sprintf(str, "%s.%s.asymf", pband->myname.c_str(), myname.c_str());
-  gg = pin->GetOrAddReal("radiation", str, 1.);
-}
-
 // For grey cloud
-Real SimpleCloud::getAttenuation(Real wave1, Real wave2,
-                                 CellVariables const& var) const {
+Real SimpleCloud::getAttenuation1(Real wave, AirParcel const& var) const {
   Real csize = 1.E0 * 1.e-6;  // one micron size particle
   Real crho = 1.E3;
   Real qext = params_.at("qext");
   //  std::cout<<"var.c[imol_]  "<<imol_<< " " <<var.c[imol_]<<std::endl;
   //  return  var.c[imol_]*qext/(4./3.*csize*crho);     // -> 1/m
   // put clouds 0 and precipitation 1 together
-  Real totpar = var.c[imol_] + var.c[imol_ + 1];
+  Real totpar = var.c[imols_[0]] + var.c[imols_[1]];
   return totpar * qext / (4. / 3. * csize * crho);  // -> 1/m
 }
 
@@ -53,8 +44,8 @@ Real SimpleCloud::getSingleScateringAlbedo(Real wave1, Real wave2,
 
 void SimpleCloud::getPhaseMomentum(Real* pp, Real wave1, Real wave2,
                                    CellVariables const& var, int np) const {
-  getPhaseHenyeyGreenstein(pp, 0, params.at("gg"),
-                           np);  // 0 for HENYEY_GREENSTEIN
+  // 0 for HENYEY_GREENSTEIN
+  get_phase_momentum(pp, 0, params.at("gg"), np);
   /*
     Real totpar = var.c[imol_]+var.c[imol_+1];
 
