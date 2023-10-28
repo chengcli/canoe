@@ -1,6 +1,5 @@
 // C/C++ headers
 #include <iostream>
-#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -15,50 +14,13 @@
 #include <application/exceptions.hpp>
 
 // utils
+#include <utils/fileio.hpp>
 #include <utils/ndarrays.hpp>
 #include <utils/vectorize.hpp>
 
 // inversion
 #include "inversion.hpp"
-#include "inversion_helper.hpp"
 #include "profile_inversion.hpp"
-
-InversionQueue Inversion::NewInversionQueue(MeshBlock *pmb,
-                                            ParameterInput *pin) {
-  std::string str = pin->GetOrAddString("inversion", "tasks", "");
-  std::vector<std::string> task_names =
-      Vectorize<std::string>(str.c_str(), " ,");
-
-  InversionQueue fitq;
-  Application::Logger app("inversion");
-  app->Log("Create inversion queue");
-
-  InversionPtr pfit;
-
-  for (auto p : task_names) {
-    if (p == "VLAProfileInversion") {
-      pfit = std::make_unique<VLAProfileInversion>(pmb, pin);
-    } else if (p == "JunoProfileInversion") {
-      pfit = std::make_unique<JunoProfileInversion>(pmb, pin);
-    } else if (p == "VLACompositionInversion") {
-    } else if (p == "JunoCompositionInversion") {
-    } else {
-      throw NotFoundError("NewInversionQueue", p);
-    }
-    fitq.push_back(std::move(pfit));
-  }
-
-  int jl = pmb->js;
-  for (auto &q : fitq) {
-    q->InitializePositions();
-    q->setX2Indices(jl);
-    jl += q->getX2Span();
-  }
-
-  app->Log("Number of inversions = " + std::to_string(fitq.size()));
-
-  return fitq;
-}
 
 Inversion::Inversion(MeshBlock *pmb, ParameterInput *pin, std::string name)
     : name_(name),
@@ -67,7 +29,6 @@ Inversion::Inversion(MeshBlock *pmb, ParameterInput *pin, std::string name)
       pmy_block_(pmb) {
   Application::Logger app("inversion");
   app->Log("Initialize Inversion");
-  std::stringstream msg;
 
   opts_.a = pin->GetOrAddReal("inversion", "stretch", 2.);
   opts_.p = pin->GetOrAddInteger("inversion", "walk", 4);
@@ -119,7 +80,6 @@ void Inversion::MakeMCMCOutputs(std::string fname) {
   Application::Logger app("inversion");
   app->Log("Make MCMC Outputs");
 
-  std::stringstream msg;
   if (!mcmc_initialized_) {
     app->Error("mcmc chain uninitialized");
   }
@@ -127,7 +87,6 @@ void Inversion::MakeMCMCOutputs(std::string fname) {
 }
 
 void Inversion::ResetChain() {
-  std::stringstream msg;
   Application::Logger app("inversion");
   app->Log("Reset MCMC Chain");
 
@@ -161,3 +120,97 @@ void Inversion::ResetChain() {
   memset(recs_.lnp[1], 0, nstep * nwalker * sizeof(double));
   memset(recs_.newstate[1], 0, nstep * nwalker * sizeof(int));
 }
+
+AllInversions InversionsFactory::CreateAllInversion(MeshBlock *pmb,
+                                                    ParameterInput *pin) {
+  Application::Logger app("inversion");
+  app->Log("Create inversion queue");
+
+  std::string str = pin->GetOrAddString("inversion", "tasks", "");
+  std::vector<std::string> task_names =
+      Vectorize<std::string>(str.c_str(), " ,");
+
+  AllInversions all_fits;
+  InversionPtr pfit;
+
+  for (auto p : task_names) {
+    if (p == "VLAProfileInversion") {
+      pfit = std::make_shared<VLAProfileInversion>(pmb, pin);
+    } else if (p == "JunoProfileInversion") {
+      pfit = std::make_shared<JunoProfileInversion>(pmb, pin);
+    } else if (p == "VLACompositionInversion") {
+    } else if (p == "JunoCompositionInversion") {
+    } else {
+      throw NotFoundError("CreateAllInversions", p);
+    }
+    all_fits.push_back(std::move(pfit));
+  }
+
+  int jl = pmb->js;
+  for (auto &q : all_fits) {
+    q->InitializePositions();
+    q->setX2Indices(jl);
+    jl += q->getX2Span();
+  }
+
+  app->Log("Number of inversions = " + std::to_string(all_fits.size()));
+
+  return all_fits;
+}
+
+namespace InversionHelper {
+#define MAX_LINE 512
+void read_observation_file(Eigen::VectorXd *target, Eigen::MatrixXd *icov,
+                           std::string fname) {
+  std::stringstream msg;
+  FILE *fp = fopen(fname.c_str(), "r");
+  if (fp == NULL) {
+    msg << "### FATAL ERROR in ProfileInversion::ReadObseravtionFile"
+        << std::endl
+        << fname << " cannot be opened.";
+    ATHENA_ERROR(msg);
+  }
+  char line[MAX_LINE], *pl;
+
+  int rows;
+  // header
+  pl = NextLine(line, MAX_LINE, fp);
+
+  // target values
+  sscanf(pl, "%d", &rows);
+  target->resize(rows);
+  icov->resize(rows, rows);
+
+  for (int i = 0; i < rows; ++i) {
+    pl = NextLine(line, MAX_LINE, fp);
+    sscanf(pl, "%lf", &(*target)(i));
+  }
+
+  // inverse covariance matrix
+  char *saveptr;
+  for (int i = 0; i < rows; ++i) {
+    pl = NextLine(line, MAX_LINE, fp);
+    char *p = strtok_r(pl, " ", &saveptr);
+    for (int j = 0; j < rows; ++j) {
+      sscanf(p, "%lf", &(*icov)(i, j));
+      p = strtok_r(NULL, " ", &saveptr);
+    }
+  }
+
+  fclose(fp);
+}
+#undef MAX_LINE
+
+void gather_probability(std::vector<Inversion *> const &fitq) {
+  auto qlast = fitq[fitq.size() - 1];
+
+  // replace the log probability by the last one
+  for (auto q : fitq) {
+    int nwalker = q->GetWalkers();
+
+    for (int k = 0; k < nwalker; ++k) {
+      q->SetLogProbability(k, qlast->GetLogProbability(k));
+    }
+  }
+}
+}  // namespace InversionHelper

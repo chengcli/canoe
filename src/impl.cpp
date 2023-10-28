@@ -70,7 +70,7 @@ MeshBlock::Impl::Impl(MeshBlock *pmb, ParameterInput *pin) : pmy_block_(pmb) {
   prad = std::make_shared<Radiation>(pmb, pin);
 
   // inversion queue
-  // all_fits = Inversion::NewInversionQueue(pmb, pin);
+  all_fits = Inversion::CreateAllInversions(pmb, pin);
 
   // particles
   all_particles = ParticlesFactory::create_all_particles(pmb, pin);
