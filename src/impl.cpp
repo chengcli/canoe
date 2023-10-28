@@ -74,17 +74,6 @@ MeshBlock::Impl::Impl(MeshBlock *pmb, ParameterInput *pin) : pmy_block_(pmb) {
 
   // particles
   all_particles = ParticlesFactory::create_all_particles(pmb, pin);
-
-#ifdef HYDROSTATIC
-  // reference pressure
-  reference_pressure_ = pin->GetReal("mesh", "ReferencePressure");
-
-  // pressure scale height
-  pressure_scale_height_ = pin->GetReal("mesh", "PressureScaleHeight");
-#else
-  reference_pressure_ = 1.0;
-  pressure_scale_height_ = 1.0;
-#endif  // HYDROSTATIC
 }
 
 MeshBlock::Impl::~Impl() {}

@@ -11,30 +11,15 @@
 #include <athena/athena.hpp>
 #include <athena/mesh/mesh.hpp>
 
-// canoe
-#include "air_parcel.hpp"
-
-// snap
-#include "snap/decomposition/decomposition.hpp"
-#include "snap/implicit/implicit_solver.hpp"
-#include "snap/thermodynamics/thermodynamics.hpp"
-
-// harp
-#include "harp/radiation.hpp"
-
-// microphysics
-#include "microphysics/microphysics.hpp"
-
-// tracer
-#include "tracer/tracer.hpp"
-
-// chemistry
-#include "c3m/chemistry.hpp"
-
-// turbulence
-#include "snap/turbulence/turbulence_model.hpp"
-
 class ParameterInput;
+
+class Decomposition;
+class ImplicitSolver;
+class Microphysics;
+class Radiation;
+class Chemistry;
+class Tracer;
+class TurbulenceModel;
 
 class Inversion;
 class ParticleBase;
@@ -50,19 +35,17 @@ class MeshBlock::Impl {
   /// public data
   AthenaArray<Real> du;  // stores tendency
 
-  DecompositionPtr pdec;
-  ImplicitSolverPtr phevi;
+  std::shared_ptr<Decomposition> pdec;
+  std::shared_ptr<ImplicitSolver> phevi;
+  std::shared_ptr<Microphysics> pmicro;
+  std::shared_ptr<Radiation> prad;
+  std::shared_ptr<Chemistry> pchem;
+  std::shared_ptr<Tracer> ptracer;
+  std::shared_ptr<TurbulenceModel> pturb;
 
-  MicrophysicsPtr pmicro;
-  ChemistryPtr pchem;
-  TracerPtr ptracer;
   // StaticVariablePtr pstatic;
 
-  TurbulenceModelPtr pturb;
-
-  RadiationPtr prad;
-
-  // std::vector<std::shared_ptr<Inversion>> all_fits;
+  std::vector<std::shared_ptr<Inversion>> all_fits;
   std::vector<std::shared_ptr<ParticleBase>> all_particles;
 
   /// constructor and destructor
@@ -74,11 +57,8 @@ class MeshBlock::Impl {
     return boundary_exchanger_.at(name);
   }
 
-  auto GetMeshOutputGroups() const { return mesh_outputs_; }
-  auto GetFITSOutputGroups() const { return fits_outputs_; }
-
-  Real GetReferencePressure() const { return reference_pressure_; }
-  Real GetPressureScaleHeight() const { return pressure_scale_height_; }
+  auto &GetMeshOutputGroups() const { return mesh_outputs_; }
+  auto &GetFITSOutputGroups() const { return fits_outputs_; }
 
   // TODO(cli) : more needs to be changed
   // called in task_list/time_integration.cpp
@@ -88,19 +68,15 @@ class MeshBlock::Impl {
 
  protected:
   std::map<std::string, void *> boundary_exchanger_;
-
   std::vector<std::weak_ptr<MeshOutputGroup>> mesh_outputs_;
   std::vector<std::weak_ptr<FITSOutputGroup>> fits_outputs_;
 
-  Real reference_pressure_;
-  Real pressure_scale_height_;
-
  private:
-  MeshBlock *pmy_block_;
+  MeshBlock const *pmy_block_;
   int my_stage_;
 };
 
-// helper functions
+// helper functions, will be moved in the future
 int find_pressure_level_lesser(Real pmax, AthenaArray<Real> const &w, int k,
                                int j, int is, int ie);
 
