@@ -15,6 +15,9 @@
 // snap
 #include <snap/thermodynamics/thermodynamics.hpp>
 
+// microphysics
+#include <microphysics/microphysics.hpp>
+
 class TestMicrophysics : public testing::Test {
  protected:
   ParameterInput *pinput;
