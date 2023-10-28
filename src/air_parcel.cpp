@@ -11,6 +11,12 @@
 // microphysics
 #include "microphysics/microphysics.hpp"
 
+// chemistry
+#include "c3m/chemistry.hpp"
+
+// tracer
+#include "tracer/tracer.hpp"
+
 // snap
 #include "snap/thermodynamics/thermodynamics.hpp"
 

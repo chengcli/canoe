@@ -77,8 +77,9 @@ using AllParticles = std::vector<ParticlePtr>;
 ParticlePtr find_particle(AllParticles const &pts, std::string name);
 
 // factory methods
-namespace ParticlesFactory {
-AllParticles create_all_particles(MeshBlock *pmb, ParameterInput *pin);
-}  // namespace ParticlesFactory
+class ParticlesFactory {
+ public:
+  static AllParticles CreateAllParticles(MeshBlock *pmb, ParameterInput *pin);
+};
 
 #endif  // SRC_NBODY_PARTICLE_BASE_HPP_

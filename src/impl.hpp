@@ -9,7 +9,6 @@
 
 // athena
 #include <athena/athena.hpp>
-#include <athena/mesh/mesh.hpp>
 
 class ParameterInput;
 
@@ -62,9 +61,7 @@ class MeshBlock::Impl {
 
   // TODO(cli) : more needs to be changed
   // called in task_list/time_integration.cpp
-  void MapScalarsConserved(AthenaArray<Real> &s) {
-    if (NCLOUD > 0) pmicro->u.InitWithShallowSlice(s, 4, 0, NCLOUD);
-  }
+  void MapScalarsConserved(AthenaArray<Real> &s);
 
  protected:
   std::map<std::string, void *> boundary_exchanger_;

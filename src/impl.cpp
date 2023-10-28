@@ -26,6 +26,9 @@
 // microphysics
 #include "microphysics/microphysics.hpp"
 
+// tracer
+#include "tracer/tracer.hpp"
+
 // n-body
 #include "nbody/particles.hpp"
 
@@ -61,10 +64,14 @@ MeshBlock::Impl::Impl(MeshBlock *pmb, ParameterInput *pin) : pmy_block_(pmb) {
   all_fits = InversionsFactory::CreateAllInversions(pmb, pin);
 
   // particle queue
-  all_particles = ParticlesFactory::create_all_particles(pmb, pin);
+  all_particles = ParticlesFactory::CreateAllParticles(pmb, pin);
 }
 
 MeshBlock::Impl::~Impl() {}
+
+void MeshBlock::Impl::MapScalarsConserved(AthenaArray<Real> &s) {
+  if (NCLOUD > 0) pmicro->u.InitWithShallowSlice(s, 4, 0, NCLOUD);
+}
 
 int find_pressure_level_lesser(Real pres, AthenaArray<Real> const &w, int k,
                                int j, int is, int ie) {
