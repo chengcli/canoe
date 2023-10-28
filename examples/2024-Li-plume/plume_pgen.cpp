@@ -61,8 +61,7 @@ void MeshBlock::UserWorkBeforeOutput(ParameterInput *pin) {
         user_out_var(5, k, j, i) =
             pthermo->RelativeHumidity(this, iH2O, k, j, i);
         // total mixing ratio
-        AirParcel air(AirParcel::Type::MassFrac);
-        pimpl->GatherFromPrimitive(&air, k, j, i);
+        auto &&air = AirParcelHelper::gather_from_primitive(this, k, j, i);
         user_out_var(6, k, j, i) = air.w[iH2O] + air.c[iH2Oc];
       }
 }
@@ -156,7 +155,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
       for (int i = is; i <= ie; ++i) {
         // add noise
         air.w[IVX] = 0.01 * (1. * rand() / RAND_MAX - 0.5);
-        pimpl->DistributeToConserved(air, k, j, i);
+        AirParcelHelper::distribute_to_conserved(this, k, j, i, air);
         pthermo->Extrapolate(&air, pcoord->dx1f(i),
                              Thermodynamics::Method::PseudoAdiabat, grav);
       }

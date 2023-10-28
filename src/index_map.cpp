@@ -51,7 +51,6 @@ IndexMap const* IndexMap::InitFromAthenaInput(ParameterInput* pin) {
   auto& cloud_index_map = myindex_map_->cloud_index_map_;
   auto& chemistry_index_map = myindex_map_->chemistry_index_map_;
   auto& tracer_index_map = myindex_map_->tracer_index_map_;
-  auto& static_index_map = myindex_map_->static_index_map_;
   auto& particle_index_map = myindex_map_->particle_index_map_;
 
   // vapor id
@@ -103,22 +102,10 @@ IndexMap const* IndexMap::InitFromAthenaInput(ParameterInput* pin) {
     tracer_index_map[names[i]] = i;
   }
 
-  // static variable id
-  str = pin->GetOrAddString("species", "static", "");
-  names = Vectorize<std::string>(str.c_str(), " ,");
-
-  if (names.size() > NSTATIC) {
-    throw ValueError("IndexMap", "Number of static variables", NSTATIC,
-                     names.size());
-  }
-
-  for (size_t i = 0; i < names.size(); ++i) {
-    static_index_map[names[i]] = i;
-  }
-
   // particle id
   str = pin->GetOrAddString("species", "particle", "");
   names = Vectorize<std::string>(str.c_str(), " ,");
+
   for (size_t i = 0; i < names.size(); ++i) {
     particle_index_map[names[i]] = i;
   }

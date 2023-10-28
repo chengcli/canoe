@@ -35,29 +35,27 @@ void RadiationBand::SetSpectralProperties(int k, int j, int il, int iu) {
 
   std::vector<Real> mypmom(1 + npmom);
 
-  AirParcel var(AirParcel::Type::MoleFrac);
-  // Particles *ppart;
-
   MeshBlock* pmb = pmy_block_;
-  AthenaArray<Real> const& w = pmb->phydro->w;
+  AirColumn&& ac = AirParcelHelper::gather_from_primitive(pmb, k, j, il, iu);
 
   for (int i = il; i <= iu; ++i) {
-    pmb->pimpl->GatherFromPrimitive(&var, k, j, i);
-    tem_(i) = var.w[IDN];
+    auto& air = ac[i - il];
+    air.ToMoleFraction();
+    tem_(i) = air.w[IDN];
 
     for (auto& a : absorbers_) {
       for (int m = 0; m < nspec; ++m) {
         Real kcoeff =
-            a->GetAttenuation(spec_[m].wav1, spec_[m].wav2, var);  // 1/m
+            a->GetAttenuation(spec_[m].wav1, spec_[m].wav2, air);  // 1/m
         Real dssalb =
-            a->GetSingleScatteringAlbedo(spec_[m].wav1, spec_[m].wav2, var) *
+            a->GetSingleScatteringAlbedo(spec_[m].wav1, spec_[m].wav2, air) *
             kcoeff;
         // tau
         tau_(m, i) += kcoeff;
         // ssalb
         ssa_(m, i) += dssalb;
         // pmom
-        a->GetPhaseMomentum(mypmom.data(), spec_[m].wav1, spec_[m].wav2, var,
+        a->GetPhaseMomentum(mypmom.data(), spec_[m].wav1, spec_[m].wav2, air,
                             npmom);
         for (int p = 0; p <= npmom; ++p) pmom_(m, i, p) += mypmom[p] * dssalb;
       }

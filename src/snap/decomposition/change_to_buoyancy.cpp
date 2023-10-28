@@ -33,7 +33,6 @@ void Decomposition::ChangeToBuoyancy(AthenaArray<Real> &w, int kl, int ku,
   auto pmb = pmy_block_;
   auto pco = pmb->pcoord;
   auto pthermo = Thermodynamics::GetInstance();
-  auto pimpl = pmb->pimpl;
 
   Real grav = -pmb->phydro->hsrc.GetG1();  // positive downward pointing
 
@@ -54,12 +53,10 @@ void Decomposition::ChangeToBuoyancy(AthenaArray<Real> &w, int kl, int ku,
     RecvFromTop(psf_, kl, ku, jl, ju);
   } else {
     // adiabatic extrapolation
-    AirParcel var(AirParcel::Type::MoleFrac);
-
     for (int k = kl; k <= ku; ++k)
       for (int j = jl; j <= ju; ++j) {
         Real dz = pco->dx1f(ie);
-        pimpl->GatherFromPrimitive(&var, k, j, ie);
+        auto &&var = AirParcelHelper::gather_from_primitive(pmb, k, j, ie);
 
         // adiabatic extrapolation for half a grid
         pthermo->Extrapolate(&var, dz / 2.,
@@ -153,7 +150,6 @@ void Decomposition::RestoreFromBuoyancy(AthenaArray<Real> &w,
   auto pmb = pmy_block_;
   auto pco = pmb->pcoord;
   auto pthermo = Thermodynamics::GetInstance();
-  auto pimpl = pmb->pimpl;
 
   Real grav = -pmb->phydro->hsrc.GetG1();  // positive downward pointing
   int is = pmb->is, ie = pmb->ie;
@@ -181,19 +177,15 @@ void Decomposition::RestoreFromBuoyancy(AthenaArray<Real> &w,
     if (wl(IDN, i + 1) < 0.) wl(IDN, i + 1) = mdpdz / grav;
   }
 
-  // fix boundary condition
-  AirParcel var0(AirParcel::Type::MoleFrac);
-  AirParcel var1(AirParcel::Type::MoleFrac);
-
   // adiabatic extrapolation for a grid
   Real dz = pco->dx1f(is);
-  pimpl->GatherFromPrimitive(&var0, k, j, is);
-
-  var1 = var0;
-  pthermo->Extrapolate(&var1, -dz, Thermodynamics::Method::ReversibleAdiabat,
+  auto &&air0 = AirParcelHelper::gather_from_primitive(pmb, k, j, is);
+  auto air1 = air0;
+  air1.ToMoleFraction();
+  pthermo->Extrapolate(&air1, -dz, Thermodynamics::Method::ReversibleAdiabat,
                        grav);
 
-  mdpdz = (var1.w[IPR] - var0.w[IPR]) / dz;
+  mdpdz = (air1.w[IPR] - air0.w[IPR]) / dz;
   if (pmb->pbval->block_bcs[inner_x1] == BoundaryFlag::reflect) {
     for (int i = il + 1; i < is; ++i) {
       wl(IDN, i) = wl(IDN, 2 * is - i);
@@ -209,12 +201,13 @@ void Decomposition::RestoreFromBuoyancy(AthenaArray<Real> &w,
   }
 
   // adiabatic extrapolation for a grid
-  pimpl->GatherFromPrimitive(&var0, k, j, ie);
-  var1 = var0;
-  pthermo->Extrapolate(&var1, dz, Thermodynamics::Method::ReversibleAdiabat,
+  air0 = AirParcelHelper::gather_from_primitive(pmb, k, j, ie);
+  air1 = air0;
+  air1.ToMoleFraction();
+  pthermo->Extrapolate(&air1, dz, Thermodynamics::Method::ReversibleAdiabat,
                        grav);
 
-  mdpdz = (var0.w[IPR] - var1.w[IPR]) / dz;
+  mdpdz = (air0.w[IPR] - air1.w[IPR]) / dz;
   if (pmb->pbval->block_bcs[outer_x1] == BoundaryFlag::reflect) {
     for (int i = ie + 2; i <= iu + 1; ++i) {
       wl(IDN, i) = wl(IDN, 2 * ie - i + 2);

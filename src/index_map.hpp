@@ -67,7 +67,6 @@ class IndexMap {
   std::map<std::string, size_t> cloud_index_map_;
   std::map<std::string, size_t> chemistry_index_map_;
   std::map<std::string, size_t> tracer_index_map_;
-  std::map<std::string, size_t> static_index_map_;
   std::map<std::string, size_t> particle_index_map_;
 
   //! Pointer to the single IndexMap instance

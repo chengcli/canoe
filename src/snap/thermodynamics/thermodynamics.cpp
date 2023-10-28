@@ -301,8 +301,7 @@ Real Thermodynamics::GetChi(AirParcel const& qfrac) const {
 Real Thermodynamics::GetGamma(MeshBlock* pmb, int k, int j, int i) const {
   Real gammad = pmb->peos->GetGamma();
 
-  AirParcel air(AirParcel::Type::MassFrac);
-  pmb->pimpl->GatherFromPrimitive(&air, k, j, i);
+  auto&& air = AirParcelHelper::gather_from_primitive(pmb, k, j, i);
 
   Real fsig = 1., feps = 1.;
 #pragma omp simd reduction(+ : fsig, feps)
@@ -339,23 +338,23 @@ Real Thermodynamics::RovRd(AirParcel const& qfrac) const {
 
 Real Thermodynamics::MoistStaticEnergy(MeshBlock* pmb, Real gz, int k, int j,
                                        int i) const {
-  AirParcel var(AirParcel::Type::MassConc);
-  pmb->pimpl->GatherFromPrimitive(&var, k, j, i);
+  auto&& air = AirParcelHelper::gather_from_primitive(pmb, k, j, i);
+  air.ToMassConcentration();
 
   Real temp = GetTemp(pmb, k, j, i);
   Real rho = 0., LE = 0., IE = 0.;
 
 #pragma omp simd reduction(+ : IE, rho)
   for (int n = 0; n <= NVAPOR; ++n) {
-    IE += var.w[n] * GetCpMassRef(n) * temp;
-    rho += var.w[n];
+    IE += air.w[n] * GetCpMassRef(n) * temp;
+    rho += air.w[n];
   }
 
 #pragma omp simd reduction(+ : IE, LE, rho)
   for (int n = 0; n < NCLOUD; ++n) {
-    IE += var.c[n] * GetCpMassRef(1 + NVAPOR + n) * temp;
-    LE += -latent_energy_mass_[1 + NVAPOR + n] * var.c[n];
-    rho += var.c[n];
+    IE += air.c[n] * GetCpMassRef(1 + NVAPOR + n) * temp;
+    LE += -latent_energy_mass_[1 + NVAPOR + n] * air.c[n];
+    rho += air.c[n];
   }
 
   return (IE + LE) / rho + gz;
@@ -408,13 +407,18 @@ Real Thermodynamics::GetMu(MeshBlock* pmb, int k, int j, int i) const {
 
 Real Thermodynamics::RelativeHumidity(MeshBlock* pmb, int n, int k, int j,
                                       int i) const {
-  AirParcel air(AirParcel::Type::MoleFrac);
-  pmb->pimpl->GatherFromPrimitive(&air, k, j, i);
+  auto&& air = AirParcelHelper::gather_from_primitive(pmb, k, j, i);
+  air.ToMoleFraction();
   return RelativeHumidity(air, n);
 }
 
 void Thermodynamics::Extrapolate(AirParcel* qfrac, Real dzORdlnp, Method method,
                                  Real grav, Real userp) const {
+  if (qfrac->GetType() != AirParcel::Type::MoleFrac) {
+    throw RuntimeError("thermodynamics",
+                       "Extrapolate: qfrac->type != MoleFrac");
+  }
+
   // equilibrate vapor with clouds
   for (int i = 1; i <= NVAPOR; ++i) {
     auto rates = TryEquilibriumTP_VaporCloud(*qfrac, i);
@@ -452,11 +456,10 @@ Real Thermodynamics::GetLatentHeatMole(int i, std::vector<Real> const& rates,
 Real Thermodynamics::EquivalentPotentialTemp(MeshBlock* pmb, Real p0, int v,
                                              int k, int j, int i) const {
 #if (NVAPOR > 0)
-  AirParcel air_mass(AirParcel::Type::MassFrac);
-  pmb->pimpl->GatherFromPrimitive(&air_mass, k, j, i);
+  AirParcel&& air_mass = AirParcelHelper::gather_from_primitive(pmb, k, j, i);
 
-  AirParcel air_mole(AirParcel::Type::MoleFrac);
-  pmb->pimpl->GatherFromPrimitive(&air_mole, k, j, i);
+  AirParcel air_mole = air_mass;
+  air_mole.ToMoleFraction();
 
   // get dry air mixing ratio
   Real xg = 1., qd = 1.;

@@ -76,7 +76,7 @@ TaskStatus InversionTasks::Optimize(MeshBlock *pmb, int step) {
 }
 
 TaskStatus InversionTasks::Sample(MeshBlock *pmb, int step) {
-  pmb->pimpl->fitq.front()->MCMCMove(pmb->pimpl->prad.get(), pmb->phydro);
-  // std::cout << "Sample" << std::endl;
+  // pmb->pimpl->fitq.front()->MCMCMove(pmb->pimpl->prad.get(), pmb->phydro);
+  //  std::cout << "Sample" << std::endl;
   return TaskStatus::success;
 }

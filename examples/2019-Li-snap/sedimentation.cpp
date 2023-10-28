@@ -161,7 +161,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
       for (; i <= ie; ++i) {
         if (air.w[IDN] < Tmin) break;
 
-        pimpl->DistributeToConserved(air, k, j, i);
+        AirParcelHelper::distribute_to_conserved(this, k, j, i, air);
         pthermo->Extrapolate(&air, pcoord->dx1f(i),
                              Thermodynamics::Method::PseudoAdiabat, grav);
       }
@@ -169,7 +169,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
       // Replace adiabatic atmosphere with isothermal atmosphere if temperature
       // is too low
       for (; i <= ie; ++i) {
-        pimpl->DistributeToConserved(air, k, j, i);
+        AirParcelHelper::distribute_to_conserved(this, k, j, i, air);
         pthermo->Extrapolate(&air, pcoord->dx1f(i),
                              Thermodynamics::Method::Isothermal, grav);
       }
@@ -180,10 +180,10 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
     for (int j = js; j <= je; ++j)
       for (int i = is; i <= ie; ++i) {
         if (pcoord->x1v(i) > -100.E3 && pcoord->x1v(i) < 0.) {
-          pimpl->GatherFromConserved(&air, k, j, i);
+          auto &&air = AirParcelHelper::gather_from_conserved(this, k, j, i);
           air.c[iH2Op] = 0.01;
           air.c[iNH3p] = 0.01;
-          pimpl->DistributeToConserved(air, k, j, i);
+          AirParcelHelper::distribute_to_conserved(this, k, j, i, air);
         }
       }
 }
