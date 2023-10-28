@@ -302,18 +302,18 @@ void AirParcel::massFractionToMassConcentration() {
     w[IDN] -= c[n];
   }
 
-  Real fsig = 1., feps = 1.;
+  Real fsig = w[IDN], feps = w[IDN];
   // vapors
 #pragma omp simd reduction(+ : fsig, feps)
   for (int n = 1; n <= NVAPOR; ++n) {
-    fsig += w[n] * (pthermo->GetCvRatioMass(n) - 1.);
-    feps += w[n] * (pthermo->GetInvMuRatio(n) - 1.);
+    fsig += w[n] * pthermo->GetCvRatioMass(n);
+    feps += w[n] * pthermo->GetInvMuRatio(n);
   }
 
   // clouds
 #pragma omp simd reduction(+ : fsig)
   for (int n = 0; n < NCLOUD; ++n) {
-    fsig += c[n] * (pthermo->GetCvRatioMass(n + 1 + NVAPOR) - 1.);
+    fsig += c[n] * pthermo->GetCvRatioMass(n + 1 + NVAPOR);
   }
 
   // internal energy
@@ -360,9 +360,10 @@ void AirParcel::massConcentrationToMassFraction() {
     feps += w[n] * (pthermo->GetInvMuRatio(n) - 1.);
   }
 
-#pragma omp simd reduction(+ : fsig)
+#pragma omp simd reduction(+ : fsig, feps)
   for (int n = 0; n < NCLOUD; ++n) {
     fsig += c[n] * (pthermo->GetCvRatioMass(n + 1 + NVAPOR) - 1.);
+    feps += -c[n];
   }
 
   w[IPR] = gm1 * w[IEN] * feps / fsig;

@@ -72,8 +72,7 @@ void MeshBlock::UserWorkBeforeOutput(ParameterInput *pin) {
         user_out_var(5, k, j, i) =
             pthermo->RelativeHumidity(this, iH2O, k, j, i);
         // total mixing ratio
-        AirParcel air(AirParcel::Type::MassFrac);
-        pimpl->GatherFromPrimitive(&air, k, j, i);
+        auto &&air = AirParcelHelper::gather_from_primitive(this, k, j, i);
         user_out_var(6, k, j, i) = air.w[iH2O] + air.c[iH2Oc];
       }
 }
@@ -122,7 +121,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
                            Thermodynamics::Method::ReversibleAdiabat, grav);
 
       for (int i = is; i <= ie; ++i) {
-        pimpl->DistributeToConserved(air, k, j, i);
+        AirParcelHelper::distribute_to_conserved(this, k, j, i, air);
         pthermo->Extrapolate(&air, pcoord->dx1f(i),
                              Thermodynamics::Method::ReversibleAdiabat, grav);
       }
@@ -137,7 +136,8 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
         Real L = sqrt(sqr((x2 - xc) / xr) + sqr((x1 - zc) / zr));
 
         if (L < 1.) {
-          pimpl->GatherFromConserved(&air, k, j, i);
+          auto &&air = AirParcelHelper::gather_from_conserved(this, k, j, i);
+          air.ToMoleFraction();
           Real temp_v = air.w[IDN] * pthermo->RovRd(air);
           temp_v *= 1. + dT * sqr(cos(M_PI * L / 2.)) / 300.;
 
@@ -161,7 +161,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
           air.w[iH2O] += rates[0];
           air.c[iH2Oc] += rates[1];
 
-          pimpl->DistributeToConserved(air, k, j, i);
+          AirParcelHelper::distribute_to_conserved(this, k, j, i, air);
         }
       }
 }
