@@ -15,7 +15,6 @@
 
 // inversion
 #include "inversion/inversion.hpp"
-#include "inversion/inversion_helper.hpp"
 
 // snap
 #include "snap/decomposition/decomposition.hpp"
@@ -25,6 +24,9 @@
 
 // microphysics
 #include "microphysics/microphysics.hpp"
+
+// c3m
+#include "c3m/chemistry.hpp"
 
 // tracer
 #include "tracer/tracer.hpp"
@@ -71,12 +73,4 @@ MeshBlock::Impl::~Impl() {}
 
 void MeshBlock::Impl::MapScalarsConserved(AthenaArray<Real> &s) {
   if (NCLOUD > 0) pmicro->u.InitWithShallowSlice(s, 4, 0, NCLOUD);
-}
-
-int find_pressure_level_lesser(Real pres, AthenaArray<Real> const &w, int k,
-                               int j, int is, int ie) {
-  for (int i = is; i <= ie; ++i)
-    if (w(IPR, k, j, i) < pres) return i;
-
-  return ie + 1;
 }

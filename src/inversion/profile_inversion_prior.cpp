@@ -3,9 +3,9 @@
 
 // canoe
 #include <configure.hpp>
-#include <impl.hpp>
 
 // athena
+#include <athena/coordinates/coordinates.hpp>
 #include <athena/hydro/hydro.hpp>
 #include <athena/mesh/mesh.hpp>
 
@@ -23,8 +23,8 @@ Real ProfileInversion::LogPriorProbability(Real **XpSample) const {
   std::vector<Real> zlev(nsample);
   std::vector<Real> zstd(nsample);
 
-  Real P0 = pmy_block_->pimpl->GetReferencePressure();
-  Real H0 = pmy_block_->pimpl->GetPressureScaleHeight();
+  Real P0 = pmy_block_->pcoord->GetReferencePressure();
+  Real H0 = pmy_block_->pcoord->GetPressureScaleHeight();
 
   for (int i = 0; i < nsample; ++i) zlev[i] = -H0 * log(plevel_[i] / P0);
 

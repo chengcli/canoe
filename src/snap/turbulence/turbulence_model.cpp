@@ -10,6 +10,7 @@
 
 // application
 #include <application/application.hpp>
+#include <application/exceptions.hpp>
 
 // canoe
 #include <configure.hpp>

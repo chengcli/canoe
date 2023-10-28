@@ -16,6 +16,7 @@
 
 // snap
 #include <snap/implicit/implicit_solver.hpp>
+#include <snap/thermodynamics/thermodynamics.hpp>
 
 // harp
 #include <harp/radiation.hpp>

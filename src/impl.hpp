@@ -9,6 +9,7 @@
 
 // athena
 #include <athena/athena.hpp>
+#include <athena/mesh/mesh.hpp>
 
 class ParameterInput;
 
@@ -72,9 +73,5 @@ class MeshBlock::Impl {
   MeshBlock const *pmy_block_;
   int my_stage_;
 };
-
-// helper functions, will be moved in the future
-int find_pressure_level_lesser(Real pmax, AthenaArray<Real> const &w, int k,
-                               int j, int is, int ie);
 
 #endif  // SRC_IMPL_HPP_

@@ -45,7 +45,7 @@ Inversion::Inversion(MeshBlock *pmb, ParameterInput *pin, std::string name)
 
   std::string obsfile = pin->GetOrAddString("inversion", "obsfile", "none");
   if (obsfile != "none") {
-    read_observation_file(&target_, &icov_, obsfile.c_str());
+    InversionHelper::read_observation_file(&target_, &icov_, obsfile.c_str());
     // app->Log("target = ", target_.transpose());
     // app->Log("inverse covariance matrx = ", icov_);
   } else {
@@ -121,8 +121,8 @@ void Inversion::ResetChain() {
   memset(recs_.newstate[1], 0, nstep * nwalker * sizeof(int));
 }
 
-AllInversions InversionsFactory::CreateAllInversion(MeshBlock *pmb,
-                                                    ParameterInput *pin) {
+AllInversions InversionsFactory::CreateAllInversions(MeshBlock *pmb,
+                                                     ParameterInput *pin) {
   Application::Logger app("inversion");
   app->Log("Create inversion queue");
 
