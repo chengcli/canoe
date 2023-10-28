@@ -17,7 +17,7 @@ class ParameterInput;
 
 class TurbulenceModel {
  public:
-  TurbulenceModel(MeshBlock *pmb, ParameterInput *pin, int nvar = 0);
+  TurbulenceModel(MeshBlock *pmb, ParameterInput *pin);
   virtual ~TurbulenceModel();
 
   // access members
@@ -38,8 +38,6 @@ class TurbulenceModel {
   MeshBlock *pmy_block;
 };
 
-using TurbulenceModelPtr = std::shared_ptr<TurbulenceModel>;
-
 class KEpsilonTurbulence : public TurbulenceModel {
  public:
   KEpsilonTurbulence(MeshBlock *pmb, ParameterInput *pin);
@@ -53,6 +51,14 @@ class KEpsilonTurbulence : public TurbulenceModel {
 
  private:
   Real cmu_, c1_, c2_, sigk_, sige_;
+};
+
+using TurbulenceModelPtr = std::shared_ptr<TurbulenceModel>;
+
+class TurbulenceFactory {
+ public:
+  static TurbulenceModelPtr CreateTurbulenceModel(MeshBlock *pmb,
+                                                  ParameterInput *pin);
 };
 
 #endif  // SRC_SNAP_TURBULENCE_TURBULENCE_MODEL_HPP_

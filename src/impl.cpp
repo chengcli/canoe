@@ -45,6 +45,9 @@ MeshBlock::Impl::Impl(MeshBlock *pmb, ParameterInput *pin) : pmy_block_(pmb) {
   // microphysics
   pmicro = std::make_shared<Microphysics>(pmb, pin);
 
+  // radiation
+  prad = std::make_shared<Radiation>(pmb, pin);
+
   // chemistry
   pchem = std::make_shared<Chemistry>(pmb, pin);
 
@@ -52,27 +55,12 @@ MeshBlock::Impl::Impl(MeshBlock *pmb, ParameterInput *pin) : pmy_block_(pmb) {
   ptracer = std::make_shared<Tracer>(pmb, pin);
 
   // turbulence
-  if (pin->DoesParameterExist("hydro", "turbulence")) {
-    std::string turbulence_model = pin->GetString("hydro", "turbulence");
-    if (turbulence_model == "none") {
-      pturb = std::make_shared<TurbulenceModel>(pmb, pin);
-    } else if (turbulence_model == "kepsilon") {
-      pturb = std::make_shared<KEpsilonTurbulence>(pmb, pin);
-      if (NTURBULENCE < 2)
-        throw NotImplementedError(
-            "NTURBULENCE must be at least 2 for k-epsilon model");
-    } else {
-      throw NotImplementedError(turbulence_model);
-    }
-  }
-
-  // radiation
-  prad = std::make_shared<Radiation>(pmb, pin);
+  pturb = TurbulenceFactory::CreateTurbulenceModel(pmb, pin);
 
   // inversion queue
-  all_fits = Inversion::CreateAllInversions(pmb, pin);
+  all_fits = InversionsFactory::CreateAllInversions(pmb, pin);
 
-  // particles
+  // particle queue
   all_particles = ParticlesFactory::create_all_particles(pmb, pin);
 }
 
