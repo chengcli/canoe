@@ -24,7 +24,7 @@ class ParameterInput;
 class Microphysics {
  public:
   // tem, v1, v2, v3
-  //enum { NCLOUD_HYDRO = 4 };
+  // enum { NCLOUD_HYDRO = 4 };
 
   // access members
   AthenaArray<Real> w, u;
@@ -39,11 +39,11 @@ class Microphysics {
 
   MicrophysicalSchemePtr GetSystem(int i) const { return systems_[i]; }
 
-  //void AddFrictionalHeating(std::vector<AirParcel> &air_column) const;
+  // void AddFrictionalHeating(std::vector<AirParcel> &air_column) const;
 
-  void EvolveSystems(std::vector<AirParcel> &air_column, Real time, Real dt);
+  void EvolveSystems(AirColumn &air_column, Real time, Real dt);
 
-  AthenaArray<Real> const& GetSedimentationVelocityFace(int dir) const { 
+  AthenaArray<Real> const &GetSedimentationVelocityFace(int dir) const {
     return vsedf_[dir];
   }
 
@@ -52,11 +52,11 @@ class Microphysics {
     mass_flux_[dir](n, k, j, i) = val;
   }
 
-  AthenaArray<Real> const& GetFluidMassFlux(int dir) const {
+  AthenaArray<Real> const &GetFluidMassFlux(int dir) const {
     return mass_flux_[dir];
   }
 
-  // called in tasklist UpdateAllConserved 
+  // called in tasklist UpdateAllConserved
   void UpdateSedimentationVelocityFromConserved();
 
  protected:
@@ -67,7 +67,7 @@ class Microphysics {
 
   AthenaArray<Real> vsed_, vsedf_[3];
 
-  //AthenaArray<Real> hydro_;
+  // AthenaArray<Real> hydro_;
 
   std::vector<MicrophysicalSchemePtr> systems_;
 

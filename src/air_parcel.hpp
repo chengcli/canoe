@@ -81,6 +81,7 @@ class AirParcel {
     }
 
     data_ = other.data_;
+    mytype_ = other.mytype_;
     return *this;
   }
 

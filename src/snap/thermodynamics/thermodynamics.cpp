@@ -414,10 +414,7 @@ Real Thermodynamics::RelativeHumidity(MeshBlock* pmb, int n, int k, int j,
 
 void Thermodynamics::Extrapolate(AirParcel* qfrac, Real dzORdlnp, Method method,
                                  Real grav, Real userp) const {
-  if (qfrac->GetType() != AirParcel::Type::MoleFrac) {
-    throw RuntimeError("thermodynamics",
-                       "Extrapolate: qfrac->type != MoleFrac");
-  }
+  qfrac->ToMoleFraction();
 
   // equilibrate vapor with clouds
   for (int i = 1; i <= NVAPOR; ++i) {
