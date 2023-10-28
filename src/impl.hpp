@@ -12,6 +12,8 @@
 #include <athena/mesh/mesh.hpp>
 
 class ParameterInput;
+
+class Inversion;
 class ParticleBase;
 
 class Decomposition;
