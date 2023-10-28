@@ -183,6 +183,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
   }
 
   // construct atmosphere from bottom up
+  air.ToMoleFraction();
   for (int k = ks; k <= ke; ++k)
     for (int j = js; j <= je; ++j) {
       air.SetZero();
@@ -197,7 +198,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
         Real rh = pthermo->RelativeHumidity(air, iNH3);
         air.w[iNH3] *= std::min(rh_max_nh3 / rh, 1.);
 
-        pimpl->DistributeToPrimitive(air, k, j, i);
+        AirParcelHelper::distribute_to_primitive(this, k, j, i, air);
 
         pthermo->Extrapolate(&air, -dlnp, Thermodynamics::Method::DryAdiabat);
 
@@ -209,7 +210,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
       pthermo->Extrapolate(&air, dlnp, Thermodynamics::Method::DryAdiabat);
       for (; i <= ie; ++i) {
         pthermo->Extrapolate(&air, -dlnp, Thermodynamics::Method::Isothermal);
-        pimpl->DistributeToPrimitive(air, k, j, i);
+        AirParcelHelper::distribute_to_primitive(this, k, j, i, air);
       }
     }
 
@@ -227,12 +228,13 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
         int ibegin = find_pressure_level_lesser(pmax, phydro->w, k, j, is, ie);
         int iend = find_pressure_level_lesser(pmin, phydro->w, k, j, is, ie);
 
-        pimpl->GatherFromPrimitive(&air, k, j, ibegin);
+        auto &&air = AirParcelHelper::gather_from_primitive(this, k, j, ibegin);
+        air.ToMoleFraction();
 
         for (int i = ibegin; i < iend; ++i) {
           pthermo->Extrapolate(&air, -dlnp, Thermodynamics::Method::DryAdiabat,
                                0., adlnTdlnP);
-          pimpl->DistributeToPrimitive(air, k, j, i + 1);
+          AirParcelHelper::distribute_to_primitive(this, k, j, i + 1, air);
         }
       }
   }
@@ -246,14 +248,15 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
         int ibegin = find_pressure_level_lesser(pmax, phydro->w, k, j, is, ie);
         int iend = find_pressure_level_lesser(pmin, phydro->w, k, j, is, ie);
 
-        pimpl->GatherFromPrimitive(&air, k, j, ibegin);
+        auto &&air = AirParcelHelper::gather_from_primitive(this, k, j, ibegin);
+        air.ToMoleFraction();
 
         for (int i = ibegin; i < iend; ++i) {
           pthermo->Extrapolate(&air, -dlnp, Thermodynamics::Method::DryAdiabat);
           air.w[iNH3] += adlnNH3dlnP * air.w[iNH3] * dlnp;
           auto rates = pthermo->TryEquilibriumTP_VaporCloud(air, iNH3);
           air.w[iNH3] += rates[0];
-          pimpl->DistributeToPrimitive(air, k, j, i + 1);
+          AirParcelHelper::distribute_to_primitive(this, k, j, i + 1, air);
         }
       }
   }

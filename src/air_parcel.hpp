@@ -4,6 +4,7 @@
 // C/C++
 #include <array>
 #include <iostream>
+#include <vector>
 
 // athena
 #include <athena/athena.hpp>  // Real
@@ -15,9 +16,7 @@
 //  \brief a collection of all physical data in a computational cell
 class AirParcel {
  public:
-  enum {
-    Size = NHYDRO + NCLOUD + NCHEMISTRY + NTRACER + NTURBULENCE + NSTATIC
-  };
+  enum { Size = NHYDRO + NCLOUD + NCHEMISTRY + NTRACER + NTURBULENCE };
 
   enum class Type { MassFrac = 0, MassConc = 1, MoleFrac = 2, MoleConc = 3 };
 
@@ -48,9 +47,6 @@ class AirParcel {
   //! turbulence data
   Real *const t;
 
-  //! static data
-  Real const *s;
-
   //! particle data
   Real const *d;
 
@@ -62,8 +58,7 @@ class AirParcel {
         q(c + NCLOUD),
         x(q + NCHEMISTRY),
         t(x + NTRACER),
-        s(t + NTURBULENCE),
-        d(s + NSTATIC) {
+        d(t + NTURBULENCE) {
     std::fill(data_.begin(), data_.end(), 0.0);
   }
 
@@ -76,8 +71,7 @@ class AirParcel {
         q(c + NCLOUD),
         x(q + NCHEMISTRY),
         t(x + NTRACER),
-        s(x + NTURBULENCE),
-        d(s + NSTATIC) {}
+        d(t + NTURBULENCE) {}
 
   // Assignment operator
   AirParcel &operator=(const AirParcel &other) {
@@ -87,6 +81,7 @@ class AirParcel {
     }
 
     data_ = other.data_;
+    mytype_ = other.mytype_;
     return *this;
   }
 
@@ -122,5 +117,53 @@ class AirParcel {
   void massFractionToMoleConcentration();
   void moleConcentrationToMassFraction();
 };
+
+using AirColumn = std::vector<AirParcel>;
+
+namespace AirParcelHelper {
+AirParcel gather_from_primitive(MeshBlock const *pmb, int k, int j, int i);
+
+inline AirColumn gather_from_primitive(MeshBlock const *pmb, int k, int j,
+                                       int il, int iu) {
+  AirColumn ac(iu - il + 1);
+  for (int i = il; i <= iu; ++i) {
+    ac[i - il] = gather_from_primitive(pmb, k, j, i);
+  }
+
+  return ac;
+}
+
+AirParcel gather_from_conserved(MeshBlock const *pmb, int k, int j, int i);
+
+inline AirColumn gather_from_conserved(MeshBlock const *pmb, int k, int j,
+                                       int il, int iu) {
+  AirColumn ac(iu - il + 1);
+  for (int i = il; i <= iu; ++i) {
+    ac[i - il] = gather_from_conserved(pmb, k, j, i);
+  }
+
+  return ac;
+}
+
+void distribute_to_primitive(MeshBlock *pmb, int k, int j, int i,
+                             AirParcel const &prim);
+
+inline void distribute_to_primitive(MeshBlock *pmb, int k, int j, int il,
+                                    int iu, AirColumn const &ac) {
+  for (int i = il; i <= iu; ++i) {
+    distribute_to_primitive(pmb, k, j, i, ac[i - il]);
+  }
+}
+
+void distribute_to_conserved(MeshBlock *pmb, int k, int j, int i,
+                             AirParcel const &cons);
+
+inline void distribute_to_conserved(MeshBlock *pmb, int k, int j, int il,
+                                    int iu, AirColumn const &ac) {
+  for (int i = il; i <= iu; ++i) {
+    distribute_to_conserved(pmb, k, j, i, ac[i - il]);
+  }
+}
+}  // namespace AirParcelHelper
 
 #endif  // SRC_AIR_PARCEL_HPP_

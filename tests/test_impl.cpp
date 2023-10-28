@@ -97,7 +97,6 @@ class TestImpl : public testing::Test {
 };
 
 TEST_F(TestImpl, GatherPrimitive) {
-  AirParcel var(AirParcel::Type::MoleFrac);
   auto pmb = pmesh->my_blocks(0);
   auto pimpl = pmb->pimpl;
   auto phydro = pmb->phydro;
@@ -105,8 +104,9 @@ TEST_F(TestImpl, GatherPrimitive) {
   auto ptracer = pimpl->ptracer;
 
   int ks = pmb->ks, js = pmb->js, is = pmb->is;
-  pimpl->GatherFromPrimitive(&var, ks, js, is);
-  pimpl->DistributeToPrimitive(var, ks, js, is);
+  auto &&air = AirParcelHelper::gather_from_primitive(pmb, ks, js, is);
+  air.ToMoleFraction();
+  AirParcelHelper::distribute_to_primitive(pmb, ks, js, is, air);
 
   EXPECT_DOUBLE_EQ(phydro->w(IDN, ks, js, is), 1.);
   EXPECT_DOUBLE_EQ(phydro->w(IPR, ks, js, is), 10.);
@@ -127,7 +127,6 @@ TEST_F(TestImpl, GatherPrimitive) {
 }
 
 TEST_F(TestImpl, GatherConserved) {
-  AirParcel var(AirParcel::Type::MassConc);
   auto pmb = pmesh->my_blocks(0);
   auto pimpl = pmb->pimpl;
   auto phydro = pmb->phydro;
@@ -135,8 +134,9 @@ TEST_F(TestImpl, GatherConserved) {
   auto ptracer = pimpl->ptracer;
 
   int ks = pmb->ks, js = pmb->js, is = pmb->is;
-  pimpl->GatherFromConserved(&var, ks, js, is);
-  pimpl->DistributeToConserved(var, ks, js, is);
+  auto &&air = AirParcelHelper::gather_from_conserved(pmb, ks, js, is);
+  air.ToMassConcentration();
+  AirParcelHelper::distribute_to_conserved(pmb, ks, js, is, air);
 
   EXPECT_NEAR(phydro->u(IDN, ks, js, is), 0.818181818181, 1e-10);
   EXPECT_NEAR(phydro->u(IEN, ks, js, is), 24.98002735832, 1e-8);

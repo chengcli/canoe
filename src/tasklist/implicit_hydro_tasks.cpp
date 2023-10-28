@@ -176,7 +176,6 @@ TaskStatus ImplicitHydroTasks::IntegrateHydro(MeshBlock *pmb, int stage) {
         pmb->pcoord->AddCoordTermsDivergence(wght_ssp, ph->flux, ph->w, pf->bcc,
                                              ph->u2);
       }
-
     }
     return TaskStatus::next;
   }
@@ -311,19 +310,17 @@ TaskStatus ImplicitHydroTasks::UpdateAllConserved(MeshBlock *pmb, int stage) {
 
   auto pmicro = pmb->pimpl->pmicro;
 
-  std::vector<AirParcel> air_column;
-
   for (int k = ks; k <= ke; k++)
     for (int j = js; j <= je; j++) {
-      pmb->pimpl->GatherFromConserved(air_column, k, j, is, ie);
+      auto &&ac = AirParcelHelper::gather_from_conserved(pmb, k, j, is, ie);
 
-      //pmicro->AddFrictionalHeating(air_column);
+      // pmicro->AddFrictionalHeating(air_column);
 
-      pmicro->EvolveSystems(air_column, pmb->pmy_mesh->time, pmb->pmy_mesh->dt);
+      pmicro->EvolveSystems(ac, pmb->pmy_mesh->time, pmb->pmy_mesh->dt);
 
-      pthermo->SaturationAdjustment(air_column);
+      pthermo->SaturationAdjustment(ac);
 
-      pmb->pimpl->DistributeToConserved(air_column, k, j, is, ie);
+      AirParcelHelper::distribute_to_conserved(pmb, k, j, is, ie, ac);
     }
 
   return TaskStatus::success;

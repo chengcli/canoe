@@ -1,0 +1,16 @@
+diff --git a/SCTL/include/sctl/stacktrace.h b/SCTL/include/sctl/stacktrace.h
+index 1abe250..7aec920 100644
+--- a/SCTL/include/sctl/stacktrace.h
++++ b/SCTL/include/sctl/stacktrace.h
+@@ -39,9 +39,9 @@ inline void print_stacktrace(FILE* out = stderr, int skip = 1) {
+     // Get command
+     char cmd[10240+256+43];
+ #ifdef __APPLE__
+-    sprintf(cmd, "atos -o %s %p 2> /dev/null", fname, addrlist[i]); // on mac
++    snprintf(cmd, sizeof(cmd), "atos -o %s %p 2> /dev/null", fname, addrlist[i]); // on mac
+ #elif __linux__
+-    sprintf(cmd, "addr2line -f -C -i -e  %s  %p 2> /dev/null", fname, addrlist[i]);
++    snprintf(cmd, sizeof(cmd), "addr2line -f -C -i -e  %s  %p 2> /dev/null", fname, addrlist[i]);
+ #endif
+ 
+     // Execute command

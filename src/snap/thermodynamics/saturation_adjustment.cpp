@@ -17,8 +17,7 @@
 // snap
 #include "thermodynamics.hpp"
 
-void Thermodynamics::SaturationAdjustment(
-    std::vector<AirParcel>& air_column) const {
+void Thermodynamics::SaturationAdjustment(AirColumn& air_column) const {
   // return if there's no vapor
   if (NVAPOR == 0) return;
 

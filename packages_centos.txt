@@ -1,0 +1,10 @@
+clang-tools-extra
+cmake
+nco
+netcdf-devel
+boost-devel
+eigen3-devel
+glog-devel
+fftw-devel
+blas-devel
+lapack-devel

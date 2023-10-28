@@ -233,7 +233,7 @@ class Thermodynamics {
   void EquilibrateTP(AirParcel *qfrac) const;
 
   //! Adjust to the maximum saturation state conserving internal energy
-  void SaturationAdjustment(std::vector<AirParcel> &air_column) const;
+  void SaturationAdjustment(AirColumn &air_column) const;
 
   //! Inverse of the mean molecular weight (with cloud)
   Real RovRd(AirParcel const &qfrac) const;

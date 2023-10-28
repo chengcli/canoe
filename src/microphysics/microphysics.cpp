@@ -46,8 +46,8 @@ Microphysics::Microphysics(MeshBlock *pmb, ParameterInput *pin)
   vsed_.NewAthenaArray(NCLOUD, ncells3, ncells2, ncells1);
   vsed_.ZeroClear();
 
-  //hydro_.NewAthenaArray(NCLOUD_HYDRO, NCLOUD, ncells3, ncells2, ncells1);
-  //hydro_.ZeroClear();
+  // hydro_.NewAthenaArray(NCLOUD_HYDRO, NCLOUD, ncells3, ncells2, ncells1);
+  // hydro_.ZeroClear();
 
   // load all microphysics systems
   std::string key = "microphysics_config";
@@ -90,11 +90,10 @@ Microphysics::~Microphysics() {
   app->Log("Destroy Microphysics");
 }
 
-//void Microphysics::AddFrictionalHeating(
-//    std::vector<AirParcel> &air_column) const {}
+// void Microphysics::AddFrictionalHeating(
+//     std::vector<AirParcel> &air_column) const {}
 
-void Microphysics::EvolveSystems(std::vector<AirParcel> &air_column, Real time,
-                                 Real dt) {
+void Microphysics::EvolveSystems(AirColumn &air_column, Real time, Real dt) {
   for (auto &system : systems_)
     for (auto &air : air_column) {
       system->AssembleReactionMatrix(air, time);

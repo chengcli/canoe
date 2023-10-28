@@ -23,6 +23,10 @@ set_if_empty(NTURBULENCE 0)
 
 set_if_empty(NSTATIC 0)
 
+set_if_empty(NINT_PARTICLE_DATA 0)
+
+set_if_empty(NREAL_PARTICLE_DATA 0)
+
 # set_if_empty(TASKLIST ImplicitHydroTasks)
 
 # set_if_empty(RSOLVER lmars)
@@ -86,6 +90,13 @@ if(NOT DISORT OR NOT DEFINED DISORT)
   set(DISORT_OPTION "NOT_RT_DISORT")
 else()
   set(DISORT_OPTION "RT_DISORT")
+endif()
+
+if(NOT PVFMM OR NOT DEFINED PVFMM)
+  set(PVFMM_OPTION "DISABLE_PVFMM")
+else()
+  set(PVFMM_OPTION "ENABLE_PVFMM")
+  option(MPI "Enable MPI" ON)
 endif()
 
 if(NOT MPI OR NOT DEFINED MPI)

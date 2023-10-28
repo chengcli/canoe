@@ -42,3 +42,8 @@ git config --global credential.helper 'cache --timeout=86400'
 ```
 git push origin --delete <branch>
 ```
+- configure your git signature
+```
+git config --global user.name "stormy/cli"
+git config --global user.email "chengcli@umich.edu"
+```

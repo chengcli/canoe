@@ -309,7 +309,6 @@ void ProfileInversion::UpdateProfiles(Hydro *phydro, Real **XpSample, int k,
 
 void ProfileInversion::ConvectiveAdjustment(Hydro *phydro, int k,
                                             int ju) const {
-  std::stringstream msg;
   Application::Logger app("inversion");
   app->Log("doing convective adjustment");
 
@@ -318,17 +317,19 @@ void ProfileInversion::ConvectiveAdjustment(Hydro *phydro, int k,
   auto pthermo = Thermodynamics::GetInstance();
   auto pmb = pmy_block_;
 
-  AirParcel var(AirParcel::Type::MoleFrac);
+  auto &&ac = AirParcelHelper::gather_from_primitive(pmb, k, ju, is, ie - 1);
+
   for (int i = is + 1; i <= ie; ++i) {
-    pmy_block_->pimpl->GatherFromPrimitive(&var, k, ju, i - 1);
+    auto &air = ac[i - is - 1];
+    air.ToMoleFraction();
+
     Real dlnp = log(phydro->w(IPR, k, ju, i) / phydro->w(IPR, k, ju, i - 1));
+    pthermo->Extrapolate(&air, dlnp, Thermodynamics::Method::NeutralStability);
 
-    pthermo->Extrapolate(&var, dlnp, Thermodynamics::Method::NeutralStability);
-
-    var.ToMassFraction();
+    air.ToMassFraction();
 
     // stability
-    phydro->w(IDN, k, ju, i) = std::min(var.w[IDN], phydro->w(IDN, k, ju, i));
+    phydro->w(IDN, k, ju, i) = std::min(air.w[IDN], phydro->w(IDN, k, ju, i));
 
     // saturation
     for (int n = 1; n <= NVAPOR; ++n) {

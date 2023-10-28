@@ -193,7 +193,7 @@ TEST_F(TestMoistAdiabat, moist_static_energy) {
 
   // first grid
   int ks = pmb->ks, js = pmb->js, is = pmb->is;
-  pmb->pimpl->DistributeToPrimitive(air, ks, js, is);
+  AirParcelHelper::distribute_to_primitive(pmb, ks, js, is, air);
 
   Real mse1 = pthermo->MoistStaticEnergy(pmb, 0., ks, js, is);
   EXPECT_NEAR(mse1, 272872.16946, 1.E-4);
@@ -201,7 +201,7 @@ TEST_F(TestMoistAdiabat, moist_static_energy) {
   // second grid
   pthermo->Extrapolate(&air, dz, Thermodynamics::Method::ReversibleAdiabat,
                        grav);
-  pmb->pimpl->DistributeToPrimitive(air, ks, js, is + 1);
+  AirParcelHelper::distribute_to_primitive(pmb, ks, js, is + 1, air);
 
   Real mse2 = pthermo->MoistStaticEnergy(pmb, grav * dz, ks, js, is + 1);
   EXPECT_NEAR(mse2, 272872.16971, 1.E-4);
@@ -226,7 +226,7 @@ TEST_F(TestMoistAdiabat, equivalent_potential_temp) {
 
   // first grid
   int ks = pmb->ks, js = pmb->js, is = pmb->is;
-  pmb->pimpl->DistributeToPrimitive(air, ks, js, is);
+  AirParcelHelper::distribute_to_primitive(pmb, ks, js, is, air);
 
   Real theta_e1 = pthermo->EquivalentPotentialTemp(pmb, Ps, iH2O, ks, js, is);
   EXPECT_NEAR(theta_e1, 320.54669065133, 1.E-8);
@@ -234,7 +234,7 @@ TEST_F(TestMoistAdiabat, equivalent_potential_temp) {
   // second grid
   pthermo->Extrapolate(&air, dz, Thermodynamics::Method::ReversibleAdiabat,
                        grav);
-  pmb->pimpl->DistributeToPrimitive(air, ks, js, is + 1);
+  AirParcelHelper::distribute_to_primitive(pmb, ks, js, is + 1, air);
 
   Real theta_e2 =
       pthermo->EquivalentPotentialTemp(pmb, Ps, iH2O, ks, js, is + 1);
@@ -248,7 +248,7 @@ TEST_F(TestMoistAdiabat, saturation_adjustment) {
   Real vy = 200.;
   Real vz = 300.;
 
-  std::vector<AirParcel> air_column(1);
+  AirColumn air_column(1);
 
   auto& air = air_column[0];
   air.SetType(AirParcel::Type::MassFrac);
@@ -267,8 +267,8 @@ TEST_F(TestMoistAdiabat, saturation_adjustment) {
   int ks = pmb->ks, js = pmb->js, is = pmb->is;
   pthermo->SaturationAdjustment(air_column);
 
-  pmb->pimpl->DistributeToPrimitive(air, ks, js, is);
-  pmb->pimpl->DistributeToConserved(air, ks, js, is);
+  AirParcelHelper::distribute_to_primitive(pmb, ks, js, is, air);
+  AirParcelHelper::distribute_to_conserved(pmb, ks, js, is, air);
 
   air.ToMassFraction();
   EXPECT_NEAR(air.w[IDN], 1.187901949988, 1e-8);
@@ -288,14 +288,14 @@ TEST_F(TestMoistAdiabat, saturation_adjustment) {
       0.5 * drho * (vx * vx + vy * vy + vz * vz) + drho * cv * temp;
 
   pmb->pimpl->pmicro->u(0, ks, js, is) -= drho;
-  pmb->pimpl->GatherFromConserved(&air, ks, js, is);
-  pmb->pimpl->DistributeToPrimitive(air, ks, js, is);
+  air = AirParcelHelper::gather_from_conserved(pmb, ks, js, is);
+  AirParcelHelper::distribute_to_primitive(pmb, ks, js, is, air);
 
   Real theta_e1 = pthermo->EquivalentPotentialTemp(pmb, Ps, iH2O, ks, js, is);
 
   pthermo->SaturationAdjustment(air_column);
 
-  pmb->pimpl->DistributeToPrimitive(air, ks, js, is);
+  AirParcelHelper::distribute_to_primitive(pmb, ks, js, is, air);
   Real theta_e2 = pthermo->EquivalentPotentialTemp(pmb, Ps, iH2O, ks, js, is);
 
   EXPECT_NEAR(theta_e1, 343.73446046, 1e-8);

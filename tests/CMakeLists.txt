@@ -54,20 +54,25 @@ macro(add_test_case test)
 
   target_include_directories(${name}.${buildl}
     PRIVATE
+    $<$<BOOL:${PVFMM}>:${PVFMM_SOURCE_DIR}/SCTL/include>
     ${CMAKE_BINARY_DIR}
     ${CANOE_INCLUDE_DIR}
     ${EIGEN3_INCLUDE_DIR}
     ${MPI_CXX_INCLUDE_PATH}
     ${NETCDF_INCLUDES}
     ${PNETCDF_INCLUDE_DIR}
+    ${OpenMP_CXX_INCLUDE_DIR}
+    ${FFTW_INCLUDE_DIRS}
     )
 
   target_link_libraries(${name}.${buildl} gtest_main
+    $<$<BOOL:${PVFMM}>:pvfmmStatic>
     ${CANOE_LIBRARY_${buildu}}
     ${NETCDF_LIBRARIES}
     ${PNETCDF_LIBRARY}
-    ${MPI_CXX_LIBRARIES}
+    #${MPI_CXX_LIBRARIES}
     ${GLOG_LIBRARIES}
+    ${OpenMP_libomp_LIBRARY}
     )
 
   add_test(NAME ${name}.${buildl} COMMAND ${name}.${buildl})
@@ -82,6 +87,10 @@ add_test_case(test_glog.cpp)
 add_test_giants(test_absorber.cpp)
 add_test_giants(test_yaml_read.cpp)
 
+if (PVFMM_OPTION STREQUAL "ENABLE_PVFMM")
+  add_test_case(test_nbody.cpp)
+endif()
+
 if (${NVAPOR} EQUAL 0)
   add_test_case(test_mesh.cpp)
 endif()
@@ -93,7 +102,7 @@ endif()
 if (${NVAPOR} EQUAL 2)
   if (${NCLOUD} EQUAL 4)
     add_test_giants(test_impl.cpp)
-    add_test_giants(test_variable.cpp)
+    add_test_giants(test_air_parcel.cpp)
     add_test_giants(test_radiation.cpp)
     add_test_giants(test_microwave_opacity.cpp)
     add_test_giants(test_thermodynamics.cpp)
