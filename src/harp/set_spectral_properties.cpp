@@ -84,7 +84,7 @@ void RadiationBand::SetSpectralProperties(int k, int j, int il, int iu) {
 #ifdef HYDROSTATIC
       auto phydro = pmb->phydro;
       Real grav = -phydro->hsrc.GetG1();
-      Real H0 = pmb->pimpl->GetPressureScaleHeight();
+      Real H0 = pmb->pcoord->GetPressureScaleHeight();
       // TODO(cli) check this
       // \delta z = \delt Z * P/(\rho g H)
       tau_(m, i) *= pmb->pcoord->dx1f(i) * phydro->w(IPR, k, j, i) /

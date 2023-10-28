@@ -19,6 +19,7 @@
 
 // canoe
 #include <configure.hpp>
+#include <dirty.hpp>
 #include <impl.hpp>
 #include <index_map.hpp>
 
@@ -91,7 +92,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
   // mesh limits
   Real x1min = pmy_mesh->mesh_size.x1min;
   Real x1max = pmy_mesh->mesh_size.x1max;
-  Real H0 = pimpl->GetPressureScaleHeight();
+  Real H0 = pcoord->GetPressureScaleHeight();
 
   // request temperature and pressure
   app->Log("request T", T0);
