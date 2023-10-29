@@ -13,6 +13,15 @@
 
 class ParameterInput;
 
+class Inversion;
+class ParticleBase;
+
+class MeshOutputGroup;
+class FITSOutputGroup;
+
+class Inversion;
+class ParticleBase;
+
 class Decomposition;
 class ImplicitSolver;
 class Microphysics;
@@ -28,8 +37,7 @@ class MeshOutputGroup;
 class FITSOutputGroup;
 
 //! \class MeshBlock::Impl
-//  \brief opaque pointer class implements additional functionality of Athena
-//  MeshBlock
+//  \brief opaque pointer class implements all physics on a MeshBlock 
 class MeshBlock::Impl {
  public:
   /// public data
@@ -66,12 +74,12 @@ class MeshBlock::Impl {
 
  protected:
   std::map<std::string, void *> boundary_exchanger_;
+
   std::vector<std::weak_ptr<MeshOutputGroup>> mesh_outputs_;
   std::vector<std::weak_ptr<FITSOutputGroup>> fits_outputs_;
 
  private:
   MeshBlock const *pmy_block_;
-  int my_stage_;
 };
 
 #endif  // SRC_IMPL_HPP_

@@ -163,9 +163,9 @@ void ProfileInversion::UpdateHydro(Hydro *phydro, ParameterInput *pin) const {
 
   for (auto m : idx_) {
     if (m == IDN) {  // temperature
-      snprintf(buf, sizeof(buf), "%s.tema.K", name_.c_str());
+      snprintf(buf, sizeof(buf), "%s.tema.K", GetName().c_str());
     } else {  // vapors
-      snprintf(buf, sizeof(buf), "%s.qvapor%da.gkg", name_.c_str(), m);
+      snprintf(buf, sizeof(buf), "%s.qvapor%da.gkg", GetName().c_str(), m);
     }
     std::string str = pin->GetString("problem", buf);
     std::vector<Real> qa = Vectorize<Real>(str.c_str(), " ,");

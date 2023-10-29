@@ -256,7 +256,7 @@ class Thermodynamics {
   //! Temperature
   //!$T = p/(\rho R) = p/(\rho \frac{R}{R_d} Rd)
   //! \return $T$
-  Real GetTemp(MeshBlock *pmb, int k, int j, int i) const {
+  Real GetTemp(MeshBlock const *pmb, int k, int j, int i) const {
     auto &w = pmb->phydro->w;
     return w(IPR, k, j, i) / (w(IDN, k, j, i) * Rd_ * RovRd(pmb, k, j, i));
   }
@@ -264,13 +264,13 @@ class Thermodynamics {
   //! Mean molecular weight
   //! $mu = \mu_d (1 + \sum_i q_i (\epsilon_i - 1))$
   //! \return $mu$
-  Real GetMu(MeshBlock *pmb, int k, int j, int i) const;
+  Real GetMu(MeshBlock const *pmb, int k, int j, int i) const;
 
   //! Inverse of the mean molecular weight (no cloud)
   //! $ \frac{R}{R_d} = \frac{\mu_d}{\mu}$
   //! \return $1/\mu$
   //! Eq.16 in Li2019
-  Real RovRd(MeshBlock *pmb, int k, int j, int i) const {
+  Real RovRd(MeshBlock const *pmb, int k, int j, int i) const {
     Real feps = 1.;
     auto &w = pmb->phydro->w;
 #pragma omp simd reduction(+ : feps)
@@ -283,42 +283,42 @@ class Thermodynamics {
   //! c_v = c_{v,d}*(1 + \sum_i (q_i*(\hat{c}_{v,i} - 1.)))
   //!   = \gamma_d/(\gamma_d - 1.)*R_d*T*(1 + \sum_i (q_i*(\hat{c}_{v,i} - 1.)))
   //! \return $c_v$
-  Real GetCvMass(MeshBlock *pmb, int k, int j, int i) const;
+  Real GetCvMass(MeshBlock const *pmb, int k, int j, int i) const;
 
   //! Specific heat capacity [J/(kg K)] of the air parcel at constant pressure
   //! c_p = c_{p,d}*(1 + \sum_i (q_i*(\hat{c}_{p,i} - 1.)))
   //!   = \gamma_d/(\gamma_d - 1.)*R_d*T*(1 + \sum_i (q_i*(\hat{c}_{p,i} - 1.)))
   //! \return $c_p$
-  Real GetCpMass(MeshBlock *pmb, int k, int j, int i) const;
+  Real GetCpMass(MeshBlock const *pmb, int k, int j, int i) const;
 
   //! Adiabatic index
   //!$\chi = \frac{R}{c_p}$
   //! \return $\chi$
-  Real GetChi(MeshBlock *pmb, int k, int j, int i) const;
+  Real GetChi(MeshBlock const *pmb, int k, int j, int i) const;
 
   //! Polytropic index
   //!$\gamma = \frac{c_p}{c_v}$
   //! \return $\gamma$
-  Real GetGamma(MeshBlock *pmb, int k, int j, int i) const;
+  Real GetGamma(MeshBlock const *pmb, int k, int j, int i) const;
 
   //! Pressure from conserved variables
   //! \return $p$
-  Real GetPres(MeshBlock *pmb, int k, int j, int i) const;
+  Real GetPres(MeshBlock const *pmb, int k, int j, int i) const;
 
   //! Enthalpy
   //!$h = c_{p,d}*T*(1 + \sum_i (q_i*(\hat{c}_{p,i} - 1.)))$
   //!$  = \gamma_d/(\gamma_d - 1.)*R_d*T*(1 + \sum_i (q_i*(\hat{c}_{pi} - 1.)))$
-  Real GetEnthalpyMass(MeshBlock *pmb, int k, int j, int i) const;
+  Real GetEnthalpyMass(MeshBlock const *pmb, int k, int j, int i) const;
 
   //! Moist static energy
   //!$h_s = c_{pd}T + gz + L_vq_v + L_s\sum_i q_i$
   //! \return $h_s$
-  Real MoistStaticEnergy(MeshBlock *pmb, Real gz, int k, int j, int i) const;
+  Real MoistStaticEnergy(MeshBlock const *pmb, Real gz, int k, int j, int i) const;
 
   //! Relative humidity
   //! $H_i = \frac{e_i}{e_i^s}$
   //! \return $H$
-  Real RelativeHumidity(MeshBlock *pmb, int n, int k, int j, int i) const;
+  Real RelativeHumidity(MeshBlock const *pmb, int n, int k, int j, int i) const;
 
   Real RelativeHumidity(AirParcel const &qfrac, int n) const {
     auto rates = TryEquilibriumTP_VaporCloud(qfrac, n, 0., true);

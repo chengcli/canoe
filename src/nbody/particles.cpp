@@ -20,26 +20,20 @@
 
 // constructor, initializes data structure and parameters
 ParticleBase::ParticleBase(MeshBlock *pmb, std::string name)
-    : NamedGroup(name), pmy_block_(pmb) {
+    : NamedGroup(name), linked_flag_(false), pmy_block_(pmb) {
   Application::Logger app("n-body");
   app->Log("Initialize ParticleBase");
 
   int nc1 = pmb->ncells1, nc2 = pmb->ncells2, nc3 = pmb->ncells3;
 
+  weight.NewAthenaArray(nc3, nc2, nc1);
+  charge.NewAthenaArray(nc3, nc2, nc1);
   pd_in_cell_.NewAthenaArray(nc3, nc2, nc1);
 }
 
 ParticleBase::~ParticleBase() {
   Application::Logger app("n-body");
   app->Log("Destroy ParticleBase");
-}
-
-// helper functions
-ParticlePtr find_particle(AllParticles const &pts, std::string name) {
-  for (auto &pt : pts) {
-    if (pt->GetName() == name) return pt;
-  }
-  return nullptr;
 }
 
 AllParticles ParticlesFactory::CreateAllParticles(MeshBlock *pmb,
@@ -61,3 +55,15 @@ AllParticles ParticlesFactory::CreateAllParticles(MeshBlock *pmb,
 
   return all_particles;
 }
+
+namespace ParticlesHelper {
+
+ParticlePtr find_particle(AllParticles const &pts, std::string name) {
+  for (auto &pt : pts) {
+    if (pt->GetName() == name) return pt;
+  }
+  return nullptr;
+}
+
+} // namespace ParticlesHelper
+
