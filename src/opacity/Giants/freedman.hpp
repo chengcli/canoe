@@ -13,6 +13,8 @@ class ParameterInput;
 // Richard S. Freedman 2011. APJS
 class FreedmanMean : public Absorber {
  public:
+  static const Real c1, c2, c3, c4, c5, c6, c7;
+
   FreedmanMean(std::vector<std::string> const& species, ParameterMap params)
       : Absorber("FreedmanMean", species, params) {}
   virtual ~FreedmanMean() {}
@@ -21,6 +23,8 @@ class FreedmanMean : public Absorber {
 
 class FreedmanMean2 : public Absorber {
  public:
+  static const Real c1, c2, c3, c4, c5, c6, c7, c13;
+
   FreedmanMean2(std::vector<std::string> const& species, ParameterMap params)
       : Absorber("FreedmanMean", species, params) {}
   virtual ~FreedmanMean2() {}

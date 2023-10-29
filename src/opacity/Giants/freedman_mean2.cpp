@@ -22,14 +22,21 @@
 
 // coefficient from Richard S. Freedman 2014. APJS
 
-Real c1 = 10.602, c2 = 2.882, c3 = 6.09e-15, c4 = 2.954, c5 = -2.526,
-     c6 = 0.843, c7 = -5.490;
-Real c8, c9, c10, c11, c12, c13 = 0.8321;
+const Real FreedmanMean2::c1 = 10.602;
+const Real FreedmanMean2::c2 = 2.882;
+const Real FreedmanMean2::c3 = 6.09e-15;
+const Real FreedmanMean2::c4 = 2.954;
+const Real FreedmanMean2::c5 = -2.526;
+const Real FreedmanMean2::c6 = 0.843;
+const Real FreedmanMean2::c7 = -5.490;
+const Real FreedmanMean2::c13 = 0.8321;
 
 Real FreedmanMean2::GetAttenuation(Real wave1, Real wave2,
                                    AirParcel const& var) const {
   Real p = var.w[IPR];
   Real T = var.w[IDN];
+  Real c8, c9, c10, c11, c12;
+
   if (T < 800.) {
     c8 = -14.051;
     c9 = 3.055;
