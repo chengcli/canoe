@@ -117,7 +117,7 @@ else()
   set(GLOG_LIBRARIES glog::glog)
 endif()
 
-option(PYTHON_BINDINGS "Build Python Bindings" ON)
+option(PYTHON_BINDINGS "Build Python Bindings" OFF)
 if(PYTHON_BINDINGS)
   set(PYTHON_BINDINGS_OPTION "PYTHON_BINDINGS")
 else()
