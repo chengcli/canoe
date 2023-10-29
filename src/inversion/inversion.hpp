@@ -6,14 +6,15 @@
 #include <string>
 #include <vector>
 
-// canone
-#include <configure.hpp>
-
 // Eigen
 #include <Eigen/Core>
 
 // athena
 #include <athena/athena.hpp>
+
+// canoe
+#include <configure.hpp>
+#include <virtual_groups.hpp>
 
 // inversion
 #include "mcmc.hpp"
@@ -25,7 +26,9 @@ class Hydro;
 class Thermodynamics;
 class Radiation;
 
-class Inversion {
+class Inversion : public NamedGroup,
+                  //public RestartGroup,
+                  public FITSOutputGroup {
  public:
   /// Constructor and destructor
   Inversion(MeshBlock *pmb, ParameterInput *pin, std::string name);
@@ -48,36 +51,28 @@ class Inversion {
 
   // MCMC functions
   void InitializeChain(int nstep, int nwalker, int ndim, int nvalue);
-
   void MakeMCMCOutputs(std::string fname);
-
   void MCMCInit(Radiation *prad, Hydro *phydro);
-
   void MCMCMove(Radiation *prad, Hydro *phydro);
-
   void MCMCSave(Hydro *phydro);
-
   void ResetChain();
 
   // access functions
   int GetDims() const { return recs_.ndim; }
-
   int GetValues() const { return recs_.nvalue; }
-
   int GetWalkers() const { return recs_.nwalker; }
-
   int GetSteps() const { return recs_.nstep; }
-
   void SetLogProbability(int k, Real lnp) { recs_.lnp[recs_.cur][k] = lnp; }
-
   Real GetLogProbability(int k) const { return recs_.lnp[recs_.cur][k]; }
-
-  std::string GetName() const { return name_; }
 
   void setX2Indices(int j) {
     jl_ = j;
     ju_ = jl_ + getX2Span() - 1;
   }
+
+  /// MeshOutputGroup functions
+  bool ShouldFITSOutput(std::string variable_name) const override { return true;}
+  void LoadFITSOutputData(OutputType *pod, int *num_vars) const override {}
 
  protected:
   // name of the inversion
@@ -87,8 +82,6 @@ class Inversion {
   Eigen::VectorXd target_;
   Eigen::MatrixXd icov_;
 
-  MeshBlock *pmy_block_;
-
   // mcmc initial positions
   Real **init_pos_;
 
@@ -97,6 +90,9 @@ class Inversion {
 
   // j-index range
   int jl_, ju_;
+
+  //! pointer to parent MeshBlock
+  MeshBlock const *pmy_block_;
 
  private:
   // mcmc variables

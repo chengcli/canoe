@@ -20,6 +20,9 @@
 // outputs
 #include "outputs/output_utils.hpp"
 
+// n-body
+#include "nbody/particle_data.hpp"
+
 void mesh_destroy(ParameterInput *&pinput, Mesh *&pmesh, int mbcnt) {
   clock_t tstop = clock();
 
@@ -69,4 +72,5 @@ void mesh_destroy(ParameterInput *&pinput, Mesh *&pmesh, int mbcnt) {
   Thermodynamics::Destroy();
   IndexMap::Destroy();
   MetadataTable::Destroy();
+  free_mpi_particle_data();
 }

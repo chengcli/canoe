@@ -54,21 +54,18 @@ template <>
 struct Communicator<ParticleData> {
   using container_t = std::vector<ParticleData>;
 
-  constexpr static int uid = 15;
   constexpr static int max_neighbors = 56;
+  static std::string name;
 
 #ifdef MPI_PARALLEL
   static MPI_Datatype mpi_type;
   static MPI_Comm mpi_comm;
-#endif
+#endif  // MPI_PARALLEL
 };
 
 // helper functions
 bool check_in_meshblock(ParticleData const& pd, MeshBlock const* pmb);
-
-#ifdef MPI_PARALLEL
 void commit_mpi_particle_data();
 void free_mpi_particle_data();
-#endif  // MPI_PARALLEL
 
 #endif  // SRC_NBODY_PARTICLE_DATA_HPP_
