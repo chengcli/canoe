@@ -296,7 +296,7 @@ TaskStatus ImplicitHydroTasks::ImplicitCorrection(MeshBlock *pmb, int stage) {
 
 TaskStatus ImplicitHydroTasks::UpdateAllConserved(MeshBlock *pmb, int stage) {
   if (stage <= nstages) {
-    pmb->pimpl->pmicro->UpdateSedimentationVelocityFromConserved();
+    pmb->pimpl->pmicro->SetSedimentationVelocityFromConserved(pmb->phydro);
   } else {
     return TaskStatus::fail;
   }

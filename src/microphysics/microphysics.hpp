@@ -11,10 +11,13 @@
 
 // canoe
 #include <air_parcel.hpp>
+#include <schedulers.hpp>
+#include <virtual_groups.hpp>
 
 class MeshBlock;
 class ParameterInput;
 class MicrophysicalSchemeBase;
+class Hydro;
 
 class Microphysics {
  public:
@@ -23,7 +26,7 @@ class Microphysics {
   static const std::string input_key;
 
   // access members
-  AthenaArray<Real> w, u, vsedf[3];
+  AthenaArray<Real> w, u, vsedf[3], mass_flux[3];
 
   /// constructor and destructor
   Microphysics(MeshBlock *pmb, ParameterInput *pin);
@@ -37,20 +40,10 @@ class Microphysics {
   // void AddFrictionalHeating(std::vector<AirParcel> &air_column) const;
   void EvolveSystems(AirColumn &air_column, Real time, Real dt);
 
-  /// outbound functions
-  // 1. used by Riemann Solver, e.g. lmars.cpp
-  void SetFluidMassFlux(int dir, int n, int k, int j, int i, Real val) {
-    mass_flux_[dir](n, k, j, i) = val;
-  }
-  // 2. used by tracer, e.g. calculate_scalar_fluxes.cpp
-  AthenaArray<Real> const &GetFluidMassFlux(int dir) const {
-    return mass_flux_[dir];
-  }
-  // 3. used by tasklist UpdateAllConserved
-  void UpdateSedimentationVelocityFromConserved();
+  /// inbound functions
+  void SetSedimentationVelocityFromConserved(Hydro const *phydro);
 
  protected:
-  AthenaArray<Real> mass_flux_[3];
   AthenaArray<Real> vsed_[3];
   std::vector<std::shared_ptr<MicrophysicalSchemeBase>> systems_;
 
@@ -59,5 +52,21 @@ class Microphysics {
 };
 
 using MicrophysicsPtr = std::shared_ptr<Microphysics>;
+
+namespace AllTasks {
+
+// hydro tasks should be move into hydro in the future
+bool hydro_implicit_correction(MeshBlock *pmb, IntegrationStage stage);
+bool hydro_calculate_flux(MeshBlock *pmb, IntegrationStage stage);
+
+bool microphysics_set_sedimentaton_velocity(MeshBlock *pmb,
+                                            IntegrationStage stage);
+bool microphysics_set_mass_flux(MeshBlock *pmb, IntegrationStage stage);
+bool microphysics_evolve_system(MeshBlock *pmb, IntegrationStage stage);
+
+// scalar tasks should be move into scalars in the future
+bool scalar_calculate_flux(MeshBlock *pmb, IntegrationStage stage);
+
+}  // namespace AllTasks
 
 #endif  // SRC_MICROPHYSICS_MICROPHYSICS_HPP_

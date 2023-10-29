@@ -101,9 +101,9 @@ void Hydro::RiemannSolver(int const k, int const j, int const il, int const iu,
     for (int n = 0; n < NCLOUD; ++n) {
       Real vsed = ubar + pmicro->vsedf[dir](n, k, j, i);
       if (vsed > 0.) {
-        pmicro->SetFluidMassFlux(dir, n, k, j, i, vsed * wli[IDN] * rdl);
+        pmicro->mass_flux[dir](n, k, j, i) = vsed * wli[IDN] * rdl;
       } else {
-        pmicro->SetFluidMassFlux(dir, n, k, j, i, vsed * wri[IDN] * rdr);
+        pmicro->mass_flux[dir](n, k, j, i) = vsed * wri[IDN] * rdr;
       }
     }
   }

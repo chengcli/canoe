@@ -33,6 +33,7 @@ class TurbulenceModel;
 class Inversion;
 class ParticleBase;
 
+class Scheduler;
 class MeshOutputGroup;
 class FITSOutputGroup;
 
@@ -55,6 +56,9 @@ class MeshBlock::Impl {
 
   std::vector<std::shared_ptr<Inversion>> all_fits;
   std::vector<std::shared_ptr<ParticleBase>> all_particles;
+
+  // scheduler
+  std::shared_ptr<Scheduler> scheduler;
 
   /// constructor and destructor
   Impl(MeshBlock *pmb, ParameterInput *pin);

@@ -68,6 +68,9 @@ MeshBlock::Impl::Impl(MeshBlock *pmb, ParameterInput *pin) : pmy_block_(pmb) {
 
   // particle queue
   all_particles = ParticlesFactory::Create(pmb, pin);
+
+  // scheduler
+  scheduler = SchedulerFactory::Create(pmb, pin);
 }
 
 MeshBlock::Impl::~Impl() {}

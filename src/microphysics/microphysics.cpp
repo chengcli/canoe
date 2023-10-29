@@ -15,6 +15,7 @@
 // canoe
 #include <air_parcel.hpp>
 #include <configure.hpp>
+#include <impl.hpp>
 
 // microphysics
 #include "microphysical_schemes.hpp"
@@ -41,11 +42,13 @@ Microphysics::Microphysics(MeshBlock *pmb, ParameterInput *pin)
   vsedf[1].NewAthenaArray(NCLOUD, ncells3, ncells2 + 1, ncells1);
   vsedf[2].NewAthenaArray(NCLOUD, ncells3 + 1, ncells2, ncells1);
 
-  mass_flux_[0].NewAthenaArray(ncells3, ncells2, ncells1 + 1);
-  mass_flux_[1].NewAthenaArray(ncells3, ncells2 + 1, ncells1);
-  mass_flux_[2].NewAthenaArray(ncells3 + 1, ncells2, ncells1);
+  // storage for cloud mass flux at cell boundary
+  vsedf[0].NewAthenaArray(NCLOUD, ncells3, ncells2, ncells1 + 1);
+  mass_flux[0].NewAthenaArray(ncells3, ncells2, ncells1 + 1);
+  mass_flux[1].NewAthenaArray(ncells3, ncells2 + 1, ncells1);
+  mass_flux[2].NewAthenaArray(ncells3 + 1, ncells2, ncells1);
 
-  // storage for sedimentation velocity at cell center
+  // internal storage for sedimentation velocity at cell center
   vsed_[0].NewAthenaArray(NCLOUD, ncells3, ncells2, ncells1);
   vsed_[0].ZeroClear();
   vsed_[1].NewAthenaArray(NCLOUD, ncells3, ncells2, ncells1);
@@ -77,15 +80,16 @@ void Microphysics::EvolveSystems(AirColumn &air_column, Real time, Real dt) {
     }
 }
 
-void Microphysics::UpdateSedimentationVelocityFromConserved() {
+void Microphysics::SetSedimentationVelocityFromConserved(Hydro const *phydro) {
   auto pmb = pmy_block_;
 
   int ks = pmb->ks, js = pmb->js, is = pmb->is;
   int ke = pmb->ke, je = pmb->je, ie = pmb->ie;
 
-  for (auto &system : systems_)
-    system->SetSedimentationVelocityFromConserved(pmb->phydro, ks, ke, js, je,
+  for (auto &system : systems_) {
+    system->SetSedimentationVelocityFromConserved(vsed_, phydro, ks, ke, js, je,
                                                   is, ie);
+  }
 
   // interpolation to cell interface
   for (int n = 0; n < NCLOUD; ++n)
@@ -114,3 +118,42 @@ void Microphysics::UpdateSedimentationVelocityFromConserved() {
         vsedf[X1DIR](n, k, j, ie + 1) = 0.;
       }
 }
+
+namespace AllTasks {
+
+// hydro tasks should be move into hydro in the future
+bool hydro_implicit_correction(MeshBlock *pmb, IntegrationStage stage) {
+  return true;
+}
+bool hydro_calculate_flux(MeshBlock *pmb, IntegrationStage stage) {
+  return true;
+}
+
+bool microphysics_set_sedimentaton_velocity(MeshBlock *pmb,
+                                            IntegrationStage stage) {
+  auto scheduler = pmb->pimpl->scheduler;
+  if (!scheduler->CheckDone({hydro_implicit_correction})) return false;
+  return true;
+}
+
+bool microphysics_set_mass_flux(MeshBlock *pmb, IntegrationStage stage) {
+  auto scheduler = pmb->pimpl->scheduler;
+  if (!scheduler->CheckDone({hydro_calculate_flux})) return false;
+  // Riemann Solver in hydro sets the cloud mass flux
+  // No need to do anything there
+  return true;
+}
+
+bool microphysics_evolve_system(MeshBlock *pmb, IntegrationStage stage) {
+  auto scheduler = pmb->pimpl->scheduler;
+  if (!scheduler->CheckDone({hydro_implicit_correction})) return false;
+  return true;
+}
+
+bool scalar_claculate_flux(MeshBlock *pmb, IntegrationStage stage) {
+  auto scheduler = pmb->pimpl->scheduler;
+  if (!scheduler->CheckDone({microphysics_set_mass_flux})) return false;
+  return true;
+}
+
+}  // namespace AllTasks

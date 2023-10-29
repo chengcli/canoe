@@ -82,7 +82,8 @@ void Kessler94::EvolveOneStep(AirParcel *air, Real time, Real dt) {
   for (int n = 1; n < Size; ++n) air->w[species_index_[n]] += sol(n);
 }
 
-void Kessler94::SetSedimentationVelocityFromConserved(Hydro const *phydro,
+void Kessler94::SetSedimentationVelocityFromConserved(AthenaArray<Real> vsed[3],
+                                                      Hydro const *phydro,
                                                       int kl, int ku, int jl,
                                                       int ju, int il, int iu) {
   int ip = species_index_[2] - NHYDRO;
@@ -91,6 +92,6 @@ void Kessler94::SetSedimentationVelocityFromConserved(Hydro const *phydro,
   for (int k = kl; k <= ku; ++k)
     for (int j = jl; j <= ju; ++j)
       for (int i = il; i <= iu; ++i) {
-        vsed_shallow_[0](ip, k, j, i) = vel;
+        vsed[0](ip, k, j, i) = vel;
       }
 }

@@ -42,13 +42,11 @@ class MicrophysicalSchemeBase : public NamedGroup {
   virtual void EvolveOneStep(AirParcel *Air, Real time, Real dt) = 0;
 
   /// inbound functions
-  virtual void SetSedimentationVelocityFromConserved(Hydro const *phydro,
+  virtual void SetSedimentationVelocityFromConserved(AthenaArray<Real> vsed[3],
+                                                     Hydro const *phydro,
                                                      int kl, int ku, int jl,
                                                      int ju, int il,
                                                      int iu) = 0;
-
- protected:
-  AthenaArray<Real> vsed_shallow_[3];
 };
 
 using MicrophysicalSchemePtr = std::shared_ptr<MicrophysicalSchemeBase>;
@@ -92,16 +90,17 @@ class MicrophysicalScheme : public MicrophysicalSchemeBase {
   Real const *GetJacobianPtr() const { return jacb_.data(); }
 
   /// inbound functions
-  void SetSedimentationVelocityFromConserved(Hydro const *phydro, int kl,
+  void SetSedimentationVelocityFromConserved(AthenaArray<Real> vsed[3],
+                                             Hydro const *phydro, int kl,
                                              int ku, int jl, int ju, int il,
                                              int iu) override {
     for (auto n : species_index_)
       for (int k = kl; k <= ku; ++k)
         for (int j = jl; j <= ju; ++j)
           for (int i = il; i <= iu; ++i) {
-            vsed_shallow_[0](n - NHYDRO, k, j, i) = 0.0;
-            vsed_shallow_[1](n - NHYDRO, k, j, i) = 0.0;
-            vsed_shallow_[2](n - NHYDRO, k, j, i) = 0.0;
+            vsed[0](n - NHYDRO, k, j, i) = 0.0;
+            vsed[1](n - NHYDRO, k, j, i) = 0.0;
+            vsed[2](n - NHYDRO, k, j, i) = 0.0;
           }
   }
 
@@ -131,7 +130,8 @@ class Kessler94 : public MicrophysicalScheme<3> {
   void EvolveOneStep(AirParcel *air, Real time, Real dt) override;
 
   /// inbound functions
-  void SetSedimentationVelocityFromConserved(Hydro const *phydro, int kl,
+  void SetSedimentationVelocityFromConserved(AthenaArray<Real> vsed[3],
+                                             Hydro const *phydro, int kl,
                                              int ku, int jl, int ju, int il,
                                              int iu) override;
 
