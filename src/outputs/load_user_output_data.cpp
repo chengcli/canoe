@@ -6,6 +6,7 @@
 
 // canoe
 #include <impl.hpp>
+#include <virtual_groups.hpp>
 
 // harp
 #include <harp/radiation.hpp>
@@ -88,10 +89,22 @@ void OutputType::loadUserOutputData(MeshBlock *pmb) {
     }
   }
 
-  // mcmc inversion
+  /* mcmc inversion
   if (output_params.variable.compare("mcmc")) {
     pod = new OutputData;
     AppendOutputDataNode(pod);
     num_vars_ += 1;
+  }*/
+
+  // fits output groups
+  for (auto &fits_out : pmb->pimpl->GetFITSOutputGroups()) {
+    if (fits_out.lock()->ShouldFITSOutput(output_params.variable))
+      fits_out.lock()->LoadFITSOutputData(this, &num_vars_);
+  }
+
+  // mesh output groups
+  for (auto &mesh_out : pmb->pimpl->GetMeshOutputGroups()) {
+    if (mesh_out.lock()->ShouldMeshOutput(output_params.variable))
+      mesh_out.lock()->LoadMeshOutputData(this, &num_vars_);
   }
 }

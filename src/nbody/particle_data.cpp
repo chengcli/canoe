@@ -45,6 +45,8 @@ bool check_in_meshblock(ParticleData const& pd, MeshBlock const* pmb) {
   return inblock_x1 && (!pm->f2 || inblock_x2) && (!pm->f3 || inblock_x3);
 }
 
+std::string Communicator<ParticleData>::name = "ParticleData";
+
 #ifdef MPI_PARALLEL
 #include <mpi.h>
 MPI_Datatype MPI_PARTICLE_DATA;
@@ -64,5 +66,10 @@ void commit_mpi_particle_data() {
 }
 
 void free_mpi_particle_data() { MPI_Type_free(&MPI_PARTICLE_DATA); }
+
+#else  // NOT_MPI_PARALLEL
+
+void commit_mpi_particle_data() {}
+void free_mpi_particle_data() {}
 
 #endif  // MPI_PARALLEL

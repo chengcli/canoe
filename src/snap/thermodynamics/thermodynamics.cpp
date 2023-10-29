@@ -243,7 +243,7 @@ void Thermodynamics::Destroy() {
   }
 }
 
-Real Thermodynamics::GetPres(MeshBlock* pmb, int k, int j, int i) const {
+Real Thermodynamics::GetPres(MeshBlock const* pmb, int k, int j, int i) const {
   Real gm1 = pmb->peos->GetGamma() - 1;
   auto& u = pmb->phydro->u;
 
@@ -264,7 +264,7 @@ Real Thermodynamics::GetPres(MeshBlock* pmb, int k, int j, int i) const {
 }
 
 // Eq.71 in Li2019
-Real Thermodynamics::GetChi(MeshBlock* pmb, int k, int j, int i) const {
+Real Thermodynamics::GetChi(MeshBlock const* pmb, int k, int j, int i) const {
   Real gammad = pmb->peos->GetGamma();
   auto& w = pmb->phydro->w;
 
@@ -298,7 +298,7 @@ Real Thermodynamics::GetChi(AirParcel const& qfrac) const {
 }
 
 // Eq.63 in Li2019
-Real Thermodynamics::GetGamma(MeshBlock* pmb, int k, int j, int i) const {
+Real Thermodynamics::GetGamma(MeshBlock const* pmb, int k, int j, int i) const {
   Real gammad = pmb->peos->GetGamma();
 
   auto&& air = AirParcelHelper::gather_from_primitive(pmb, k, j, i);
@@ -336,7 +336,7 @@ Real Thermodynamics::RovRd(AirParcel const& qfrac) const {
   return fgas / feps;
 }
 
-Real Thermodynamics::MoistStaticEnergy(MeshBlock* pmb, Real gz, int k, int j,
+Real Thermodynamics::MoistStaticEnergy(MeshBlock const* pmb, Real gz, int k, int j,
                                        int i) const {
   auto&& air = AirParcelHelper::gather_from_primitive(pmb, k, j, i);
   air.ToMassConcentration();
@@ -361,7 +361,7 @@ Real Thermodynamics::MoistStaticEnergy(MeshBlock* pmb, Real gz, int k, int j,
 }
 
 // TODO(cli): check
-Real Thermodynamics::GetCpMass(MeshBlock* pmb, int k, int j, int i) const {
+Real Thermodynamics::GetCpMass(MeshBlock const* pmb, int k, int j, int i) const {
   Real gammad = pmb->peos->GetGamma();
   auto& w = pmb->phydro->w;
 
@@ -373,7 +373,7 @@ Real Thermodynamics::GetCpMass(MeshBlock* pmb, int k, int j, int i) const {
 }
 
 // TODO(cli): check
-Real Thermodynamics::GetCvMass(MeshBlock* pmb, int k, int j, int i) const {
+Real Thermodynamics::GetCvMass(MeshBlock const* pmb, int k, int j, int i) const {
   Real gammad = pmb->peos->GetGamma();
   auto& w = pmb->phydro->w;
 
@@ -384,7 +384,7 @@ Real Thermodynamics::GetCvMass(MeshBlock* pmb, int k, int j, int i) const {
   return 1. / (gammad - 1.) * Rd_ * qsig;
 }
 
-Real Thermodynamics::GetEnthalpyMass(MeshBlock* pmb, int k, int j,
+Real Thermodynamics::GetEnthalpyMass(MeshBlock const* pmb, int k, int j,
                                      int i) const {
   Real gammad = pmb->peos->GetGamma();
   auto& w = pmb->phydro->w;
@@ -396,7 +396,7 @@ Real Thermodynamics::GetEnthalpyMass(MeshBlock* pmb, int k, int j,
   return gammad / (gammad - 1.) * Rd_ * qsig * w(IDN, k, j, i);
 }
 
-Real Thermodynamics::GetMu(MeshBlock* pmb, int k, int j, int i) const {
+Real Thermodynamics::GetMu(MeshBlock const* pmb, int k, int j, int i) const {
   auto& w = pmb->phydro->w;
 
   Real feps = 1.;
@@ -405,7 +405,7 @@ Real Thermodynamics::GetMu(MeshBlock* pmb, int k, int j, int i) const {
   return mu_[0] * feps;
 }
 
-Real Thermodynamics::RelativeHumidity(MeshBlock* pmb, int n, int k, int j,
+Real Thermodynamics::RelativeHumidity(MeshBlock const* pmb, int n, int k, int j,
                                       int i) const {
   auto&& air = AirParcelHelper::gather_from_primitive(pmb, k, j, i);
   air.ToMoleFraction();

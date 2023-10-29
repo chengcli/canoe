@@ -23,7 +23,7 @@
 #include "profile_inversion.hpp"
 
 Inversion::Inversion(MeshBlock *pmb, ParameterInput *pin, std::string name)
-    : name_(name),
+    : NamedGroup(name),
       mcmc_initialized_(false),
       init_pos_(nullptr),
       pmy_block_(pmb) {

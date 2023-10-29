@@ -20,24 +20,33 @@
 
 class MeshBlock;
 class ParameterInput;
+class Coordinates;
 class ParticleData;
+class Hydro;
 
 using ParticleContainer = std::vector<ParticleData>;
 
 class ParticleBase : public NamedGroup,
-                     RestartGroup,
+                     public RestartGroup,
                      // ASCIIOutputGroup,
                      // BinaryOutputGroup,
-                     MultiStageTimeIntegrator<ParticleContainer>,
-                     BoundaryExchanger<ParticleData> {
+                     public MeshOutputGroup,
+                     public MultiStageIntegrator,
+                     public BoundaryExchanger<ParticleData> {
  public:
   /// public data
   //! particle data container. pc1 is reserved for multi-stage integration
   ParticleContainer pc, pc1;
 
+  //! mesh data container
+  AthenaArray<Real> weight, charge;
+
   /// constructor and destructor
   ParticleBase(MeshBlock *pmb, std::string name);
   virtual ~ParticleBase();
+
+  /// particle-mesh
+  void LinkMesh();
 
   /// inbound functions
   void SetVelocitiesFromHydro(Hydro const *phydro, Coordinates const *pcoord);
@@ -47,11 +56,13 @@ class ParticleBase : public NamedGroup,
   size_t DumpRestartData(char *pdst) const override;
   size_t LoadRestartData(char *psrt) override;
 
+  /// MeshOutputGroup functions
+  bool ShouldMeshOutput(std::string variable_name) const override;
+  void LoadMeshOutputData(OutputType *pod, int *num_vars) const override;
+
   /// MultiStageTimeIntegrator functions
   void TimeIntegrate(Real time, Real dt) override;
-  void WeightedAverage(ParticleContainer &pc_out,
-                       ParticleContainer const &pc_in,
-                       Real ave_wghts[]) override;
+  void WeightedAverage(Real ave_wghts[]) override;
 
   /// BoundaryExchanger functions
   void DetachTo(ParticleContainer &buffer) override;
@@ -63,7 +74,10 @@ class ParticleBase : public NamedGroup,
 
   /// protected data
   //! linked list of particles in cell
-  AthenaArray<std::weak_ptr<ParticleData>> pd_in_cell_;
+  AthenaArray<ParticleData *> pd_in_cell_;
+
+  //! linked flag
+  bool linked_flag_;
 
  private:
   //! pointer to parent MeshBlock
@@ -73,13 +87,27 @@ class ParticleBase : public NamedGroup,
 using ParticlePtr = std::shared_ptr<ParticleBase>;
 using AllParticles = std::vector<ParticlePtr>;
 
-// helper functions
-ParticlePtr find_particle(AllParticles const &pts, std::string name);
-
 // factory methods
 class ParticlesFactory {
  public:
   static AllParticles CreateAllParticles(MeshBlock *pmb, ParameterInput *pin);
 };
+
+// helper functions
+namespace ParticlesHelper {
+ParticlePtr find_particle(AllParticles const &pts, std::string name);
+}  // namespace ParticlesHelper
+
+namespace AllTasks {
+
+bool launch_particles(MeshBlock *pmb, int stage);
+bool integrate_particles(MeshBlock *pmb, int stage);
+bool mesh_to_particles(MeshBlock *pmb, int stage);
+bool send_particles(MeshBlock *pmb, int stage);
+bool recv_particles(MeshBlock *pmb, int stage);
+bool particles_to_mesh(MeshBlock *pmb, int stage);
+bool attach_particles(MeshBlock *pmb, int stage);
+
+}  // namespace AllTasks
 
 #endif  // SRC_NBODY_PARTICLE_BASE_HPP_
