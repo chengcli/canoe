@@ -16,11 +16,7 @@ set_target_properties(
     )
 
 target_link_libraries(${namel}.${buildl}
-    ${ATHENAPP_LIBRARY_${buildu}}
     ${CANOE_LIBRARY_${buildu}}
-    ${NETCDF_LIBRARIES}
-    ${CPPDISORT_LIBRARY_${buildu}}
-    ${GLOG_LIBRARIES}
     )
 
 target_include_directories(${namel}.${buildl}

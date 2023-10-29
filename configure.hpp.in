@@ -43,4 +43,7 @@ enum {
 // Google log option (ENABLE_GLOG or DISABLE_GLOG)
 #define @GLOG_OPTION@
 
+// python bindings (PYTHON_BINDINGS or NO_PYTHOND_BINDINGS)
+#define @PYTHON_BINDINGS_OPTION@
+
 #endif  // CONFIGURE_HPP_

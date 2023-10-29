@@ -2,7 +2,7 @@
 #define SRC_COMMUNICATOR_BOUNDARY_EXCHANGER_HPP_
 
 // C/C++
-#include <functional> // hash
+#include <functional>  // hash
 
 // Athena++
 #include <athena/bvals/bvals.hpp>
@@ -25,7 +25,7 @@ inline int create_mpi_tag(int lid, int tid, std::string exchanger_name) {
   int tag = BoundaryBase::CreateBvalsMPITag(lid, tid, 0);
 
   std::string str = exchanger_name + std::to_string(tag);
-  return std::hash<std::string>{}(str)%(Globals::mpi_tag_ub);
+  return std::hash<std::string>{}(str) % (Globals::mpi_tag_ub);
 }
 
 template <typename T>
@@ -63,7 +63,8 @@ class BoundaryExchanger {
       }
 #ifdef MPI_PARALLEL
       else {  // MPI
-        int tag = create_mpi_tag(nb.snb.lid, nb.targetid, Communicator<T>::name);
+        int tag =
+            create_mpi_tag(nb.snb.lid, nb.targetid, Communicator<T>::name);
         int ssize = send_buffer_[nb.bufid].size();
         MPI_Isend(send_buffer_[nb.bufid].data(), ssize,
                   Communicator<T>::mpi_type, nb.snb.rank, tag,

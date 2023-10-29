@@ -3,9 +3,6 @@
 
 // C/C++
 #include <string>
-#include <vector>
-#include <utility>
-#include <unordered_map>
 
 class OutputType;
 class MeshBlock;
@@ -26,23 +23,6 @@ class RestartGroup {
   virtual size_t RestartDataSizeInBytes() const = 0;
   virtual size_t DumpRestartData(char *pdst) const = 0;
   virtual size_t LoadRestartData(char *psrt) = 0;
-};
-
-using IntegrationStage = std::pair<int, int>;
-using TaskFunc = bool (*)(MeshBlock *, IntegrationStage const &);
-using TaskInfo = std::pair<bool, std::vector<TaskFunc>>;
-
-class TasksGroup {
- public:
-  virtual ~TasksGroup() {}
-  virtual bool DoTask(TaskFunc func) = 0;
-  bool After(std::vector<TaskFunc> const &deps);
-
- protected:
-  void addTasks(std::vector<TaskFunc> const &tasks);
-
-  static std::unordered_map<TaskFunc, TaskInfo> tasks_;
-  TaskFunc current_task_;
 };
 
 class ASCIIOutputGroup {

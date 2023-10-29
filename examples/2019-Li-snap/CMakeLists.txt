@@ -11,10 +11,6 @@ macro(setup_problem namel)
 
   target_link_libraries(${namel}.${buildl}
       ${CANOE_LIBRARY_${buildu}}
-      ${NETCDF_LIBRARIES}
-      ${PNETCDF_LIBRARY}
-      ${MPI_CXX_LIBRARIES}
-      ${GLOG_LIBRARIES}
       )
 
   target_include_directories(${namel}.${buildl}

@@ -20,9 +20,6 @@ foreach(namel shallow_xy polar_vortex)
 
   target_link_libraries(${namel}.${buildl}
       ${CANOE_LIBRARY_${buildu}}
-      ${NETCDF_LIBRARIES}
-      ${PNETCDF_LIBRARY}
-      ${MPI_CXX_LIBRARIES}
       )
 
   target_include_directories(${namel}.${buildl}

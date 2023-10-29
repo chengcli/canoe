@@ -12,19 +12,19 @@ bool ParticleBase::ShouldMeshOutput(std::string variable_name) const {
 }
 
 void ParticleBase::LoadMeshOutputData(OutputType *out, int *num_vars) const {
-  OutputData* pod = new OutputData;
+  OutputData *pod = new OutputData;
   pod->type = "SCALARS";
   pod->name = "p-weight";
-  pod->data.InitWithShallowSlice(const_cast<AthenaArray<Real>&>(weight),
-      4, 0, 1);
+  pod->data.InitWithShallowSlice(const_cast<AthenaArray<Real> &>(weight), 4, 0,
+                                 1);
   out->AppendOutputDataNode(pod);
   *num_vars += 1;
 
   pod = new OutputData;
   pod->type = "SCALARS";
   pod->name = "p-charge";
-  pod->data.InitWithShallowSlice(const_cast<AthenaArray<Real>&>(charge),
-      4, 0, 1);
+  pod->data.InitWithShallowSlice(const_cast<AthenaArray<Real> &>(charge), 4, 0,
+                                 1);
   out->AppendOutputDataNode(pod);
   *num_vars += 1;
 }

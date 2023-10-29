@@ -57,8 +57,7 @@ using TurbulenceModelPtr = std::shared_ptr<TurbulenceModel>;
 
 class TurbulenceFactory {
  public:
-  static TurbulenceModelPtr CreateTurbulenceModel(MeshBlock *pmb,
-                                                  ParameterInput *pin);
+  static TurbulenceModelPtr Create(MeshBlock *pmb, ParameterInput *pin);
 };
 
 #endif  // SRC_SNAP_TURBULENCE_TURBULENCE_MODEL_HPP_

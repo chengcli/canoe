@@ -15,10 +15,13 @@
 // canoe
 #include <air_parcel.hpp>
 #include <configure.hpp>
+#include <impl.hpp>
 
 // microphysics
-#include "microphysical_scheme.hpp"
+#include "microphysical_schemes.hpp"
 #include "microphysics.hpp"
+
+const std::string Microphysics::input_key = "microphysics_config";
 
 Microphysics::Microphysics(MeshBlock *pmb, ParameterInput *pin)
     : pmy_block_(pmb) {
@@ -34,53 +37,29 @@ Microphysics::Microphysics(MeshBlock *pmb, ParameterInput *pin)
   int ncells2 = pmb->ncells2;
   int ncells3 = pmb->ncells3;
 
-  mass_flux_[0].NewAthenaArray(ncells3, ncells2, ncells1 + 1);
-  mass_flux_[1].NewAthenaArray(ncells3, ncells2 + 1, ncells1);
-  mass_flux_[2].NewAthenaArray(ncells3 + 1, ncells2, ncells1);
+  // storage for sedimentation velocity at cell boundary
+  vsedf[0].NewAthenaArray(NCLOUD, ncells3, ncells2, ncells1 + 1);
+  vsedf[1].NewAthenaArray(NCLOUD, ncells3, ncells2 + 1, ncells1);
+  vsedf[2].NewAthenaArray(NCLOUD, ncells3 + 1, ncells2, ncells1);
 
-  vsedf_[0].NewAthenaArray(NCLOUD, ncells3, ncells2, ncells1 + 1);
-  vsedf_[1].NewAthenaArray(NCLOUD, ncells3, ncells2 + 1, ncells1);
-  vsedf_[2].NewAthenaArray(NCLOUD, ncells3 + 1, ncells2, ncells1);
+  // storage for cloud mass flux at cell boundary
+  vsedf[0].NewAthenaArray(NCLOUD, ncells3, ncells2, ncells1 + 1);
+  mass_flux[0].NewAthenaArray(ncells3, ncells2, ncells1 + 1);
+  mass_flux[1].NewAthenaArray(ncells3, ncells2 + 1, ncells1);
+  mass_flux[2].NewAthenaArray(ncells3 + 1, ncells2, ncells1);
 
-  // temporary storage for sedimentation velocity
-  vsed_.NewAthenaArray(NCLOUD, ncells3, ncells2, ncells1);
-  vsed_.ZeroClear();
+  // internal storage for sedimentation velocity at cell center
+  vsed_[0].NewAthenaArray(NCLOUD, ncells3, ncells2, ncells1);
+  vsed_[0].ZeroClear();
+  vsed_[1].NewAthenaArray(NCLOUD, ncells3, ncells2, ncells1);
+  vsed_[1].ZeroClear();
+  vsed_[2].NewAthenaArray(NCLOUD, ncells3, ncells2, ncells1);
+  vsed_[2].ZeroClear();
 
   // hydro_.NewAthenaArray(NCLOUD_HYDRO, NCLOUD, ncells3, ncells2, ncells1);
   // hydro_.ZeroClear();
 
-  // load all microphysics systems
-  std::string key = "microphysics_config";
-
-  if (pin->DoesParameterExist("chemistry", key)) {
-    std::string filename = pin->GetString("chemistry", key);
-    std::ifstream stream(filename);
-    if (stream.good() == false) {
-      app->Error("Cannot open microphysics config file: " + filename);
-    }
-
-    YAML::Node node = YAML::Load(stream);
-    if (!node["microphysics"]) {
-      throw NotFoundError("Microphysics", "microphysics");
-    }
-
-    for (auto sys : node["microphysics"]) {
-      std::string name = sys.as<std::string>();
-      std::string scheme = node[name]["scheme"].as<std::string>();
-      if (scheme == "Kessler94") {
-        auto p = std::make_unique<Kessler94>(name, node[name]);
-        systems_.push_back(std::move(p));
-      } else {
-        throw NotFoundError("Microphysics", scheme);
-      }
-    }
-  }
-
-  // whether to do sedimentation in X2 or X3 direction
-  do_sedimentation_x2_ =
-      pin->GetOrAddBoolean("microphysics", "do_sedimentation_x2", false);
-  do_sedimentation_x3_ =
-      pin->GetOrAddBoolean("microphysics", "do_sedimentation_x3", false);
+  systems_ = MicrophysicalSchemesFactory::Create(pmb, pin);
 }
 
 Microphysics::~Microphysics() {
@@ -101,74 +80,80 @@ void Microphysics::EvolveSystems(AirColumn &air_column, Real time, Real dt) {
     }
 }
 
-void Microphysics::UpdateSedimentationVelocityFromConserved() {
-  MeshBlock *pmb = pmy_block_;
+void Microphysics::SetSedimentationVelocityFromConserved(Hydro const *phydro) {
+  auto pmb = pmy_block_;
+
   int ks = pmb->ks, js = pmb->js, is = pmb->is;
   int ke = pmb->ke, je = pmb->je, ie = pmb->ie;
 
-  // X1DIR
-  for (auto &system : systems_)
-    system->SetSedimentationVelocityFromConservedX1(vsed_, pmb);
+  for (auto &system : systems_) {
+    system->SetSedimentationVelocityFromConserved(vsed_, phydro, ks, ke, js, je,
+                                                  is, ie);
+  }
 
   // interpolation to cell interface
   for (int n = 0; n < NCLOUD; ++n)
+    for (int k = ks; k <= ke + 1; ++k)
+      for (int j = js; j <= je + 1; ++j)
+        for (int i = is; i <= ie + 1; ++i) {
+          vsedf[X1DIR](n, k, j, i) = interp_cp4(
+              vsed_[X1DIR](n, k, j, i - 2), vsed_[X1DIR](n, k, j, i - 1),
+              vsed_[X1DIR](n, k, j, i), vsed_[X1DIR](n, k, j, i + 1));
+
+          vsedf[X2DIR](n, k, j, i) = interp_cp4(
+              vsed_[X2DIR](n, k, j - 2, i), vsed_[X2DIR](n, k, j - 1, i),
+              vsed_[X2DIR](n, k, j, i), vsed_[X2DIR](n, k, j + 1, i));
+
+          vsedf[X3DIR](n, k, j, i) = interp_cp4(
+              vsed_[X3DIR](n, k - 2, j, i), vsed_[X3DIR](n, k - 1, j, i),
+              vsed_[X3DIR](n, k, j, i), vsed_[X3DIR](n, k + 1, j, i));
+        }
+
+  // fix boundary condition (TODO)
+  for (int n = 0; n < NCLOUD; ++n)
     for (int k = ks; k <= ke; ++k)
       for (int j = js; j <= je; ++j) {
-        for (int i = is + 1; i <= ie; ++i) {
-          vsedf_[X1DIR](n, k, j, i) =
-              interp_cp4(vsed_(n, k, j, i - 2), vsed_(n, k, j, i - 1),
-                         vsed_(n, k, j, i), vsed_(n, k, j, i + 1));
-        }
-
         // no sedimentation velocity at the boundary
-        vsedf_[X1DIR](n, k, j, is) = 0.;
-        vsedf_[X1DIR](n, k, j, ie + 1) = 0.;
+        vsedf[X1DIR](n, k, j, is) = 0.;
+        vsedf[X1DIR](n, k, j, ie + 1) = 0.;
       }
-
-  // X2DIR
-  if (pmy_block_->pmy_mesh->f2 && do_sedimentation_x2_) {
-    for (auto &system : systems_)
-      system->SetSedimentationVelocityFromConservedX2(vsed_, pmb);
-
-    // interpolation to cell interface
-    for (int n = 0; n < NCLOUD; ++n)
-      for (int k = ks; k <= ke; ++k) {
-        for (int j = js + 1; j <= je; ++j)
-          for (int i = is; i <= ie; ++i) {
-            vsedf_[X2DIR](n, k, j, i) =
-                interp_cp4(vsed_(n, k, j - 2, i), vsed_(n, k, j - 1, i),
-                           vsed_(n, k, j, i), vsed_(n, k, j + 1, i));
-          }
-
-        // no sedimentation velocity at the boundary
-        for (int i = is; i <= ie; ++i) {
-          vsedf_[X2DIR](n, k, js, i) = 0.;
-          vsedf_[X2DIR](n, k, je + 1, i) = 0.;
-        }
-      }
-  }
-
-  // X3DIR
-  if (pmy_block_->pmy_mesh->f3 && do_sedimentation_x3_) {
-    for (auto &system : systems_)
-      system->SetSedimentationVelocityFromConservedX3(vsed_, pmb);
-
-    // interpolation to cell interface
-    for (int n = 0; n < NCLOUD; ++n) {
-      for (int k = ks + 1; k <= ke; ++k)
-        for (int j = js; j <= je; ++j)
-          for (int i = is; i <= ie; ++i) {
-            vsedf_[X3DIR](n, k, j, i) =
-                interp_cp4(vsed_(n, k - 2, j, i), vsed_(n, k - 1, j, i),
-                           vsed_(n, k, j, i), vsed_(n, k + 1, j, i));
-          }
-
-      // no sedimentation velocity at the boundary
-      for (int j = js; j <= je; ++j)
-        for (int i = is; i <= ie; ++i) {
-          vsedf_[X3DIR](n, ks, j, i) = 0.;
-          vsedf_[X3DIR](n, ke + 1, j, i) = 0.;
-        }
-    }
-  }
 }
+
+namespace AllTasks {
+
+// hydro tasks should be move into hydro in the future
+bool hydro_implicit_correction(MeshBlock *pmb, IntegrationStage stage) {
+  return true;
+}
+bool hydro_calculate_flux(MeshBlock *pmb, IntegrationStage stage) {
+  return true;
+}
+
+bool microphysics_set_sedimentaton_velocity(MeshBlock *pmb,
+                                            IntegrationStage stage) {
+  auto scheduler = pmb->pimpl->scheduler;
+  if (!scheduler->CheckDone({hydro_implicit_correction})) return false;
+  return true;
+}
+
+bool microphysics_set_mass_flux(MeshBlock *pmb, IntegrationStage stage) {
+  auto scheduler = pmb->pimpl->scheduler;
+  if (!scheduler->CheckDone({hydro_calculate_flux})) return false;
+  // Riemann Solver in hydro sets the cloud mass flux
+  // No need to do anything there
+  return true;
+}
+
+bool microphysics_evolve_system(MeshBlock *pmb, IntegrationStage stage) {
+  auto scheduler = pmb->pimpl->scheduler;
+  if (!scheduler->CheckDone({hydro_implicit_correction})) return false;
+  return true;
+}
+
+bool scalar_claculate_flux(MeshBlock *pmb, IntegrationStage stage) {
+  auto scheduler = pmb->pimpl->scheduler;
+  if (!scheduler->CheckDone({microphysics_set_mass_flux})) return false;
+  return true;
+}
+
+}  // namespace AllTasks

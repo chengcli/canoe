@@ -22,16 +22,17 @@
 
 // coefficient from Richard S. Freedman 2014. APJS
 
-const Real FreedmanMean::c1 = 10.602;
-const Real FreedmanMean::c2 = 2.882;
-const Real FreedmanMean::c3 = 6.09e-15;
-const Real FreedmanMean::c4 = 2.954;
-const Real FreedmanMean::c5 = -2.526;
-const Real FreedmanMean::c6 = 0.843;
-const Real FreedmanMean::c7 = -5.490;
+const Real FreedmanMean2::c1 = 10.602;
+const Real FreedmanMean2::c2 = 2.882;
+const Real FreedmanMean2::c3 = 6.09e-15;
+const Real FreedmanMean2::c4 = 2.954;
+const Real FreedmanMean2::c5 = -2.526;
+const Real FreedmanMean2::c6 = 0.843;
+const Real FreedmanMean2::c7 = -5.490;
+const Real FreedmanMean2::c13 = 0.8321;
 
-Real FreedmanMean::GetAttenuation(Real wave1, Real wave2,
-                                  AirParcel const& var) const {
+Real FreedmanMean2::GetAttenuation(Real wave1, Real wave2,
+                                   AirParcel const& var) const {
   Real p = var.w[IPR];
   Real T = var.w[IDN];
   Real c8, c9, c10, c11, c12;
@@ -51,12 +52,20 @@ Real FreedmanMean::GetAttenuation(Real wave1, Real wave2,
   }
   Real logp = log10(p * 10.);  // Pa to dyn/cm2
   Real logT = log10(T);
+  Real met = params_.at("met");
+  Real scale = params_.at("scale");
 
   Real klowp = c1 * atan(logT - c2) -
                c3 / (logp + c4) * exp(pow(logT - c5, 2.0)) + c7;  // Eqn 4
 
+  // xiz changes
+  klowp += c6 * met;
+
   Real khigp = c8 + c9 * logT + c10 * pow(logT, 2.) +
                logp * (c11 + c12 * logT);  // Eqn 5
+
+  // xiz changes
+  khigp += c13 * met * (0.5 + 1. / M_PI * atan((logT - 2.5) / 0.2));  // Eqn 5
 
   Real result = pow(10.0, klowp) + pow(10.0, khigp);  // cm^2/g
 
@@ -64,7 +73,7 @@ Real FreedmanMean::GetAttenuation(Real wave1, Real wave2,
   Real dens = p / (pthermo->GetRd() * T);  // kg/m^3
 
   if (p > 5e1)
-    return 0.1 * dens * result;  // -> 1/m
+    return scale * 0.1 * dens * result;  // -> 1/m
   else
     return 0.;
 }

@@ -313,7 +313,8 @@ class Thermodynamics {
   //! Moist static energy
   //!$h_s = c_{pd}T + gz + L_vq_v + L_s\sum_i q_i$
   //! \return $h_s$
-  Real MoistStaticEnergy(MeshBlock const *pmb, Real gz, int k, int j, int i) const;
+  Real MoistStaticEnergy(MeshBlock const *pmb, Real gz, int k, int j,
+                         int i) const;
 
   //! Relative humidity
   //! $H_i = \frac{e_i}{e_i^s}$

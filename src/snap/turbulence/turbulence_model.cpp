@@ -43,8 +43,8 @@ TurbulenceModel::~TurbulenceModel() {
   app->Log("Destroy TurbulenceModel");
 }
 
-TurbulenceModelPtr TurbulenceFactory::CreateTurbulenceModel(
-    MeshBlock *pmb, ParameterInput *pin) {
+TurbulenceModelPtr TurbulenceFactory::Create(MeshBlock *pmb,
+                                             ParameterInput *pin) {
   Application::Logger app("snap");
   app->Log("Create turbulenceModel");
 

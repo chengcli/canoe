@@ -13,20 +13,21 @@ get_filename_component(PYTHON_VERSION_DIR ${PYTHON_PARENT_DIR} NAME)
 
 macro(add_python_module namel)
   # set module targets
-  pybind11_add_module(${namel} MODULE ${namel}.cpp ${USER_MODS}.cpp)
+  pybind11_add_module(${namel} MODULE ${namel}.cpp)
 
-  target_include_directories(
-    ${namel}
-    PRIVATE ${PYDISORT_INCLUDE_DIR} ${CMAKE_BINARY_DIR} ${CANOE_INCLUDE_DIR}
-            ${PYTHON_INCLUDE_DIR} ${PYBIND11_INCLUDE_DIR})
+  target_include_directories(${namel}
+    PRIVATE
+    ${CMAKE_BINARY_DIR}
+    ${CPPDISORT_INCLUDE_DIR}
+    ${CANOE_INCLUDE_DIR}
+    ${PYTHON_INCLUDE_DIR}
+    ${PYBIND11_INCLUDE_DIR}
+    ${MPI_CXX_INCLUDE_PATH}
+    )
 
   target_link_libraries(${namel} PRIVATE
     search_path
-    ${ATHENAPP_LIBRARY_${buildu}}
     ${CANOE_LIBRARY_${buildu}}
-    ${NETCDF_LIBRARIES}
-    ${PYDISORT_LIBRARY_${buildu}}
-    ${PYTHON_LIBRARY_RELEASE}
     )
 
   set_target_properties(${namel}

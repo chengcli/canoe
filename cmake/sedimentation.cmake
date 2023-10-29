@@ -1,4 +1,4 @@
-# configure file for bryan test case
+# configure file for test sedimentation
 
 macro(SET_IF_EMPTY _variable)
   if("${${_variable}}" STREQUAL "")
@@ -10,9 +10,9 @@ endmacro()
 set_if_empty(NUMBER_GHOST_CELLS 3)
 
 # canoe configure
-set(NVAPOR 1)
-set(NCLOUD 1)
-set(NPHASE_LEGACY 2)
+set(NVAPOR 2)
+set(NCLOUD 4)
+set(NPHASE_LEGACY 3)
 set(NETCDF ON)
 set(PNETCDF ON)
 set(MPI ON)
