@@ -26,8 +26,8 @@ Real SimpleCloud::getAttenuation1(Real wave, AirParcel const& var) const {
   return totpar * qext / (4. / 3. * csize * crho);  // -> 1/m
 }
 
-Real SimpleCloud::getSingleScateringAlbedo(Real wave1, Real wave2,
-                                           CellVariables const& var) const {
+Real SimpleCloud::getSingleScatteringAlbedo1(Real wave,
+                                             AirParcel const& var) const {
   return params_.at("ww");
   /*  // ssalb
     Real totpar = var.c[imol_]+var.c[imol_+1];
@@ -42,10 +42,10 @@ Real SimpleCloud::getSingleScateringAlbedo(Real wave1, Real wave2,
   */
 }
 
-void SimpleCloud::getPhaseMomentum(Real* pp, Real wave1, Real wave2,
-                                   CellVariables const& var, int np) const {
+void SimpleCloud::getPhaseMomentum1(Real* pp, Real wave, AirParcel const& var,
+                                    int np) const {
   // 0 for HENYEY_GREENSTEIN
-  get_phase_momentum(pp, 0, params.at("gg"), np);
+  get_phase_momentum(pp, 0, params_.at("gg"), np);
   /*
     Real totpar = var.c[imol_]+var.c[imol_+1];
 
