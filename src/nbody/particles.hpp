@@ -90,7 +90,7 @@ using AllParticles = std::vector<ParticlePtr>;
 // factory methods
 class ParticlesFactory {
  public:
-  static AllParticles CreateAllParticles(MeshBlock *pmb, ParameterInput *pin);
+  static AllParticles Create(MeshBlock *pmb, ParameterInput *pin);
 };
 
 // helper functions

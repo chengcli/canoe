@@ -2,8 +2,8 @@
 #define SRC_COMMUNICATOR_COMMUNICATOR_HPP_
 
 // C/C++
-#include <vector>
 #include <string>
+#include <vector>
 
 // canoe
 #include <configure.hpp>

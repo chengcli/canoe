@@ -4,10 +4,10 @@ set(FETCHCONTENT_QUIET FALSE)
 
 option(PVFMM "Build PVFMM" OFF)
 
-if (PVFMM)
+if(PVFMM)
   set(patch_command
-      git apply ${CMAKE_CURRENT_SOURCE_DIR}/patches/pvfmm.01.sctl_stracktrace.patch
-      )
+      git apply
+      ${CMAKE_CURRENT_SOURCE_DIR}/patches/pvfmm.01.sctl_stracktrace.patch)
 
   FetchContent_Declare(
     PVFMM

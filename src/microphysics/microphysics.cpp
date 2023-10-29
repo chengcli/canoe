@@ -17,8 +17,10 @@
 #include <configure.hpp>
 
 // microphysics
-#include "microphysical_scheme.hpp"
+#include "microphysical_schemes.hpp"
 #include "microphysics.hpp"
+
+const std::string Microphysics::input_key = "microphysics_config";
 
 Microphysics::Microphysics(MeshBlock *pmb, ParameterInput *pin)
     : pmy_block_(pmb) {
@@ -34,47 +36,27 @@ Microphysics::Microphysics(MeshBlock *pmb, ParameterInput *pin)
   int ncells2 = pmb->ncells2;
   int ncells3 = pmb->ncells3;
 
+  // storage for sedimentation velocity at cell boundary
+  vsedf[0].NewAthenaArray(NCLOUD, ncells3, ncells2, ncells1 + 1);
+  vsedf[1].NewAthenaArray(NCLOUD, ncells3, ncells2 + 1, ncells1);
+  vsedf[2].NewAthenaArray(NCLOUD, ncells3 + 1, ncells2, ncells1);
+
   mass_flux_[0].NewAthenaArray(ncells3, ncells2, ncells1 + 1);
   mass_flux_[1].NewAthenaArray(ncells3, ncells2 + 1, ncells1);
   mass_flux_[2].NewAthenaArray(ncells3 + 1, ncells2, ncells1);
 
-  vsedf_[0].NewAthenaArray(NCLOUD, ncells3, ncells2, ncells1 + 1);
-  vsedf_[1].NewAthenaArray(NCLOUD, ncells3, ncells2 + 1, ncells1);
-  vsedf_[2].NewAthenaArray(NCLOUD, ncells3 + 1, ncells2, ncells1);
-
-  // temporary storage for sedimentation velocity
-  vsed_.NewAthenaArray(NCLOUD, ncells3, ncells2, ncells1);
-  vsed_.ZeroClear();
+  // storage for sedimentation velocity at cell center
+  vsed_[0].NewAthenaArray(NCLOUD, ncells3, ncells2, ncells1);
+  vsed_[0].ZeroClear();
+  vsed_[1].NewAthenaArray(NCLOUD, ncells3, ncells2, ncells1);
+  vsed_[1].ZeroClear();
+  vsed_[2].NewAthenaArray(NCLOUD, ncells3, ncells2, ncells1);
+  vsed_[2].ZeroClear();
 
   // hydro_.NewAthenaArray(NCLOUD_HYDRO, NCLOUD, ncells3, ncells2, ncells1);
   // hydro_.ZeroClear();
 
-  // load all microphysics systems
-  std::string key = "microphysics_config";
-
-  if (pin->DoesParameterExist("chemistry", key)) {
-    std::string filename = pin->GetString("chemistry", key);
-    std::ifstream stream(filename);
-    if (stream.good() == false) {
-      app->Error("Cannot open microphysics config file: " + filename);
-    }
-
-    YAML::Node node = YAML::Load(stream);
-    if (!node["microphysics"]) {
-      throw NotFoundError("Microphysics", "microphysics");
-    }
-
-    for (auto sys : node["microphysics"]) {
-      std::string name = sys.as<std::string>();
-      std::string scheme = node[name]["scheme"].as<std::string>();
-      if (scheme == "Kessler94") {
-        auto p = std::make_unique<Kessler94>(name, node[name]);
-        systems_.push_back(std::move(p));
-      } else {
-        throw NotFoundError("Microphysics", scheme);
-      }
-    }
-  }
+  systems_ = MicrophysicalSchemesFactory::Create(pmb, pin);
 }
 
 Microphysics::~Microphysics() {
@@ -96,11 +78,11 @@ void Microphysics::EvolveSystems(AirColumn &air_column, Real time, Real dt) {
 }
 
 void Microphysics::UpdateSedimentationVelocityFromConserved() {
-  MeshBlock *pmb = pmy_block_;
+  auto pmb = pmy_block_;
+
   int ks = pmb->ks, js = pmb->js, is = pmb->is;
   int ke = pmb->ke, je = pmb->je, ie = pmb->ie;
 
-  // X1DIR
   for (auto &system : systems_)
     system->SetSedimentationVelocityFromConserved(pmb->phydro, ks, ke, js, je,
                                                   is, ie);
@@ -110,15 +92,15 @@ void Microphysics::UpdateSedimentationVelocityFromConserved() {
     for (int k = ks; k <= ke + 1; ++k)
       for (int j = js; j <= je + 1; ++j)
         for (int i = is; i <= ie + 1; ++i) {
-          vsedf_[X1DIR](n, k, j, i) = interp_cp4(
+          vsedf[X1DIR](n, k, j, i) = interp_cp4(
               vsed_[X1DIR](n, k, j, i - 2), vsed_[X1DIR](n, k, j, i - 1),
               vsed_[X1DIR](n, k, j, i), vsed_[X1DIR](n, k, j, i + 1));
 
-          vsedf_[X2DIR](n, k, j, i) = interp_cp4(
+          vsedf[X2DIR](n, k, j, i) = interp_cp4(
               vsed_[X2DIR](n, k, j - 2, i), vsed_[X2DIR](n, k, j - 1, i),
               vsed_[X2DIR](n, k, j, i), vsed_[X2DIR](n, k, j + 1, i));
 
-          vsedf_[X3DIR](n, k, j, i) = interp_cp4(
+          vsedf[X3DIR](n, k, j, i) = interp_cp4(
               vsed_[X3DIR](n, k - 2, j, i), vsed_[X3DIR](n, k - 1, j, i),
               vsed_[X3DIR](n, k, j, i), vsed_[X3DIR](n, k + 1, j, i));
         }
@@ -128,8 +110,7 @@ void Microphysics::UpdateSedimentationVelocityFromConserved() {
     for (int k = ks; k <= ke; ++k)
       for (int j = js; j <= je; ++j) {
         // no sedimentation velocity at the boundary
-        vsedf_[X1DIR](n, k, j, is) = 0.;
-        vsedf_[X1DIR](n, k, j, ie + 1) = 0.;
+        vsedf[X1DIR](n, k, j, is) = 0.;
+        vsedf[X1DIR](n, k, j, ie + 1) = 0.;
       }
-}
 }

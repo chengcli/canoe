@@ -61,13 +61,13 @@ MeshBlock::Impl::Impl(MeshBlock *pmb, ParameterInput *pin) : pmy_block_(pmb) {
   ptracer = std::make_shared<Tracer>(pmb, pin);
 
   // turbulence
-  pturb = TurbulenceFactory::CreateTurbulenceModel(pmb, pin);
+  pturb = TurbulenceFactory::Create(pmb, pin);
 
   // inversion queue
-  all_fits = InversionsFactory::CreateAllInversions(pmb, pin);
+  all_fits = InversionsFactory::Create(pmb, pin);
 
   // particle queue
-  all_particles = ParticlesFactory::CreateAllParticles(pmb, pin);
+  all_particles = ParticlesFactory::Create(pmb, pin);
 }
 
 MeshBlock::Impl::~Impl() {}

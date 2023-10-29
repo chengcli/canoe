@@ -121,8 +121,7 @@ void Inversion::ResetChain() {
   memset(recs_.newstate[1], 0, nstep * nwalker * sizeof(int));
 }
 
-AllInversions InversionsFactory::CreateAllInversions(MeshBlock *pmb,
-                                                     ParameterInput *pin) {
+AllInversions InversionsFactory::Create(MeshBlock *pmb, ParameterInput *pin) {
   Application::Logger app("inversion");
   app->Log("Create inversion queue");
 

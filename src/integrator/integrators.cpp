@@ -4,10 +4,11 @@
 void MultiStageIntegrator::SetIntegrator(std::string integrator) {
   if (integrator == "vl2") {
     //! \note `integrator == "vl2"`
-    //! - VL: second-order van Leer integrator (Stone & Gardiner, NewA 14, 139 2009)
+    //! - VL: second-order van Leer integrator (Stone & Gardiner, NewA 14, 139
+    //! 2009)
     //! - Simple predictor-corrector scheme similar to MUSCL-Hancock
     //! - Expressed in 2S or 3S* algorithm form
-    
+
     // set number of stages and time coeff.
     nstages_ = 2;
   } else if (integrator == "rk3") {
@@ -34,11 +35,11 @@ void MultiStageIntegrator::SetIntegrator(std::string integrator) {
     stage_wghts_[2].sbeta = 0.5;
     stage_wghts_[2].ebeta = 1.0;
     stage_wghts_[2].delta = 0.0;
-    stage_wghts_[2].gamma_1 = 2./3.;
-    stage_wghts_[2].gamma_2 = 1./3.;
+    stage_wghts_[2].gamma_1 = 2. / 3.;
+    stage_wghts_[2].gamma_2 = 1. / 3.;
     stage_wghts_[2].gamma_3 = 0.0;
 
     stage_wghts_[0].beta = 1.0;
     stage_wghts_[1].beta = 0.25;
-    stage_wghts_[2].beta = 2./3.;
-};
+    stage_wghts_[2].beta = 2. / 3.;
+  };

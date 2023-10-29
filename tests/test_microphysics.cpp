@@ -16,6 +16,7 @@
 #include <snap/thermodynamics/thermodynamics.hpp>
 
 // microphysics
+#include <microphysics/microphysical_schemes.hpp>
 #include <microphysics/microphysics.hpp>
 
 class TestMicrophysics : public testing::Test {
@@ -73,8 +74,8 @@ TEST_F(TestMicrophysics, microphysics) {
   auto pmicro = pmesh->my_blocks(0)->pimpl->pmicro;
 
   EXPECT_EQ(pmicro->GetNumSystems(), 2);
-  EXPECT_EQ(pmicro->GetSystemName(0), "water-system");
-  EXPECT_EQ(pmicro->GetSystemName(1), "ammonia-system");
+  EXPECT_EQ(pmicro->GetSystem(0)->GetName(), "water-system");
+  EXPECT_EQ(pmicro->GetSystem(1)->GetName(), "ammonia-system");
 
   EXPECT_EQ(iH2Oc, 7);
   EXPECT_EQ(iNH3c, 8);

@@ -36,8 +36,7 @@ ParticleBase::~ParticleBase() {
   app->Log("Destroy ParticleBase");
 }
 
-AllParticles ParticlesFactory::CreateAllParticles(MeshBlock *pmb,
-                                                  ParameterInput *pin) {
+AllParticles ParticlesFactory::Create(MeshBlock *pmb, ParameterInput *pin) {
   AllParticles all_particles;
 
   std::string str = pin->GetOrAddString("particles", "particles", "");
@@ -65,5 +64,4 @@ ParticlePtr find_particle(AllParticles const &pts, std::string name) {
   return nullptr;
 }
 
-} // namespace ParticlesHelper
-
+}  // namespace ParticlesHelper

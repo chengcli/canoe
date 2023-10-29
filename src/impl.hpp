@@ -37,7 +37,7 @@ class MeshOutputGroup;
 class FITSOutputGroup;
 
 //! \class MeshBlock::Impl
-//  \brief opaque pointer class implements all physics on a MeshBlock 
+//! \brief opaque pointer class implements all physics on a MeshBlock
 class MeshBlock::Impl {
  public:
   /// public data

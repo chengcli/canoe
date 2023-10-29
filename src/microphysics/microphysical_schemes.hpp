@@ -34,7 +34,7 @@ class ParameterInput;
 class MicrophysicalSchemeBase : public NamedGroup {
  public:
   /// constructor and destructor
-  MicrophysicalSchemeBase(std::string name);
+  MicrophysicalSchemeBase(std::string name) : NamedGroup(name) {}
   virtual ~MicrophysicalSchemeBase() {}
 
   /// functions
@@ -42,13 +42,22 @@ class MicrophysicalSchemeBase : public NamedGroup {
   virtual void EvolveOneStep(AirParcel *Air, Real time, Real dt) = 0;
 
   /// inbound functions
-  virtual void SetSedimentationVelocityFromConserved(Hydro const *phydro) = 0;
+  virtual void SetSedimentationVelocityFromConserved(Hydro const *phydro,
+                                                     int kl, int ku, int jl,
+                                                     int ju, int il,
+                                                     int iu) = 0;
 
  protected:
   AthenaArray<Real> vsed_shallow_[3];
 };
 
 using MicrophysicalSchemePtr = std::shared_ptr<MicrophysicalSchemeBase>;
+using AllMicrophysicalSchemes = std::vector<MicrophysicalSchemePtr>;
+
+class MicrophysicalSchemesFactory {
+ public:
+  static AllMicrophysicalSchemes Create(MeshBlock *pmb, ParameterInput *pin);
+};
 
 template <int D>
 class MicrophysicalScheme : public MicrophysicalSchemeBase {
@@ -122,9 +131,9 @@ class Kessler94 : public MicrophysicalScheme<3> {
   void EvolveOneStep(AirParcel *air, Real time, Real dt) override;
 
   /// inbound functions
-  void SetSedimentationVelocityFromConservedX1(Hydro const *phydro, int kl,
-                                               int ku, int jl, int ju, int kl,
-                                               int ku) override;
+  void SetSedimentationVelocityFromConserved(Hydro const *phydro, int kl,
+                                             int ku, int jl, int ju, int il,
+                                             int iu) override;
 
  protected:
   ChemistrySolver<Size> solver_;

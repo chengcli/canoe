@@ -27,7 +27,7 @@ class Thermodynamics;
 class Radiation;
 
 class Inversion : public NamedGroup,
-                  //public RestartGroup,
+                  // public RestartGroup,
                   public FITSOutputGroup {
  public:
   /// Constructor and destructor
@@ -71,7 +71,9 @@ class Inversion : public NamedGroup,
   }
 
   /// MeshOutputGroup functions
-  bool ShouldFITSOutput(std::string variable_name) const override { return true;}
+  bool ShouldFITSOutput(std::string variable_name) const override {
+    return true;
+  }
   void LoadFITSOutputData(OutputType *pod, int *num_vars) const override {}
 
  protected:
@@ -109,7 +111,7 @@ using AllInversions = std::vector<std::shared_ptr<Inversion>>;
 
 class InversionsFactory {
  public:
-  static AllInversions CreateAllInversions(MeshBlock *pmb, ParameterInput *pin);
+  static AllInversions Create(MeshBlock *pmb, ParameterInput *pin);
 };
 
 namespace InversionHelper {
