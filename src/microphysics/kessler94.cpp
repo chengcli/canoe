@@ -1,54 +1,24 @@
-// C/C++
-#include <string>
-
 // external
-#include <yaml-cpp/yaml.h>
-
-#include <Eigen/Core>
-#include <Eigen/Dense>
-
-// Athena++
-#include <athena/athena.hpp>
-#include <athena/mesh/mesh.hpp>
-
-// application
 #include <application/application.hpp>
-
-// utils
-#include <utils/parameter_map.hpp>
 
 // canoe
 #include <configure.hpp>
-#include <index_map.hpp>
 
 // snap
 #include <snap/thermodynamics/thermodynamics.hpp>
 
 // microphysics
-#include "chemistry_solver.hpp"
-#include "microphysical_scheme.hpp"
+#include "microphysical_schemes.hpp"
 
 Kessler94::Kessler94(std::string name, YAML::Node const &node)
     : MicrophysicalScheme<3>(name, node) {
   Application::Logger app("microphysics");
   app->Log("Initialize Kessler94 Scheme for " + name);
-
-  if (node["parameters"]) params_ = ToParameterMap(node["parameters"]);
-
-  std::vector<std::string> species;
-  if (node["dependent-species"])
-    species = node["dependent-species"].as<std::vector<std::string>>();
-
-  auto pindex = IndexMap::GetInstance();
-
-  for (int i = 0; i < Size; ++i) {
-    species_index_[i] = pindex->GetSpeciesId(species[i]);
-  }
 }
 
 Kessler94::~Kessler94() {
   Application::Logger app("microphysics");
-  app->Log("Destroy Kessler94 Scheme for " + name_);
+  app->Log("Destroy Kessler94 Scheme for " + GetName());
 }
 
 void Kessler94::AssembleReactionMatrix(AirParcel const &air, Real time) {
@@ -64,7 +34,7 @@ void Kessler94::AssembleReactionMatrix(AirParcel const &air, Real time) {
   Real k2 = params_["accretion"];
   Real k3 = params_["evaporation"];
 
-  // calculate saturatin deficit (negative means sub-saturation)
+  // calculate saturation deficit (negative means sub-saturation)
   auto rates = pthermo->TryEquilibriumTP_VaporCloud(air, iv, 0., true);
   Real dqv = -rates[0];
 
@@ -112,15 +82,15 @@ void Kessler94::EvolveOneStep(AirParcel *air, Real time, Real dt) {
   for (int n = 1; n < Size; ++n) air->w[species_index_[n]] += sol(n);
 }
 
-void Kessler94::SetSedimentationVelocityFromConservedX1(AthenaArray<Real> &vsed,
-                                                        MeshBlock *pmb) {
+void Kessler94::SetSedimentationVelocityFromConserved(Hydro const *phydro,
+                                                      int kl, int ku, int jl,
+                                                      int ju, int il, int iu) {
   int ip = species_index_[2] - NHYDRO;
-  Real vel = params_["sedimentation"];
+  Real vel = params_.at("sedimentation");
 
-  int ks = pmb->ks, js = pmb->js, is = pmb->is;
-  int ke = pmb->ke, je = pmb->je, ie = pmb->ie;
-
-  for (int k = ks; k <= ke; ++k)
-    for (int j = js; j <= je; ++j)
-      for (int i = is; i <= ie; ++i) vsed(ip, k, j, i) = vel;
+  for (int k = kl; k <= ku; ++k)
+    for (int j = jl; j <= ju; ++j)
+      for (int i = il; i <= iu; ++i) {
+        vsed_shallow_[0](ip, k, j, i) = vel;
+      }
 }

@@ -6,9 +6,6 @@
 #include <memory>
 #include <vector>
 
-// external
-#include <yaml-cpp/yaml.h>
-
 // athena
 #include <athena/athena.hpp>
 
@@ -29,15 +26,16 @@ class Microphysics {
   // access members
   AthenaArray<Real> w, u;
 
+  /// constructor and destructor
   Microphysics(MeshBlock *pmb, ParameterInput *pin);
-
   ~Microphysics();
 
+  /// functions
   size_t GetNumSystems() const { return systems_.size(); }
-
   std::string GetSystemName(int i) const { return systems_[i]->GetName(); }
-
-  MicrophysicalSchemePtr GetSystem(int i) const { return systems_[i]; }
+  std::shared_ptr<MicrophysicalScheme> GetSystem(int i) const {
+    return systems_[i];
+  }
 
   // void AddFrictionalHeating(std::vector<AirParcel> &air_column) const;
 
@@ -60,18 +58,12 @@ class Microphysics {
   void UpdateSedimentationVelocityFromConserved();
 
  protected:
-  bool do_sedimentation_x2_ = false;
-  bool do_sedimentation_x3_ = false;
-
   AthenaArray<Real> mass_flux_[3];
-
-  AthenaArray<Real> vsed_, vsedf_[3];
-
-  // AthenaArray<Real> hydro_;
-
+  AthenaArray<Real> vsed_[3], vsedf_[3];
   std::vector<MicrophysicalSchemePtr> systems_;
 
-  MeshBlock *pmy_block_ = nullptr;
+ private:
+  MeshBlock const *pmy_block_;
 };
 
 using MicrophysicsPtr = std::shared_ptr<Microphysics>;
