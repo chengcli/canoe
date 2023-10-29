@@ -146,3 +146,22 @@ This command rolls back your repository to the state before `rebase`.
 
 ## Manually resolve the conflicts
 TO BE FILLED
+
+# How to push back to upstream
+## Always push back the main branch in the downstream to a working branch in the upstream
+Suppose that working branch in the upstream is called 'cli/dev'. You can push back your
+changes to the upstream using:
+```
+git push https://${GH_ACCOUNT}:${GH_TOKEN}@github.com/chengcli/canoe main:cli/dev
+```
+In this case, changes in the downstream are pushed to a branch in the upstream.
+Then, create a pull request for this branch in the upstream.
+
+## Use `rebase merging` when merge PR
+Be careful, in this case, we will use `rebase merging` to preserve all commit history
+from downstream. After `rebase merging` the changes in the downstream will be "appended"
+to the main branch of the upstream.
+
+## After `rebase merging`, go back to downstream and update the upstream changes
+You will again execture `git fetch upstream`, `git rebase upstream/main` and
+`git push -f origin main` to update your downstream fork.
