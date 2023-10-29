@@ -17,7 +17,7 @@ macro(add_python_module namel)
 
   target_include_directories(
     ${namel}
-    PRIVATE ${PYDISORT_INCLUDE_DIR} ${CMAKE_BINARY_DIR} ${CANOE_INCLUDE_DIR}
+    PRIVATE ${CPPDISORT_INCLUDE_DIR} ${CMAKE_BINARY_DIR} ${CANOE_INCLUDE_DIR}
             ${PYTHON_INCLUDE_DIR} ${PYBIND11_INCLUDE_DIR})
 
   target_link_libraries(${namel} PRIVATE
@@ -25,7 +25,7 @@ macro(add_python_module namel)
     ${ATHENAPP_LIBRARY_${buildu}}
     ${CANOE_LIBRARY_${buildu}}
     ${NETCDF_LIBRARIES}
-    ${PYDISORT_LIBRARY_${buildu}}
+    ${CPPDISORT_LIBRARY_${buildu}}
     ${PYTHON_LIBRARY_RELEASE}
     )
 

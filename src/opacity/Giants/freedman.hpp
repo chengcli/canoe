@@ -19,11 +19,27 @@ class FreedmanMean : public Absorber {
   Real GetAttenuation(Real wave1, Real wave2, AirParcel const& var) const;
 };
 
+class FreedmanMean2 : public Absorber {
+ public:
+  FreedmanMean2(std::vector<std::string> const& species, ParameterMap params)
+      : Absorber("FreedmanMean", species, params) {}
+  virtual ~FreedmanMean2() {}
+  Real GetAttenuation(Real wave1, Real wave2, AirParcel const& var) const;
+};
+
 class FreedmanSimple : public Absorber {
  public:
   FreedmanSimple(std::vector<std::string> const& species, ParameterMap params)
       : Absorber("FreedmanSimple", species, params) {}
   virtual ~FreedmanSimple() {}
+  Real GetAttenuation(Real wave1, Real wave2, AirParcel const& var) const;
+};
+
+class FreedmanSimple2 : public Absorber {
+ public:
+  FreedmanSimple2(std::vector<std::string> const& species, ParameterMap params)
+      : Absorber("FreedmanSimple", species, params) {}
+  virtual ~FreedmanSimple2() {}
   Real GetAttenuation(Real wave1, Real wave2, AirParcel const& var) const;
 };
 

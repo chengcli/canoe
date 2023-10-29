@@ -60,6 +60,7 @@ include(${CMAKE_SOURCE_DIR}/cmake/application.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/rfm.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/disort.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/pvfmm.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/pybind11.cmake)
 
 ## 4. set up project configure file and library ##
 message(STATUS "4. Set up project libraries")
@@ -70,10 +71,7 @@ add_subdirectory(tools)
 add_subdirectory(data)
 
 ## 5. set up python binding ##
-message(STATUS "5. Set up python binding")
-if (DISORT OR RFM)
-  message(STATUS "Include ${CMAKE_SOURCE_DIR}/cmake/pybind11.cmake")
-  include(${CMAKE_SOURCE_DIR}/cmake/pybind11.cmake)
+if (PYTHON_BINDINGS)
   add_subdirectory(python)
 endif()
 
