@@ -15,7 +15,6 @@
 
 // inversion
 #include "inversion/inversion.hpp"
-#include "inversion/inversion_helper.hpp"
 
 // snap
 #include "snap/decomposition/decomposition.hpp"
@@ -25,6 +24,12 @@
 
 // microphysics
 #include "microphysics/microphysics.hpp"
+
+// c3m
+#include "c3m/chemistry.hpp"
+
+// tracer
+#include "tracer/tracer.hpp"
 
 // n-body
 #include "nbody/particles.hpp"
@@ -45,6 +50,9 @@ MeshBlock::Impl::Impl(MeshBlock *pmb, ParameterInput *pin) : pmy_block_(pmb) {
   // microphysics
   pmicro = std::make_shared<Microphysics>(pmb, pin);
 
+  // radiation
+  prad = std::make_shared<Radiation>(pmb, pin);
+
   // chemistry
   pchem = std::make_shared<Chemistry>(pmb, pin);
 
@@ -52,47 +60,17 @@ MeshBlock::Impl::Impl(MeshBlock *pmb, ParameterInput *pin) : pmy_block_(pmb) {
   ptracer = std::make_shared<Tracer>(pmb, pin);
 
   // turbulence
-  if (pin->DoesParameterExist("hydro", "turbulence")) {
-    std::string turbulence_model = pin->GetString("hydro", "turbulence");
-    if (turbulence_model == "none") {
-      pturb = std::make_shared<TurbulenceModel>(pmb, pin);
-    } else if (turbulence_model == "kepsilon") {
-      pturb = std::make_shared<KEpsilonTurbulence>(pmb, pin);
-      if (NTURBULENCE < 2)
-        throw NotImplementedError(
-            "NTURBULENCE must be at least 2 for k-epsilon model");
-    } else {
-      throw NotImplementedError(turbulence_model);
-    }
-  }
-
-  // radiation
-  prad = std::make_shared<Radiation>(pmb, pin);
+  pturb = TurbulenceFactory::CreateTurbulenceModel(pmb, pin);
 
   // inversion queue
-  // all_fits = Inversion::NewInversionQueue(pmb, pin);
+  all_fits = InversionsFactory::CreateAllInversions(pmb, pin);
 
-  // particles
-  all_particles = ParticlesFactory::create_all_particles(pmb, pin);
-
-#ifdef HYDROSTATIC
-  // reference pressure
-  reference_pressure_ = pin->GetReal("mesh", "ReferencePressure");
-
-  // pressure scale height
-  pressure_scale_height_ = pin->GetReal("mesh", "PressureScaleHeight");
-#else
-  reference_pressure_ = 1.0;
-  pressure_scale_height_ = 1.0;
-#endif  // HYDROSTATIC
+  // particle queue
+  all_particles = ParticlesFactory::CreateAllParticles(pmb, pin);
 }
 
 MeshBlock::Impl::~Impl() {}
 
-int find_pressure_level_lesser(Real pres, AthenaArray<Real> const &w, int k,
-                               int j, int is, int ie) {
-  for (int i = is; i <= ie; ++i)
-    if (w(IPR, k, j, i) < pres) return i;
-
-  return ie + 1;
+void MeshBlock::Impl::MapScalarsConserved(AthenaArray<Real> &s) {
+  if (NCLOUD > 0) pmicro->u.InitWithShallowSlice(s, 4, 0, NCLOUD);
 }

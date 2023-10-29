@@ -14,7 +14,7 @@
 #include "turbulence_model.hpp"
 
 KEpsilonTurbulence::KEpsilonTurbulence(MeshBlock *pmb, ParameterInput *pin)
-    : TurbulenceModel(pmb, pin, 2) {
+    : TurbulenceModel(pmb, pin) {
   cmu_ = pin->GetOrAddReal("turbulence", "kepsilon.cmu", 0.09);
   c1_ = pin->GetOrAddReal("turbulence", "kepsilon.c1", 1.44);
   c2_ = pin->GetOrAddReal("turbulence", "kepsilon.c2", 1.92);

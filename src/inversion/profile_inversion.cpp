@@ -133,7 +133,7 @@ void ProfileInversion::InitializePositions() {
   unsigned int seed = time(NULL) + Globals::my_rank;
   NewCArray(init_pos_, nwalker, ndim);
 
-  Real reference_pressure = pmy_block_->pimpl->GetReferencePressure();
+  Real reference_pressure = pmy_block_->pcoord->GetReferencePressure();
   for (int n = 0; n < nwalker; ++n) {
     int ip = 0;
     for (auto m : idx_) {
@@ -211,8 +211,8 @@ void ProfileInversion::UpdateProfiles(Hydro *phydro, Real **XpSample, int k,
   int nsample = plevel_.size();
 
   std::vector<Real> zlev(nsample);
-  Real P0 = pmy_block_->pimpl->GetReferencePressure();
-  Real H0 = pmy_block_->pimpl->GetPressureScaleHeight();
+  Real P0 = pmy_block_->pcoord->GetReferencePressure();
+  Real H0 = pmy_block_->pcoord->GetPressureScaleHeight();
 
   for (int i = 0; i < nsample; ++i) {
     zlev[i] = -H0 * log(plevel_[i] / P0);

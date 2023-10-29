@@ -21,16 +21,14 @@
 class MeshBlock;
 class ParameterInput;
 class Coordinates;
-class BlockIndex;
 class Hydro;
 class Thermodynamics;
 class Radiation;
 
 class Inversion {
  public:
-  static std::vector<std::unique_ptr<Inversion>> NewInversionQueue(
-      MeshBlock *pmb, ParameterInput *pin);
-
+  /// Constructor and destructor
+  Inversion(MeshBlock *pmb, ParameterInput *pin, std::string name);
   virtual ~Inversion();
 
   virtual Real LogPosteriorProbability(Radiation *prad, Hydro *phydro,
@@ -82,8 +80,6 @@ class Inversion {
   }
 
  protected:
-  Inversion(MeshBlock *pmb, ParameterInput *pin, std::string name);
-
   // name of the inversion
   std::string name_;
 
@@ -112,7 +108,20 @@ class Inversion {
   Real *zz_, *par_;
 };
 
-using InversionPtr = std::unique_ptr<Inversion>;
-using InversionQueue = std::vector<std::unique_ptr<Inversion>>;
+using InversionPtr = std::shared_ptr<Inversion>;
+using AllInversions = std::vector<std::shared_ptr<Inversion>>;
+
+class InversionsFactory {
+ public:
+  static AllInversions CreateAllInversions(MeshBlock *pmb, ParameterInput *pin);
+};
+
+namespace InversionHelper {
+
+void read_observation_file(Eigen::VectorXd *target, Eigen::MatrixXd *icov,
+                           std::string fname);
+void gather_probability(std::vector<Inversion *> const &fitq);
+
+}  // namespace InversionHelper
 
 #endif  //  SRC_INVERSION_INVERSION_HPP_

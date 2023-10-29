@@ -44,12 +44,12 @@ void FITSOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) {
     fname.append(number);
     fname.append(".fits");
 
-    /*for (int i = 0; i < pm->nblocal; ++i) {
+    for (int i = 0; i < pm->nblocal; ++i) {
       MeshBlock *pmb = pm->my_blocks(i);
-      auto &pfit = pmb->pimpl->fitq.back();
+      auto &pfit = pmb->pimpl->all_fits.back();
       pfit->MakeMCMCOutputs(fname);
       pfit->ResetChain();
-    }*/
+    }
   }
 
   // increment counters

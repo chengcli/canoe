@@ -17,6 +17,9 @@
 #include <harp/radiation.hpp>
 #include <harp/radiation_band.hpp>
 
+// snap
+#include <snap/thermodynamics/thermodynamics.hpp>
+
 class TestMicrowaveOpacity : public testing::Test {
  protected:
   ParameterInput *pinput;

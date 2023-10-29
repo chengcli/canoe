@@ -17,8 +17,14 @@
 #include <impl.hpp>
 #include <index_map.hpp>
 
+// snap
+#include <snap/thermodynamics/thermodynamics.hpp>
+
 // microphysics
 #include <microphysics/microphysics.hpp>
+
+// tracer
+#include <tracer/tracer.hpp>
 
 class TestImpl : public testing::Test {
  protected:

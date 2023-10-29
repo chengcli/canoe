@@ -2,7 +2,6 @@
 #define SRC_INDEX_MAP_HPP_
 
 // C/C++
-#include <iostream>
 #include <map>
 #include <string>
 

@@ -10,6 +10,7 @@
 
 // application
 #include <application/application.hpp>
+#include <application/exceptions.hpp>
 
 // canoe
 #include <configure.hpp>
@@ -19,12 +20,9 @@
 
 // constructor, initializes data structures and parameters
 
-TurbulenceModel::TurbulenceModel(MeshBlock *pmb, ParameterInput *pin, int nvar)
+TurbulenceModel::TurbulenceModel(MeshBlock *pmb, ParameterInput *pin)
     : pmy_block(pmb) {
   if (NTURBULENCE == 0) return;
-
-  Application::Logger app("snap");
-  app->Log("Initialize Turbulence");
 
   w.InitWithShallowSlice(pmb->pscalars->r, 4, NCLOUD + NCHEMISTRY + NTRACER,
                          NTURBULENCE);
@@ -42,5 +40,29 @@ TurbulenceModel::~TurbulenceModel() {
   if (NTURBULENCE == 0) return;
 
   Application::Logger app("snap");
-  app->Log("Destroy Turbulence");
+  app->Log("Destroy TurbulenceModel");
+}
+
+TurbulenceModelPtr TurbulenceFactory::CreateTurbulenceModel(
+    MeshBlock *pmb, ParameterInput *pin) {
+  Application::Logger app("snap");
+  app->Log("Create turbulenceModel");
+
+  TurbulenceModelPtr pturb = nullptr;
+
+  if (pin->DoesParameterExist("hydro", "turbulence")) {
+    std::string turbulence_model = pin->GetString("hydro", "turbulence");
+    if (turbulence_model == "none") {
+      pturb = std::make_shared<TurbulenceModel>(pmb, pin);
+    } else if (turbulence_model == "kepsilon") {
+      pturb = std::make_shared<KEpsilonTurbulence>(pmb, pin);
+      if (NTURBULENCE < 2)
+        throw NotImplementedError(
+            "NTURBULENCE must be at least 2 for k-epsilon model");
+    } else {
+      throw NotImplementedError(turbulence_model);
+    }
+  }
+
+  return pturb;
 }

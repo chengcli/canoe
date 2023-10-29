@@ -42,9 +42,8 @@ ParticlePtr find_particle(AllParticles const &pts, std::string name) {
   return nullptr;
 }
 
-namespace ParticlesFactory {
-
-AllParticles create_all_particles(MeshBlock *pmb, ParameterInput *pin) {
+AllParticles ParticlesFactory::CreateAllParticles(MeshBlock *pmb,
+                                                  ParameterInput *pin) {
   AllParticles all_particles;
 
   std::string str = pin->GetOrAddString("particles", "particles", "");
@@ -62,5 +61,3 @@ AllParticles create_all_particles(MeshBlock *pmb, ParameterInput *pin) {
 
   return all_particles;
 }
-
-}  // namespace ParticlesFactory
