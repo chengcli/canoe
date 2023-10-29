@@ -25,13 +25,13 @@ brew bundle
 ### Ubuntu Linux Installation Guide
 On a Ubuntu linux system, use `apt` to install
 ```
-sudo apt install $(debian_package.txt)
+sudo apt install $(packages_debian.txt)
 ```
 
 ### Redhat Linux Installation Guide
 On a Redhat linux system, use `yum` to install
 ```
-sudo yum -y install $(cat centos_packages.txt)
+sudo yum -y install $(cat packages_centos.txt)
 ```
 
 ### Multi-core execution
