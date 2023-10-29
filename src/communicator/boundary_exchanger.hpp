@@ -1,9 +1,6 @@
 #ifndef SRC_COMMUNICATOR_BOUNDARY_EXCHANGER_HPP_
 #define SRC_COMMUNICATOR_BOUNDARY_EXCHANGER_HPP_
 
-// C/C++
-#include <functional> // hash
-
 // Athena++
 #include <athena/bvals/bvals.hpp>
 #include <athena/globals.hpp>
@@ -18,14 +15,6 @@
 
 namespace Globals {
 extern int mpi_tag_ub;
-}
-
-// helper functions
-inline int create_mpi_tag(int lid, int tid, std::string exchanger_name) {
-  int tag = BoundaryBase::CreateBvalsMPITag(lid, tid, 0);
-
-  std::string str = exchanger_name + std::to_string(tag);
-  return std::hash<std::string>{}(str)%(Globals::mpi_tag_ub);
 }
 
 template <typename T>
@@ -57,13 +46,13 @@ class BoundaryExchanger {
       if (nb.snb.rank == Globals::my_rank) {  // on the same process
         MeshBlock *neighbor = pmb->pmy_mesh->FindMeshBlock(nb.snb.gid);
         auto &exchanger = static_cast<BoundaryExchanger<T> *>(
-            neighbor->pimpl->GetExchanger(Communicator<T>::name));
+            neighbor->pimpl->GetExchanger(Communicator<T>::uid));
         exchanger->SetRecvBuffer(nb.targetid, send_buffer_[nb.bufid]);
         exchanger->SetBoundaryStatus(nb.targetid, BoundaryStatus::arrived);
       }
 #ifdef MPI_PARALLEL
       else {  // MPI
-        int tag = create_mpi_tag(nb.snb.lid, nb.targetid, Communicator<T>::name);
+        int tag = create_mpi_tag(nb.snb.lid, nb.targetid, Communicator<T>::uid);
         int ssize = send_buffer_[nb.bufid].size();
         MPI_Isend(send_buffer_[nb.bufid].data(), ssize,
                   Communicator<T>::mpi_type, nb.snb.rank, tag,
@@ -83,7 +72,7 @@ class BoundaryExchanger {
       if (nb.snb.rank == Globals::my_rank) continue;  // local boundary received
 
       if (status_flag_[nb.bufid] == BoundaryStatus::waiting) {
-        int tag = create_mpi_tag(pmb->lid, nb.bufid, Communicator<T>::name);
+        int tag = create_mpi_tag(pmb->lid, nb.bufid, Communicator<T>::uid);
 
         MPI_Probe(nb.snb.rank, tag, MPI_COMM_WORLD, &status);
         MPI_Get_count(&status, Communicator<T>::mpi_type, &rsize);
@@ -127,5 +116,11 @@ class BoundaryExchanger {
   MPI_Request req_mpi_recv_[Communicator<T>::max_neighbors];
 #endif
 };
+
+// helper functions
+inline int create_mpi_tag(int lid, int tid, int exchanger_uid) {
+  int tag = BoundaryBase::CreateBvalsMPITag(lid, tid, exchanger_uid);
+  return tag % (Globals::mpi_tag_ub);
+}
 
 #endif  // SRC_COMMUNICATOR_BOUNDARY_EXCHANGER_HPP_

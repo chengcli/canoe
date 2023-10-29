@@ -16,9 +16,6 @@
 // snap
 #include "snap/thermodynamics/thermodynamics.hpp"
 
-// n-body
-#include "nbody/particle_data.hpp"
-
 // MPI headers
 #ifdef MPI_PARALLEL
 #include <mpi.h>
@@ -63,9 +60,6 @@ void mesh_setup(ParameterInput*& pinput, Mesh*& pmesh) {
 
   // thermodynamics
   Thermodynamics::InitFromAthenaInput(pinput);
-
-  // n-body
-  commit_mpi_particle_data();
 
   try {
     if (cli->res_flag == 0) {

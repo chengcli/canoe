@@ -3,7 +3,6 @@
 
 // C/C++
 #include <vector>
-#include <string>
 
 // canoe
 #include <configure.hpp>
@@ -16,8 +15,8 @@ template <typename T>
 struct Communicator {
   using container_t = std::vector<T>;
 
+  constexpr static int uid = -1;
   constexpr static int max_neighbors = 56;
-  static std::string name;
 
 #ifdef MPI_PARALLEL
   static MPI_Datatype mpi_type;

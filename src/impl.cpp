@@ -37,7 +37,6 @@
 // canoe
 #include "impl.hpp"
 #include "index_map.hpp"
-#include "virtual_groups.hpp"
 
 MeshBlock::Impl::Impl(MeshBlock *pmb, ParameterInput *pin) : pmy_block_(pmb) {
   du.NewAthenaArray(NHYDRO, pmb->ncells3, pmb->ncells2, pmb->ncells1);

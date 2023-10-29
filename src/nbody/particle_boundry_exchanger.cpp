@@ -44,7 +44,7 @@ bool ParticleBase::AttachTo(ParticleContainer &container) {
 
       for (; it != recv_buffer_[nb.bufid].end(); ++it) {
         // 0:INNER_X1, 1:OUTER_X1
-        if (pm->mesh_bcs[(nb.ni.ox1 + 1) >> 1] == BoundaryFlag::periodic) {
+        if (pm->mesh_bcs[nb.ni.ox1 + 1 >> 1] == BoundaryFlag::periodic) {
           if (it->x1 >= pm->mesh_size.x1max)
             it->x1 -= pm->mesh_size.x1max - pm->mesh_size.x1min;
           if (it->x1 <= pm->mesh_size.x1min)
@@ -52,7 +52,7 @@ bool ParticleBase::AttachTo(ParticleContainer &container) {
         }
 
         // 2:INNER_X2, 3:OUTER_X2
-        if (pm->mesh_bcs[2 + ((nb.ni.ox2 + 1) >> 1)] == BoundaryFlag::periodic) {
+        if (pm->mesh_bcs[2 + (nb.ni.ox2 + 1 >> 1)] == BoundaryFlag::periodic) {
           if (it->x2 >= pm->mesh_size.x2max)
             it->x2 -= pm->mesh_size.x2max - pm->mesh_size.x2min;
           if (it->x2 <= pm->mesh_size.x2min)
@@ -60,7 +60,7 @@ bool ParticleBase::AttachTo(ParticleContainer &container) {
         }
 
         // 4:INNER_X3, 5:OUTER_X3
-        if (pm->mesh_bcs[4 + ((nb.ni.ox3 + 1) >> 1)] == BoundaryFlag::periodic) {
+        if (pm->mesh_bcs[4 + (nb.ni.ox3 + 1 >> 1)] == BoundaryFlag::periodic) {
           if (it->x3 >= pm->mesh_size.x3max)
             it->x3 -= pm->mesh_size.x3max - pm->mesh_size.x3min;
           if (it->x3 <= pm->mesh_size.x3min)
