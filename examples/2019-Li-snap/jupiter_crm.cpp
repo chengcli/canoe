@@ -36,7 +36,7 @@
 // snap
 #include <snap/thermodynamics/thermodynamics.hpp>
 
-Real grav, P0, T0, Tmin, iH2O, iNH3;
+Real grav, P0, T0, Tmin, iH2O, iNH3, prad, hrate;
 
 void MeshBlock::InitUserMeshBlockData(ParameterInput *pin) {
   AllocateUserOutputVariables(4 + NVAPOR);
@@ -70,6 +70,32 @@ void MeshBlock::UserWorkBeforeOutput(ParameterInput *pin) {
       }
 }
 
+void Forcing(MeshBlock *pmb, Real const time, Real const dt,
+             AthenaArray<Real> const &w, AthenaArray<Real> const &r,
+             AthenaArray<Real> const &bcc, AthenaArray<Real> &du,
+             AthenaArray<Real> &s) {
+  int is = pmb->is, js = pmb->js, ks = pmb->ks;
+  int ie = pmb->ie, je = pmb->je, ke = pmb->ke;
+  auto pthermo = Thermodynamics::GetInstance();
+
+  for (int k = ks; k <= ke; ++k)
+    for (int j = js; j <= je; ++j)
+      for (int i = is; i <= ie; ++i) {
+        auto &&air = AirParcelHelper::gather_from_primitive(pmb, k, j, i);
+
+        Real cv = pthermo->GetCvMass(air, 0);
+
+        if (w(IPR, k, j, i) < prad) {
+          du(IEN, k, j, i) += dt * hrate * w(IDN, k, j, i) * cv *
+                              (1. + 1.E-4 * sin(2. * M_PI * rand() / RAND_MAX));
+        }
+
+        // if (air.w[IDN] < Tmin) {
+        //   u(IEN,k,j,i) += w(IDN,k,j,i)*cv*(Tmin - temp)/sponge_tau*dt;
+        // }
+      }
+}
+
 void Mesh::InitUserMeshData(ParameterInput *pin) {
   grav = -pin->GetReal("hydro", "grav_acc1");
 
@@ -77,14 +103,19 @@ void Mesh::InitUserMeshData(ParameterInput *pin) {
   T0 = pin->GetReal("problem", "T0");
 
   Tmin = pin->GetReal("problem", "Tmin");
+  prad = pin->GetReal("problem", "prad");
+  hrate = pin->GetReal("problem", "hrate") / 86400.;
 
   // index
   // auto pindex = IndexMap::GetInstance();
   // iH2O = pindex->GetVaporId("H2O");
   // iNH3 = pindex->GetVaporId("NH3");
+  EnrollUserExplicitSourceFunction(Forcing);
 }
 
 void MeshBlock::ProblemGenerator(ParameterInput *pin) {
+  srand(Globals::my_rank + time(0));
+
   Application::Logger app("main");
   app->Log("ProblemGenerator: jupiter_crm");
 
@@ -159,7 +190,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
         AirParcelHelper::distribute_to_conserved(this, k, j, i, air);
         pthermo->Extrapolate(&air, pcoord->dx1f(i),
                              Thermodynamics::Method::PseudoAdiabat, grav,
-                             1.e-3);
+                             1.e-7);
       }
 
       // Replace adiabatic atmosphere with isothermal atmosphere if temperature
