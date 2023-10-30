@@ -77,6 +77,14 @@ endif()
 
 ## 6. set up unit tests and examples
 message(STATUS "6. Set up unit tests")
+
+# load all macros
+FILE(GLOB _macro_files "${CMAKE_SOURCE_DIR}/cmake/macros/*.cmake")
+FOREACH(_file ${_macro_files})
+  MESSAGE(STATUS "Include ${_file}")
+  INCLUDE(${_file})
+ENDFOREACH()
+
 add_subdirectory(examples)
 add_subdirectory(tests)
 

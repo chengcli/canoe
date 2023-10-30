@@ -36,6 +36,9 @@
 // snap
 #include <snap/thermodynamics/thermodynamics.hpp>
 
+// special includes
+#include <special/giants_enroll_vapor_functions_v1.hpp>
+
 Real grav, P0, T0, Tmin, iH2O, iNH3, prad, hrate;
 
 void MeshBlock::InitUserMeshBlockData(ParameterInput *pin) {

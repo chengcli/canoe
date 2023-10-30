@@ -1,59 +1,19 @@
-string(TOLOWER ${CMAKE_BUILD_TYPE} buildl)
-string(TOUPPER ${CMAKE_BUILD_TYPE} buildu)
+# ============================================
+# Examples published in Li et al. (2019), ApJS
+# ============================================
 
-macro(setup_problem namel)
-  set_target_properties(
-      ${namel}.${buildl}
-      PROPERTIES
-      RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
-      COMPILE_FLAGS ${CMAKE_CXX_FLAGS_${buildu}}
-      )
+# 1. Compile straka, robert and bryan
+setup_problem(straka)
+setup_problem(robert)
+setup_problem(bryan)
 
-  target_link_libraries(${namel}.${buildl}
-      ${CANOE_LIBRARY_${buildu}}
-      )
-
-  target_include_directories(${namel}.${buildl}
-      PRIVATE
-      ${CMAKE_BINARY_DIR}
-      ${CANOE_INCLUDE_DIR}
-      ${EIGEN3_INCLUDE_DIR}
-      ${MPI_CXX_INCLUDE_PATH}
-      ${NETCDF_INCLUDES}
-      ${PNETCDF_INCLUDE_DIR}
-      )
-endmacro()
-
-# 1. Compile straka and robert
-foreach(namel straka robert)
-  add_executable(${namel}.${buildl} ${namel}.cpp
-    ${CMAKE_BINARY_DIR}/main_${TASK}.cpp)
-  setup_problem(${namel})
-endforeach()
-
-# 2. Compile bryan
-if (${NVAPOR} EQUAL 1 AND ${NCLOUD} EQUAL 1 AND ${NPHASE_LEGACY} EQUAL 2)
-  set(namel bryan)
-
-  add_executable(${namel}.${buildl} ${namel}_pgen.cpp ${namel}_mods.cpp
-    ${CMAKE_BINARY_DIR}/main_${TASK}.cpp)
-
-  setup_problem(${namel})
-endif()
-
-# 3. Compile sedimentation and jupiter crm
+# 2. Compile sedimentation
 if (${NVAPOR} EQUAL 2 AND ${NCLOUD} EQUAL 4 AND ${NPHASE_LEGACY} EQUAL 3)
-  set(namel sedimentation)
-  add_executable(${namel}.${buildl} ${namel}.cpp ../giants_enroll_vapor_functions.cpp
-    ${CMAKE_BINARY_DIR}/main_${TASK}.cpp)
-  setup_problem(${namel})
+  setup_problem(sedimentation)
 endif()
 
-# 4. Compile jupiter crm
-set(namel jupiter_crm)
-add_executable(${namel}.${buildl} ${namel}.cpp ../giants_enroll_vapor_functions.cpp
-  ${CMAKE_BINARY_DIR}/main_${TASK}.cpp)
-setup_problem(${namel})
+# 3. Compile jupiter crm
+setup_problem(jupiter_crm)
 
 # 4. Copy input files to run directory
 file(GLOB inputs *.inp *.yaml)

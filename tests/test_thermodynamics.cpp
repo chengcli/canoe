@@ -14,6 +14,10 @@
 #include <snap/thermodynamics/vapors/ammonia_vapors.hpp>
 #include <snap/thermodynamics/vapors/water_vapors.hpp>
 
+// special includes
+#include <special/giants_add_absorber_v1.hpp>
+#include <special/giants_enroll_vapor_functions_v1.hpp>
+
 class TestThermodynamics : public testing::Test {
  protected:
   ParameterInput *pinput;

@@ -19,6 +19,10 @@
 #include <microphysics/microphysical_schemes.hpp>
 #include <microphysics/microphysics.hpp>
 
+// special includes
+#include <special/giants_add_absorber_v1.hpp>
+#include <special/giants_enroll_vapor_functions_v1.hpp>
+
 class TestMicrophysics : public testing::Test {
  protected:
   ParameterInput *pinput;

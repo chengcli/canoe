@@ -38,6 +38,9 @@
 // snap
 #include <snap/thermodynamics/thermodynamics.hpp>
 
+// special includes
+#include "bryan_vapor_functions.hpp"
+
 int iH2O, iH2Oc;
 Real p0, grav;
 
