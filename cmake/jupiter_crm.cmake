@@ -1,4 +1,4 @@
-# configure file for test sedimentation
+# configure file for test jupiter crm
 
 macro(SET_IF_EMPTY _variable)
   if("${${_variable}}" STREQUAL "")
@@ -9,9 +9,7 @@ endmacro()
 # athena variables
 set_if_empty(NUMBER_GHOST_CELLS 3)
 
-# canoe configure
-set(NVAPOR 2)
-set(NCLOUD 4)
+# canoe configure set(NVAPOR 2) set(NCLOUD 4)
 set(NPHASE_LEGACY 3)
 set(NETCDF ON)
 set(PNETCDF ON)

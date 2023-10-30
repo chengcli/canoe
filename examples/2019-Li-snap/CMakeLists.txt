@@ -41,15 +41,19 @@ if (${NVAPOR} EQUAL 1 AND ${NCLOUD} EQUAL 1 AND ${NPHASE_LEGACY} EQUAL 2)
   setup_problem(${namel})
 endif()
 
-# 3. Compile sedimentation
+# 3. Compile sedimentation and jupiter crm
 if (${NVAPOR} EQUAL 2 AND ${NCLOUD} EQUAL 4 AND ${NPHASE_LEGACY} EQUAL 3)
   set(namel sedimentation)
-
   add_executable(${namel}.${buildl} ${namel}.cpp ../giants_enroll_vapor_functions.cpp
     ${CMAKE_BINARY_DIR}/main_${TASK}.cpp)
-
   setup_problem(${namel})
 endif()
+
+# 4. Compile jupiter crm
+set(namel jupiter_crm)
+add_executable(${namel}.${buildl} ${namel}.cpp ../giants_enroll_vapor_functions.cpp
+  ${CMAKE_BINARY_DIR}/main_${TASK}.cpp)
+setup_problem(${namel})
 
 # 4. Copy input files to run directory
 file(GLOB inputs *.inp *.yaml)
