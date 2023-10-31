@@ -106,7 +106,7 @@ void Thermodynamics::enrollVaporFunctions() {
   app->Log("Enrolling vapor functions");
 
   enroll_vapor_function_H2O(svp_func1_, cloud_index_set_);
-  // enroll_vapor_function_NH3(svp_func1_, cloud_index_set_);
-  // enroll_vapor_function_H2S(svp_func1_, cloud_index_set_);
-  // enroll_vapor_function_NH4SH(svp_func2_, cloud_reaction_map_);
+  enroll_vapor_function_NH3(svp_func1_, cloud_index_set_);
+  enroll_vapor_function_H2S(svp_func1_, cloud_index_set_);
+  enroll_vapor_function_NH4SH(svp_func2_, cloud_reaction_map_);
 }
