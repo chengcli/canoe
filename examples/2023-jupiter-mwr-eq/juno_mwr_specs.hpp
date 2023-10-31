@@ -41,20 +41,9 @@
 
 namespace gp = GiantPlanets;
 
-extern Real xHe, xCH4;
-
-void Thermodynamics::enrollVaporFunctions() {
-  Application::Logger app("snap");
-  app->Log("Enrolling vapor functions for juno mwr");
-
-  enrollVaporFunctionH2O();
-  enrollVaporFunctionNH3();
-  enrollVaporFunctionH2S();
-  enrollVaporFunctionNH4SH();
-}
-
 // water svp
-void Thermodynamics::enrollVaporFunctionH2O() {
+void enroll_vapor_function_H2O(Thermodynamics::SVPFunc1Container& svp_func1,
+                               std::vector<IndexSet> const& cloud_index_set) {
   auto pindex = IndexMap::GetInstance();
   if (!pindex->HasVapor("H2O")) return;
 
@@ -62,20 +51,19 @@ void Thermodynamics::enrollVaporFunctionH2O() {
   app->Log("Enrolling H2O vapor pressures");
 
   int iH2O = pindex->GetVaporId("H2O");
-  for (int n = 0; n < cloud_index_set_[iH2O].size(); ++n) {
-    int j = cloud_index_set_[iH2O][n];
-    if (n == 0) {
-      svp_func1_[iH2O][n] = [](AirParcel const& qfrac, int, int) {
-        return sat_vapor_p_H2O_BriggsS(qfrac.w[IDN]);
-      };
-    } else {
-      svp_func1_[iH2O][n] = NullSatVaporPres1;
-    }
+
+  svp_func1[iH2O][0] = [](AirParcel const& qfrac, int, int) {
+    return sat_vapor_p_H2O_BriggsS(qfrac.w[IDN]);
+  };
+
+  for (int n = 1; n < cloud_index_set[iH2O].size(); ++n) {
+    svp_func1[iH2O][n] = NullSatVaporPres1;
   }
 }
 
 // ammonia svp
-void Thermodynamics::enrollVaporFunctionNH3() {
+void enroll_vapor_function_NH3(Thermodynamics::SVPFunc1Container& svp_func1,
+                               std::vector<IndexSet> const& cloud_index_set) {
   auto pindex = IndexMap::GetInstance();
   if (!pindex->HasVapor("NH3")) return;
 
@@ -83,20 +71,19 @@ void Thermodynamics::enrollVaporFunctionNH3() {
   app->Log("Enrolling NH3 vapor pressures");
 
   int iNH3 = pindex->GetVaporId("NH3");
-  for (int n = 0; n < cloud_index_set_[iNH3].size(); ++n) {
-    int j = cloud_index_set_[iNH3][n];
-    if (n == 0) {
-      svp_func1_[iNH3][n] = [](AirParcel const& qfrac, int, int) {
-        return sat_vapor_p_NH3_BriggsS(qfrac.w[IDN]);
-      };
-    } else {
-      svp_func1_[iNH3][n] = NullSatVaporPres1;
-    }
+
+  svp_func1[iNH3][0] = [](AirParcel const& qfrac, int, int) {
+    return sat_vapor_p_NH3_BriggsS(qfrac.w[IDN]);
+  };
+
+  for (int n = 1; n < cloud_index_set[iNH3].size(); ++n) {
+    svp_func1[iNH3][n] = NullSatVaporPres1;
   }
 }
 
 // hydrogen sulfide svp
-void Thermodynamics::enrollVaporFunctionH2S() {
+void enroll_vapor_function_H2S(Thermodynamics::SVPFunc1Container& svp_func1,
+                               std::vector<IndexSet> const& cloud_index_set) {
   auto pindex = IndexMap::GetInstance();
   if (!pindex->HasVapor("H2S")) return;
 
@@ -104,20 +91,20 @@ void Thermodynamics::enrollVaporFunctionH2S() {
   app->Log("Enrolling H2S vapor pressures");
 
   int iH2S = pindex->GetVaporId("H2S");
-  for (int n = 0; n < cloud_index_set_[iH2S].size(); ++n) {
-    int j = cloud_index_set_[iH2S][n];
-    if (n == 0) {
-      svp_func1_[iH2S][n] = [](AirParcel const& qfrac, int, int) {
-        return sat_vapor_p_H2S_Antoine(qfrac.w[IDN]);
-      };
-    } else {
-      svp_func1_[iH2S][n] = NullSatVaporPres1;
-    }
+
+  svp_func1[iH2S][0] = [](AirParcel const& qfrac, int, int) {
+    return sat_vapor_p_H2S_Antoine(qfrac.w[IDN]);
+  };
+
+  for (int n = 1; n < cloud_index_set[iH2S].size(); ++n) {
+    svp_func1[iH2S][n] = NullSatVaporPres1;
   }
 }
 
 // ammonium hydrosulfide svp
-void Thermodynamics::enrollVaporFunctionNH4SH() {
+void enroll_vapor_function_NH4SH(
+    Thermodynamics::SVPFunc2Container& svp_func2,
+    std::map<IndexPair, ReactionInfo>& cloud_reaction_map) {
   auto pindex = IndexMap::GetInstance();
   if (!pindex->HasVapor("NH3") || !pindex->HasVapor("H2S") ||
       !pindex->HasCloud("NH4SH(s)"))
@@ -132,13 +119,25 @@ void Thermodynamics::enrollVaporFunctionNH4SH() {
   int iNH4SH = pindex->GetCloudId("NH4SH(s)");
 
   auto ij = std::minmax(iNH3, iH2S);
-  svp_func2_[ij] = [](AirParcel const& qfrac, int, int, int) {
+  svp_func2[ij] = [](AirParcel const& qfrac, int, int, int) {
     return sat_vapor_p_NH4SH_Lewis(qfrac.w[IDN]);
   };
 
-  cloud_reaction_map_[ij] = std::make_pair<ReactionIndx, ReactionStoi>(
+  cloud_reaction_map[ij] = std::make_pair<ReactionIndx, ReactionStoi>(
       {iNH3, iH2S, iNH4SH}, {1, 1, 1});
 }
+
+void Thermodynamics::enrollVaporFunctions() {
+  Application::Logger app("snap");
+  app->Log("Enrolling vapor functions");
+
+  enroll_vapor_function_H2O(svp_func1_, cloud_index_set_);
+  enroll_vapor_function_NH3(svp_func1_, cloud_index_set_);
+  enroll_vapor_function_H2S(svp_func1_, cloud_index_set_);
+  enroll_vapor_function_NH4SH(svp_func2_, cloud_reaction_map_);
+}
+
+extern Real xHe, xCH4;
 
 // hydrogen heat capacity
 Real Thermodynamics::GetGammad(AirParcel const& qfrac) const {

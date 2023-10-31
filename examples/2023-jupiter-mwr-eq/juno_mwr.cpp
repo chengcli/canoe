@@ -57,6 +57,9 @@
 // inversion
 #include <inversion/profile_inversion.hpp>
 
+// special includes
+#include "juno_mwr_specs.hpp"
+
 Real grav, P0, T0, Tmin, clat;
 Real xHe, xCH4, xH2S, xNa, xKCl, metallicity;
 
