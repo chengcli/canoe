@@ -1,0 +1,230 @@
+/**
+@page 3d.robert Example #2 : The Robert Rising Bubble Problem
+@htmlonly
+<div class="contents">
+<div class="toc">
+<p><b>Table of contents</b></p>
+<ul>
+  <li><a href="#Intro" class=bold>Introduction</a></li>
+    <ul>
+    </ul>
+  <li><a href="#CommProg" class=bold>Commented program</a></li>
+    <ul>
+        <li><a href="#Includefiles">Include files</a></li>
+        <li><a href="#Preamble">Preamble</a></li>
+        <li><a href="#Initialcondition">Initial condition</a></li>
+      </ul>
+  <li><a href="#Results" class=bold>Results</a></li>
+    <ul>
+    </ul>
+  <li><a href="#PlainProg" class=bold>Plain program</a></li>
+</ul></div></div>
+@endhtmlonly
+<a name="Intro"></a>
+<a name="Introduction"></a><h1> Introduction </h1>
+
+
+The second example shows the the rising of a warm bubble, which to some extent,
+resembles the mushroom cloud of an atomic bomb. This test case was proposed by
+@cite robert1993. The original setting was is 2D and we extended it to 3D.
+The size of the domain is 1 km $\times$ 1 km $\times$ 2.5km. The model resolution is
+uniformlly 5 m in each dimension. The bubble is initially centered at
+$x_0 = y_0 = 500 \text{m}, z_0 = 260 \text{m}$ with a Gaussian-shaped potential
+temperature anomaly as:
+
+@f{eqnarray*}
+    \Delta \theta &=& 0.5\;\text{K}, \qquad\quad\quad r \leq a \\
+                  &=& 0.5e^{-(r-a)^2/s^2}\;\text{K}, \quad r > a
+@f}
+
+where $r$ is the distance to the center, $a=50$ m and $s=100$ m. The background
+atmosphere is isentropic with surface pressure being 1 bar and surface temperature
+303.15 K. The bubble is then released and evolve to 1200 s.
+ *
+ *
+ * <a name="CommProg"></a>
+ * <h1> The commented program</h1>
+ *
+ *
+ *
+ *
+ * @code
+ * /* -------------------------------------------------------------------------------------
+ *  * SNAP Example Program
+ *  *
+ *  * Contributer:
+ *  * Cheng Li, University of Michigan
+ *  * Huazhi Ge, University of California, Santa Cruz
+ *  *
+ *  * Year: 2021
+ *  * Contact: chengcli@umich.edu
+ *  * Reference: Robert et al., 1992
+ *  * -------------------------------------------------------------------------------------
+ *  */
+ *
+ * @endcode
+ *
+ *
+ * <a name="Includefiles"></a>
+ * <h3>Include files</h3>
+ *
+
+ *
+ * These input files are just like those in the @ref 2d.straka, so additional comments
+ * are not required.
+ *
+ * @code
+ * #include "../athena.hpp"
+ * #include "../athena_arrays.hpp"
+ * #include "../parameter_input.hpp"
+ * #include "../coordinates/coordinates.hpp"
+ * #include "../eos/eos.hpp"
+ * #include "../field/field.hpp"
+ * #include "../hydro/hydro.hpp"
+ * #include "../mesh/mesh.hpp"
+ * #include "../thermodynamics/thermodynamics.hpp"
+ * #include "../thermodynamics/thermodynamic_funcs.hpp"
+ *
+ *
+ * @endcode
+ *
+ *
+ * <a name="Preamble"></a>
+ * <h3>Preamble</h3>
+ *
+
+ *
+ * We only need one global variables here, the surface pressure
+ *
+ * @code
+ * Real p0;
+ *
+ * @endcode
+ *
+ * Same as that in @ref 2d.straka, make outputs of temperature and potential temperature.
+ *
+ * @code
+ * void MeshBlock::InitUserMeshBlockData(ParameterInput *pin)
+ * {
+ *   AllocateUserOutputVariables(2);
+ *   SetUserOutputVariableName(0, "temp", "temperature", "K");
+ *   SetUserOutputVariableName(1, "theta", "potential temperature", "K");
+ * }
+ *
+ * @endcode
+ *
+ * Set temperature and potential temperature.
+ *
+ * @code
+ * void MeshBlock::UserWorkBeforeOutput(ParameterInput *pin)
+ * {
+ *   Real gamma = peos->GetGamma();
+ *   for (int k = ks; k <= ke; ++k)
+ *     for (int j = js; j <= je; ++j)
+ *       for (int i = is; i <= ie; ++i) {
+ *         user_out_var(0,k,j,i) = pthermo->GetTemp(phydro->w.at(k,j,i));
+ *         user_out_var(1,k,j,i) = PotentialTemp(phydro->w.at(k,j,i), p0, pthermo);
+ *       }
+ * }
+ *
+ * @endcode
+ *
+ * Initialize surface pressure from input file.
+ *
+ * @code
+ * void Mesh::InitUserMeshData(ParameterInput *pin)
+ * {
+ *   p0 = pin->GetReal("problem", "p0");
+ * }
+ *
+ * @endcode
+ *
+ *
+ * <a name="Initialcondition"></a>
+ * <h3>Initial condition</h3>
+ *
+
+ *
+ * We do not need forcings other than gravity in this problem,
+ * so we go directly to the initial condition.
+ *
+ * @code
+ * void MeshBlock::ProblemGenerator(ParameterInput *pin)
+ * {
+ * @endcode
+ *
+ * Similar to @ref 2d.straka, read variables in the input file
+ *
+ * @code
+ *   Real gamma = pin->GetReal("hydro", "gamma");
+ *   Real grav = - phydro->hsrc.GetG1();
+ *   Real Ts = pin->GetReal("problem", "Ts");
+ *   Real Rd = pin->GetReal("thermodynamics", "Rd");
+ *   Real cp = gamma/(gamma - 1.)*Rd;
+ *
+ *   Real xc = pin->GetReal("problem", "xc");
+ *   Real yc = pin->GetReal("problem", "yc");
+ *   Real zc = pin->GetReal("problem", "zc");
+ *   Real s = pin->GetReal("problem", "s");
+ *   Real a = pin->GetReal("problem", "a");
+ *   Real dT = pin->GetReal("problem", "dT");
+ *
+ * @endcode
+ *
+ * Whether to do a uniform bubble or not.
+ *
+ * @code
+ *   bool uniform_bubble = pin->GetOrAddBoolean("problem", "uniform_bubble", false);
+ *
+ * @endcode
+ *
+ * Loop over the grids and set initial condition
+ *
+ * @code
+ *   for (int k = ks; k <= ke; ++k)
+ *     for (int j = js; j <= je; ++j)
+ *       for (int i = is; i <= ie; ++i) {
+ *         Real x1 = pcoord->x1v(i);
+ *         Real x2 = pcoord->x2v(j);
+ *         Real x3 = pcoord->x3v(k);
+ *         Real r = sqrt((x3-yc)*(x3-yc) + (x2-xc)*(x2-xc) + (x1-zc)*(x1-zc));
+ *         Real temp = Ts - grav*x1/cp;
+ *         phydro->w(IPR,k,j,i) = p0*pow(temp/Ts, cp/Rd);
+ *         if (r <= a)
+ *           temp += dT*pow(phydro->w(IPR,k,j,i)/p0, Rd/cp);
+ *         else if (!uniform_bubble)
+ *           temp += dT*exp(-(r-a)*(r-a)/(s*s))*pow(phydro->w(IPR,k,j,i)/p0, Rd/cp);
+ *         phydro->w(IDN,k,j,i) = phydro->w(IPR,k,j,i)/(Rd*temp);
+ *         phydro->w(IVX,k,j,i) = phydro->w(IVY,k,j,i) = 0.;
+ *       }
+ *
+ * @endcode
+ *
+ * Change primitive variables to conserved variables
+ *
+ * @code
+ *   peos->PrimitiveToConserved(phydro->w, pfield->bcc, phydro->u, pcoord, is, ie, js, je, ks, ke);
+ * }
+ * @endcode
+<a name="Results"></a><h1> Results </h1>
+
+
+<p>Here we show the animation of the rising bubble</p>
+
+<div>
+<img src="mov/robert.gif" alt="Animation of a rising air bubble">
+</div>
+
+<p>The temperature anomaly of the bubble is colored in blue/red with blue being colder
+and red being warmer. Initially, the warm part of the bubble is hiden at its center
+and you only see the colder outer part. Multiple convective overturnings develop seen during the
+rising motion to deliver the warm gas upward and outward. Unlike the 2D solution shown in @cite robert1993,
+the 3D evolution of the bubble features a vortex ring surounding the core of the rising
+center and the head of the rising bubble is minimum compared to the ring.
+
+ *
+ *
+<a name="PlainProg"></a>
+<h1> The plain program</h1>
+@include "robert_plain.txt"
+*/

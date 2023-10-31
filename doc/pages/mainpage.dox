@@ -1,0 +1,119 @@
+/**
+@mainpage
+@tableofcontents
+
+@section what What it is
+Athena++/Atmosphere is an light-weighted extension of an astrophysical code <a
+href="https://github.com/PrincetonUniversity/athena/wiki">Athena++</a> to enable
+atmospheric simulations. We utilize the static/adaptive mesh-refinement,
+parallelization, curvilinear geometry, and dynamic task scheduling innate to the
+<a href="https://github.com/PrincetonUniversity/athena/wiki">Athena++</a> code and
+augment it with a multi-fluid hydrodynamic solver that is specially designed for atmospheric
+flows involving condensible gases, clouds, hazes and precipitation. The purpose of the
+model is to fascilitate fundamental atmospheric research while maintaining a
+certain degree of sophistication and reality to explain the real world observation and
+phenomena.
+
+@section why Why it makes a difference
+The current models for simulating atmospheric flows are either too comprehensive or too
+simplistic. Two examples being the
+<a href="https://en.wikipedia.org/wiki/Weather_Research_and_Forecasting_Model">Weather
+Research and Forecasting Model (WRF)</a> and the
+<a href="https://dedalus-project.org/">Dedalus Project</a>. The former has hundreds of
+thousands of lines of code that meet the needs of all kinds of research regarding
+Earth's atmosphere. The latter is essentialy a PDE solver with boundary conditions,
+which is perfect for fundamental studies but is too primitive for explaining real world
+phenomena.
+
+The Athena++/Atmosphere model sits in between. It can be either regarded as a
+fully-compressible hydrodynamic solver for idealized atmospheric simulations, or a
+realistic modeling tool for planetary atmospheres including radiative transfer, cloud
+microphysics and photochemistry. In this sense, a suit of hierarchical models can be
+achieved using the same framework, allowing progressive sophistication and specialization.
+It is light-weighted, meaning that the core part of code are less than 10k lines, thanks to
+a modern C++ design. An inexperienced user can get it running and understand the
+underpinning of the solver system within a few weeks of time.
+
+@section mission Mission and vision
+We are having too many codes and too few documentations on how to actually modify them
+for our own purpose. Basically, we are sold of a vehicle but without manuals on
+understanding the internal mechanism that drives the vehicle. Or, the interal logic is
+too sophisticated to be understood in a reasonable amount of time. It is then our mission to
+provide well-documented and simple tools to enable <b>BUILDING</b> atmospheric models for
+<b>YOUR OWN PURPOSE</b> that can run from laptops to supercomputers.
+We hope to create an open, inclusive, participatory community working on a
+state-of-the-art and modern software gadgets that constitutes the go-to solution
+for innovative ideas.
+
+@section install Installation
+The model is designed to be installed as easy as possible, from a personal laptop to a
+giant computation cluster. Asuming that you work with a Unix/linux system,
+obtain a public version of the code via the following command:
+@code
+  git clone https://github.com/chengcli/athena-public-version
+@endcode
+If you wish to have access to the development version of the code, please contact the
+author <a href="mailto:chengcli@umich.edu">Cheng Li</a>.
+
+You will need the following packages for running in serial. If your package management
+system is `apt`, with `sudo` privilege you can obtain them via:
+@code
+  sudo apt install libnetcdf-dev
+  sudo apt install netcdf-bin
+  sudo apt install nco
+@endcode
+
+For parallel runs, you will need the MPI libraries:
+@code
+  sudo apt install libopenmpi-dev
+  sudo apt install openmpi-bin
+  sudo apt install libpnetcdf-dev
+@endcode
+
+Finally, install the required python packages. If you already have `pip3` installed, go
+to the root directory of the code and execute:
+@code
+  pip3 install -r requirements.txt
+@endcode
+Otherwise, obtain `pip3` first by:
+@code
+  sudo apt install python3-pip
+@endcode
+
+Congratulations! You have installed all necessary packages. Now move on to the next session on
+how to get started.
+
+@section start Getting started
+The best way to get started is to work with an example. We provide a detailed
+documentation of an example problem in which we calculate the propagation of a density
+current on the surface. The introduction, commented program and results are located at
+page @ref 2d.straka.
+The documentation is written in such a way that focuses on
+explaining what's going on in individual code blocks. Understanding this program serves as a
+basis for understanding the internal mechanism of the code.
+
+@section cite Citing our work
+If you feel that our code helps your project, please consider citing our work in your
+publication:
+<ol class="publist">
+  <li>Huazhi Ge, C. Li, X. Zhang, D. Lee, 2020, A Global Nonhydrostatic Atmospheric Model
+    with a Mass-and Energy-conserving Vertically Implicit Correction (VIC) Scheme,
+    <em>ApJ, 898.2:130</em></li>
+  <li>Cheng Li, X. Chen, 2019, Simulating Non-hydrostatic atmospheres on Planets (SNAP):
+    formulation, validation and application to the Jovian atmosphere
+    <em>ApJS, 240.2:37</em></li>
+  <li>Cheng Li, T. Le, X. Zhang, 2018, A High-performance Atmospheric Radiation
+    Package: with applications to the radiative energy budgets of giant planets,
+    <em>JQSRT, 217</em></li>
+  <li>Cheng Li, A. Ingersoll, F. Oyafuso, 2018. Moist adiabats with multiple
+    condensing species: a new theory with application to giant planet
+    atmmosphere, <em>JAS, 75(4)</em></li>
+</ol>
+
+
+@section contribute Contribution
+There are a variety of ways to contribute. The simpliest way is to send us your problem
+generator file, the input file and a sample output file so that we can reproduce your
+results. We will make documentations out of it and deploy it to the project website so
+that your effort will be recognized and shared among the community.
+*/
