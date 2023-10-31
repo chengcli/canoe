@@ -88,7 +88,7 @@ sa.max_iter = 4
 sa.ftol     = 1.e-2
 
 <problem>
-qH2O.ppmv   = 2500.
+qH2O.ppmv   = 25000.
 qNH3.ppmv   = 320.
 
 P0          = 1.E5
@@ -96,3 +96,4 @@ T0          = 169.
 Tmin        = 110.
 hrate       = -100.
 prad        = 2.e5
+init_Ttol   = 2.

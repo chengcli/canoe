@@ -139,7 +139,8 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
   Real cp = gamma / (gamma - 1.) * Rd;
 
   // set up an adiabatic atmosphere
-  int max_iter = 200, iter = 0;
+  int max_iter = 400, iter = 0;
+  Real Ttol = pin->GetOrAddReal("problem", "init_Ttol", 0.01);
 
   AirParcel air(AirParcel::Type::MoleFrac);
 
@@ -165,7 +166,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
 
     // make up for the difference
     Ts += T0 - air.w[IDN];
-    if (std::abs(T0 - air.w[IDN]) < 0.01) break;
+    if (std::abs(T0 - air.w[IDN]) < Ttol) break;
 
     app->Log("Iteration #", iter);
     app->Log("T", air.w[IDN]);
