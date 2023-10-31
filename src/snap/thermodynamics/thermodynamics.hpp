@@ -231,14 +231,25 @@ class Thermodynamics {
     return GetLatentHeatMole(i, rates, temp) * inv_mu_[i];
   }
 
-  //! \brief Calculate the equilibrium mole transfer between vapor and cloud
+  //! \brief Calculate the equilibrium mole transfer by cloud reaction
+  //! vapor -> cloud
   //!
-  //! \param[in] L_ov_cv $L/cv$ evaluated at current temperature
+  //! \param[in] qfrac mole fraction representation of air parcel
+  //! \param[in] ivapor the index of the vapor
+  //! \param[in] cv_hat $cv_hat$ molar heat capacity
+  //! \param[in] misty if true, there is an infinite supple of cloud
   //! \return molar fraction change of vapor to cloud
   RealArrayX TryEquilibriumTP_VaporCloud(AirParcel const &qfrac, int ivapor,
                                          Real cv_hat = 0.,
                                          bool misty = false) const;
 
+  //! \brief Calculate the equilibrium mole transfer by cloud reaction
+  //! vapor1 + vapor2 -> cloud
+  //!
+  //! \param[in] qfrac mole fraction representation of air parcel
+  //! \param[in] ij the index pair of the vapor1 and vapor2
+  //! \param[in] cv_hat $cv_hat$ molar heat capacity
+  //! \param[in] misty if true, there is an infinite supple of cloud
   RealArray3 TryEquilibriumTP_VaporVaporCloud(AirParcel const &air,
                                               IndexPair ij, Real cv_hat = 0.,
                                               bool misty = false) const;
@@ -271,7 +282,7 @@ class Thermodynamics {
            pow(p0 / w(IPR, k, j, i), GetChi(pmb, k, j, i));
   }
 
-  //! \breif Calculate equivalent potential temperature from primitive variable
+  //! \brief Calculate equivalent potential temperature from primitive variable
   //!
   //! $\theta_e = T(\frac{p}{p_d})^{Rd/(cpd + cl r_t} \exp(\frac{L_v q_v}{c_p
   //! T})$
