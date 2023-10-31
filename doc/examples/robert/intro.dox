@@ -1,0 +1,19 @@
+<a name="Intro"></a>
+<h1> Introduction </h1>
+
+The second example shows the the rising of a warm bubble, which to some extent,
+resembles the mushroom cloud of an atomic bomb. This test case was proposed by
+@cite robert1993. The original setting was is 2D and we extended it to 3D.
+The size of the domain is 1 km $\times$ 1 km $\times$ 2.5km. The model resolution is
+uniformlly 5 m in each dimension. The bubble is initially centered at
+$x_0 = y_0 = 500 \text{m}, z_0 = 260 \text{m}$ with a Gaussian-shaped potential
+temperature anomaly as:
+
+@f{eqnarray*}
+    \Delta \theta &=& 0.5\;\text{K}, \qquad\quad\quad r \leq a \\
+                  &=& 0.5e^{-(r-a)^2/s^2}\;\text{K}, \quad r > a
+@f}
+
+where $r$ is the distance to the center, $a=50$ m and $s=100$ m. The background
+atmosphere is isentropic with surface pressure being 1 bar and surface temperature
+303.15 K. The bubble is then released and evolve to 1200 s.

@@ -11,7 +11,7 @@
 ## The full text of the license can be found in the file LICENSE.md at
 ## the top level directory of deal.II.
 ##
-## Adapted to Athena++/Atmosphere by Cheng Li
+## Adapted to Canoe by Cheng Li
 ## ---------------------------------------------------------------------
 
 if ($#ARGV != 2) {
@@ -57,31 +57,30 @@ print
   <li><a href=\"#Intro\" class=bold>Introduction</a></li>
 ";
 
-system $^X, "$root_dir/doc/scripts/intro2toc", "$root_dir/examples/$step/intro.dox";
+system $^X, "$root_dir/doc/scripts/intro2toc", "$root_dir/doc/examples/$step/intro.dox";
 
 print "  <li><a href=\"#CommProg\" class=bold>Commented program</a></li>\n";
 
-my $file_extension;
-
 my $pgen = substr $step, index($step, ".")+1;
+$pgen="$root_dir/doc/examples/$step/$pgen";
 
-if (-f "$root_dir/drum/pgen/$pgen.cpp")
+if (-f "$pgen.cpp")
 {
   $file_extension = cpp;
 }
 
-if (-f "$root_dir/drum/pgen/$pgen.cu")
+if (-f "$pgen.cu")
 {
   $file_extension = cu;
 }
 
-system $^X, "$root_dir/doc/scripts/program2toc", "$root_dir/drum/pgen/$pgen.$file_extension";
+system $^X, "$root_dir/doc/scripts/program2toc", "$pgen.$file_extension";
 
 print
 "  <li><a href=\"#Results\" class=bold>Results</a></li>
 ";
 
-system $^X, "$root_dir/doc/scripts/intro2toc", "$root_dir/examples/$step/results.dox";
+system $^X, "$root_dir/doc/scripts/intro2toc", "$root_dir/doc/examples/$step/results.dox";
 
 print
 "  <li><a href=\"#PlainProg\" class=bold>Plain program</a></li>
@@ -89,7 +88,7 @@ print
 \@endhtmlonly
 ";
 
-system $^X, "$root_dir/doc/scripts/create_anchors", "$root_dir/examples/$step/intro.dox";
+system $^X, "$root_dir/doc/scripts/create_anchors", "$root_dir/doc/examples/$step/intro.dox";
 
 
 # Start the commented program by writing two empty lines. We have had
@@ -106,18 +105,22 @@ print " *\n";
 print " * <a name=\"CommProg\"></a>\n";
 print " * <h1> The commented program</h1>\n";
 
-system $^X, "$root_dir/doc/scripts/program2doxygen", "$root_dir/drum/pgen/$pgen.$file_extension";
+system $^X, "$root_dir/doc/scripts/program2doxygen", "$pgen.$file_extension";
 
-system $^X, "$root_dir/doc/scripts/create_anchors", "$root_dir/examples/$step/results.dox";
+system $^X, "$root_dir/doc/scripts/create_anchors", "$root_dir/doc/examples/$step/results.dox";
 
+my $output_file = "$root_dir/doc/examples/${step}_plain.txt";
+#system $^X, "$root_dir/doc/scripts/program2plain" $pgen.$file_extension;
+system("perl $root_dir/doc/scripts/program2plain $pgen.$file_extension > $output_file");
 
 # Move to the stripped, plain program. The same principle as above
 # applies for newlines.
+
 print " *\n";
 print " *\n";
 print
 "<a name=\"PlainProg\"></a>
 <h1> The plain program</h1>
-\@include \"${pgen}_plain.txt\"
+\@include \"${step}_plain.txt\"
 */
 ";

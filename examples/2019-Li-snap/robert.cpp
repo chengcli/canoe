@@ -12,8 +12,8 @@
 
 // @sect3{Include files}
 
-// These input files are just like those in the @ref 2d.straka, so additional
-// comments are not required. athena
+// These input files are just like those in the @ref straka, so additional
+// comments are not required.
 #include <athena/athena.hpp>
 #include <athena/athena_arrays.hpp>
 #include <athena/coordinates/coordinates.hpp>
@@ -35,7 +35,7 @@
 // We only need one global variables here, the surface pressure
 Real p0;
 
-// Same as that in @ref 2d.straka, make outputs of temperature and potential
+// Same as that in @ref straka, make outputs of temperature and potential
 // temperature.
 void MeshBlock::InitUserMeshBlockData(ParameterInput *pin) {
   AllocateUserOutputVariables(2);
@@ -66,7 +66,7 @@ void Mesh::InitUserMeshData(ParameterInput *pin) {
 // We do not need forcings other than gravity in this problem,
 // so we go directly to the initial condition.
 void MeshBlock::ProblemGenerator(ParameterInput *pin) {
-  // Similar to @ref 2d.straka, read variables in the input file
+  // Similar to @ref straka, read variables in the input file
   Real gamma = pin->GetReal("hydro", "gamma");
   Real grav = -phydro->hsrc.GetG1();
   Real Ts = pin->GetReal("problem", "Ts");

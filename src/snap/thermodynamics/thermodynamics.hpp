@@ -246,16 +246,21 @@ class Thermodynamics {
   //! \brief Calculate the equilibrium mole transfer by cloud reaction
   //! vapor1 + vapor2 -> cloud
   //!
-  //! \param[in] qfrac mole fraction representation of air parcel
+  //! \param[in] air mole fraction representation of air parcel
   //! \param[in] ij the index pair of the vapor1 and vapor2
-  //! \param[in] cv_hat $cv_hat$ molar heat capacity
+  //! \param[in] cv_hat $\har{cv}$ molar heat capacity
   //! \param[in] misty if true, there is an infinite supple of cloud
+  //! \return molar fraction change of vapor1, vapor2 and cloud
   RealArray3 TryEquilibriumTP_VaporVaporCloud(AirParcel const &air,
                                               IndexPair ij, Real cv_hat = 0.,
                                               bool misty = false) const;
 
   //! Construct an 1d atmosphere
+  //! \param[in,out] qfrac mole fraction representation of air parcel
+  //! \param[in] dzORdlnp vertical grid spacing
   //! \param[in] method choose from [reversible, pseudo, dry, isothermal]
+  //! \param[in] grav gravitational acceleration
+  //! \param[in] userp user parameter to adjust the temperature gradient
   void Extrapolate(AirParcel *qfrac, Real dzORdlnp, Method method,
                    Real grav = 0., Real userp = 0.) const;
 
@@ -264,9 +269,9 @@ class Thermodynamics {
   void EquilibrateTP(AirParcel *qfrac) const;
 
   //! Adjust to the maximum saturation state conserving internal energy
-  //! \param[in,out] qfrac mole fraction representation of a collection of air
+  //! \param[in,out] ac mole fraction representation of a collection of air
   //! parcels
-  void SaturationAdjustment(AirColumn &air_column) const;
+  void SaturationAdjustment(AirColumn &ac) const;
 
   //! Inverse of the mean molecular weight (with cloud)
   //! \param[in] qfrac mole fraction representation of air parcel

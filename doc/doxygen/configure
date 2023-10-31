@@ -5,7 +5,7 @@
 PROJECT_NAME           = "Canoe"
 #PROJECT_NUMBER         = "v19"
 PROJECT_LOGO           = logo1.png
-PROJECT_BRIEF          = Planetary Atmosphere Simulator
+PROJECT_BRIEF          = Comprehensive Atmosphere N' Ocean Engine
 OUTPUT_DIRECTORY       = .
 
 # The doxygen documentation says this about the following flag:

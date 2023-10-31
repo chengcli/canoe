@@ -3,7 +3,7 @@
 @tableofcontents
 
 @section what What it is
-Athena++/Atmosphere is an light-weighted extension of an astrophysical code <a
+Canoe is an light-weighted extension of an astrophysical code <a
 href="https://github.com/PrincetonUniversity/athena/wiki">Athena++</a> to enable
 atmospheric simulations. We utilize the static/adaptive mesh-refinement,
 parallelization, curvilinear geometry, and dynamic task scheduling innate to the
@@ -25,7 +25,7 @@ Earth's atmosphere. The latter is essentialy a PDE solver with boundary conditio
 which is perfect for fundamental studies but is too primitive for explaining real world
 phenomena.
 
-The Athena++/Atmosphere model sits in between. It can be either regarded as a
+Canoe sits in between. It can be either regarded as a
 fully-compressible hydrodynamic solver for idealized atmospheric simulations, or a
 realistic modeling tool for planetary atmospheres including radiative transfer, cloud
 microphysics and photochemistry. In this sense, a suit of hierarchical models can be
@@ -50,7 +50,7 @@ The model is designed to be installed as easy as possible, from a personal lapto
 giant computation cluster. Asuming that you work with a Unix/linux system,
 obtain a public version of the code via the following command:
 @code
-  git clone https://github.com/chengcli/athena-public-version
+  git clone https://github.com/chengcli/canoe
 @endcode
 If you wish to have access to the development version of the code, please contact the
 author <a href="mailto:chengcli@umich.edu">Cheng Li</a>.
@@ -58,16 +58,12 @@ author <a href="mailto:chengcli@umich.edu">Cheng Li</a>.
 You will need the following packages for running in serial. If your package management
 system is `apt`, with `sudo` privilege you can obtain them via:
 @code
-  sudo apt install libnetcdf-dev
-  sudo apt install netcdf-bin
-  sudo apt install nco
+  sudo apt install $(cat packages_debian.txt)
 @endcode
 
 For parallel runs, you will need the MPI libraries:
 @code
-  sudo apt install libopenmpi-dev
-  sudo apt install openmpi-bin
-  sudo apt install libpnetcdf-dev
+  sudo apt install libmpich-dev
 @endcode
 
 Finally, install the required python packages. If you already have `pip3` installed, go
@@ -87,7 +83,7 @@ how to get started.
 The best way to get started is to work with an example. We provide a detailed
 documentation of an example problem in which we calculate the propagation of a density
 current on the surface. The introduction, commented program and results are located at
-page @ref 2d.straka.
+page @ref straka.
 The documentation is written in such a way that focuses on
 explaining what's going on in individual code blocks. Understanding this program serves as a
 basis for understanding the internal mechanism of the code.
