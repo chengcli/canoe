@@ -98,12 +98,18 @@ void Hydro::RiemannSolver(int const k, int const j, int const il, int const iu,
     }
 
     // sedimentation flux
+    // In Athena++ passive tracer module, the tracer mixing ratio is defined as
+    // the ratio of the density of the tracer to the density of the "dry"
+    // species. This ensures conservation of the tracer concentration even with
+    // condensation However, the first component of the primitive variable is
+    // the "total" density To get the denisty of the dry species, the "dry
+    // mixing ratio" (rdl/rdr) is multiplied
     for (int n = 0; n < NCLOUD; ++n) {
-      Real vsed = ubar + pmicro->vsedf[dir](n, k, j, i);
-      if (vsed > 0.) {
-        pmicro->mass_flux[dir](n, k, j, i) = vsed * wli[IDN] * rdl;
+      Real vfld = ubar + pmicro->vsedf[dir](n, k, j, i);
+      if (vfld > 0.) {
+        pmicro->mass_flux[dir](n, k, j, i) = vfld * wli[IDN] * rdl;
       } else {
-        pmicro->mass_flux[dir](n, k, j, i) = vsed * wri[IDN] * rdr;
+        pmicro->mass_flux[dir](n, k, j, i) = vfld * wri[IDN] * rdr;
       }
     }
   }

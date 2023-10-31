@@ -19,35 +19,58 @@ class ParameterInput;
 class MicrophysicalSchemeBase;
 class Hydro;
 
+//! \brief root-level management class for microphysics
 class Microphysics {
- public:
-  // tem, v1, v2, v3
-  // enum { NCLOUD_HYDRO = 4 };
+ public:  /// public access members
+  //! \todo(CLI) track cloud temperature and momentum
+  //! tem, v1, v2, v3
+  //! enum { NCLOUD_HYDRO = 4 };
+
+  //! microphysics input key in the input file [microphysics_config]
   static const std::string input_key;
 
-  // access members
-  AthenaArray<Real> w, u, vsedf[3], mass_flux[3];
+  //! primitive variables: mass fraction [kg/kg]
+  AthenaArray<Real> w;
 
-  /// constructor and destructor
+  //! conserved variables: mass concentration [kg/m^3]
+  AthenaArray<Real> u;
+
+  //! sedimentation velocity at cell interface [m/s]
+  AthenaArray<Real> vsedf[3];
+
+  //! mass flux of the dry fluid [kg/m^2/s]
+  AthenaArray<Real> mass_flux[3];
+
+ public:  /// constructor and destructor
   Microphysics(MeshBlock *pmb, ParameterInput *pin);
   ~Microphysics();
 
-  /// functions
+ public:  /// functions
   size_t GetNumSystems() const { return systems_.size(); }
   std::shared_ptr<MicrophysicalSchemeBase> GetSystem(int i) const {
     return systems_[i];
   }
   // void AddFrictionalHeating(std::vector<AirParcel> &air_column) const;
-  void EvolveSystems(AirColumn &air_column, Real time, Real dt);
 
-  /// inbound functions
-  void SetSedimentationVelocityFromConserved(Hydro const *phydro);
+  //! \brief Evolve all microphysical systems
+  //!
+  //! \param [in,out] ac air column to be evolved
+  //! \param [in] time current simulation time
+  //! \param [in] dt time step
+  void EvolveSystems(AirColumn &ac, Real time, Real dt);
+
+ public:  /// inbound functions
+  void SetVsedFromConserved(Hydro const *phydro);
 
  protected:
+  //! sedimentation velocity at cell center [m/s]
   AthenaArray<Real> vsed_[3];
+
+  //! pointers of microphysical systems
   std::vector<std::shared_ptr<MicrophysicalSchemeBase>> systems_;
 
  private:
+  //! meshblock pointer
   MeshBlock const *pmy_block_;
 };
 

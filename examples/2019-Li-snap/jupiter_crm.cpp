@@ -39,7 +39,8 @@
 // special includes
 #include <special/giants_enroll_vapor_functions_v1.hpp>
 
-Real grav, P0, T0, Tmin, iH2O, iNH3, prad, hrate;
+Real grav, P0, T0, Tmin, prad, hrate;
+int iH2O, iNH3;
 
 void MeshBlock::InitUserMeshBlockData(ParameterInput *pin) {
   AllocateUserOutputVariables(4 + NVAPOR);
@@ -110,8 +111,8 @@ void Mesh::InitUserMeshData(ParameterInput *pin) {
   hrate = pin->GetReal("problem", "hrate") / 86400.;
 
   // index
-  // auto pindex = IndexMap::GetInstance();
-  // iH2O = pindex->GetVaporId("H2O");
+  auto pindex = IndexMap::GetInstance();
+  iH2O = pindex->GetVaporId("H2O");
   // iNH3 = pindex->GetVaporId("NH3");
   EnrollUserExplicitSourceFunction(Forcing);
 }
@@ -150,7 +151,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
 
   while (iter++ < max_iter) {
     // read in vapors
-    // air.w[iH2O] = xH2O;
+    air.w[iH2O] = xH2O;
     // air.w[iNH3] = xNH3;
     air.w[IPR] = Ps;
     air.w[IDN] = Ts;
@@ -178,7 +179,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
   for (int k = ks; k <= ke; ++k)
     for (int j = js; j <= je; ++j) {
       air.SetZero();
-      // air.w[iH2O] = xH2O;
+      air.w[iH2O] = xH2O;
       // air.w[iNH3] = xNH3;
       air.w[IPR] = Ps;
       air.w[IDN] = Ts;
@@ -193,7 +194,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
         AirParcelHelper::distribute_to_conserved(this, k, j, i, air);
         pthermo->Extrapolate(&air, pcoord->dx1f(i),
                              Thermodynamics::Method::PseudoAdiabat, grav,
-                             1.e-7);
+                             1.e-5);
       }
 
       // Replace adiabatic atmosphere with isothermal atmosphere if temperature

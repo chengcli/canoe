@@ -1,3 +1,6 @@
+//! \brief Implementation of the Microphysics class
+//! \file microphysics.cpp
+
 // C/C++
 #include <fstream>
 
@@ -43,10 +46,9 @@ Microphysics::Microphysics(MeshBlock *pmb, ParameterInput *pin)
   vsedf[2].NewAthenaArray(NCLOUD, ncells3 + 1, ncells2, ncells1);
 
   // storage for cloud mass flux at cell boundary
-  vsedf[0].NewAthenaArray(NCLOUD, ncells3, ncells2, ncells1 + 1);
-  mass_flux[0].NewAthenaArray(ncells3, ncells2, ncells1 + 1);
-  mass_flux[1].NewAthenaArray(ncells3, ncells2 + 1, ncells1);
-  mass_flux[2].NewAthenaArray(ncells3 + 1, ncells2, ncells1);
+  mass_flux[0].NewAthenaArray(NCLOUD, ncells3, ncells2, ncells1 + 1);
+  mass_flux[1].NewAthenaArray(NCLOUD, ncells3, ncells2 + 1, ncells1);
+  mass_flux[2].NewAthenaArray(NCLOUD, ncells3 + 1, ncells2, ncells1);
 
   // internal storage for sedimentation velocity at cell center
   vsed_[0].NewAthenaArray(NCLOUD, ncells3, ncells2, ncells1);
@@ -72,23 +74,22 @@ Microphysics::~Microphysics() {
 // void Microphysics::AddFrictionalHeating(
 //     std::vector<AirParcel> &air_column) const {}
 
-void Microphysics::EvolveSystems(AirColumn &air_column, Real time, Real dt) {
+void Microphysics::EvolveSystems(AirColumn &ac, Real time, Real dt) {
   for (auto &system : systems_)
-    for (auto &air : air_column) {
+    for (auto &air : ac) {
       system->AssembleReactionMatrix(air, time);
       system->EvolveOneStep(&air, time, dt);
     }
 }
 
-void Microphysics::SetSedimentationVelocityFromConserved(Hydro const *phydro) {
+void Microphysics::SetVsedFromConserved(Hydro const *phydro) {
   auto pmb = pmy_block_;
 
   int ks = pmb->ks, js = pmb->js, is = pmb->is;
   int ke = pmb->ke, je = pmb->je, ie = pmb->ie;
 
   for (auto &system : systems_) {
-    system->SetSedimentationVelocityFromConserved(vsed_, phydro, ks, ke, js, je,
-                                                  is, ie);
+    system->SetVsedFromConserved(vsed_, phydro, ks, ke, js, je, is, ie);
   }
 
   // interpolation to cell interface
