@@ -101,7 +101,7 @@ void EquationOfState::ConservedToPrimitive(
         for (int n = 1; n <= NVAPOR; ++n)
           prim(n, k, j, i) = cons(n, k, j, i) * di;
 
-#ifdef ENABLED_GLOG
+#ifdef ENABLE_GLOG
         LOG_IF(ERROR, std::isnan(w_d) || (w_d < density_floor_))
             << "rank = " << Globals::my_rank << ", (k,j,i) = "
             << "(" << k << "," << j << "," << i << ")"

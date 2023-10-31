@@ -51,6 +51,7 @@ add_subdirectory(tasklist)
 add_subdirectory(exo3)
 add_subdirectory(communicator)
 add_subdirectory(nbody)
+add_subdirectory(special)
 
 set(CANOE_LIBRARY_${buildu}
   "canoe_${buildl}"
@@ -79,6 +80,7 @@ set(CANOE_LIBRARY_${buildu}
   ${CFITSIO_LIBRARY}
   ${MPI_CXX_LIBRARIES}
   ${GLOG_LIBRARIES}
+  ${OpenMP_libomp_LIBRARY}
   CACHE INTERNAL "canoe library")
 
 set(CANOE_INCLUDE_DIR

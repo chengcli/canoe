@@ -83,7 +83,7 @@ Thermodynamics* Thermodynamics::fromLegacyInput(ParameterInput* pin) {
   mythermo_->cloud_index_set_.resize(1 + NVAPOR);
   mythermo_->svp_func1_.resize(1 + NVAPOR);
 
-  for (int i = 1; i <= NVAPOR; ++i) {
+  for (int i = 0; i <= NVAPOR; ++i) {
     mythermo_->cloud_index_set_[i].resize(NPHASE - 1);
     mythermo_->svp_func1_[i].resize(NPHASE - 1);
     for (int j = 1; j < NPHASE; ++j) {

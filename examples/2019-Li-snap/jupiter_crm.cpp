@@ -6,7 +6,7 @@
  *
  * Year: 2023
  * Contact: chengcli@umich.edu
- * Reference: Test sedimentation
+ * Reference: Test Jupiter CRM
  * -------------------------------------------------------------------------------------
  */
 
@@ -33,15 +33,14 @@
 #include <climath/core.h>
 #include <climath/interpolation.h>
 
-#include <climath/root.hpp>
-
 // snap
 #include <snap/thermodynamics/thermodynamics.hpp>
 
 // special includes
 #include <special/giants_enroll_vapor_functions_v1.hpp>
 
-Real grav, P0, T0, Tmin;
+Real grav, P0, T0, Tmin, prad, hrate;
+int iH2O, iNH3;
 
 void MeshBlock::InitUserMeshBlockData(ParameterInput *pin) {
   AllocateUserOutputVariables(4 + NVAPOR);
@@ -75,6 +74,32 @@ void MeshBlock::UserWorkBeforeOutput(ParameterInput *pin) {
       }
 }
 
+void Forcing(MeshBlock *pmb, Real const time, Real const dt,
+             AthenaArray<Real> const &w, AthenaArray<Real> const &r,
+             AthenaArray<Real> const &bcc, AthenaArray<Real> &du,
+             AthenaArray<Real> &s) {
+  int is = pmb->is, js = pmb->js, ks = pmb->ks;
+  int ie = pmb->ie, je = pmb->je, ke = pmb->ke;
+  auto pthermo = Thermodynamics::GetInstance();
+
+  for (int k = ks; k <= ke; ++k)
+    for (int j = js; j <= je; ++j)
+      for (int i = is; i <= ie; ++i) {
+        auto &&air = AirParcelHelper::gather_from_primitive(pmb, k, j, i);
+
+        Real cv = pthermo->GetCvMass(air, 0);
+
+        if (w(IPR, k, j, i) < prad) {
+          du(IEN, k, j, i) += dt * hrate * w(IDN, k, j, i) * cv *
+                              (1. + 1.E-4 * sin(2. * M_PI * rand() / RAND_MAX));
+        }
+
+        // if (air.w[IDN] < Tmin) {
+        //   u(IEN,k,j,i) += w(IDN,k,j,i)*cv*(Tmin - temp)/sponge_tau*dt;
+        // }
+      }
+}
+
 void Mesh::InitUserMeshData(ParameterInput *pin) {
   grav = -pin->GetReal("hydro", "grav_acc1");
 
@@ -82,11 +107,21 @@ void Mesh::InitUserMeshData(ParameterInput *pin) {
   T0 = pin->GetReal("problem", "T0");
 
   Tmin = pin->GetReal("problem", "Tmin");
+  prad = pin->GetReal("problem", "prad");
+  hrate = pin->GetReal("problem", "hrate") / 86400.;
+
+  // index
+  auto pindex = IndexMap::GetInstance();
+  iH2O = pindex->GetVaporId("H2O");
+  // iNH3 = pindex->GetVaporId("NH3");
+  EnrollUserExplicitSourceFunction(Forcing);
 }
 
 void MeshBlock::ProblemGenerator(ParameterInput *pin) {
+  srand(Globals::my_rank + time(0));
+
   Application::Logger app("main");
-  app->Log("ProblemGenerator: sedimentation");
+  app->Log("ProblemGenerator: jupiter_crm");
 
   auto pthermo = Thermodynamics::GetInstance();
 
@@ -103,19 +138,9 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
   Real Rd = pthermo->GetRd();
   Real cp = gamma / (gamma - 1.) * Rd;
 
-  // index
-  auto pindex = IndexMap::GetInstance();
-  int iH2O = pindex->GetVaporId("H2O");
-  int iNH3 = pindex->GetVaporId("NH3");
-
-  int iH2Op = pindex->GetCloudId("H2O(p)");
-  int iNH3p = pindex->GetCloudId("NH3(p)");
-
-  app->Log("index of H2O", iH2O);
-  app->Log("index of NH3", iNH3);
-
   // set up an adiabatic atmosphere
-  int max_iter = 200, iter = 0;
+  int max_iter = 400, iter = 0;
+  Real Ttol = pin->GetOrAddReal("problem", "init_Ttol", 0.01);
 
   AirParcel air(AirParcel::Type::MoleFrac);
 
@@ -128,7 +153,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
   while (iter++ < max_iter) {
     // read in vapors
     air.w[iH2O] = xH2O;
-    air.w[iNH3] = xNH3;
+    // air.w[iNH3] = xNH3;
     air.w[IPR] = Ps;
     air.w[IDN] = Ts;
 
@@ -141,7 +166,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
 
     // make up for the difference
     Ts += T0 - air.w[IDN];
-    if (std::abs(T0 - air.w[IDN]) < 0.01) break;
+    if (std::abs(T0 - air.w[IDN]) < Ttol) break;
 
     app->Log("Iteration #", iter);
     app->Log("T", air.w[IDN]);
@@ -156,17 +181,21 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
     for (int j = js; j <= je; ++j) {
       air.SetZero();
       air.w[iH2O] = xH2O;
-      air.w[iNH3] = xNH3;
+      // air.w[iNH3] = xNH3;
       air.w[IPR] = Ps;
       air.w[IDN] = Ts;
+
+      // half a grid to cell center
+      pthermo->Extrapolate(&air, pcoord->dx1f(is) / 2.,
+                           Thermodynamics::Method::ReversibleAdiabat, grav);
 
       int i = is;
       for (; i <= ie; ++i) {
         if (air.w[IDN] < Tmin) break;
-
         AirParcelHelper::distribute_to_conserved(this, k, j, i, air);
         pthermo->Extrapolate(&air, pcoord->dx1f(i),
-                             Thermodynamics::Method::PseudoAdiabat, grav);
+                             Thermodynamics::Method::PseudoAdiabat, grav,
+                             1.e-5);
       }
 
       // Replace adiabatic atmosphere with isothermal atmosphere if temperature
@@ -177,16 +206,4 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
                              Thermodynamics::Method::Isothermal, grav);
       }
     }
-
-  // add precipitation
-  for (int k = ks; k <= ke; ++k)
-    for (int j = js; j <= je; ++j)
-      for (int i = is; i <= ie; ++i) {
-        if (pcoord->x1v(i) > -100.E3 && pcoord->x1v(i) < 0.) {
-          auto &&air = AirParcelHelper::gather_from_conserved(this, k, j, i);
-          air.c[iH2Op] = 0.01;
-          air.c[iNH3p] = 0.01;
-          AirParcelHelper::distribute_to_conserved(this, k, j, i, air);
-        }
-      }
 }

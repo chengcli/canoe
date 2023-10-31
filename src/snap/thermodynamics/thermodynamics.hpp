@@ -36,6 +36,12 @@ using RealArrayX = std::vector<Real>;
 using SatVaporPresFunc1 = Real (*)(AirParcel const &, int i, int j);
 using SatVaporPresFunc2 = Real (*)(AirParcel const &, int i, int j, int k);
 
+//! \todo(CLI): move to configure.hpp
+enum { MAX_REACTANT = 3 };
+using ReactionIndx = std::array<int, MAX_REACTANT>;
+using ReactionStoi = std::array<int, MAX_REACTANT>;
+using ReactionInfo = std::pair<ReactionIndx, ReactionStoi>;
+
 Real NullSatVaporPres1(AirParcel const &, int, int);
 Real NullSatVaporPres2(AirParcel const &, int, int, int);
 
@@ -66,8 +72,6 @@ class Thermodynamics {
  protected:
   enum { NPHASE = NPHASE_LEGACY };
 
-  enum { MAX_REACTANT = 3 };
-
   //! Constructor for class sets up the initial conditions
   //! Protected ctor access thru static member function Instance
   Thermodynamics() {}
@@ -75,9 +79,8 @@ class Thermodynamics {
   static Thermodynamics *fromYAMLInput(YAML::Node node);
 
  public:
-  using ReactionIndx = std::array<int, MAX_REACTANT>;
-  using ReactionStoi = std::array<int, MAX_REACTANT>;
-  using ReactionInfo = std::pair<ReactionIndx, ReactionStoi>;
+  using SVPFunc1Container = std::vector<std::vector<SatVaporPresFunc1>>;
+  using SVPFunc2Container = std::map<IndexPair, SatVaporPresFunc2>;
 
   enum { Size = 1 + NVAPOR + NCLOUD };
 
@@ -107,34 +110,45 @@ class Thermodynamics {
   //! \return $R_d=\hat{R}/\mu_d$
   Real GetRd() const { return Rd_; }
 
+  //! adiaibatic index of dry air [1]
   Real GetGammad(AirParcel const &var) const;
 
+  //! reference adiabatic index of dry air [1]
   Real GetGammadRef() const { return gammad_ref_; }
 
-  //! Molecular weight
+  //! Molecular weight [kg/mol]
+  //! \param[in] n the index of the thermodynamic species
   //! \return $\mu$
   Real GetMu(int n) const { return mu_[n]; }
 
-  //! Inverse molecular weight
+  //! Inverse molecular weight [mol/kg]
+  //! \param[in] n the index of the thermodynamic species
   //! \return $\mu$
   Real GetInvMu(int n) const { return inv_mu_[n]; }
 
-  //! Ratio of molecular weights
+  //! Ratio of molecular weights [1]
+  //! \param[in] n the index of the thermodynamic species
   //! \return $\epsilon_i=\mu_i/\mu_d$
   Real GetMuRatio(int n) const { return mu_ratio_[n]; }
 
-  //! Ratio of molecular weights
+  //! Ratio of molecular weights [1]
+  //! \param[in] n the index of the thermodynamic species
   //! \return $\epsilon_i^{-1} =\mu_d/\mu_i$
   Real GetInvMuRatio(int n) const { return inv_mu_ratio_[n]; }
 
-  //! Ratio of specific heat capacity [J/(kg K)] at constant volume
+  //! Ratio of specific heat capacity [J/(kg K)] at constant volume [1]
+  //! \param[in] n the index of the thermodynamic species
   //! \return $c_{v,i}/c_{v,d}$
   Real GetCvRatioMass(int n) const { return cv_ratio_mass_[n]; }
 
-  //! Ratio of specific heat capacity [J/(mol K)] at constant volume
+  //! Ratio of specific heat capacity [J/(mol K)] at constant volume [1]
+  //! \param[in] n the index of the thermodynamic species
   //! \return $\hat{c}_{v,i}/\hat{c}_{v,d}$
   Real GetCvRatioMole(int n) const { return cv_ratio_mole_[n]; }
 
+  //! \return the index of the cloud
+  //! \param[in] i the index of the vapor
+  //! \param[in] j the sequential index of the cloud
   int GetCloudIndex(int i, int j) const { return cloud_index_set_[i][j]; }
 
   //! Specific heat capacity [J/(kg K)] at constant volume
@@ -146,6 +160,7 @@ class Thermodynamics {
     return cv_ratio_mass_[n] * cvd;
   }
 
+  //! Reference specific heat capacity [J/(kg K)] at constant volume
   Real GetCvMassRef(int n) const {
     Real cvd = Rd_ / (gammad_ref_ - 1.);
     return cv_ratio_mass_[n] * cvd;
@@ -348,12 +363,6 @@ class Thermodynamics {
 
   // custom functions for vapor (to be overridden by user mods)
   void enrollVaporFunctions();
-  void enrollVaporFunctionH2O();
-  void enrollVaporFunctionNH3();
-  void enrollVaporFunctionH2S();
-  void enrollVaporFunctionCH4();
-  void enrollVaporFunctionCO2();
-  void enrollVaporFunctionNH4SH();
 
  protected:
   //! ideal gas constant of dry air in J/kg
@@ -415,13 +424,13 @@ class Thermodynamics {
   std::array<Real, 1 + NVAPOR> p3_;
 
   //! saturation vapor pressure function: Vapor -> Cloud
-  std::vector<std::vector<SatVaporPresFunc1>> svp_func1_;
+  SVPFunc1Container svp_func1_;
 
   //! cloud index set
   std::vector<IndexSet> cloud_index_set_;
 
   //! saturation vapor pressure function: Vapor + Vapor -> Cloud
-  std::map<IndexPair, SatVaporPresFunc2> svp_func2_;
+  SVPFunc2Container svp_func2_;
 
   //! reaction information map
   std::map<IndexPair, ReactionInfo> cloud_reaction_map_;
