@@ -1,0 +1,16 @@
+<h1> Results </h1>
+
+We are going to make a plot of the result using python. The
+program is `make_plots.py`. Execute it by:
+@code
+  python3 make_plots.py
+@endcode
+A file named `straka-theta.png` will be generated. It shows the potential temperature
+anomaly of the environment with respect to 300 K at four time steps.
+<img src="img/straka-theta.png" alt="potential temperature anomaly of a cold air bubble">
+<p>
+The maximum potential temperature anomaly should be zero because the motion is adiabatic
+and mimum potential temperature anomaly increases with time due to diffusion. The cold
+air spreads out as expected and develops rolling vortices. The result
+can be compared to Figure 3 of \cite straka1993.
+</p>

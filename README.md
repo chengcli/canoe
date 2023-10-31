@@ -1,4 +1,4 @@
-# Athena-nbody: an N-body code based on Athena++
+# Canoe: Comprehensive Atmosphere N' Ocean Engine
 
 [![build](https://github.com/chengcli/canoe/actions/workflows/main.yml/badge.svg)](https://github.com/chengcli/canoe/actions/workflows/main.yml)
 [![build](https://github.com/chengcli/canoe/actions/workflows/mac.yml/badge.svg)](https://github.com/chengcli/canoe/actions/workflows/mac.yml)

@@ -1,0 +1,14 @@
+<h1> Results </h1>
+
+<p>Here we show the animation of the rising bubble</p>
+
+<div>
+<img src="mov/robert.gif" alt="Animation of a rising air bubble">
+</div>
+
+<p>The temperature anomaly of the bubble is colored in blue/red with blue being colder
+and red being warmer. Initially, the warm part of the bubble is hiden at its center
+and you only see the colder outer part. Multiple convective overturnings develop seen during the
+rising motion to deliver the warm gas upward and outward. Unlike the 2D solution shown in @cite robert1993,
+the 3D evolution of the bubble features a vortex ring surounding the core of the rising
+center and the head of the rising bubble is minimum compared to the ring.

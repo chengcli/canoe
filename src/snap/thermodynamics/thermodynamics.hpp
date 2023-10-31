@@ -205,16 +205,19 @@ class Thermodynamics {
   //! \return $\chi = \frac{R}{c_p}$
   Real GetChi(AirParcel const &qfrac) const;
 
-  //! Temperature dependent specific latent energy [J/kg] of condensates at
-  //! constant volume $L_{ij}(T) = L_{ij}^r - (c_{ij} - c_{p,i})\times(T - T^r)$
+  //! \brief Temperature dependent specific latent energy [J/kg] of condensates
+  //! at constant volume $L_{ij}(T) = L_{ij}^r - (c_{ij} - c_{p,i})\times(T -
+  //! T^r)$
+  //!
   //! $= L_{ij}^r - \delta_{ij}R_i(T - T^r)$
   //! \return $L_{ij}(T)$
   Real GetLatentEnergyMass(int n, Real temp = 0.) const {
     return latent_energy_mass_[n] - delta_[n] * Rd_ * inv_mu_ratio_[n] * temp;
   }
 
-  //! Temperature dependent specific latent energy [J/mol] of condensates at
-  //! constant volume
+  //! \brief Temperature dependent specific latent energy [J/mol] of condensates
+  //! at constant volume
+  //!
   //! \return $L_{ij}(T)$
   Real GetLatentEnergyMole(int n, Real temp = 0.) const {
     return GetLatentEnergyMass(n, temp) * mu_[n];
@@ -228,33 +231,55 @@ class Thermodynamics {
     return GetLatentHeatMole(i, rates, temp) * inv_mu_[i];
   }
 
-  //! Calculate the equilibrium mole transfer between vapor and cloud
-  //! \param L_ov_cv L/cv evaluated at current temperature
+  //! \brief Calculate the equilibrium mole transfer by cloud reaction
+  //! vapor -> cloud
+  //!
+  //! \param[in] qfrac mole fraction representation of air parcel
+  //! \param[in] ivapor the index of the vapor
+  //! \param[in] cv_hat $cv_hat$ molar heat capacity
+  //! \param[in] misty if true, there is an infinite supple of cloud
   //! \return molar fraction change of vapor to cloud
   RealArrayX TryEquilibriumTP_VaporCloud(AirParcel const &qfrac, int ivapor,
                                          Real cv_hat = 0.,
                                          bool misty = false) const;
 
+  //! \brief Calculate the equilibrium mole transfer by cloud reaction
+  //! vapor1 + vapor2 -> cloud
+  //!
+  //! \param[in] air mole fraction representation of air parcel
+  //! \param[in] ij the index pair of the vapor1 and vapor2
+  //! \param[in] cv_hat $\har{cv}$ molar heat capacity
+  //! \param[in] misty if true, there is an infinite supple of cloud
+  //! \return molar fraction change of vapor1, vapor2 and cloud
   RealArray3 TryEquilibriumTP_VaporVaporCloud(AirParcel const &air,
                                               IndexPair ij, Real cv_hat = 0.,
                                               bool misty = false) const;
 
   //! Construct an 1d atmosphere
-  //! @param method choose from [reversible, pseudo, dry, isothermal]
+  //! \param[in,out] qfrac mole fraction representation of air parcel
+  //! \param[in] dzORdlnp vertical grid spacing
+  //! \param[in] method choose from [reversible, pseudo, dry, isothermal]
+  //! \param[in] grav gravitational acceleration
+  //! \param[in] userp user parameter to adjust the temperature gradient
   void Extrapolate(AirParcel *qfrac, Real dzORdlnp, Method method,
                    Real grav = 0., Real userp = 0.) const;
 
   //! Thermodnamic equilibrium at current TP
+  //! \param[in,out] qfrac mole fraction representation of air parcel
   void EquilibrateTP(AirParcel *qfrac) const;
 
   //! Adjust to the maximum saturation state conserving internal energy
-  void SaturationAdjustment(AirColumn &air_column) const;
+  //! \param[in,out] ac mole fraction representation of a collection of air
+  //! parcels
+  void SaturationAdjustment(AirColumn &ac) const;
 
   //! Inverse of the mean molecular weight (with cloud)
+  //! \param[in] qfrac mole fraction representation of air parcel
   Real RovRd(AirParcel const &qfrac) const;
 
-  //! Potential temperature
-  //!$\theta = T(\frac{p_0}{p})^{\chi}$
+  //! \brief Calculate potential temperature from primitive variable
+  //!
+  //! $\theta = T(\frac{p_0}{p})^{\chi}$
   //! \return $\theta$
   Real PotentialTemp(MeshBlock *pmb, Real p0, int k, int j, int i) const {
     auto &w = pmb->phydro->w;
@@ -262,26 +287,30 @@ class Thermodynamics {
            pow(p0 / w(IPR, k, j, i), GetChi(pmb, k, j, i));
   }
 
-  //! Equivalent potential temperature
+  //! \brief Calculate equivalent potential temperature from primitive variable
+  //!
   //! $\theta_e = T(\frac{p}{p_d})^{Rd/(cpd + cl r_t} \exp(\frac{L_v q_v}{c_p
   //! T})$
   Real EquivalentPotentialTemp(MeshBlock *pmb, Real p0, int v, int k, int j,
                                int i) const;
 
-  //! Temperature
-  //!$T = p/(\rho R) = p/(\rho \frac{R}{R_d} Rd)
+  //! \brief Calculate temperature from primitive variable
+  //!
+  //! $T = p/(\rho R) = p/(\rho \frac{R}{R_d} Rd)$
   //! \return $T$
   Real GetTemp(MeshBlock const *pmb, int k, int j, int i) const {
     auto &w = pmb->phydro->w;
     return w(IPR, k, j, i) / (w(IDN, k, j, i) * Rd_ * RovRd(pmb, k, j, i));
   }
 
-  //! Mean molecular weight
+  //! \brief Mean molecular weight
+  //!
   //! $mu = \mu_d (1 + \sum_i q_i (\epsilon_i - 1))$
   //! \return $mu$
   Real GetMu(MeshBlock const *pmb, int k, int j, int i) const;
 
-  //! Inverse of the mean molecular weight (no cloud)
+  //! \brief Inverse of the mean molecular weight (no cloud)
+  //!
   //! $ \frac{R}{R_d} = \frac{\mu_d}{\mu}$
   //! \return $1/\mu$
   //! Eq.16 in Li2019
@@ -294,25 +323,33 @@ class Thermodynamics {
     return feps;
   }
 
-  //! Specific heat capacity [J/(kg K)] of the air parcel at constant volume
-  //! c_v = c_{v,d}*(1 + \sum_i (q_i*(\hat{c}_{v,i} - 1.)))
-  //!   = \gamma_d/(\gamma_d - 1.)*R_d*T*(1 + \sum_i (q_i*(\hat{c}_{v,i} - 1.)))
+  //! \brief Specific heat capacity [J/(kg K)] of the air parcel at constant
+  //! volume
+  //!
+  //! $c_v = c_{v,d}*(1 + \sum_i (q_i*(\hat{c}_{v,i} - 1.)))
+  //!   = \gamma_d/(\gamma_d - 1.)*R_d*T*(1 + \sum_i (q_i*(\hat{c}_{v,i}
+  //!   - 1.)))$
   //! \return $c_v$
   Real GetCvMass(MeshBlock const *pmb, int k, int j, int i) const;
 
-  //! Specific heat capacity [J/(kg K)] of the air parcel at constant pressure
-  //! c_p = c_{p,d}*(1 + \sum_i (q_i*(\hat{c}_{p,i} - 1.)))
-  //!   = \gamma_d/(\gamma_d - 1.)*R_d*T*(1 + \sum_i (q_i*(\hat{c}_{p,i} - 1.)))
+  //! \brief Specific heat capacity [J/(kg K)] of the air parcel at constant
+  //! pressure
+  //!
+  //! $c_p = c_{p,d}*(1 + \sum_i (q_i*(\hat{c}_{p,i} - 1.)))
+  //!   = \gamma_d/(\gamma_d - 1.)*R_d*T*(1 + \sum_i (q_i*(\hat{c}_{p,i}
+  //!   - 1.)))$
   //! \return $c_p$
   Real GetCpMass(MeshBlock const *pmb, int k, int j, int i) const;
 
-  //! Adiabatic index
-  //!$\chi = \frac{R}{c_p}$
+  //! \brief Adiabatic index
+  //!
+  //! $\chi = \frac{R}{c_p}$
   //! \return $\chi$
   Real GetChi(MeshBlock const *pmb, int k, int j, int i) const;
 
-  //! Polytropic index
-  //!$\gamma = \frac{c_p}{c_v}$
+  //! \brief Polytropic index
+  //!
+  //! $\gamma = \frac{c_p}{c_v}$
   //! \return $\gamma$
   Real GetGamma(MeshBlock const *pmb, int k, int j, int i) const;
 
@@ -320,18 +357,22 @@ class Thermodynamics {
   //! \return $p$
   Real GetPres(MeshBlock const *pmb, int k, int j, int i) const;
 
-  //! Enthalpy
-  //!$h = c_{p,d}*T*(1 + \sum_i (q_i*(\hat{c}_{p,i} - 1.)))$
-  //!$  = \gamma_d/(\gamma_d - 1.)*R_d*T*(1 + \sum_i (q_i*(\hat{c}_{pi} - 1.)))$
+  //! \brief specific enthalpy [J/kg] of the air parcel
+  //!
+  //! $h = c_{p,d}*T*(1 + \sum_i (q_i*(\hat{c}_{p,i} - 1.)))$
+  //! $  = \gamma_d/(\gamma_d - 1.)*R_d*T*(1 + \sum_i (q_i*(\hat{c}_{pi}
+  //! - 1.)))$
   Real GetEnthalpyMass(MeshBlock const *pmb, int k, int j, int i) const;
 
-  //! Moist static energy
-  //!$h_s = c_{pd}T + gz + L_vq_v + L_s\sum_i q_i$
+  //! \brief Moist static energy
+  //!
+  //! $h_s = c_{pd}T + gz + L_vq_v + L_s\sum_i q_i$
   //! \return $h_s$
   Real MoistStaticEnergy(MeshBlock const *pmb, Real gz, int k, int j,
                          int i) const;
 
-  //! Relative humidity
+  //! \brief Relative humidity
+  //!
   //! $H_i = \frac{e_i}{e_i^s}$
   //! \return $H$
   Real RelativeHumidity(MeshBlock const *pmb, int n, int k, int j, int i) const;
@@ -351,7 +392,8 @@ class Thermodynamics {
 
   void setTotalEquivalentVapor(AirParcel *qfrac) const;
 
-  //! Calculate moist adiabatic temperature gradient
+  //! \brief Calculate moist adiabatic temperature gradient
+  //!
   //! $\Gamma_m = (\frac{d\ln T}{d\ln P})_m$
   //! \return $\Gamma_m$
   Real calDlnTDlnP(AirParcel const &qfrac, Real latent[]) const;
@@ -361,7 +403,7 @@ class Thermodynamics {
   void rk4IntegrateZ(AirParcel *qfrac, Real dlnp, Method method, Real grav,
                      Real adlnTdlnP) const;
 
-  // custom functions for vapor (to be overridden by user mods)
+  //! custom functions for vapor (to be overridden by user mods)
   void enrollVaporFunctions();
 
  protected:
@@ -398,19 +440,22 @@ class Thermodynamics {
   //! latent energy at constant volume [J/mol]
   std::array<Real, Size> latent_energy_mole_;
 
-  //! latent energy at constant volume [J/kg]
+  //! \brief latent energy at constant volume [J/kg]
+  //!
   //! $L_i^r+\Delta c_{ij}T^r == \beta_{ij}\frac{R_d}{\epsilon_i}T^r$
   std::array<Real, Size> latent_energy_mass_;
 
-  //! dimensionless latent heat
+  //! \brief Dimensionless latent heat
+  //!
   //! $\beta_{ij} = \frac{\Delta U_{ij}}{R_i T^r}$
   //! $\Delta U_{ij}$ is the difference in internal energy between the vapor $i$
   //! and the condensate $j$ $R_i=\hat{R}/m_i=R_d/\epsilon_i$ $T^r$ is the
   //! triple point temperature
-  //! $\beta_{ij} == \frac{L_{ij}^r + \Delta c_{ij}T^r}{R_i T^r} $
+  //! $\beta_{ij} == \frac{L_{ij}^r + \Delta c_{ij}T^r}{R_i T^r}$
   std::array<Real, Size> beta_;
 
-  //! dimensionless differences in specific heat capacity
+  //! \brief Dimensionless differences in specific heat capacity
+  //!
   //! $\delta_{ij} = \frac{c_{ij} - c_{p,i}}{R_i}$
   //! $c_{ij} - c_{p,j}$ is the difference in specific heat
   //! capacity at constant pressure. $c_{ij}$ is the heat capacity of
@@ -438,9 +483,13 @@ class Thermodynamics {
   //! pointer to the single Thermodynamics instance
   static Thermodynamics *mythermo_;
 
-  //! other parameters
+  //! maximum saturation adjustment iterations
   int sa_max_iter_ = 5;
+
+  //! saturation adjustment relaxation parameter
   Real sa_relax_ = 0.8;
+
+  //! saturation adjustment temperature tolerance
   Real sa_ftol_ = 0.01;
 };
 

@@ -1,0 +1,234 @@
+# This file contains project-specific configurations for the
+# Athena++/atmosphere documentation.
+# Based on Doxyfile 1.9.1 and deal.II template
+
+PROJECT_NAME           = "Canoe"
+#PROJECT_NUMBER         = "v19"
+PROJECT_LOGO           = logo1.png
+PROJECT_BRIEF          = Comprehensive Atmosphere N' Ocean Engine
+OUTPUT_DIRECTORY       = .
+
+# The doxygen documentation says this about the following flag:
+#   If the CREATE_SUBDIRS tag is set to YES, then doxygen will create
+#   4096 sub-directories (in 2 levels) under the output directory of each output
+#   format and will distribute the generated files over these directories.
+#   Enabling this option can be useful when feeding doxygen a huge amount of
+#   source files, where putting all generated files in the same directory would
+#   otherwise cause performance problems for the file system.
+# We set the flag to NO since we occasionally need to reference individual
+# doxygen-generated files from other parts of the documentation and need
+# to have predictable file paths.
+#
+# The same is true for SHORT_NAMES, which compresses file names, and
+# CASE_SENSE_NAMES which allows file names to contain upper case letters.
+CREATE_SUBDIRS         = NO
+SHORT_NAMES            = NO
+CASE_SENSE_NAMES       = YES
+
+
+INLINE_INHERITED_MEMB  = NO
+STRIP_FROM_PATH        =
+STRIP_FROM_INC_PATH    =
+
+FULL_PATH_NAMES        = YES
+JAVADOC_AUTOBRIEF      = NO
+INHERIT_DOCS           = YES
+TAB_SIZE               = 4
+
+BUILTIN_STL_SUPPORT    = YES
+
+
+#---------------------------------------------------------------------------
+# Build related configuration options
+#---------------------------------------------------------------------------
+
+EXTRACT_ALL            = YES
+EXTRACT_PRIVATE        = YES
+EXTRACT_STATIC         = YES
+EXTRACT_LOCAL_CLASSES  = YES
+EXTRACT_PACKAGE        = NO
+
+HIDE_UNDOC_MEMBERS     = NO
+HIDE_UNDOC_CLASSES     = NO
+SORT_MEMBER_DOCS       = NO
+SORT_BRIEF_DOCS        = NO
+SORT_BY_SCOPE_NAME     = NO
+GENERATE_TODOLIST      = YES
+GENERATE_DEPRECATEDLIST= NO
+SHOW_USED_FILES        = YES
+
+#---------------------------------------------------------------------------
+# configuration options related to warning and progress messages
+#---------------------------------------------------------------------------
+
+QUIET                  = YES
+WARNINGS               = YES
+WARN_IF_UNDOCUMENTED   = NO
+WARN_IF_DOC_ERROR      = YES
+
+#---------------------------------------------------------------------------
+# configuration options related to the input files
+#---------------------------------------------------------------------------
+
+INPUT                  = ../../src  \
+                         ../../src/snap/thermodynamics/ \
+                         ../../src/microphysics/ \
+                         ../../src/harp/  \
+                         ../examples  \
+                         ../pages
+
+EXCLUDE                = ../../drum/pgen \
+                         ../../src/math/eigen335 \
+                         ../../src/radiation/opacity \
+                         ../../src/tools
+
+RECURSIVE              = YES
+EXCLUDE_PATTERNS       = *.templates.h
+EXAMPLE_PATH           = ../examples
+EXAMPLE_RECURSIVE      = NO
+IMAGE_PATH             =
+INPUT_FILTER           = ../scripts/filter
+FILTER_SOURCE_FILES    = YES
+
+# Have some user defined commands that we can use in the documentation
+# and that expands to specific text. For some more transformations, see
+# the scripts/filter perl script that is run over the header files before
+# doxygen sees it and that can expand more complex expressions.
+#
+# Related to a bug in doxygen, fixed in 1.9.0
+ALIASES += reff{1}="@ref /home/cli/athena19-dev/\1 \"\1\""
+ALIASES += dealiiRequiresUpdateFlags{1}="@note For this function to work properly, the underlying FEValues, FEFaceValues, or FESubfaceValues object on which you call it must have computed the information you are requesting. To do so, the <code>\1</code> flag must be an element of the list of UpdateFlags that you passed to the constructor of this object. See @ref UpdateFlags for more information."
+
+ALIASES += dealiiOperationIsMultithreaded="@note If deal.II is configured with threads, this operation will run multi-threaded by splitting the work into smaller chunks (assuming there is enough work to make this worthwhile)."
+
+ALIASES += dealiiExceptionMessage{1}="@note The message that will be printed by this exception reads: <div class='doxygen-generated-exception-message'> \1 </div> "
+
+ALIASES += dealiiWriggersA{2}="@note For a discussion of the background of this function, see P. Wriggers: \"Nonlinear finite element methods\" (2008), and in particular formula (\2) on p. \1 (or thereabouts). "
+
+ALIASES += dealiiHolzapfelA{2}="@note For a discussion of the background of this function, see G. A. Holzapfel: \"Nonlinear solid mechanics. A Continuum Approach for Engineering\" (2007), and in particular formula (\2) on p. \1 (or thereabouts). "
+
+#---------------------------------------------------------------------------
+# configuration options related to source browsing
+#---------------------------------------------------------------------------
+
+SOURCE_BROWSER         = YES
+INLINE_SOURCES         = NO
+STRIP_CODE_COMMENTS    = YES
+USE_HTAGS              = NO
+VERBATIM_HEADERS       = NO
+
+#---------------------------------------------------------------------------
+# configuration options related to the HTML output
+#---------------------------------------------------------------------------
+
+GENERATE_HTML          = YES
+HTML_OUTPUT            = html
+HTML_FILE_EXTENSION    = .html
+HTML_HEADER            = header.html
+#HTML_FOOTER            = footer.html
+USE_MATHJAX            = YES
+MATHJAX_RELPATH        = https://cdn.jsdelivr.net/npm/mathjax@2
+MATHJAX_EXTENSIONS     = TeX/AMSmath TeX/AMSsymbols
+HTML_COLORSTYLE_HUE    = 220
+HTML_COLORSTYLE_SAT    = 200
+HTML_EXTRA_STYLESHEET  = custom.css custom-sidebar.css
+HTML_EXTRA_FILES       = main.js
+#HTML_DYNAMIC_MENUS     = NO
+GENERATE_TREEVIEW      = YES
+LAYOUT_FILE            = layout.xml
+
+
+#---------------------------------------------------------------------------
+# configuration options related to the LaTeX output
+#---------------------------------------------------------------------------
+
+# don't generate latex output -- it's simply too big!  GENERATE_LATEX         = YES
+LATEX_OUTPUT           = latex
+
+# but set a few flags for when processing formulas embedded
+# in the documentation.
+PAPER_TYPE             = a4
+EXTRA_PACKAGES         = amsmath amsfonts mathtools @_extra_packages@
+LATEX_BATCHMODE        = YES
+
+#---------------------------------------------------------------------------
+# Other output formats
+#---------------------------------------------------------------------------
+
+GENERATE_RTF           = NO
+GENERATE_MAN           = NO
+GENERATE_XML           = NO
+GENERATE_AUTOGEN_DEF   = NO
+GENERATE_PERLMOD       = NO
+
+#---------------------------------------------------------------------------
+# Configuration options related to the preprocessor
+#---------------------------------------------------------------------------
+
+ENABLE_PREPROCESSING   = YES
+MACRO_EXPANSION        = YES
+EXPAND_ONLY_PREDEF     = YES
+SEARCH_INCLUDES        = YES
+INCLUDE_PATH           =
+INCLUDE_FILE_PATTERNS  =
+
+# Set a few variables that help us generate documentation for things
+# like the PETSc and Trilinos wrappers, even if they were not
+# configured. We want to do that because we want the documentation to
+# reflect the most complete picture of the library, even if the system
+# on which the documentation was built doesn't actually have all
+# possible dependencies installed.
+#
+# In the case of DEAL_II_NAMESPACE_OPEN/CLOSE, just expand them
+# to nothing so that they don't show up in the documentation
+# at all.
+PREDEFINED             =
+
+# do not expand exception declarations
+EXPAND_AS_DEFINED      =
+SKIP_FUNCTION_MACROS   = YES
+
+#---------------------------------------------------------------------------
+# Configuration::additions related to external references
+#---------------------------------------------------------------------------
+
+GENERATE_TAGFILE       =
+ALLEXTERNALS           = NO
+EXTERNAL_GROUPS        = YES
+
+#---------------------------------------------------------------------------
+# Configuration options related to the dot tool
+#---------------------------------------------------------------------------
+
+HIDE_UNDOC_RELATIONS   = NO
+HAVE_DOT               = YES
+CLASS_GRAPH            = YES
+COLLABORATION_GRAPH    = NO
+GROUP_GRAPHS           = YES
+UML_LOOK               = NO
+TEMPLATE_RELATIONS     = YES
+INCLUDE_GRAPH          = NO
+INCLUDED_BY_GRAPH      = NO
+CALL_GRAPH             = NO
+CALLER_GRAPH           = NO
+GRAPHICAL_HIERARCHY    = NO
+DIRECTORY_GRAPH        = YES
+DOT_IMAGE_FORMAT       = svg
+MAX_DOT_GRAPH_DEPTH    = 5
+GENERATE_LEGEND        = YES
+
+DOT_CLEANUP            = YES
+
+#---------------------------------------------------------------------------
+# Configuration::additions related to the search engine
+#---------------------------------------------------------------------------
+
+SEARCHENGINE           = YES
+SERVER_BASED_SEARCH    = NO
+
+#---------------------------------------------------------------------------
+# Configuration options related to bibtex citations
+#---------------------------------------------------------------------------
+
+CITE_BIB_FILES         = references.bib
+LATEX_BIB_STYLE        = chicago
