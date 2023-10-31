@@ -92,6 +92,11 @@ basis for understanding the internal mechanism of the code.
 If you feel that our code helps your project, please consider citing our work in your
 publication:
 <ol class="publist">
+  <li>Huazhi Ge, C. Li, X. Zhang, C. Moeckel, 2023, Heat-Flux Limited Cloud Activity and Vertical
+    Mixing in Giant Planet Atmospheres with an Application to Uranus and Neptune,
+    <em>PSJ, accepted</em></li>
+  <li>Steven Markham, T. Guillot, C. Li, 2023, Rainy downdrafts in abyssal atmospheres,
+    <em>A&A, 674, A177</em></li>
   <li>Huazhi Ge, C. Li, X. Zhang, D. Lee, 2020, A Global Nonhydrostatic Atmospheric Model
     with a Mass-and Energy-conserving Vertically Implicit Correction (VIC) Scheme,
     <em>ApJ, 898.2:130</em></li>
