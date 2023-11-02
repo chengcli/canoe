@@ -18,7 +18,7 @@ class Hydro;
 class RadiationBand;
 
 class Radiation : public RestartGroup,
-                  public MeshOutputGroup,
+                  // public MeshOutputGroup,
                   public CounterGroup,
                   public FlagGroup {
  public:  // public access data
@@ -35,7 +35,7 @@ class Radiation : public RestartGroup,
   AthenaArray<Real> flxdn;
 
  public:  // constructor and destructor
-  Radiation() {}
+  // Radiation() {}
   Radiation(MeshBlock *pmb, ParameterInput *pin);
   ~Radiation();
 

@@ -25,35 +25,32 @@ class SpectralGridBase {
 
   //! \brief Read the spectral range from a YAML node
   //! \return [wave min, wave max]
-  std::pair<Real, Real> ReadRangeFrom(YAML::Node &node);
-
-  //! number of the spectral bin
-  size_t GetSize() const { return spec.size(); }
+  std::pair<Real, Real> ReadRangeFrom(YAML::Node const& my);
 };
 
 //! Policy class for creating a regular spacing spectral grid
 class RegularSpacingSpectralGrid : public SpectralGridBase {
  public:
-  RegularSpacingSpectralGrid(YAML::Node &my);
+  RegularSpacingSpectralGrid(YAML::Node const& my);
 };
 
 //! Policy class for creating a custom spacing spectral grid
 class CustomSpacingSpectralGrid : public SpectralGridBase {
  public:
-  CustomSpacingSpectralGrid(YAML::Node &my);
+  CustomSpacingSpectralGrid(YAML::Node const& my);
 };
 
 //! \brief Policy class for creating a correlated k-table spectral grid
 class CorrelatedKTableSpectralGrid : public SpectralGridBase {
  public:
-  CorrelatedKTableSpectralGrid(YAML::Node &my);
+  CorrelatedKTableSpectralGrid(YAML::Node const& my);
 };
 
 using SpectralGridPtr = std::shared_ptr<SpectralGridBase>;
 
 class SpectralGridFactory {
  public:
-  static SpectralGridPtr = CreateFrom(YAML::Node & my);
+  static SpectralGridPtr CreateFrom(YAML::Node const& my);
 };
 
 #endif  // SRC_HARP_SPECTRAL_GRID_HPP_

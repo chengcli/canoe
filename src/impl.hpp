@@ -63,14 +63,16 @@ class MeshBlock::Impl {
   // scheduler
   std::shared_ptr<Scheduler> scheduler;
 
-  /// constructor and destructor
+ public:  // constructor and destructor
   Impl(MeshBlock *pmb, ParameterInput *pin);
   ~Impl();
 
-  /// functions
+ public:  // member functions
   void *GetExchanger(std::string name) const {
     return boundary_exchanger_.at(name);
   }
+
+  Real GetDistanceInAu() const { return stellar_distance_au_; }
 
   auto &GetMeshOutputGroups() const { return mesh_outputs_; }
   auto &GetFITSOutputGroups() const { return fits_outputs_; }

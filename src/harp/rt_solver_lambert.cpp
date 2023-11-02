@@ -32,16 +32,16 @@ void RadiationBand::RTSolverLambert::CalBandRadiance(Direction const &rayInput,
   auto &toa = pband->toa_;
   auto &tau = pband->tau_;
   auto &temf = pband->temf_;
-  auto &spec = pband->spec_;
+  auto &spec = pband->pgrid_->spec;
 
   auto &btoa = pband->btoa;
   //! \note T ~ Ts*(\tau/\tau_s)^\alpha at lower boundary
-  Real alpha = pband->HasParameter("alpha") ? pband->GetParameter("alpha") : 0.;
+  Real alpha = pband->HasPar("alpha") ? pband->GetPar<Real>("alpha") : 0.;
 
   // integrate from top to bottom
   for (int m = 0; m < pband->GetNumOutgoingRays(); ++m) {
     btoa(m, k, j) = 0.;
-    for (int n = 0; n < pband->GetNumBins(); ++n) {
+    for (int n = 0; n < pband->GetNumSpecGrids(); ++n) {
       taut[iu] = 0.;
       toa(n, m) = 0.;
       for (int i = iu - 1; i >= il; --i) {

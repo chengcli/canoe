@@ -35,32 +35,34 @@ class FlagGroup {
  private:
   //! internal flags
   uint64_t myflags_;
-}
+};
 
 class ParameterGroup {
  public:
   virtual ~ParameterGroup() {}
 
-  void SetRealsFrom(YAML::node &node) {
+  void SetRealsFrom(YAML::Node const &node) {
     for (auto it = node.begin(); it != node.end(); ++it) {
-      params_real_[it->first.as<std::string>()] = it->second.as<T>();
+      params_real_[it->first.as<std::string>()] = it->second.as<Real>();
     }
   }
 
   //! Set real parameter
-  void SetPar(std::string_view name, Real value) { params_real_[name] = value; }
+  void SetPar(std::string const &name, Real value) {
+    params_real_[name] = value;
+  }
 
   //! Set int parameter
-  void SetPar(std::string_view name, int value) { params_int_[name] = value; }
+  void SetPar(std::string const &name, int value) { params_int_[name] = value; }
 
   //! Set string parameter
-  void SetPar(std::string_view name, std::string const &value) {
+  void SetPar(std::string const &name, std::string const &value) {
     params_str_[name] = value;
   }
 
   //! Get parameter
   template <typename T>
-  Real GetPar(std::string_view name) const;
+  T GetPar(std::string const &name) const;
 
   //! Check if a parameter exists
   bool HasPar(std::string const &name) const {
@@ -83,17 +85,17 @@ class ParameterGroup {
 
 // specialization
 template <>
-int ParameterGroup::GetPar<int>(std::string_view name) const {
+int ParameterGroup::GetPar<int>(std::string const &name) const {
   return params_int_.at(name);
 }
 
 template <>
-int ParameterGroup::GetPar<Real>(std::string_view name) const {
+Real ParameterGroup::GetPar<Real>(std::string const &name) const {
   return params_real_.at(name);
 }
 
 template <>
-int ParameterGroup::GetPar<std::string>(std::string_view name) const {
+std::string ParameterGroup::GetPar<std::string>(std::string const &name) const {
   return params_str_.at(name);
 }
 
@@ -103,7 +105,7 @@ class CounterGroup {
   void ResetCounter() { current_ = cooldown_; }
   void DecrementCounter(Real dt) { current_ -= dt; }
   Real GetCounter() const { return current_; }
-  Real SetCooldownTime(Real cooldown) { cooldown_ = cooldown; }
+  void SetCooldownTime(Real cooldown) { cooldown_ = cooldown; }
 
  private:
   Real cooldown_, current_ = 0.;

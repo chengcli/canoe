@@ -1,12 +1,18 @@
 // external
 #include <yaml-cpp/yaml.h>
 
+// athena
+#include <athena/athena.hpp>
+
 // application
 #include <application/exceptions.hpp>
 
-std::pair<Real, Real> SpectralGridBase::ReadRangeFrom(YAML::node &node) {
+// harp
+#include "spectral_grid.hpp"
+
+std::pair<Real, Real> SpectralGridBase::ReadRangeFrom(YAML::Node const& my) {
   char str[80];
-  snprintf(str, sizeof(str), "%s-%s", unit_type, "range");
+  snprintf(str, sizeof(str), "%s-%s", unit_type.c_str(), "range");
 
   if (!my[str]) {
     throw NotFoundError("SpectralGridBase", str);
@@ -22,8 +28,8 @@ std::pair<Real, Real> SpectralGridBase::ReadRangeFrom(YAML::node &node) {
   return std::make_pair(wmin, wmax);
 }
 
-RegularSpacingSpectralGrid::RegularSpacingSpectralGrid(YAML::Node &node) {
-  auto &&wpair = ReadRangeFrom(node);
+RegularSpacingSpectralGrid::RegularSpacingSpectralGrid(YAML::Node const& my) {
+  auto&& wpair = ReadRangeFrom(my);
   Real wmin = wpair.first;
   Real wmax = wpair.second;
 
@@ -58,9 +64,9 @@ RegularSpacingSpectralGrid::RegularSpacingSpectralGrid(YAML::Node &node) {
   }
 }
 
-CustomSpacingSpectralGrid::CustomSpacingSpectralGrid(YAML::Node &node) {
+CustomSpacingSpectralGrid::CustomSpacingSpectralGrid(YAML::Node const& my) {
   char str[80];
-  snprintf(str, sizeof(str), "%s-points", unit_type, "range");
+  snprintf(str, sizeof(str), "%s-points", unit_type.c_str(), "range");
 
   if (!my[str]) {
     throw NotFoundError("SpectralGridBase", str);
@@ -85,8 +91,9 @@ CustomSpacingSpectralGrid::CustomSpacingSpectralGrid(YAML::Node &node) {
   }
 }
 
-CorrelatedKTableSpectralGrid::CorrelatedKTableSpectralGrid(YAML::Node &node) {
-  auto &&wpair = ReadRangeFrom(node);
+CorrelatedKTableSpectralGrid::CorrelatedKTableSpectralGrid(
+    YAML::Node const& my) {
+  auto&& wpair = ReadRangeFrom(my);
   Real wmin = wpair.first;
   Real wmax = wpair.second;
 
@@ -104,7 +111,7 @@ CorrelatedKTableSpectralGrid::CorrelatedKTableSpectralGrid(YAML::Node &node) {
   }
 }
 
-SpectralGridPtr SpectralGridFactory::CreateFrom(YAML::Node &my) {
+SpectralGridPtr SpectralGridFactory::CreateFrom(YAML::Node const& my) {
   if (!my["grid-type"]) {
     throw NotFoundError("SpectralGridFactory", "grid-type");
   }

@@ -33,7 +33,7 @@ Absorber::~Absorber() {
 
 AbsorberContainer AbsorberFactory::CreateFrom(
     std::vector<std::string> const& names, std::string band_name,
-    YAML::Node& rad) {
+    YAML::Node const& rad) {
   AbsorberContainer absorbers;
 
   for (auto& name : names) {
@@ -54,7 +54,8 @@ AbsorberContainer AbsorberFactory::CreateFrom(
   return absorbers;
 }
 
-AbsorberPtr AbsorberFactory::CreateFrom(YAML::Node& my, std::string band_name) {
+AbsorberPtr AbsorberFactory::CreateFrom(YAML::Node const& my,
+                                        std::string band_name) {
   std::vector<std::string> species;
   std::string name = my["name"].as<std::string>();
 

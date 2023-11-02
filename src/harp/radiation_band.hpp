@@ -15,10 +15,15 @@
 
 // canoe
 #include <air_parcel.hpp>
+#include <common.hpp>
 #include <virtual_groups.hpp>
+
+// harp
+#include "spectral_grid.hpp"
 
 class OutputParameters;
 class Absorber;
+class SpectralGridBase;
 struct Direction;
 
 class RadiationBand : public NamedGroup,
@@ -55,19 +60,20 @@ class RadiationBand : public NamedGroup,
   AthenaArray<Real> btoa;
 
  public:  // constructor and destructor
-  RadiationBand() {}
-  RadiationBand(YAML::Node &inp, std::string name, int nc1 = 1, int nc2 = 1,
-                int nc3 = 1);
-  ~RadiationBand();
+  RadiationBand(std::string name, YAML::Node const &rad);
+  virtual ~RadiationBand();
 
  public:  // functions
+  //! \brief Allocate memory for radiation band
+  void Allocate(int nc1, int nc2 = 1, int nc3 = 1);
+
   //! \brief Create radiative transfer solver from YAML node
   //!
   //! \param[in] my YAML node containing the current band
-  static std::shared_ptr<RTSolver> CreateRTSolverFrom(YAML::Node &my);
+  std::shared_ptr<RTSolver> CreateRTSolverFrom(YAML::Node const &my);
 
   //! Get number of spectral grids
-  size_t GetNumSpecGrids() const { return spec_grid_->GetSize(); }
+  size_t GetNumSpecGrids() const { return pgrid_->spec.size(); }
 
   //! Get number of absorbers
   size_t GetNumAbsorbers() const { return absorbers_.size(); }
@@ -91,14 +97,17 @@ class RadiationBand : public NamedGroup,
   //! \brief Set spectral properties for an air column
   //!
   //! \param[in] air mole fraction representation of air column
-  void SetSpectralProperties(AirColumn const &air, Coordinates const *pcoord,
-                             int k, int j);
+  void SetSpectralProperties(AirColumn &air, Coordinates const *pcoord, int k,
+                             int j);
 
  public:  // ASCIIOutputGroup functions
   void WriteAsciiHeader(OutputParameters const *) const override;
   void WriteAsciiData(OutputParameters const *) const override;
 
  protected:
+  //! \brief number of phase function moments
+  int npmom_;
+
   //! spectral grid
   std::shared_ptr<SpectralGridBase> pgrid_;
 

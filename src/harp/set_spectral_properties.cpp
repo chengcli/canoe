@@ -17,16 +17,18 @@
 // snap
 #include <snap/thermodynamics/thermodynamics.hpp>
 
+// opacity
+#include <opacity/absorber.hpp>
+
 // harp
-#include "absorber.hpp"
 #include "radiation.hpp"
 #include "radiation_band.hpp"
 
 // setting optical properties
-void RadiationBand::SetSpectralProperties(AirColumn const& ac,
+void RadiationBand::SetSpectralProperties(AirColumn& ac,
                                           Coordinates const* pcoord, int k,
                                           int j) {
-  int nspec = pgrid->GetSize();
+  int nspec = pgrid_->spec.size();
   int npmom = bpmom.GetDim4() - 1;
 
   // set tau, ssalb, pmom, etc...
@@ -41,7 +43,8 @@ void RadiationBand::SetSpectralProperties(AirColumn const& ac,
     air.ToMoleFraction();
 
     for (auto& a : absorbers_) {
-      for (auto& spec : pgrid->spec) {
+      for (int m = 0; m < nspec; ++m) {
+        auto& spec = pgrid_->spec[m];
         Real kcoeff = a->GetAttenuation(spec.wav1, spec.wav2, air);  // 1/m
         Real dssalb =
             a->GetSingleScatteringAlbedo(spec.wav1, spec.wav2, air) * kcoeff;

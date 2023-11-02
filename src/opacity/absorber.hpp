@@ -70,7 +70,7 @@ class AbsorberFactory {
   //!
   //! \param[in] my YAML node containing the current absorber
   //! \param[in] band_name name of the radiation band
-  static AbsorberPtr CreateFrom(YAML::Node& my, std::string band_name);
+  static AbsorberPtr CreateFrom(YAML::Node const& my, std::string band_name);
 
   //! \brief Create absorbers from YAML node
   //!
@@ -78,7 +78,8 @@ class AbsorberFactory {
   //! \param[in] band_name name of the radiation band
   //! \param[in] rad YAML node containing the radiation input file
   static AbsorberContainer CreateFrom(std::vector<std::string> const& names,
-                                      std::string band_name, YAML::Node& rad);
+                                      std::string band_name,
+                                      YAML::Node const& rad);
 
   //! \brief Customize function to create absorbers
   //!

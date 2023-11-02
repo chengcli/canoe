@@ -35,10 +35,8 @@
 #include "radiation_band.hpp"
 #include "radiation_utils.hpp"  // readRadiationDirections
 #include "rt_solvers.hpp"
-#include "spectral_grid.hpp"
 
-RadiationBand::RadiationBand(YAML::Node &rad, std::string myname, int nc1,
-                             int nc2, int nc3)
+RadiationBand::RadiationBand(std::string myname, YAML::Node const &rad)
     : NamedGroup(myname) {
   Application::Logger app("harp");
   app->Log("Initialize RadiationBand " + myname);
@@ -47,56 +45,21 @@ RadiationBand::RadiationBand(YAML::Node &rad, std::string myname, int nc1,
     throw NotFoundError("RadiationBand", myname);
   }
 
-  auto &my = rad[myname];
+  auto my = rad[myname];
 
   if (my["parameters"]) {
     SetRealsFrom(my["parameters"]);
   }
 
   // number of phase function moments
-  int npmom = my["phase-function-moments"] ? my["moments"].as<int>() : 1;
+  npmom_ = my["phase-function-moments"] ? my["moments"].as<int>() : 1;
 
   wrange_ = pgrid_->ReadRangeFrom(my);
 
   pgrid_ = SpectralGridFactory::CreateFrom(my);
 
-  // outgoing radiation direction (mu,phi) in degree
-  if (pin->DoesParameterExist("radiation", GetName() + ".outdir")) {
-    auto str = pin->GetString("radiation", GetName() + ".outdir");
-    read_radiation_directions(&rayOutput_, str);
-  } else if (pin->DoesParameterExist("radiation", "outdir")) {
-    auto str = pin->GetString("radiation", "outdir");
-    read_radiation_directions(&rayOutput_, str);
-  }
-
-  // allocate memory for spectral properties
-  tem_.NewAthenaArray(nc1);
-  temf_.NewAthenaArray(nc1 + 1);
-
-  tau_.NewAthenaArray(pgrid_->GetSize(), nc1);
-  tau_.ZeroClear();
-
-  ssa_.NewAthenaArray(pgrid_->GetSize(), nc1);
-  ssa_.ZeroClear();
-
-  toa_.NewAthenaArray(pgrid_->GetSize(), rayOutput_.size());
-  toa_.ZeroClear();
-
-  pmom_.NewAthenaArray(pgrid_->GetSize(), nc1, npmom + 1);
-  pmom_.ZeroClear();
-
-  flxup_.NewAthenaArray(pgrid_->GetSize(), nc1);
-  flxup_.ZeroClear();
-
-  flxdn_.NewAthenaArray(pgrid_->GetSize(), nc1);
-  flxdn_.ZeroClear();
-
-  // band properties
-  btau.NewAthenaArray(nc3, nc2, nc1);
-  bssa.NewAthenaArray(nc3, nc2, nc1);
-  bpmom.NewAthenaArray(npmom + 1, nc3, nc2, nc1);
-
-  //! \note btoa, bflxup, bflxdn are shallow slices to Radiation variables
+  std::string dirstr = my["outdir"].as<std::string>();
+  rayOutput_ = RadiationHelper::parse_radiation_directions(dirstr);
 
   // set absorbers
   if (my["opacity"]) {
@@ -106,20 +69,51 @@ RadiationBand::RadiationBand(YAML::Node &rad, std::string myname, int nc1,
 
   // set rt solver
   if (my["rt-solver"]) {
-    psolver = RTSolverFactory::CreateFrom(my["rt-solver"]);
+    psolver = CreateRTSolverFrom(my["rt-solver"]);
   } else {
     psolver = nullptr;
   }
 
   char buf[80];
-  snprintf(buf, sizeof(buf), "%.2f - %.2f", wmin_, wmax_);
+  snprintf(buf, sizeof(buf), "%.2f - %.2f", wrange_.first, wrange_.second);
   app->Log("Spectral range", buf);
-  app->Log("Number of spectral bins", pgrid_->GetSize());
+  app->Log("Number of spectral bins", pgrid_->spec.size());
 }
 
 RadiationBand::~RadiationBand() {
   Application::Logger app("harp");
   app->Log("Destroy RadiationBand " + GetName());
+}
+
+void RadiationBand::Allocate(int nc1, int nc2, int nc3) {
+  // allocate memory for spectral properties
+  tem_.NewAthenaArray(nc1);
+  temf_.NewAthenaArray(nc1 + 1);
+
+  tau_.NewAthenaArray(pgrid_->spec.size(), nc1);
+  tau_.ZeroClear();
+
+  ssa_.NewAthenaArray(pgrid_->spec.size(), nc1);
+  ssa_.ZeroClear();
+
+  toa_.NewAthenaArray(pgrid_->spec.size(), rayOutput_.size());
+  toa_.ZeroClear();
+
+  pmom_.NewAthenaArray(pgrid_->spec.size(), nc1, npmom_ + 1);
+  pmom_.ZeroClear();
+
+  flxup_.NewAthenaArray(pgrid_->spec.size(), nc1);
+  flxup_.ZeroClear();
+
+  flxdn_.NewAthenaArray(pgrid_->spec.size(), nc1);
+  flxdn_.ZeroClear();
+
+  // band properties
+  btau.NewAthenaArray(nc3, nc2, nc1);
+  bssa.NewAthenaArray(nc3, nc2, nc1);
+  bpmom.NewAthenaArray(npmom_ + 1, nc3, nc2, nc1);
+
+  //! \note btoa, bflxup, bflxdn are shallow slices to Radiation variables
 }
 
 AbsorberPtr RadiationBand::GetAbsorberByName(std::string const &name) {
@@ -144,18 +138,18 @@ void RadiationBand::WriteAsciiHeader(OutputParameters const *pout) const {
   FILE *pfile = fopen(fname, "w");
 
   fprintf(pfile, "# Bin Radiances of Band %s: %.3g - %.3g\n", GetName().c_str(),
-          wmin, wmax);
+          wrange_.first, wrange_.second);
   fprintf(pfile, "# Ray output size: %lu\n", rayOutput_.size());
 
   fprintf(pfile, "# Polar angles: ");
-  for (size_t j = 0; j < rayOutput_.size(); ++j) {
-    fprintf(pfile, "%.3f", rad2deg(acos(rayOutput_[j].mu)));
+  for (auto &ray : rayOutput_) {
+    fprintf(pfile, "%.3f", rad2deg(acos(ray.mu)));
   }
   fprintf(pfile, "\n");
 
   fprintf(pfile, "# Azimuthal angles: ");
-  for (size_t j = 0; j < rayOutput_.size(); ++j) {
-    fprintf(pfile, "%.3f", rad2deg(rayOutput_[j].phi));
+  for (auto &ray : rayOutput_) {
+    fprintf(pfile, "%.3f", rad2deg(ray.phi));
   }
   fprintf(pfile, "\n");
 
@@ -177,13 +171,15 @@ void RadiationBand::WriteAsciiData(OutputParameters const *pout) const {
            number);
   FILE *pfile = fopen(fname, "w");
 
-  for (size_t i = 0; i < pgrid_->GetSize(); ++i) {
+  for (size_t i = 0; i < pgrid_->spec.size(); ++i) {
     fprintf(pfile, "%13.3g%12.3g", pgrid_->spec[i].wav1, pgrid_->spec[i].wav2);
     for (size_t j = 0; j < rayOutput_.size(); ++j) {
       fprintf(pfile, "%12.3f", toa_(i, j));
     }
-    if (TestFlag(RadiationFlags::Normalize) && (wmax != wmin)) {
-      fprintf(pfile, "%12.3g\n", pgrid_->spec[i].wght / (wmax - wmin));
+    if (TestFlag(RadiationFlags::Normalize) &&
+        (wrange_.first != wrange_.second)) {
+      fprintf(pfile, "%12.3g\n",
+              pgrid_->spec[i].wght / (wrange_.second - wrange_.first));
     } else {
       fprintf(pfile, "%12.3g\n", pgrid_->spec[i].wght);
     }
@@ -192,7 +188,8 @@ void RadiationBand::WriteAsciiData(OutputParameters const *pout) const {
   fclose(pfile);
 }
 
-std::shared_ptr<RTSolver> RadiationBand::CreateRTSolveFrom(YAML::Node &my) {
+std::shared_ptr<RadiationBand::RTSolver> RadiationBand::CreateRTSolverFrom(
+    YAML::Node const &my) {
   std::string rt_name_str = my["rt-solver"].as<std::string>();
   std::shared_ptr<RTSolver> psolver;
 
@@ -219,14 +216,10 @@ RadiationBandContainer RadiationBandsFactory::CreateFrom(std::string filename) {
   if (stream.good() == false) {
     app->Error("Cannot open radiation bands file: " + filename);
   }
-  YAML::Node node = YAML::Load(stream);
+  YAML::Node rad = YAML::Load(stream);
 
-  if (!node["opacity-sources"]) {
-    throw NotFoundError("LoadRadiationBand", "opacity-sources");
-  }
-
-  for (auto bname : node["bands"]) {
-    auto p = std::make_shared<RadiationBand>(node, bname.as<std::string>());
+  for (auto bname : rad["bands"]) {
+    auto p = std::make_shared<RadiationBand>(bname.as<std::string>(), rad);
     bands.push_back(p);
   }
 
@@ -238,7 +231,7 @@ RadiationBandContainer RadiationBandsFactory::CreateFrom(ParameterInput *pin,
   std::vector<RadiationBandPtr> bands;
 
   auto rt_band_files =
-      std::Vectorize<std::string>(pin->GetOrAddString("radiation", key, ""));
+      Vectorize<std::string>(pin->GetOrAddString("radiation", key, "").c_str());
 
   for (auto &filename : rt_band_files) {
     auto &&tmp = CreateFrom(filename);
