@@ -21,8 +21,10 @@ class AirParcel;
 //! \brief base class of all absorbers
 class Absorber : public NamedGroup, public ParameterGroup {
  public:  // constructor and destructor
-  Absorber(std::string name,
-           std::vector<std::string> const& names) virtual ~Absorber();
+  Absorber(std::string name, std::vector<std::string> const& species,
+           std::string full_path);
+
+  virtual ~Absorber();
 
  public:  // functions
   //! Set absorption model
@@ -60,17 +62,32 @@ using AbsorberContainer = std::vector<AbsorberPtr>;
 
 class AbsorberFactory {
  public:
+  //! \todo make it a static member of Absorber
+  //! search path for radiation input file
+  std::string search_path;
+
   //! Create an absorber from YAML node
   //!
   //! \param[in] my YAML node containing the current absorber
-  static AbsorberPtr CreateFrom(YAML::Node& my);
+  //! \param[in] band_name name of the radiation band
+  static AbsorberPtr CreateFrom(YAML::Node& my, std::string band_name);
 
   //! \brief Create absorbers from YAML node
   //!
   //! \param[in] names names of absorbers
-  //! \param[in] rad YAML node containing the whole radiation input file
+  //! \param[in] band_name name of the radiation band
+  //! \param[in] rad YAML node containing the radiation input file
   static AbsorberContainer CreateFrom(std::vector<std::string> const& names,
-                                      YAML::Node& rad);
+                                      std::string band_name, YAML::Node& rad);
+
+  //! \brief Customize function to create absorbers
+  //!
+  //! \param[in] name absorber name
+  //! \param[in] species species names
+  //! \param[in] full_path full path of the radiation input file
+  static AbsorberPtr CreateAbsorber(std::string name,
+                                    std::vector<std::string> const& species,
+                                    std::string full_path);
 };
 
-#endif  // SRC_HARP_ABSORBER_HPP_
+#endif  // SRC_OPACITY_ABSORBER_HPP_

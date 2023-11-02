@@ -100,8 +100,8 @@ RadiationBand::RadiationBand(YAML::Node &rad, std::string myname, int nc1,
 
   // set absorbers
   if (my["opacity"]) {
-    auto absorber_names = my["opacity"].as<std::vector<std::string>>();
-    absorbers_ = CreateAbsorbersFrom(absorber_names, rad);
+    auto names = my["opacity"].as<std::vector<std::string>>();
+    absorbers_ = AbsorberFactory::CreateFrom(names, GetName(), rad);
   }
 
   // set rt solver
