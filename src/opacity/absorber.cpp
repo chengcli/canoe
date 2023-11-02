@@ -31,23 +31,22 @@ Absorber::~Absorber() {
   app->Log("Destroy Absorber " + name_);
 }
 
-std::vector<AbsorberPtr> AbsorberFactory::CreateFrom(YAML::Node& band,
-                                                     YAML::Node& rad) {
+std::vector<AbsorberPtr> AbsorberFactory::CreateFrom(
+    std::vector<std::string> const& absorber_names, YAML::Node& rad) {
   std::vector<AbsorberPtr> absorbers;
 
-  for (auto& aname : band["opacity"]) {
+  for (auto& aname : absorber_names) {
     bool found = false;
-    std::string aname_str = aname.as<std::string>();
-    for (auto& absorber : rad["opacity-sources"]) {
-      if (aname_str == absorber["name"].as<std::string>()) {
-        absorbers.push_back(AbsorberFactory::CreateFrom(absorber));
+    for (auto& my : rad["opacity-sources"]) {
+      if (aname == my["name"].as<std::string>()) {
+        absorbers.push_back(AbsorberFactory::CreateFrom(my));
         found = true;
         break;
       }
     }
 
     if (!found) {
-      throw NotFoundError("AbsorberFactory", "Opacity " + aname_str);
+      throw NotFoundError("AbsorberFactory", "Opacity " + aname);
     }
   }
 

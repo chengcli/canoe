@@ -87,14 +87,16 @@ class RadiationBand : public NamedGroup,
   //! Get azimuthal angle of the outgoing ray
   Real GetAzimuthalAngle(int n) const { return rayOutput_[n].phi; }
 
- public:  // incoming functions
+ public:  // inbound functions
   //! \brief Set spectral properties for an air column
   //!
   //! \param[in] air mole fraction representation of air column
   void SetSpectralProperties(AirColumn const &air, Coordinates const *pcoord,
                              int k, int j);
 
-  void WriteBinRadiance(OutputParameters const *) const;
+ public:  // ASCIIOutputGroup functions
+  void WriteAsciiHeader(OutputParameters const *) const override;
+  void WriteAsciiData(OutputParameters const *) const override;
 
  protected:
   //! spectral grid
@@ -159,13 +161,13 @@ class RadiationBand : public NamedGroup,
 };
 
 using RadiationBandPtr = std::shared_ptr<RadiationBand>;
+using RadiationBandContainer = std::vector<RadiationBandPtr>;
 
 class RadiationBandsFactory {
  public:
-  static std::vector<RadiationBandPtr> CreateFrom(ParameterInput *pin,
-                                                  std::string key);
-
-  static std::vector<RadiationBandPtr> CreateFrom(std::string filename);
+  static RadiationBandContainer CreateFrom(ParameterInput *pin,
+                                           std::string key);
+  static RadiationBandContainer CreateFrom(std::string filename);
 };
 
 #endif  // SRC_HARP_RADIATION_BAND_HPP_

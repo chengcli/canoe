@@ -66,10 +66,10 @@ class AbsorberFactory {
 
   //! \brief Create absorbers from YAML node
   //!
-  //! \param[in] band YAML node containing the current band
+  //! \param[in] absorber_names names of absorbers
   //! \param[in] rad YAML node containing the whole radiation input file
-  static std::vector<std::shared_ptr<Absorber>> CreateFrom(YAML::Node& band,
-                                                           YAML::Node& rad);
+  static std::vector<std::shared_ptr<Absorber>> CreateFrom(
+      std::vector<std::string> const& absorber_names, YAML::Node& rad);
 };
 
 #endif  // SRC_HARP_ABSORBER_HPP_

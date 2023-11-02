@@ -163,7 +163,7 @@ void Radiation::AddRadiativeFlux(Hydro *phydro, int k, int j, int il,
   }
 }
 
-size_t Radiation::GetRestartDataSizeInBytes() const {
+size_t Radiation::RestartDataSizeInBytes() const {
   return flxup.GetSizeInBytes() + flxdn.GetSizeInBytes();
 }
 
@@ -175,7 +175,7 @@ size_t Radiation::DumpRestartData(char *pdst) const {
   std::memcpy(pdst + offset, flxdn.data(), flxdn.GetSizeInBytes());
   offset += flxdn.GetSizeInBytes();
 
-  return GetRestartDataSizeInBytes();
+  return RestartDataSizeInBytes();
 }
 
 size_t Radiation::LoadRestartData(char *psrc) {
@@ -188,47 +188,7 @@ size_t Radiation::LoadRestartData(char *psrc) {
   std::memcpy(flxdn.data(), psrc + offset, flxdn.GetSizeInBytes());
   offset += flxdn.GetSizeInBytes();
 
-  return GetRestartDataSizeInBytes();
-}
-
-std::vector<RadiationBandPtr> RadiationBandsFactory::CreateFrom(
-    std::string filename) {
-  Application::Logger app("harp");
-  app->Log("Load Radiation bands from " + filename);
-
-  std::vector<RadiationBandPtr> bands;
-
-  std::ifstream stream(filename);
-  if (stream.good() == false) {
-    app->Error("Cannot open radiation bands file: " + filename);
-  }
-  YAML::Node node = YAML::Load(stream);
-
-  if (!node["opacity-sources"]) {
-    throw NotFoundError("LoadRadiationBand", "opacity-sources");
-  }
-
-  for (auto bname : node["bands"]) {
-    auto p = std::make_shared<RadiationBand>(node, bname.as<std::string>());
-    bands.push_back(p);
-  }
-
-  return bands;
-}
-
-std::vector<RadiationBandPtr> RadiationBandsFactory::CreateFrom(
-    ParameterInput *pin, std::string key) {
-  std::vector<RadiationBandPtr> bands;
-
-  auto rt_band_files =
-      std::Vectorize<std::string>(pin->GetOrAddString("radiation", key, ""));
-
-  for (auto &filename : rt_band_files) {
-    auto &&tmp = CreateFrom(filename);
-    bands.insert(bands.end(), tmp.begin(), tmp.end());
-  }
-
-  return bands;
+  return RestartDataSizeInBytes();
 }
 
 namespace RadiationHelper {

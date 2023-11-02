@@ -5,8 +5,8 @@
 #include <string>
 #include <vector>
 
-// harp
-#include <harp/absorber.hpp>
+// opacity
+#include "absorber.hpp"
 
 class CorrelatedKAbsorber : public Absorber {
  public:

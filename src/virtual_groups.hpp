@@ -12,6 +12,7 @@
 
 class OutputType;
 class MeshBlock;
+class OutputParameters;
 
 class NamedGroup {
  public:
@@ -119,8 +120,8 @@ class RestartGroup {
 class ASCIIOutputGroup {
  public:
   virtual ~ASCIIOutputGroup() {}
-  virtual void WriteAsciiHeader(std::ofstream &os) const = 0;
-  virtual void WriteAsciiData(std::ofstream &os) const = 0;
+  virtual void WriteAsciiHeader(OutputParameters const *) const = 0;
+  virtual void WriteAsciiData(OutputParameters const *) const = 0;
 };
 
 class BinaryOutputGroup {

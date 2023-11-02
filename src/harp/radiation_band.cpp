@@ -27,25 +27,27 @@
 #include <utils/parameter_map.hpp>
 #include <utils/vectorize.hpp>
 
+// opacity
+#include <opacity/absorber.hpp>
+
 // harp
-#include "absorber.hpp"
 #include "radiation.hpp"
 #include "radiation_band.hpp"
 #include "radiation_utils.hpp"  // readRadiationDirections
 #include "rt_solvers.hpp"
 #include "spectral_grid.hpp"
 
-RadiationBand::RadiationBand(YAML::Node &inp, std::string myname, int nc1,
+RadiationBand::RadiationBand(YAML::Node &rad, std::string myname, int nc1,
                              int nc2, int nc3)
     : NamedGroup(myname) {
   Application::Logger app("harp");
   app->Log("Initialize RadiationBand " + myname);
 
-  if (!inp[myname]) {
+  if (!rad[myname]) {
     throw NotFoundError("RadiationBand", myname);
   }
 
-  auto &my = inp[myname];
+  auto &my = rad[myname];
 
   if (my["parameters"]) {
     SetRealsFrom(my["parameters"]);
@@ -98,7 +100,8 @@ RadiationBand::RadiationBand(YAML::Node &inp, std::string myname, int nc1,
 
   // set absorbers
   if (my["opacity"]) {
-    absorbers_ = CreateAbsorbersFrom(my["opacity"]);
+    auto absorber_names = my["opacity"].as<std::vector<std::string>>();
+    absorbers_ = CreateAbsorbersFrom(absorber_names, rad);
   }
 
   // set rt solver
@@ -131,7 +134,7 @@ AbsorberPtr RadiationBand::GetAbsorberByName(std::string const &name) {
   return nullptr;
 }
 
-void RadiationBand::WriteBinRadiance(OutputParameters const *pout) const {
+void RadiationBand::WriteAsciiHeader(OutputParameters const *pout) const {
   if (!TestFlag(RadiationFlags::WriteBinRadiance)) return;
 
   char fname[80], number[6];
@@ -162,7 +165,19 @@ void RadiationBand::WriteBinRadiance(OutputParameters const *pout) const {
   }
   fprintf(pfile, "%12s\n", "weight");
 
-  for (size_t i = 0; i < pgrid->GetSize(); ++i) {
+  fclose(pfile);
+}
+
+void RadiationBand::WriteAsciiData(OutputParameters const *pout) const {
+  if (!TestFlag(RadiationFlags::WriteBinRadiance)) return;
+
+  char fname[80], number[6];
+  snprintf(number, sizeof(number), "%05d", pout->file_number);
+  snprintf(fname, sizeof(fname), "%s.radiance.%s.txt", GetName().c_str(),
+           number);
+  FILE *pfile = fopen(fname, "w");
+
+  for (size_t i = 0; i < pgrid_->GetSize(); ++i) {
     fprintf(pfile, "%13.3g%12.3g", pgrid_->spec[i].wav1, pgrid_->spec[i].wav2);
     for (size_t j = 0; j < rayOutput_.size(); ++j) {
       fprintf(pfile, "%12.3f", toa_(i, j));
@@ -192,4 +207,43 @@ std::shared_ptr<RTSolver> RadiationBand::CreateRTSolveFrom(YAML::Node &my) {
   }
 
   return psolver;
+}
+
+RadiationBandContainer RadiationBandsFactory::CreateFrom(std::string filename) {
+  Application::Logger app("harp");
+  app->Log("Load Radiation bands from " + filename);
+
+  std::vector<RadiationBandPtr> bands;
+
+  std::ifstream stream(filename);
+  if (stream.good() == false) {
+    app->Error("Cannot open radiation bands file: " + filename);
+  }
+  YAML::Node node = YAML::Load(stream);
+
+  if (!node["opacity-sources"]) {
+    throw NotFoundError("LoadRadiationBand", "opacity-sources");
+  }
+
+  for (auto bname : node["bands"]) {
+    auto p = std::make_shared<RadiationBand>(node, bname.as<std::string>());
+    bands.push_back(p);
+  }
+
+  return bands;
+}
+
+RadiationBandContainer RadiationBandsFactory::CreateFrom(ParameterInput *pin,
+                                                         std::string key) {
+  std::vector<RadiationBandPtr> bands;
+
+  auto rt_band_files =
+      std::Vectorize<std::string>(pin->GetOrAddString("radiation", key, ""));
+
+  for (auto &filename : rt_band_files) {
+    auto &&tmp = CreateFrom(filename);
+    bands.insert(bands.end(), tmp.begin(), tmp.end());
+  }
+
+  return bands;
 }
