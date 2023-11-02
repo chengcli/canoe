@@ -6,14 +6,14 @@
 #include <sstream>
 #include <vector>
 
+// application
+#include <application/exceptions.hpp>
+
 // canoe
 #include <configure.hpp>
 
 // climath
 #include <climath/core.h>
-
-// utils
-#include <utils/vectorize.hpp>
 
 // harp
 #include "radiation_utils.hpp"
@@ -211,64 +211,6 @@ void WriteHeatingRate(std::string fname, AthenaArray<Real> const& flux,
   }
 }*/
 
-void set_radiation_flags(uint64_t *flags, std::string str) {
-  std::stringstream msg;
-  std::vector<std::string> dstr = Vectorize<std::string>(str.c_str(), " ,");
-  for (int i = 0; i < dstr.size(); ++i) {
-    if (dstr[i] == "static") {
-      *flags &= !RadiationFlags::Dynamic;
-    } else if (dstr[i] == "dynamic") {
-      *flags |= RadiationFlags::Dynamic;
-    } else if (dstr[i] == "bin") {
-      *flags &= !RadiationFlags::LineByLine;
-    } else if (dstr[i] == "lbl") {
-      *flags |= RadiationFlags::LineByLine;
-    } else if (dstr[i] == "ck") {
-      *flags |= RadiationFlags::CorrelatedK;
-    } else if (dstr[i] == "planck") {
-      *flags |= RadiationFlags::Planck;
-    } else if (dstr[i] == "star") {
-      *flags |= RadiationFlags::Star;
-    } else if (dstr[i] == "spher") {
-      *flags |= RadiationFlags::Sphere;
-    } else if (dstr[i] == "only") {
-      *flags |= RadiationFlags::FluxOnly;
-    } else if (dstr[i] == "normalize") {
-      *flags |= RadiationFlags::Normalize;
-    } else if (dstr[i] == "write_bin_radiance") {
-      *flags |= RadiationFlags::WriteBinRadiance;
-    } else {
-      msg << "### FATAL ERROR in function setRadiatino" << std::endl
-          << "flag:" << dstr[i] << "unrecognized" << std::endl;
-      ATHENA_ERROR(msg);
-    }
-
-    // check flags consistency
-    if ((*flags & RadiationFlags::LineByLine) &&
-        (*flags & RadiationFlags::CorrelatedK)) {
-      msg << "### FATAL ERROR in function setRadiation" << std::endl
-          << "ck cannot be used with lbl." << std::endl;
-    }
-  }
-}
-
-void get_phase_momentum(Real *pmom, int iphas, Real gg, int npmom) {
-  pmom[0] = 1.;
-  for (int k = 1; k < npmom; k++) pmom[k] = 0.;
-
-  switch (iphas) {
-    case 0:  // HENYEY_GREENSTEIN
-      if (gg <= -1. || gg >= 1.)
-        std::cout << "getmom--bad input variable gg" << std::endl;
-      for (int k = 1; k <= npmom; k++) pmom[k] = pow(gg, (Real)k);
-      break;
-
-    case 1:  // RAYLEIGH
-      pmom[2] = 0.1;
-      break;
-  }
-}
-
 void packSpectralProperties(Real *buf, Real const *tau, Real const *ssa,
                             Real const *pmom, int nlayer, int npmom) {
   for (int i = 0; i < nlayer; ++i) *(buf++) = tau[i];
@@ -289,19 +231,5 @@ void unpackSpectralProperties(Real *tau, Real *ssa, Real *pmom, Real const *buf,
       for (int j = npmom; j < npmom_max; ++j)
         pmom[n * slyr * npmom_max + i * npmom_max + j] = 0.;
     }
-  }
-}
-
-void read_radiation_directions(std::vector<Direction> *ray, std::string str) {
-  std::vector<std::string> dstr = Vectorize<std::string>(str.c_str());
-  int nray = dstr.size();
-  ray->resize(nray);
-
-  auto jt = dstr.begin();
-  for (auto it = ray->begin(); it != ray->end(); ++it, ++jt) {
-    it->phi = 0.;
-    sscanf(jt->c_str(), "(%lf,%lf)", &it->mu, &it->phi);
-    it->mu = cos(deg2rad(it->mu));
-    it->phi = deg2rad(it->phi);
   }
 }

@@ -572,7 +572,7 @@ AirParcel gather_from_conserved(MeshBlock const* pmb, int k, int j, int i) {
     cvt += air.w[n] * pthermo->GetCvMassRef(n);
   }
 
-  // TODO(cli): not correct for cubed sphere
+  //! \todo not correct for cubed sphere
   Real KE = 0.5 / rho * (sqr(air.w[IVX]) + sqr(air.w[IVY]) + sqr(air.w[IVZ]));
 
   Real tem = (air.w[IEN] - KE) / cvt;

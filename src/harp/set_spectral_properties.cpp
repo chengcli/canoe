@@ -21,11 +21,12 @@
 #include "absorber.hpp"
 #include "radiation.hpp"
 #include "radiation_band.hpp"
-// #include "../particles/particles.hpp"
 
 // setting optical properties
-void RadiationBand::SetSpectralProperties(int k, int j, int il, int iu) {
-  int nspec = spec_.size();
+void RadiationBand::SetSpectralProperties(AirColumn const& ac,
+                                          Coordinates const* pcoord, int k,
+                                          int j) {
+  int nspec = pgrid->GetSize();
   int npmom = bpmom.GetDim4() - 1;
 
   // set tau, ssalb, pmom, etc...
@@ -35,34 +36,28 @@ void RadiationBand::SetSpectralProperties(int k, int j, int il, int iu) {
 
   std::vector<Real> mypmom(1 + npmom);
 
-  MeshBlock* pmb = pmy_block_;
-  AirColumn&& ac = AirParcelHelper::gather_from_primitive(pmb, k, j, il, iu);
-
-  for (int i = il; i <= iu; ++i) {
-    auto& air = ac[i - il];
+  for (int i = 0; i < ac.size(); ++i) {
+    auto& air = ac[i];
     air.ToMoleFraction();
-    tem_(i) = air.w[IDN];
 
     for (auto& a : absorbers_) {
-      for (int m = 0; m < nspec; ++m) {
-        Real kcoeff =
-            a->GetAttenuation(spec_[m].wav1, spec_[m].wav2, air);  // 1/m
+      for (auto& spec : pgrid->spec) {
+        Real kcoeff = a->GetAttenuation(spec.wav1, spec.wav2, air);  // 1/m
         Real dssalb =
-            a->GetSingleScatteringAlbedo(spec_[m].wav1, spec_[m].wav2, air) *
-            kcoeff;
+            a->GetSingleScatteringAlbedo(spec.wav1, spec.wav2, air) * kcoeff;
         // tau
         tau_(m, i) += kcoeff;
         // ssalb
         ssa_(m, i) += dssalb;
         // pmom
-        a->GetPhaseMomentum(mypmom.data(), spec_[m].wav1, spec_[m].wav2, air,
-                            npmom);
+        a->GetPhaseMomentum(mypmom.data(), spec.wav1, spec.wav2, air, npmom);
         for (int p = 0; p <= npmom; ++p) pmom_(m, i, p) += mypmom[p] * dssalb;
       }
     }
   }
 
   // set temperature at cell interface
+  int il = 0, iu = ac.size() - 1;
   temf_(il) = 3. * tem_(il) - 2. * tem_(il + 1);
   temf_(il + 1) = (tem_(il) + tem_(il + 1)) / 2.;
   for (int i = il + 2; i <= iu - 1; ++i)
@@ -72,7 +67,7 @@ void RadiationBand::SetSpectralProperties(int k, int j, int il, int iu) {
 
   // absorption coefficiunts -> optical thickness
   for (int m = 0; m < nspec; ++m) {
-    for (int i = il; i <= iu; ++i) {
+    for (int i = 0; i < ac.size(); ++i) {
       if (tau_(m, i) > 1e-6 && ssa_(m, i) > 1e-6) {  // has scattering
         for (int p = 0; p <= npmom; ++p) pmom_(m, i, p) /= ssa_(m, i);
         ssa_(m, i) /= tau_(m, i);
@@ -84,19 +79,19 @@ void RadiationBand::SetSpectralProperties(int k, int j, int il, int iu) {
 #ifdef HYDROSTATIC
       auto phydro = pmb->phydro;
       Real grav = -phydro->hsrc.GetG1();
-      Real H0 = pmb->pcoord->GetPressureScaleHeight();
+      Real H0 = pcoord->GetPressureScaleHeight();
       // TODO(cli) check this
       // \delta z = \delt Z * P/(\rho g H)
-      tau_(m, i) *= pmb->pcoord->dx1f(i) * phydro->w(IPR, k, j, i) /
+      tau_(m, i) *= pcoord->dx1f(i) * phydro->w(IPR, k, j, i) /
                     (phydro->w(IDN, k, j, i) * grav * H0);
 #else
-      tau_(m, i) *= pmb->pcoord->dx1f(i);
+      tau_(m, i) *= pcoord->dx1f(i);
 #endif
     }
   }
 
   // aggregated band properties
-  for (int i = il; i <= iu; ++i) {
+  for (int i = 0; i < ac.size(); ++i) {
     btau(k, j, i) = 0;
     bssa(k, j, i) = 0;
     for (int p = 0; p <= npmom; ++p) bpmom(p, k, j, i) = 0.;

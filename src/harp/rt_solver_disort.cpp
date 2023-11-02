@@ -1,3 +1,6 @@
+//! \file rt_solver_disort.cpp
+//! \brief Call DISORT to perform radiative transfer calculation
+
 // C/C++
 #include <cmath>
 #include <iostream>
@@ -137,32 +140,31 @@ void RadiationBand::RTSolverDisort::CalBandFlux(Direction const &rayInput,
     // run disort
     c_disort(&ds_, &ds_out_);
 
-    // Counting index
-    // Example, il = 0, iu = 2, ds_.nlyr = 6, partition in to 3 blocks
-    // face id   -> 0 - 1 - 2 - 3 - 4 - 5 - 6
-    // cell id   -> | 0 | 1 | 2 | 3 | 4 | 5 |
-    // disort id -> 6 - 5 - 4 - 3 - 2 - 1 - 0
-    // blocks    -> ---------       *       *
-    //           ->  r = 0  *       *       *
-    //           ->         ---------       *
-    //           ->           r = 1 *       *
-    //           ->                 ---------
-    //           ->                   r = 2
-    // block r = 0 gets, 6 - 5 - 4
-    // block r = 1 gets, 4 - 3 - 2
-    // block r = 2 gets, 2 - 1 - 0
-    // accumulate flux from lines
+    /// \note Counting Index
+    ///
+    /// Example, il = 0, iu = 2, ds_.nlyr = 6, partition in to 3 blocks
+    /// face id   -> 0 - 1 - 2 - 3 - 4 - 5 - 6
+    /// cell id   -> | 0 | 1 | 2 | 3 | 4 | 5 |
+    /// disort id -> 6 - 5 - 4 - 3 - 2 - 1 - 0
+    /// blocks    -> ---------       *       *
+    ///           ->  r = 0  *       *       *
+    ///           ->         ---------       *
+    ///           ->           r = 1 *       *
+    ///           ->                 ---------
+    ///           ->                   r = 2
+    /// block r = 0 gets, 6 - 5 - 4
+    /// block r = 1 gets, 4 - 3 - 2
+    /// block r = 2 gets, 2 - 1 - 0
+    /// accumulate flux from lines
     for (int i = il; i <= iu; ++i) {
       int m = ds_.nlyr - (r * (iu - il) + i - il);
-      /*! \bug does not work for spherical geometry, need to scale area using
-       * farea(il)/farea(i)
-       */
+      //! \bug does not work for spherical geometry, need to scale area using
+      //! farea(il)/farea(i)
       // flux up
       flxup(n, i) = ds_out_.rad[m].flup;
 
-      /*! \bug does not work for spherical geomtry, need to scale area using
-       * farea(il)/farea(i)
-       */
+      //! \bug does not work for spherical geomtry, need to scale area using
+      //! farea(il)/farea(i)
       // flux down
       flxdn(n, i) = ds_out_.rad[m].rfldir + ds_out_.rad[m].rfldn;
       bflxup(k, j, i) += spec[n].wght * flxup(n, i);

@@ -7,6 +7,7 @@
 #include <configure.hpp>
 
 // application
+#include <application/application.hpp>
 #include <application/exceptions.hpp>
 
 // harp
@@ -34,12 +35,17 @@
 // n-body
 #include "nbody/particles.hpp"
 
+// astro
+#include "astro/celestrial_body.hpp"
+
 // canoe
 #include "impl.hpp"
 #include "index_map.hpp"
 #include "virtual_groups.hpp"
 
 MeshBlock::Impl::Impl(MeshBlock *pmb, ParameterInput *pin) : pmy_block_(pmb) {
+  Application::Logger app("main");
+
   du.NewAthenaArray(NHYDRO, pmb->ncells3, pmb->ncells2, pmb->ncells1);
 
   // decomposition
@@ -71,6 +77,14 @@ MeshBlock::Impl::Impl(MeshBlock *pmb, ParameterInput *pin) : pmy_block_(pmb) {
 
   // scheduler
   scheduler = SchedulerFactory::Create(pmb, pin);
+
+  // planet
+  planet = std::make_shared<CelestrialBody>(pin);
+
+  // distance to parent star
+  stellar_distance_au_ = pin->GetOrAddReal("problem", "distance_au", 1.);
+  app->Log("Stellar distance = " + std::to_string(stellar_distance_au_) +
+           " au");
 }
 
 MeshBlock::Impl::~Impl() {}

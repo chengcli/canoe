@@ -4,17 +4,108 @@
 // C/C++
 #include <string>
 
+// athena
+#include <athena/athena.hpp>  // Real
+
+// utils
+#include <utils/parameter_map.hpp>
+
 class OutputType;
 class MeshBlock;
 
 class NamedGroup {
  public:
-  NamedGroup(std::string name) : myname_(name) {}
+  explicit NamedGroup(std::string name) : myname_(name) {}
   virtual ~NamedGroup() {}
   virtual std::string GetName() const { return myname_; }
 
- protected:
+ private:
   std::string myname_;
+};
+
+class FlagGroup {
+ public:
+  explicit FlagGroup(uint64_t flags = 0LL) : myflags_(flags) {}
+  virtual ~FlagGroup() {}
+
+  int TestFlag(uint64_t flag) const { return myflags_ & flag; }
+  void SetFlag(uint64_t flag) { myflags_ |= flag; }
+
+ private:
+  //! internal flags
+  uint64_t myflags_;
+}
+
+class ParameterGroup {
+ public:
+  virtual ~ParameterGroup() {}
+
+  void SetRealsFrom(YAML::node &node) {
+    for (auto it = node.begin(); it != node.end(); ++it) {
+      params_real_[it->first.as<std::string>()] = it->second.as<T>();
+    }
+  }
+
+  //! Set real parameter
+  void SetPar(std::string_view name, Real value) { params_real_[name] = value; }
+
+  //! Set int parameter
+  void SetPar(std::string_view name, int value) { params_int_[name] = value; }
+
+  //! Set string parameter
+  void SetPar(std::string_view name, std::string const &value) {
+    params_str_[name] = value;
+  }
+
+  //! Get parameter
+  template <typename T>
+  Real GetPar(std::string_view name) const;
+
+  //! Check if a parameter exists
+  bool HasPar(std::string const &name) const {
+    if (params_real_.count(name) > 0) return true;
+    if (params_int_.count(name) > 0) return true;
+    if (params_str_.count(name) > 0) return true;
+    return false;
+  }
+
+ private:
+  //! real parameters
+  std::unordered_map<std::string, Real> params_real_;
+
+  //! int parameters
+  std::unordered_map<std::string, int> params_int_;
+
+  //! string parameters
+  std::unordered_map<std::string, std::string> params_str_;
+};
+
+// specialization
+template <>
+int ParameterGroup::GetPar<int>(std::string_view name) const {
+  return params_int_.at(name);
+}
+
+template <>
+int ParameterGroup::GetPar<Real>(std::string_view name) const {
+  return params_real_.at(name);
+}
+
+template <>
+int ParameterGroup::GetPar<std::string>(std::string_view name) const {
+  return params_str_.at(name);
+}
+
+class CounterGroup {
+ public:
+  virtual ~CounterGroup() {}
+  void ResetCounter() { current_ = cooldown_; }
+  void DecrementCounter(Real dt) { current_ -= dt; }
+  Real GetCounter() const { return current_; }
+  Real SetCooldownTime(Real cooldown) { cooldown_ = cooldown; }
+
+ private:
+  Real cooldown_, current_ = 0.;
 };
 
 class RestartGroup {

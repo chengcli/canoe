@@ -2,19 +2,22 @@
 #include <sstream>
 #include <stdexcept>
 
-// climath
-#include <climath/core.h>
-#include <climath/interpolation.h>
+// application
+#include <application/application.hpp>
 
 // athena
 #include <athena/athena.hpp>
 #include <athena/parameter_input.hpp>
 
-// application
-#include <application/application.hpp>
+// climath
+#include <climath/core.h>
+#include <climath/interpolation.h>
 
 // utils
 #include <utils/fileio.hpp>
+
+// canoe
+#include <common.hpp>
 
 // astro
 #include "celestrial_body.hpp"
@@ -134,18 +137,22 @@ void CelestrialBody::ReadSpectraFile(std::string sfile) {
   spline(nspec_, spec_, 0., 0.);
 }
 
-void CelestrialBody::ParentZenithAngle(Real *mu, Real *phi, Real time,
-                                       Real colat, Real lon) {
+Direction CelestrialBody::ParentZenithAngle(Real time, Real colat, Real lon) {
+  Direction dir;
+
   Real lat = M_PI / 2. - colat;
-  if (spinp == 0. && orbit_p == 0.) *mu = cos(-lon + M_PI) * cos(lat);
+  if (spinp == 0. && orbit_p == 0.) dir.mu = cos(-lon + M_PI) * cos(lat);
   if (spinp == 0. && orbit_p != 0.)
-    *mu = cos((time * 2. * M_PI * (-1. / orbit_p)) - lon + M_PI) * cos(lat);
+    dir.mu = cos((time * 2. * M_PI * (-1. / orbit_p)) - lon + M_PI) * cos(lat);
   if (spinp != 0. && orbit_p == 0.)
-    *mu = cos((time * 2. * M_PI * (1. / spinp)) - lon + M_PI) * cos(lat);
+    dir.mu = cos((time * 2. * M_PI * (1. / spinp)) - lon + M_PI) * cos(lat);
   if (spinp != 0. && orbit_p != 0.)
-    *mu = cos((time * 2. * M_PI * (1. / spinp - 1. / orbit_p)) - lon + M_PI) *
-          cos(lat);
-  *phi = 0.;
+    dir.mu =
+        cos((time * 2. * M_PI * (1. / spinp - 1. / orbit_p)) - lon + M_PI) *
+        cos(lat);
+  dir.phi = 0.;
+
+  return dir;
 }
 
 Real CelestrialBody::ParentInsolationFlux(Real wav, Real dist_au) {

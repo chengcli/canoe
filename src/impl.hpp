@@ -37,6 +37,8 @@ class Scheduler;
 class MeshOutputGroup;
 class FITSOutputGroup;
 
+class CelestrialBody;
+
 //! \class MeshBlock::Impl
 //! \brief opaque pointer class implements all physics on a MeshBlock
 class MeshBlock::Impl {
@@ -51,6 +53,7 @@ class MeshBlock::Impl {
   std::shared_ptr<Chemistry> pchem;
   std::shared_ptr<Tracer> ptracer;
   std::shared_ptr<TurbulenceModel> pturb;
+  std::shared_ptr<CelestrialBody> planet;
 
   // StaticVariablePtr pstatic;
 
@@ -81,6 +84,8 @@ class MeshBlock::Impl {
 
   std::vector<std::weak_ptr<MeshOutputGroup>> mesh_outputs_;
   std::vector<std::weak_ptr<FITSOutputGroup>> fits_outputs_;
+
+  Real stellar_distance_au_;
 
  private:
   MeshBlock const *pmy_block_;

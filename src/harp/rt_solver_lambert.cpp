@@ -35,6 +35,7 @@ void RadiationBand::RTSolverLambert::CalBandRadiance(Direction const &rayInput,
   auto &spec = pband->spec_;
 
   auto &btoa = pband->btoa;
+  //! \note T ~ Ts*(\tau/\tau_s)^\alpha at lower boundary
   Real alpha = pband->HasParameter("alpha") ? pband->GetParameter("alpha") : 0.;
 
   // integrate from top to bottom
@@ -50,10 +51,11 @@ void RadiationBand::RTSolverLambert::CalBandRadiance(Direction const &rayInput,
             tau(n, i) / rayOutput[m].mu;
       }
       toa(n, m) += temf(il) * exp(-taut[il]);
-      if ((alpha > 0) &&
-          (taut[il] < 1000.))  // correction for small optical opacity
+      //! \note correction for small optical opacity
+      if ((alpha > 0) && (taut[il] < 1000.)) {
         toa(n, m) += temf(il) * alpha * gammq(alpha, taut[il]) *
                      pow(taut[il], -alpha) * tgamma(alpha);
+      }
       btoa(m, k, j) += spec[n].wght * toa(n, m);
     }
   }

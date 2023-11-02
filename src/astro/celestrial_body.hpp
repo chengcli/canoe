@@ -10,6 +10,7 @@
 
 class ParameterInput;
 struct float_triplet;
+struct Direction;
 
 class CelestrialBody {
  public:
@@ -33,7 +34,7 @@ class CelestrialBody {
   ~CelestrialBody();
 
   void ReadSpectraFile(std::string sfile);
-  void ParentZenithAngle(Real *mu, Real *phi, Real time, Real colat, Real lon);
+  Direction ParentZenithAngle(Real time, Real colat, Real lon);
   Real ParentInsolationFlux(Real wav, Real dist_au);
   Real ParentInsolationFlux(Real wlo, Real whi, Real dist_au);
   Real ParentDistanceInAu(Real time);

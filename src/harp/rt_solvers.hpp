@@ -21,19 +21,17 @@
 // harp
 #include "radiation_band.hpp"
 
-class RadiationBand::RTSolver {
+class RadiationBand::RTSolver : public NamedGroup {
  public:
   RTSolver(RadiationBand *pmy_band, std::string name)
-      : pmy_band_(pmy_band), name_(name) {
+      : NamedGroup(name), pmy_band_(pmy_band) {
     Application::Logger app("harp");
-    app->Log("Initialize RTSolver " + name_);
+    app->Log("Initialize RTSolver " + GetName());
   }
-
-  std::string GetName() const { return name_; }
 
   virtual ~RTSolver() {
     Application::Logger app("harp");
-    app->Log("Destroy RTSolver " + name_);
+    app->Log("Destroy RTSolver " + GetName());
   }
 
   virtual void CalBandFlux(Direction const &rayInput, Real dist_au, int k,
@@ -44,7 +42,6 @@ class RadiationBand::RTSolver {
 
  protected:
   RadiationBand *pmy_band_;
-  std::string name_;
 };
 
 class RadiationBand::RTSolverLambert : public RadiationBand::RTSolver {
