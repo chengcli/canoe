@@ -5,15 +5,12 @@
 #include <iostream>
 #include <vector>
 
-// harp
-#include <harp/absorber.hpp>
+// opacity
+#include <opacity/absorber.hpp>
 
 class XizH2H2CIA : public Absorber {
  public:
-  XizH2H2CIA(std::vector<std::string> const& species, ParameterMap params)
-      : Absorber("H2-H2-CIA", species, params) {
-    category_ = "cia";
-  }
+  XizH2H2CIA() : Absorber("H2-H2-CIA") {}
 
   virtual ~XizH2H2CIA() {}
   void LoadCoefficient(std::string fname, int bid = -1);
@@ -27,10 +24,7 @@ class XizH2H2CIA : public Absorber {
 
 class XizH2HeCIA : public Absorber {
  public:
-  XizH2HeCIA(std::vector<std::string> const& species, ParameterMap params)
-      : Absorber("H2-He-CIA", species, params) {
-    category_ = "cia";
-  }
+  XizH2HeCIA() : Absorber("H2-He-CIA") {}
 
   virtual ~XizH2HeCIA() {}
   void LoadCoefficient(std::string fname, int bid = -1);
@@ -45,10 +39,7 @@ class XizH2HeCIA : public Absorber {
 
 class OrtonCIA : public Absorber {
  public:
-  OrtonCIA(std::vector<std::string> const& species, ParameterMap params)
-      : Absorber("Orthon-CIA", species, params) {
-    category_ = "cia";
-  }
+  OrtonCIA() : Absorber("Orthon-CIA") {}
 
   virtual ~OrtonCIA() {}
   void LoadCoefficient(std::string fname, int bid = -1);

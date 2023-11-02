@@ -30,6 +30,7 @@ Real FreedmanSimple2::GetAttenuation(Real wave1, Real wave2,
   Real result;
   Real p = var.w[IPR];
   Real T = var.w[IDN];
+  Real scale = GetPar<Real>("scale");
 
   /*xiz semigrey
   //Tan and Komacek 2019 simple fit m^2/kg
@@ -51,7 +52,7 @@ Real FreedmanSimple2::GetAttenuation(Real wave1, Real wave2,
 
   Real dens = p * mu / (Constants::Rgas * T);  // kg/m^3
                                                //  if (p > 5e1)
-  return params_.at("scale") * dens * result;  // -> 1/m
+  return scale * dens * result;                // -> 1/m
   //  else
   //    return 0.;
 }

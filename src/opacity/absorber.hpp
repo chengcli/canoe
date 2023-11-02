@@ -10,6 +10,10 @@
 // external
 #include <yaml-cpp/yaml.h>
 
+// application
+#include <application/application.hpp>
+#include <application/exceptions.hpp>
+
 // athena
 #include <athena/athena.hpp>
 
@@ -19,12 +23,19 @@
 class AirParcel;
 
 //! \brief base class of all absorbers
-class Absorber : public NamedGroup, public ParameterGroup {
+class Absorber : public NamedGroup,
+                 public ParameterGroup,
+                 public SpeciesIndexGroup<3> {
  public:  // constructor and destructor
-  Absorber(std::string name, std::vector<std::string> const& species,
-           std::string full_path);
+  Absorber(std::string name) : NamedGroup(name) {
+    Application::Logger app("opacity");
+    app->Log("Create Absorber " + name);
+  }
 
-  virtual ~Absorber();
+  virtual ~Absorber() {
+    Application::Logger app("opacity");
+    app->Log("Destroy Absorber " + GetName());
+  }
 
  public:  // functions
   //! Set absorption model
@@ -52,9 +63,6 @@ class Absorber : public NamedGroup, public ParameterGroup {
  protected:
   //! absorption model model
   std::string model_name_;
-
-  //! id of dependent molecules
-  std::vector<int> imols_;
 };
 
 using AbsorberPtr = std::shared_ptr<Absorber>;
@@ -66,7 +74,7 @@ class AbsorberFactory {
   //! search path for radiation input file
   std::string search_path;
 
-  //! Create an absorber from YAML node
+  //! \brief Create an absorber from YAML node
   //!
   //! \param[in] my YAML node containing the current absorber
   //! \param[in] band_name name of the radiation band
@@ -81,14 +89,12 @@ class AbsorberFactory {
                                       std::string band_name,
                                       YAML::Node const& rad);
 
-  //! \brief Customize function to create absorbers
+ protected:
+  //! \brief Only create an absorber based on its name and class
   //!
-  //! \param[in] name absorber name
-  //! \param[in] species species names
-  //! \param[in] full_path full path of the radiation input file
-  static AbsorberPtr CreateAbsorber(std::string name,
-                                    std::vector<std::string> const& species,
-                                    std::string full_path);
+  //! \param[in] name name of the absorber
+  //! \param[in] type class identifier of the absorber
+  static AbsorberPtr createAbsorberPartial(std::string name, std::string type);
 };
 
 #endif  // SRC_OPACITY_ABSORBER_HPP_

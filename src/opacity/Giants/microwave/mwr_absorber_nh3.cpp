@@ -14,14 +14,12 @@
 
 namespace GiantPlanets {
 
-MwrAbsorberNH3::MwrAbsorberNH3(std::vector<std::string> const& species,
-                               ParameterMap params)
-    : Absorber("NH3", species, params) {
-  if (!params_.count("xHe")) {
+MwrAbsorberNH3::MwrAbsorberNH3() : Absorber("NH3") {
+  if (HasPar("xHe")) {
     throw NotFoundError("MwrAbsorberNH3", "parameter 'xHe'");
   }
 
-  if (!params_.count("power")) {
+  if (HasPar("power")) {
     throw NotFoundError("MwrAbsorberNH3", "parameter 'power'");
   }
 }
@@ -34,10 +32,10 @@ Real MwrAbsorberNH3::GetAttenuation(Real wave1, Real wave2,
   Real xdry = 1.;
   for (int i = 1; i <= NVAPOR; ++i) xdry -= var.w[i];
 
-  Real XHe = params_.at("xHe") * xdry;
+  Real XHe = GetPar<Real>("xHe") * xdry;
   Real XH2 = xdry - XHe;
-  Real XNH3 = var.w[imols_[0]];
-  Real XH2O = var.w[imols_[1]];
+  Real XNH3 = var.w[GetSpeciesIndex(0)];
+  Real XH2O = var.w[GetSpeciesIndex(1)];
 
   Real abs;
   Real wave = (wave1 + wave2) / 2.;
@@ -53,7 +51,7 @@ Real MwrAbsorberNH3::GetAttenuation(Real wave1, Real wave2,
     abs = attenuation_NH3_radtran(wave, P, T, XH2, XHe, XNH3);
   } else if (model_name_ == "Hanley09") {
     abs = attenuation_NH3_Hanley(wave, P, P_idl, T, XH2, XHe, XNH3, XH2O,
-                                 params_.at("power"));
+                                 GetPar<Real>("power"));
   } else {
     throw NotFoundError("MwrAbsorberNH3::GetAttenuation", model_name_);
   }

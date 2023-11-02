@@ -66,7 +66,7 @@ RegularSpacingSpectralGrid::RegularSpacingSpectralGrid(YAML::Node const& my) {
 
 CustomSpacingSpectralGrid::CustomSpacingSpectralGrid(YAML::Node const& my) {
   char str[80];
-  snprintf(str, sizeof(str), "%s-points", unit_type.c_str(), "range");
+  snprintf(str, sizeof(str), "%s-points", unit_type.c_str());
 
   if (!my[str]) {
     throw NotFoundError("SpectralGridBase", str);

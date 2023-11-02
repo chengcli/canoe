@@ -9,12 +9,11 @@
 #include <air_parcel.hpp>
 
 // harp
-#include <harp/absorber.hpp>
+#include "absorber.hpp"
 
 class SimpleCloud : public Absorber {
  public:
-  SimpleCloud(std::vector<std::string> const& species, ParameterMap params)
-      : Absorber("H2O(c,p)", species, params) {}
+  SimpleCloud() : Absorber("H2O(c,p)") {}
 
   Real GetAttenuation(Real wave1, Real wave2,
                       AirParcel const& var) const override {
@@ -40,9 +39,7 @@ class SimpleCloud : public Absorber {
 
 class FuWaterLiquidCloud : public Absorber {
  public:
-  FuWaterLiquidCloud(std::vector<std::string> const& species,
-                     ParameterMap params)
-      : Absorber("H2O(l)", species, params) {}
+  FuWaterLiquidCloud() : Absorber("H2O(l)") {}
 
   Real GetAttenuation(Real wave1, Real wave2,
                       AirParcel const& var) const override {
@@ -68,8 +65,7 @@ class FuWaterLiquidCloud : public Absorber {
 
 class FuWaterIceCloud : public Absorber {
  public:
-  FuWaterIceCloud(std::vector<std::string> const& species, ParameterMap params)
-      : Absorber("H2O(s)", species, params) {}
+  FuWaterIceCloud() : Absorber("H2O(s)") {}
 
   Real GetAttenuation(Real wave1, Real wave2,
                       AirParcel const& var) const override {
@@ -101,8 +97,7 @@ class FuWaterIceCloud : public Absorber {
 
 class XuWaterIceCloud : public Absorber {
  public:
-  XuWaterIceCloud(std::vector<std::string> const& species, ParameterMap params)
-      : Absorber("H2O(s)", species, params) {}
+  XuWaterIceCloud() : Absorber("H2O(s)") {}
 
   void LoadCoefficient(std::string fname, size_t bid) override;
 

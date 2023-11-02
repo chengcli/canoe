@@ -15,8 +15,7 @@
 #include <snap/thermodynamics/thermodynamics.hpp>
 
 // harp
-#include <harp/absorber.hpp>
-#include <harp/radiation_utils.hpp>  // GetPhaseMomentum
+#include <harp/radiation.hpp>  // GetPhaseMomentum
 
 // opacity
 #include "water_cloud.hpp"
@@ -123,7 +122,7 @@ Real FuWaterLiquidCloud::getAttenuation1(Real wave,
   result = bz[iband - 1][j] / fl[j] +
            (bz[iband - 1][j + 1] / fl[j + 1] - bz[iband - 1][j] / fl[j]) / k;
 
-  return dens * qfrac.c[imols_[0]] * result;  // -> 1/m
+  return dens * qfrac.c[GetCloudIndex(0)] * result;  // -> 1/m
 }
 
 Real FuWaterLiquidCloud::getSingleScatteringAlbedo1(
@@ -142,7 +141,7 @@ Real FuWaterLiquidCloud::getSingleScatteringAlbedo1(
   ww = wz[iband - 1][j] + (wz[iband - 1][j + 1] - wz[iband - 1][j]) /
                               (re[j + 1] - re[j]) * (pre - re[j]);
 
-  if (qfrac.c[imols_[0]] < 2e-19) {
+  if (qfrac.c[GetCloudIndex(0)] < 2e-19) {
     return 0.0;
   } else {
     return ww;
@@ -168,9 +167,11 @@ void FuWaterLiquidCloud::getPhaseMomentum1(Real* pp, Real wave,
   gg = gz[iband - 1][j] + (gz[iband - 1][j + 1] - gz[iband - 1][j]) /
                               (re[j + 1] - re[j]) * (pre - re[j]);
 
-  if (qfrac.c[imols_[0]] < 2e-19) {
-    get_phase_momentum(pp, 0, 0.0, np);  // 0 for HENYEY_GREENSTEIN
+  if (qfrac.c[GetCloudIndex(0)] < 2e-19) {
+    RadiationHelper::get_phase_momentum(pp, 0, 0.0,
+                                        np);  // 0 for HENYEY_GREENSTEIN
   } else {
-    get_phase_momentum(pp, 0, gg, np);  // 0 for HENYEY_GREENSTEIN
+    RadiationHelper::get_phase_momentum(pp, 0, gg,
+                                        np);  // 0 for HENYEY_GREENSTEIN
   }
 }

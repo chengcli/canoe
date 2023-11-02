@@ -10,6 +10,9 @@
 // utils
 #include <utils/parameter_map.hpp>
 
+// canoe
+#include <index_map.hpp>
+
 class OutputType;
 class MeshBlock;
 class OutputParameters;
@@ -85,19 +88,63 @@ class ParameterGroup {
 
 // specialization
 template <>
-int ParameterGroup::GetPar<int>(std::string const &name) const {
+inline int ParameterGroup::GetPar<int>(std::string const &name) const {
   return params_int_.at(name);
 }
 
 template <>
-Real ParameterGroup::GetPar<Real>(std::string const &name) const {
+inline Real ParameterGroup::GetPar<Real>(std::string const &name) const {
   return params_real_.at(name);
 }
 
 template <>
-std::string ParameterGroup::GetPar<std::string>(std::string const &name) const {
+inline std::string ParameterGroup::GetPar<std::string>(
+    std::string const &name) const {
   return params_str_.at(name);
 }
+
+template <int D>
+class SpeciesIndexGroup {
+ public:
+  virtual ~SpeciesIndexGroup() {}
+
+  //! Set species index based on species names
+  void SetSpeciesIndex(std::vector<std::string> const &species_names) {
+    auto pindex = IndexMap::GetInstance();
+
+    for (int i = 0; i < D; ++i) {
+      species_index_[i] = pindex->GetSpeciesId(species_names[i]);
+      cloud_index_[i] = species_index_[i] - NHYDRO;
+    }
+  }
+
+  //! \return Array of species indices
+  std::array<int, D> const &GetSpeciesIndexArray() const {
+    return species_index_;
+  }
+
+  //! \return Pointer to array of species indices
+  int const *GetSpeciesIndexPtr() const { return species_index_.data(); }
+
+  //! \return The Species Index of the n-th species
+  int GetSpeciesIndex(int n) const { return species_index_[n]; }
+
+  //! \return Array of cloud indices
+  std::array<int, D> const &GetCloudIndexArray() const { return cloud_index_; }
+
+  //! \return Pointer to array of cloud indices
+  int const *GetCloudIndexPtr() const { return cloud_index_.data(); }
+
+  //! \return The Cloud Index of the n-th species
+  int GetCloudIndex(int n) const { return cloud_index_[n]; }
+
+ private:
+  //! indices of species
+  std::array<int, D> species_index_;
+
+  //! indices of clouds
+  std::array<int, D> cloud_index_;
+};
 
 class CounterGroup {
  public:

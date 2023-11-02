@@ -5,14 +5,11 @@
 #include <vector>
 
 // harp
-#include <harp/absorber.hpp>
+#include "absorber.hpp"
 
 class O2O2CIA : public Absorber {
  public:
-  O2O2CIA(std::vector<std::string> const& species, ParameterMap params)
-      : Absorber("O2-O2", species, params) {
-    category_ = "cia";
-  }
+  O2O2CIA() : Absorber("O2-O2") {}
 
   virtual ~O2O2CIA() {}
 

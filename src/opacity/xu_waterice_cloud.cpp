@@ -19,8 +19,7 @@
 #include <snap/thermodynamics/thermodynamics.hpp>
 
 // harp
-#include <harp/absorber.hpp>
-#include <harp/radiation_utils.hpp>  // GetPhaseMomentum
+#include <harp/radiation.hpp>  // GetPhaseMomentum
 
 // opacity
 #include "water_cloud.hpp"
@@ -65,7 +64,7 @@ Real XuWaterIceCloud::getAttenuation1(Real wave, AirParcel const& air) const {
   re = 326.3 + 12.42 * T1 + 0.197 * T1 * T1 + 0.0012 * T1 * T1 * T1;
   Real dens = air.w[IPR] * 29e-3 / (Constants::Rgas * air.w[IDN]);
 
-  result = (0.003448 + 2.431 / re) * dens * air.w[imols_[0]] * 1e9;
+  result = (0.003448 + 2.431 / re) * dens * air.c[GetCloudIndex(0)] * 1e9;
 
   return result;
 }
@@ -106,6 +105,6 @@ void XuWaterIceCloud::getPhaseMomentum1(Real* pp, Real wave,
   // if (air.w[imols_[0]]<2e-19){
   //   get_phase_momentum(pp, 0.0, np); // 0 for HENYEY_GREENSTEIN
   // }else{
-  get_phase_momentum(pp, 0, gg, np);
+  RadiationHelper::get_phase_momentum(pp, 0, gg, np);
   //}
 }
