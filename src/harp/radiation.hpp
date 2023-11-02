@@ -17,7 +17,10 @@ class ParameterInput;
 class Hydro;
 class RadiationBand;
 
-class Radiation : public RestartGroup, public CounterGroup, public FlagGroup {
+class Radiation : public RestartGroup,
+                  public MeshOutputGroup,
+                  public CounterGroup,
+                  public FlagGroup {
  public:  // public access data
   //! radiation input key in the input file [radiation_config]
   static const std::string input_key;
