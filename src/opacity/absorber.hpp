@@ -56,6 +56,7 @@ class Absorber : public NamedGroup, public ParameterGroup {
 };
 
 using AbsorberPtr = std::shared_ptr<Absorber>;
+using AbsorberContainer = std::vector<AbsorberPtr>;
 
 class AbsorberFactory {
  public:
@@ -66,10 +67,10 @@ class AbsorberFactory {
 
   //! \brief Create absorbers from YAML node
   //!
-  //! \param[in] absorber_names names of absorbers
+  //! \param[in] names names of absorbers
   //! \param[in] rad YAML node containing the whole radiation input file
-  static std::vector<std::shared_ptr<Absorber>> CreateFrom(
-      std::vector<std::string> const& absorber_names, YAML::Node& rad);
+  static AbsorberContainer CreateFrom(std::vector<std::string> const& names,
+                                      YAML::Node& rad);
 };
 
 #endif  // SRC_HARP_ABSORBER_HPP_
