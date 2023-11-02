@@ -14,7 +14,6 @@ void WriteOpticalDepth(std::string fname) const;
 void WriteHeatingRate(std::string fname, AthenaArray<Real> const& flux,
       AthenaArray<Real> const& hr, Real const* level); */
 
-void get_phase_momentum(Real *pmom, int iphas, Real gg, int npmom);
 void packSpectralProperties(Real *buf, Real const *tau, Real const *ssa,
                             Real const *pmom, int nlayer, int npmom);
 void unpackSpectralProperties(Real *tau, Real *ssa, Real *pmom, Real const *buf,
