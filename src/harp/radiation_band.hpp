@@ -21,6 +21,9 @@
 // harp
 #include "spectral_grid.hpp"
 
+// exchanger
+#include <exchanger/column_exchanger.hpp>
+
 class OutputParameters;
 class Absorber;
 class SpectralGridBase;
@@ -111,6 +114,7 @@ class RadiationBand : public NamedGroup,
  public:  // ColumnExchanger functions
   void PackData() override;
   bool UnpackData() override;
+  void ClearBoundary() override;
 
  protected:
   //! \brief number of phase function moments

@@ -1,12 +1,8 @@
 #ifndef SRC_EXCHANGER_EXCHANGER_HPP_
 #define SRC_EXCHANGER_EXCHANGER_HPP_
 
-// C/C++
-#include <functional>  // hash
-
 // Athena++
 #include <athena/bvals/bvals.hpp>
-#include <athena/globals.hpp>
 #include <athena/mesh/mesh.hpp>
 
 // canoe
@@ -14,7 +10,7 @@
 #include <impl.hpp>
 
 // exchanger
-#include "communicator.hpp"
+#include "message.hpp"
 
 template <typename T>
 class Exchanger {
@@ -26,6 +22,8 @@ class Exchanger {
       send_buffer_[n] = nullptr;
       recv_buffer_[n] = nullptr;
       status_flag_[n] = BoundaryStatus::waiting;
+      send_size_[n] = 0;
+      recv_size_[n] = 0;
 
 #ifdef MPI_PARALLEL
       req_mpi_send_[n] = MPI_REQUEST_NULL;
@@ -44,7 +42,7 @@ class Exchanger {
         delete[] recv_buffer_[n];
       }
 
-      status_flag_[i] = BoundaryStatus::waiting;
+      status_flag_[n] = BoundaryStatus::waiting;
 #ifdef MPI_PARALLEL
       req_mpi_send_[n] = MPI_REQUEST_NULL;
       req_mpi_recv_[n] = MPI_REQUEST_NULL;
@@ -68,6 +66,7 @@ class Exchanger {
     }
 
     send_buffer_[id] = new DataType[size];
+    send_size_[id] = size;
   };
 
   void ResizeRecvBuffer(int id, int size) {
@@ -76,21 +75,21 @@ class Exchanger {
     }
 
     recv_buffer_[id] = new DataType[size];
+    recv_size_[id] = size;
   };
 
-  virtual void SendBuffer() const = 0;
-  virtual void RecvRuffer() = 0;
-  virtual void ClearBoundary() = 0;
+  virtual void SendBuffer() const {}
+  virtual void RecvRuffer() {}
 
+  virtual void ClearBoundary() = 0;
   virtual void PackData() = 0;
   virtual bool UnpackData() = 0;
 
-  // void reduceData23(Real *send, Real *recv);
-  void GatherData(Real *send, Real *recv, int size) const;
-  void GatherDataInPlace(Real *recv, int size) const;
-
  protected:
   T const *pmy_;
+
+  size_t send_size_[Message<T>::num_buffers];
+  size_t recv_size_[Message<T>::num_buffers];
 
   enum BoundaryStatus status_flag_[Message<T>::num_buffers];
   DataType *send_buffer_[Message<T>::num_buffers];
@@ -116,9 +115,9 @@ class NeighbourExchanger : public Exchanger<T> {
 };
 
 template <typename T>
-class ColumnExchanger : public Exchanger<T> {
+class LinearExchanger : public Exchanger<T> {
  public:
-  ColumnExchanger(T *me) : Exchanger<T>(me) {}
+  LinearExchanger(T *me) : Exchanger<T>(me) {}
 
   int GetRankInGroup() const;
   void Regroup(CoordinateID dir);
@@ -129,9 +128,15 @@ class ColumnExchanger : public Exchanger<T> {
 };
 
 template <typename T>
-class PlaneExchanger : public Exchanger<T> {
+class PlanarExchanger : public Exchanger<T> {
  public:
-  PlaneExchanger(T *me);
+  PlanarExchanger(T *me);
+};
+
+template <typename T>
+class VolumetricExchanger : public Exchanger<T> {
+ public:
+  VolumetricExchanger(T *me);
 };
 
 #endif  // SRC_EXCHANGER_EXCHANGER_HPP_

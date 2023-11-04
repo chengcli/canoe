@@ -1,8 +1,15 @@
+// canoe
+#include <configure.hpp>
+
 // exchanger
 #include <exchanger/column_exchanger.hpp>
 
 // harp
 #include "radiation_band.hpp"
+
+#ifdef MPI_PARALLEL
+#include <mpi.h>
+#endif
 
 // Specialization for ParticleData Exchanger
 template <>
@@ -18,11 +25,11 @@ struct Message<RadiationBand> {
 template <>
 ColumnExchanger<RadiationBand>::PackData() {
   T* buf = send_buffer_[0];
-  int npmom = pmy->GetNumPhaseMoments();
+  int npmom = pmy_->GetNumPhaseMoments();
 
   for (int i = 0; i < nlayer; ++i) {
-    *(buf++) = pmy->tau[i];
-    *(buf++) = pmy->ssa[i];
+    *(buf++) = pmy_->tau_[i];
+    *(buf++) = pmy_->ssa_[i];
     for (int j = 0; j < npmom; ++j) {
       *(buf++) = pmom[i * npmom + j];
     }
@@ -44,4 +51,14 @@ ColumnExchanger<RadiationBand>::UnpackData() {
         pmom[n * nlayer * npmom_max + i * npmom_max + j] = 0.;
     }
   }
+}
+
+template <>
+ColumnExchanger<RadiationBand>::ClearBoundary() {
+#ifdef MPI_PARALLEL
+  MPI_Allgather(send_buffer_[0], send_size_, MPI_ATHENA_REAL, recv_buffer_[0],
+                send_size_, MPI_ATHENA_REAL, mpi_comm_);
+#else
+  memcpy(recv_buffer_[0], send_buffer_[0], send_size_ * sizeof(Real));
+#endif
 }
