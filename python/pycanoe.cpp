@@ -13,11 +13,6 @@
 #include <constants.hpp>
 #include <index_map.hpp>
 
-// harp
-#include <harp/absorber.hpp>
-#include <harp/radiation.hpp>
-#include <harp/radiation_band.hpp>
-
 namespace py = pybind11;
 
 PYBIND11_MODULE(pycanoe, m) {

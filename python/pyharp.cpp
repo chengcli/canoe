@@ -12,9 +12,11 @@
 #include <index_map.hpp>
 
 // harp
-#include <harp/absorber.hpp>
 #include <harp/radiation.hpp>
 #include <harp/radiation_band.hpp>
+
+// opacity
+#include <opacity/absorber.hpp>
 
 namespace py = pybind11;
 
@@ -22,7 +24,7 @@ void init_index_map(ParameterInput *pin) { IndexMap::InitFromAthenaInput(pin); }
 
 PYBIND11_MODULE(pyharp, m) {
   m.attr("__name__") = "pyharp";
-  m.doc() = "Python bindings for HARP";
+  m.doc() = "Python bindings for harp module";
 
   m.def("init_index_map", &init_index_map);
 
@@ -32,7 +34,7 @@ PYBIND11_MODULE(pyharp, m) {
       .def_readonly("fluxup", &Radiation::flxup)
       .def_readonly("fluxdn", &Radiation::flxdn)
 
-      .def(py::init<MeshBlock, ParameterInput>())
+      .def(py::init<MeshBlock *, ParameterInput *>())
 
       .def("get_num_bands", &Radiation::GetNumBands)
       .def("get_band", &Radiation::GetBand)
@@ -51,30 +53,7 @@ PYBIND11_MODULE(pyharp, m) {
 
       .def("resize", &RadiationBand::Resize)
       .def("get_num_spec_grids", &RadiationBand::GetNumSpecGrids)
-      .def("get_wavenumber_min", &RadiationBand::GetWavenumberMin)
-      .def("get_wavenumber_max", &RadiationBand::GetWavenumberMax)
-      .def("get_wavenumber_res", &RadiationBand::GetWavenumberRes)
       .def("get_num_absorbers", &RadiationBand::GetNumAbsorbers)
       .def("get_absorber", &RadiationBand::GetAbsorber)
-      .def("get_absorber_by_name", &RadiationBand::GetAbsorberByName)
-
-      // Absorber
-      py::class_<Absorber, AbsorberPtr>(m, "absorber")
-      .def("get_attenuation",
-           [](Absorber &ab, double wave1, double wave2, py::list lst) {
-             AirParcel air;
-             std::transform(
-                 lst.begin(), lst.end(), air.w,
-                 [](const py::handle &elem) { return py::cast<double>(elem); });
-             return ab.GetAttenuation(wave1, wave2, air);
-           })
-
-      .def("get_single_scattering_albedo",
-           [](Absorber &ab, double wave1, double wave2, py::list lst) {
-             AirParcel air;
-             std::transform(
-                 lst.begin(), lst.end(), air.w,
-                 [](const py::handle &elem) { return py::cast<double>(elem); });
-             return ab.GetSingleScatteringAlbedo(wave1, wave2, air);
-           });
+      .def("get_absorber_by_name", &RadiationBand::GetAbsorberByName);
 }
