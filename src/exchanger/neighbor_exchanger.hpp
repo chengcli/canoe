@@ -20,7 +20,7 @@ void NeighborExchanger<T>::Transfer(MeshBlock const *pmb, int n) {
   for (auto &nb : pmb->pbval->neighbor) {
     if (nb.snb.rank == Globals::my_rank) {  // on the same process
       MeshBlock *neighbor = pmb->pmy_mesh->FindMeshBlock(nb.snb.gid);
-      auto exchanger = static_cast<T *>(
+      auto exchanger = static_cast<NeighborExchanger<T> *>(
           neighbor->pimpl->GetExchanger(MessageTraits<T>::name));
       exchanger->recv_buffer_[nb.targetid].swap(send_buffer_[nb.bufid]);
       exchanger->SetBoundaryStatus(nb.targetid, BoundaryStatus::arrived);
