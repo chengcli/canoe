@@ -10,15 +10,31 @@
 #include <impl.hpp>
 
 // exchanger
-#include "message.hpp"
+#include "message_traits.hpp"
+
+class ExchangerBase {
+ public:
+  virtual void SendBuffer() const {}
+  virtual void RecvBuffer() {}
+
+  virtual void ClearBuffer() = 0;
+
+  virtual void PackData() = 0;
+  virtual bool UnpackData() = 0;
+
+ protected:
+#ifdef MPI_PARALLEL
+  MPI_Comm mpi_comm_;
+#endif
+};
 
 template <typename T>
-class Exchanger {
+class Exchanger : public ExchangerBase {
  public:  // constructor and destructor
-  using DataType = Message<T>::DataType;
+  using DataType = MessageTraits<T>::DataType;
 
   Exchanger(T *me) : pmy_(me) {
-    for (int n = 0; n < Message<T>::num_buffers; ++n) {
+    for (int n = 0; n < MessageTraits<T>::num_buffers; ++n) {
       send_buffer_[n] = nullptr;
       recv_buffer_[n] = nullptr;
       status_flag_[n] = BoundaryStatus::waiting;
@@ -33,7 +49,7 @@ class Exchanger {
   }
 
   virtual ~Exchanger() {
-    for (int n = 0; n < Message<T>::num_buffers; ++n) {
+    for (int n = 0; n < MessageTraits<T>::num_buffers; ++n) {
       if (send_buffer_[n] != nullptr) {
         delete[] send_buffer_[n];
       }
@@ -54,7 +70,9 @@ class Exchanger {
     }
   }
 
-  void SetRecvBuffer(int bid, data_type *buffer) { recv_buffer_[bid] = buffer; }
+  void SetSendBuffer(int bid, DataType *buffer) { send_buffer_[bid] = buffer; }
+
+  void SetRecvBuffer(int bid, DataType *buffer) { recv_buffer_[bid] = buffer; }
 
   void SetBoundaryStatus(int bid, BoundaryStatus status) {
     status_flag_[bid] = status;
@@ -78,30 +96,19 @@ class Exchanger {
     recv_size_[id] = size;
   };
 
-  virtual void SendBuffer() const {}
-  virtual void RecvRuffer() {}
-
-  virtual void ClearBoundary() = 0;
-  virtual void PackData() = 0;
-  virtual bool UnpackData() = 0;
-
  protected:
   T const *pmy_;
 
-  size_t send_size_[Message<T>::num_buffers];
-  size_t recv_size_[Message<T>::num_buffers];
+  size_t send_size_[MessageTraits<T>::num_buffers];
+  size_t recv_size_[MessageTraits<T>::num_buffers];
 
-  enum BoundaryStatus status_flag_[Message<T>::num_buffers];
-  DataType *send_buffer_[Message<T>::num_buffers];
-  DataType *recv_buffer_[Message<T>::num_buffers];
-
-#ifdef MPI_PARALLEL
-  MPI_Request req_mpi_send_[Message<T>::num_buffers];
-  MPI_Request req_mpi_recv_[Message<T>::num_buffers];
-#endif
+  enum BoundaryStatus status_flag_[MessageTraits<T>::num_buffers];
+  DataType *send_buffer_[MessageTraits<T>::num_buffers];
+  DataType *recv_buffer_[MessageTraits<T>::num_buffers];
 
 #ifdef MPI_PARALLEL
-  MPI_Comm mpi_comm_;
+  MPI_Request req_mpi_send_[MessageTraits<T>::num_buffers];
+  MPI_Request req_mpi_recv_[MessageTraits<T>::num_buffers];
 #endif
 };
 

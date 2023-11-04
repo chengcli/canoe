@@ -1,27 +1,22 @@
-#ifndef SRC_COMMUNICATOR_COMMUNICATOR_HPP_
-#define SRC_COMMUNICATOR_COMMUNICATOR_HPP_
+#ifndef SRC_EXCHANGER_MESSAGE_TRAITS_HPP_
+#define SRC_EXCHANGER_MESSAGE_TRAITS_HPP_
 
 // C/C++
 #include <string>
-#include <vector>
 
 // canoe
-#include <common.hpp>
 #include <configure.hpp>
 
 #ifdef MPI_PARALLEL
 #include <mpi.h>
 #endif
 
-class MeshBlock;
-struct NeighborBlock;
-
-//! \brief Trait class providing Message information for class T
+//! \brief Traits class providing Message information for class T
 template <typename T>
-struct Message {
+struct MessageTraits {
   using DataType = double;
 
-  constexpr static int num_buffers = 56;
+  constexpr static int num_buffers;
   constexpr static std::string name;
 
 #ifdef MPI_PARALLEL

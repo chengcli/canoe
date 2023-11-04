@@ -15,7 +15,7 @@
 #endif
 
 template <typename T>
-LinearExchanger<T>::LinearExchanger(MeshBlock *pmb) : Exchanger<T>(pmb) {
+LinearExchanger<T>::LinearExchanger(T *me) : Exchanger<T>(me) {
   color_.resize(Globals::nranks);
   brank_.resize(Globals::nranks);
 
