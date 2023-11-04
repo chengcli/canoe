@@ -8,6 +8,14 @@ git reset <file>
 ```
 git restore <file>
 ```
+- undo a "git rebase"
+```
+git reset --hard ORIG_HEAD
+```
+- hard reset to remote
+```
+git reset --hard origin/main
+```
 - aliasing a git command
 ```
 git config --global alias.co checkout
