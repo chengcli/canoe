@@ -14,22 +14,22 @@
 class NeighborBlock;
 
 class ExchangerBase {
- public:
+ public:  // constructor and destructor
   ExchangerBase() {
 #ifdef MPI_PARALLEL
     mpi_comm_ = MPI_COMM_WORLD;
 #endif
   }
-
   virtual ExchangerBase() {}
 
-  virtual void SendBuffer() const {}
-  virtual void RecvBuffer() {}
+  //! \brief Pack data to send buffer
+  virtual void PackData() {}
 
-  virtual void ClearBuffer() = 0;
+  //! \brief Unpack data from receive buffer
+  virtual bool UnpackData() {}
 
-  virtual void PackData() = 0;
-  virtual bool UnpackData() = 0;
+  //! \brief Send and receive data
+  virtual void Transfer(MeshBlock const *pmb, int n = -1) = 0;
 
  protected:
 #ifdef MPI_PARALLEL
@@ -43,20 +43,17 @@ class Exchanger : public ExchangerBase {
   using DataType = MessageTraits<T>::DataType;
   using BufferType = std::vector<DataType>;
 
-  Exchanger(T *me) : phost_(me) {
+  Exchanger() {
     for (int n = 0; n < MessageTraits<T>::num_buffers; ++n) {
-      status_flag_[n] = BoundaryStatus::waiting;
-
 #ifdef MPI_PARALLEL
       req_mpi_send_[n] = MPI_REQUEST_NULL;
       req_mpi_recv_[n] = MPI_REQUEST_NULL;
-#endif
+#endif  // MPI_PARALLEL
     }
   }
 
   virtual ~Exchanger() {
     for (int n = 0; n < MessageTraits<T>::num_buffers; ++n) {
-      status_flag_[n] = BoundaryStatus::waiting;
 #ifdef MPI_PARALLEL
       req_mpi_send_[n] = MPI_REQUEST_NULL;
       req_mpi_recv_[n] = MPI_REQUEST_NULL;
@@ -64,19 +61,20 @@ class Exchanger : public ExchangerBase {
       if (mpi_comm_ != MPI_COMM_WORLD) {
         MPI_Comm_free(&mpi_comm_);
       }
-#endif
+#endif  // MPI_PARALLEL
     }
   }
 
-  void SetBoundaryStatus(int bid, BoundaryStatus status) {
-    status_flag_[bid] = status;
+  //! \brief Clear buffer
+  virtual void ClearBuffer(MeshBlock const *pmb) {
+    for (int n = 0; n < MessageTraits<T>::num_buffers; ++n) {
+#ifdef MPI_PARALLEL
+      MPI_Wait(&req_mpi_send_[n], MPI_STATUS_IGNORE);
+#endif  // MPI_PARALLEL
+    }
   }
 
-  T const *Me() const { return phost_; }
-
  protected:
-  enum BoundaryStatus status_flag_[MessageTraits<T>::num_buffers];
-
   BufferType send_buffer_[MessageTraits<T>::num_buffers];
   BufferType recv_buffer_[MessageTraits<T>::num_buffers];
 
@@ -84,9 +82,6 @@ class Exchanger : public ExchangerBase {
   MPI_Request req_mpi_send_[MessageTraits<T>::num_buffers];
   MPI_Request req_mpi_recv_[MessageTraits<T>::num_buffers];
 #endif
-
- private:
-  T const *phost_;
 };
 
 namespace ExchangerHelper {
@@ -117,25 +112,17 @@ void find_neighbors(MeshBlock const *pmb, CoordianteID dir,
 template <typename T>
 class NeighborExchanger : public Exchanger<T> {
  public:
-  NeighborExchanger(T *me);
-  virtual void SendBuffer() const override;
-  virtual void RecvRuffer() override;
-  virtual void ClearBoundary() override;
+  NeighborExchanger();
 };
 
 template <typename T>
 class LinearExchanger : public Exchanger<T> {
  public:  // constructor and destructor
-  LinearExchanger(T *me);
+  LinearExchanger();
 
  public:  // member functions
   int GetRankInGroup() const;
-  void Regroup(CoordinateID dir);
-
- public:  // exchanger functions
-  virtual void ClearBoundary() override;
-  virtual void PackData() override;
-  virtual bool UnpackData() override;
+  void Regroup(MeshBlock const *pmb, CoordinateID dir);
 
  protected:
   //! \brief MPI color of each block
@@ -148,13 +135,13 @@ class LinearExchanger : public Exchanger<T> {
 template <typename T>
 class PlanarExchanger : public Exchanger<T> {
  public:
-  PlanarExchanger(T *me);
+  PlanarExchanger();
 };
 
 template <typename T>
 class VolumetricExchanger : public Exchanger<T> {
  public:
-  VolumetricExchanger(T *me);
+  VolumetricExchanger();
 };
 
 #endif  // SRC_EXCHANGER_EXCHANGER_HPP_

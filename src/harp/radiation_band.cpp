@@ -33,7 +33,6 @@
 // harp
 #include "radiation.hpp"
 #include "radiation_band.hpp"
-#include "radiation_utils.hpp"  // readRadiationDirections
 #include "rt_solvers.hpp"
 
 RadiationBand::RadiationBand(std::string myname, YAML::Node const &rad)
@@ -117,8 +116,7 @@ void RadiationBand::Resize(int nc1, int nc2, int nc3) {
 
   //! \note btoa, bflxup, bflxdn are shallow slices to Radiation variables
 
-  // exchanger
-  ResizeSendBuffer(0, (nphase_moments_ + 4) * nlo
+  ResizeBuffer();
 }
 
 AbsorberPtr RadiationBand::GetAbsorberByName(std::string const &name) {
@@ -203,7 +201,7 @@ std::shared_ptr<RadiationBand::RTSolver> RadiationBand::CreateRTSolverFrom(
 #ifdef RT_DISORT
   } else if (rt_name_str == "Disort") {
     psolver = std::make_shared<RTSolverDisort>(this);
-#endif
+#endif  // RT_DISORT
   } else {
     throw NotFoundError("RadiationBand", my["rt-solver"].as<std::string>());
   }

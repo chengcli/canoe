@@ -83,7 +83,10 @@ class RadiationBand : public NamedGroup,
   size_t GetNumAbsorbers() const { return absorbers_.size(); }
 
   //! Get number of phase function moments
-  size_t GetNumPhaseMoments() const { return nphase_moments; }
+  size_t GetNumPhaseMoments() const { return nphase_moments_; }
+
+  //! Get number of phase function moments
+  size_t GetNumLayers() const { return tem_.size() - 2 * NGHOST; }
 
   //! Get an individual absorber
   std::shared_ptr<Absorber> GetAbsorber(int i) { return absorbers_[i]; }
@@ -111,10 +114,22 @@ class RadiationBand : public NamedGroup,
   void WriteAsciiHeader(OutputParameters const *) const override;
   void WriteAsciiData(OutputParameters const *) const override;
 
- public:  // ColumnExchanger functions
-  void PackData() override;
-  bool UnpackData() override;
-  void ClearBoundary() override;
+ public:  // Exchanger functions
+  //! \brief Pack temperature at cell face into send buffer 0
+  void PackTemperature();
+
+  //! \breif Unpack temperature at cell face from receive buffer 0
+  bool UnpacTemperature();
+
+  //! \brief Pack data in spectral grid b into send buffer 1
+  //!
+  //! \param[in] b spectral bin index
+  void PackDataSpectralGrid(int b);
+
+  //! \brief Unpack data from receive buffer 1 into spectral grid b
+  bool UnpackSpectralGrid();
+
+  void Transfer(MeshBlock const *pmb, int n) override;
 
  protected:
   //! \brief number of phase function moments
@@ -175,10 +190,10 @@ class RadiationBand : public NamedGroup,
   AthenaArray<Real> pmom_;
 
   //! temperature at cell center
-  AthenaArray<Real> tem_;
+  std::vector<Real> tem_;
 
   //! temperature at cell boundary (face)
-  AthenaArray<Real> temf_;
+  std::vector<Real> temf_;
 };
 
 using RadiationBandPtr = std::shared_ptr<RadiationBand>;

@@ -28,7 +28,6 @@
 
 // harp
 #include "radiation.hpp"
-#include "radiation_utils.hpp"
 #include "rt_solvers.hpp"
 
 #ifdef RT_DISORT
@@ -43,15 +42,10 @@ void RadiationBand::RTSolverDisort::CalBandFlux(MeshBlock const *pmb, int k,
   auto &bflxdn = pmy_band_->bflxdn;
   auto &bpmom = pmy_band_->bpmom;
 
-  auto &temf = pmy_band_->temf_;
-
   auto &wmin = pmy_band_->wrange_.first;
   auto &wmax = pmy_band_->wrange_.second;
   auto &spec = pmy_band_->pgrid_->spec;
 
-  auto &tau = pmy_band_->tau_;
-  auto &ssa = pmy_band_->ssa_;
-  auto &pmom = pmy_band_->pmom_;
   auto &flxup = pmy_band_->flxup_;
   auto &flxdn = pmy_band_->flxdn_;
 
@@ -71,25 +65,15 @@ void RadiationBand::RTSolverDisort::CalBandFlux(MeshBlock const *pmb, int k,
     throw ValueError("RTSolverDisort::CalRadtranFlux", "ibcnd", ds_.flag.ibcnd,
                      0);
   }
-  pmy_band_->SetColor(pmb, X1DIR);
+  pmy_band_->Regroup(pmb, X1DIR);
 
-  int nblocks = pmb->pmy_mesh->mesh_size.nx1 / pmb->block_size.nx1;
-  Real *bufrecv = new Real[(iu - il) * nblocks * (ds_.nmom_nstr + 3)];
-
+  // transfer temperature
   if (ds_.flag.planck) {
-    pmy_band_->PackData("temperature");
-    pmy_band_->ExecuteExchanger();
-    pmy_band_->Unpack();
-
-    pcomm->GatherData(&temf(il), bufrecv, iu - il + 1);
-
-    for (int i = 0; i < (iu - il + 1) * nblocks; ++i) {
-      int m = i / (iu - il + 1);
-      ds_.temper[m * (iu - il) + i % (iu - il + 1)] = bufrecv[i];
-    }
-
-    std::reverse(ds_.temper, ds_.temper + ds_.nlyr + 1);
+    pmy_band_->PackTemperature();
+    pmy_band_->Transfer(0);
+    pmy_band_->UnpackTemperature();
   }
+
   // for (int i = 0; i <= ds_.nlyr; ++i)
   //   std::cout << ds_.temper[i] << std::endl;
 
@@ -116,11 +100,9 @@ void RadiationBand::RTSolverDisort::CalBandFlux(MeshBlock const *pmb, int k,
     ds_.wvnmhi = wmax;
   }
 
-  int r = pmy_band_->GetRankInGroup();
+  int rank = pmy_band_->GetRankInGroup();
 
-  int npmom = pmy_band_->GetNumPhaseMoments();
-
-  // loop over bins in the band
+  // loop over spectral grids in the band
   for (int n = 0; n < pmy_band_->GetNumSpecGrids(); ++n) {
     if (!(pmy_band_->TestFlag(RadiationFlags::CorrelatedK))) {
       // stellar source function
@@ -132,24 +114,10 @@ void RadiationBand::RTSolverDisort::CalBandFlux(MeshBlock const *pmb, int k,
       ds_.wvnmhi = spec[n].wav2;
     }
 
-    // pack data
-    packSpectralProperties(bufsend, &tau(n, il), &ssa(n, il), &pmom(n, il, 0),
-                           iu - il, npmom + 1);
-    pcomm->GatherData(bufsend, bufrecv, dsize);
-    unpackSpectralProperties(ds_.dtauc, ds_.ssalb, ds_.pmom, bufrecv, iu - il,
-                             npmom + 1, nblocks, ds_.nmom_nstr + 1);
-
-    // absorption
-    std::reverse(ds_.dtauc, ds_.dtauc + ds_.nlyr);
-
-    // single scatering albedo
-    std::reverse(ds_.ssalb, ds_.ssalb + ds_.nlyr);
-
-    // Legendre coefficients
-    std::reverse(ds_.pmom, ds_.pmom + ds_.nlyr * (ds_.nmom_nstr + 1));
-    for (int i = 0; i < ds_.nlyr; ++i)
-      std::reverse(ds_.pmom + i * (ds_.nmom_nstr + 1),
-                   ds_.pmom + (i + 1) * (ds_.nmom_nstr + 1));
+    // transfer spectral grid data
+    pmy_band_->PackSpectralGrid(n);
+    pmy_band_->Transfer(1);
+    pmy_band_->UnPackSpectralGrid(n);
 
     // run disort
     c_disort(&ds_, &ds_out_);
@@ -171,7 +139,7 @@ void RadiationBand::RTSolverDisort::CalBandFlux(MeshBlock const *pmb, int k,
     /// block r = 2 gets, 2 - 1 - 0
     /// accumulate flux from lines
     for (int i = il; i <= iu; ++i) {
-      int m = ds_.nlyr - (r * (iu - il) + i - il);
+      int m = ds_.nlyr - (rank * (iu - il) + i - il);
       //! \bug does not work for spherical geometry, need to scale area using
       //! farea(il)/farea(i)
       // flux up
@@ -181,6 +149,7 @@ void RadiationBand::RTSolverDisort::CalBandFlux(MeshBlock const *pmb, int k,
       //! farea(il)/farea(i)
       // flux down
       flxdn(n, i) = ds_out_.rad[m].rfldir + ds_out_.rad[m].rfldn;
+
       bflxup(k, j, i) += spec[n].wght * flxup(n, i);
       bflxdn(k, j, i) += spec[n].wght * flxdn(n, i);
     }
@@ -204,9 +173,6 @@ void RadiationBand::RTSolverDisort::CalBandFlux(MeshBlock const *pmb, int k,
       bflxdn(k, j, i) = (bflxdn(k, j, i + 1) * farea(i + 1) - volh) / farea(i);
     }
   }
-
-  delete[] bufsend;
-  delete[] bufrecv;
 }
 
 void RadiationBand::RTSolverDisort::CalBandRadiance(Direction const &rayInput,

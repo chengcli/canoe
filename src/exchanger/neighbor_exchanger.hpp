@@ -16,7 +16,7 @@
 #endif
 
 template <typename T>
-void NeighborExchanger<T>::SendBuffer() const {
+void NeighborExchanger<T>::Transfer(MeshBlock const *pmb, int n) const {
   auto pmb = getMeshBlock();
 
   for (auto &nb : pmb->pbval->neighbor) {
@@ -36,10 +36,7 @@ void NeighborExchanger<T>::SendBuffer() const {
     }
 #endif
   }
-}
 
-template <typename T>
-void NeighborExchanger<T>::RecvRuffer() {
   int rsize, tag;
   auto pmb = getMeshBlock();
 
@@ -48,27 +45,21 @@ void NeighborExchanger<T>::RecvRuffer() {
   for (auto &nb : pmb->pbval->neighbor) {
     if (nb.snb.rank == Globals::my_rank) continue;  // local boundary received
 
-    if (status_flag_[nb.bufid] == BoundaryStatus::waiting) {
-      int tag = create_mpi_tag(pmb->lid, nb.bufid, Messeger<T>::name);
+    int tag = create_mpi_tag(pmb->lid, nb.bufid, Messeger<T>::name);
 
-      MPI_Probe(nb.snb.rank, tag, MPI_COMM_WORLD, &status);
-      MPI_Get_count(&status, Messeger<T>::mpi_type, &rsize);
+    MPI_Probe(nb.snb.rank, tag, MPI_COMM_WORLD, &status);
+    MPI_Get_count(&status, Messeger<T>::mpi_type, &rsize);
 
-      recv_buffer_[nb.bufid].resize(rsize);
-      MPI_Irecv(recv_buffer_[nb.bufid], rsize, Messeger<T>::mpi_type,
-                nb.snb.rank, tag, mpi_comm_, &req_mpi_recv_[nb.bufid]);
-    }
+    recv_buffer_[nb.bufid].resize(rsize);
+    MPI_Irecv(recv_buffer_[nb.bufid], rsize, Messeger<T>::mpi_type, nb.snb.rank,
+              tag, mpi_comm_, &req_mpi_recv_[nb.bufid]);
   }
 #endif
 }
 
 template <typename T>
-void NeighborExchanger<T>::ClearBoundary() {
-  auto pmb = getMeshBlock();
-
+void NeighborExchanger<T>::ClearBuffer(MeshBlock const *pmb) {
   for (auto &nb : pmb->pbval->neighbor) {
-    status_flag_[nb.bufid] = BoundaryStatus::waiting;
-
 #ifdef MPI_PARALLEL
     if (nb.snb.rank != Globals::my_rank)
       MPI_Wait(&req_mpi_send_[nb.bufid], MPI_STATUS_IGNORE);

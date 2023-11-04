@@ -106,7 +106,6 @@ void Radiation::CalRadiativeFlux(MeshBlock const *pmb, int k, int j, int il,
 
   AirColumn &&ac =
       AirParcelHelper::gather_from_primitive(pmb, k, j, 0, pmb->ncells1 - 1);
-  for (auto &air : ac) air.ToMoleFraction();
 
   for (auto &p : bands_) {
     // iu ~= ie + 1

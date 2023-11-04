@@ -16,16 +16,9 @@
 #endif
 
 template <typename T>
-LinearExchanger<T>::LinearExchanger(T *me) : Exchanger<T>(me) {
+LinearExchanger<T>::LinearExchanger() {
   color_.resize(Globals::nranks);
   brank_.resize(Globals::nranks);
-
-  int sender_size = (npmom + 3) * (iu - il);
-  int receiver_size = (iu - il) * nblocks * (ds_.nmom_nstr + 3);
-
-  Real *bufsend = new Real[dsize];
-
-  recv_buffer_[0].resize();
 }
 
 template <typename T>
