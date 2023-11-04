@@ -1,5 +1,5 @@
-//! \file particle_boundry_exchanger.cpp
-//! \brief Implements functions derived from class BoundaryExchanger
+//! \file particle_exchanger.cpp
+//! \brief Implements functions derived from class NeighborExchanger
 
 // C/C++ header
 #include <iostream>
@@ -17,7 +17,8 @@
 #include "particle_data.hpp"
 #include "particles.hpp"
 
-bool ParticleBase::AttachTo(ParticleContainer &container) {
+template <>
+bool NeighborExchanger<ParticleBase>::AttachTo(ParticleContainer &container) {
   bool success = true;
   int test;
 
@@ -87,7 +88,7 @@ bool ParticleBase::AttachTo(ParticleContainer &container) {
 
 // This subroutine will remove inactive particles (id < 0) and move particles to
 // appropriate buffers if they moved out of the current domain
-void ParticleBase::DetachTo(ParticleContainer &buffer) {
+void NeighborExchanger<ParticleBase>::DetachTo(ParticleContainer &buffer) {
   auto pmb = getMeshBlock();
   auto pm = pmb->pmy_mesh;
 

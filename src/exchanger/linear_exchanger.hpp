@@ -3,6 +3,7 @@
 
 // athena
 #include <athena/globals.hpp>
+#include <athena/mesh/mesh.hpp>
 
 // canoe
 #include "common.hpp"
@@ -25,10 +26,6 @@ LinearExchanger<T>::LinearExchanger(T *me) : Exchanger<T>(me) {
   Real *bufsend = new Real[dsize];
 
   recv_buffer_[0].resize();
-
-#ifdef MPI_PARALLEL
-  comm_ = MPI_COMM_WORLD;
-#endif
 }
 
 template <typename T>
@@ -97,9 +94,12 @@ void LinearExchanger<T>::Regroup(MeshBlock const *pmb, CoordinateID dir) {
   }
 
 #ifdef MPI_PARALLEL
-  if (comm_ != MPI_COMM_WORLD) MPI_Comm_free(&comm_);
+  if (mpi_comm_ != MPI_COMM_WORLD) {
+    MPI_Comm_free(&mpi_comm_);
+  }
+
   MPI_Comm_split(MPI_COMM_WORLD, color_[Globals::my_rank], Globals::my_rank,
-                 &comm_);
+                 &mpi_comm_);
 #endif
 }
 

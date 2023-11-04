@@ -77,6 +77,10 @@ void RadiationBand::RTSolverDisort::CalBandFlux(MeshBlock const *pmb, int k,
   Real *bufrecv = new Real[(iu - il) * nblocks * (ds_.nmom_nstr + 3)];
 
   if (ds_.flag.planck) {
+    pmy_band_->PackData("temperature");
+    pmy_band_->ExecuteExchanger();
+    pmy_band_->Unpack();
+
     pcomm->GatherData(&temf(il), bufrecv, iu - il + 1);
 
     for (int i = 0; i < (iu - il + 1) * nblocks; ++i) {
@@ -112,14 +116,12 @@ void RadiationBand::RTSolverDisort::CalBandFlux(MeshBlock const *pmb, int k,
     ds_.wvnmhi = wmax;
   }
 
-  int r = pcomm->GetRank(pmb, X1DIR);
+  int r = pmy_band_->GetRankInGroup();
 
-  int npmom = bpmom.GetDim4() - 1;
-  int dsize = (npmom + 3) * (iu - il);
-  Real *bufsend = new Real[dsize];
+  int npmom = pmy_band_->GetNumPhaseMoments();
 
   // loop over bins in the band
-  for (int n = 0; n < pmy_band_->GetNumBins(); ++n) {
+  for (int n = 0; n < pmy_band_->GetNumSpecGrids(); ++n) {
     if (!(pmy_band_->TestFlag(RadiationFlags::CorrelatedK))) {
       // stellar source function
       if (pmy_band_->TestFlag(RadiationFlags::Star))

@@ -49,22 +49,13 @@ struct ParticleData {
 
 std::ostream& operator<<(std::ostream& os, ParticleData const& mp);
 
-// Specialization for ParticleData Exchanger
-template <>
-struct NeighborExchanger<ParticleData> {
-  using container_t = std::vector<ParticleData>;
-
-  constexpr static int num_buffers = 56;
-  constexpr static std::string name = "ParticleData";
-
-#ifdef MPI_PARALLEL
-  static MPI_Datatype mpi_type;
-#endif  // MPI_PARALLEL
-};
-
 // helper functions
+namespace ParticlesHelper {
+
 bool check_in_meshblock(ParticleData const& pd, MeshBlock const* pmb);
 void commit_mpi_particle_data();
 void free_mpi_particle_data();
+
+}  // namespace ParticlesHelper
 
 #endif  // SRC_NBODY_PARTICLE_DATA_HPP_

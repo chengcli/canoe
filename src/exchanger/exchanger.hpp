@@ -2,7 +2,6 @@
 #define SRC_EXCHANGER_EXCHANGER_HPP_
 
 // Athena++
-#include <athena/bvals/bvals.hpp>
 #include <athena/mesh/mesh.hpp>
 
 // canoe
@@ -12,8 +11,18 @@
 // exchanger
 #include "message_traits.hpp"
 
+class NeighborBlock;
+
 class ExchangerBase {
  public:
+  ExchangerBase() {
+#ifdef MPI_PARALLEL
+    mpi_comm_ = MPI_COMM_WORLD;
+#endif
+  }
+
+  virtual ExchangerBase() {}
+
   virtual void SendBuffer() const {}
   virtual void RecvBuffer() {}
 
@@ -32,14 +41,11 @@ template <typename T>
 class Exchanger : public ExchangerBase {
  public:  // constructor and destructor
   using DataType = MessageTraits<T>::DataType;
+  using BufferType = std::vector<DataType>;
 
-  Exchanger(T *me) : pmy_(me) {
+  Exchanger(T *me) : phost_(me) {
     for (int n = 0; n < MessageTraits<T>::num_buffers; ++n) {
-      send_buffer_[n] = nullptr;
-      recv_buffer_[n] = nullptr;
       status_flag_[n] = BoundaryStatus::waiting;
-      send_size_[n] = 0;
-      recv_size_[n] = 0;
 
 #ifdef MPI_PARALLEL
       req_mpi_send_[n] = MPI_REQUEST_NULL;
@@ -50,14 +56,6 @@ class Exchanger : public ExchangerBase {
 
   virtual ~Exchanger() {
     for (int n = 0; n < MessageTraits<T>::num_buffers; ++n) {
-      if (send_buffer_[n] != nullptr) {
-        delete[] send_buffer_[n];
-      }
-
-      if (recv_buffer_[n] != nullptr) {
-        delete[] recv_buffer_[n];
-      }
-
       status_flag_[n] = BoundaryStatus::waiting;
 #ifdef MPI_PARALLEL
       req_mpi_send_[n] = MPI_REQUEST_NULL;
@@ -70,52 +68,56 @@ class Exchanger : public ExchangerBase {
     }
   }
 
-  void SetSendBuffer(int bid, DataType *buffer) { send_buffer_[bid] = buffer; }
-
-  void SetRecvBuffer(int bid, DataType *buffer) { recv_buffer_[bid] = buffer; }
-
   void SetBoundaryStatus(int bid, BoundaryStatus status) {
     status_flag_[bid] = status;
   }
 
-  void ResizeSendBuffer(int id, int size) {
-    if (send_buffer_[id] != nullptr) {
-      delete[] send_buffer_[id];
-    }
-
-    send_buffer_[id] = new DataType[size];
-    send_size_[id] = size;
-  };
-
-  void ResizeRecvBuffer(int id, int size) {
-    if (recv_buffer_[id] != nullptr) {
-      delete[] recv_buffer_[id];
-    }
-
-    recv_buffer_[id] = new DataType[size];
-    recv_size_[id] = size;
-  };
+  T const *Me() const { return phost_; }
 
  protected:
-  T const *pmy_;
-
-  size_t send_size_[MessageTraits<T>::num_buffers];
-  size_t recv_size_[MessageTraits<T>::num_buffers];
-
   enum BoundaryStatus status_flag_[MessageTraits<T>::num_buffers];
-  DataType *send_buffer_[MessageTraits<T>::num_buffers];
-  DataType *recv_buffer_[MessageTraits<T>::num_buffers];
+
+  BufferType send_buffer_[MessageTraits<T>::num_buffers];
+  BufferType recv_buffer_[MessageTraits<T>::num_buffers];
 
 #ifdef MPI_PARALLEL
   MPI_Request req_mpi_send_[MessageTraits<T>::num_buffers];
   MPI_Request req_mpi_recv_[MessageTraits<T>::num_buffers];
 #endif
+
+ private:
+  T const *phost_;
 };
 
+namespace ExchangerHelper {
+
+//! find bottom neighbor block
+NeighborBlock const *find_bot_neighbor(MeshBlock const *pmb);
+
+//! find top neighbor block
+NeighborBlock const *find_top_neighbor(MeshBlock const *pmb);
+
+//! find left neighbor block
+NeighborBlock const *find_left_neighbor(MeshBlock const *pmb);
+
+//! find right neighbor block
+NeighborBlock const *find_right_neighbor(MeshBlock const *pmb);
+
+//! find back neighbor block
+NeighborBlock const *find_back_neighbor(MeshBlock const *pmb);
+
+//! find front neighbor block
+NeighborBlock const *find_front_neighbor(MeshBlock const *pmb);
+
+//! find neighbors in one coordinate direction
+void find_neighbors(MeshBlock const *pmb, CoordianteID dir,
+                    NeighborBlock *bblock, NeighborBlock *tblock);
+}  // namespace ExchangerHelper
+
 template <typename T>
-class NeighbourExchanger : public Exchanger<T> {
+class NeighborExchanger : public Exchanger<T> {
  public:
-  NeighbourExchanger(T *me);
+  NeighborExchanger(T *me);
   virtual void SendBuffer() const override;
   virtual void RecvRuffer() override;
   virtual void ClearBoundary() override;
@@ -123,14 +125,23 @@ class NeighbourExchanger : public Exchanger<T> {
 
 template <typename T>
 class LinearExchanger : public Exchanger<T> {
- public:
-  LinearExchanger(T *me) : Exchanger<T>(me) {}
+ public:  // constructor and destructor
+  LinearExchanger(T *me);
 
+ public:  // member functions
   int GetRankInGroup() const;
   void Regroup(CoordinateID dir);
 
+ public:  // exchanger functions
+  virtual void ClearBoundary() override;
+  virtual void PackData() override;
+  virtual bool UnpackData() override;
+
  protected:
+  //! \brief MPI color of each block
   std::vector<int> color_;
+
+  //! \brief MPI rank of the bottom of each block
   std::vector<int> brank_;
 };
 

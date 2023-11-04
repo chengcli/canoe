@@ -1,10 +1,11 @@
 // athena
+#include <athena/bvals/bvals.hpp>
 #include <athena/mesh/mesh.hpp>
 
 // canoe
 #include <common.hpp>
 
-namespace NeighborExchangerHelper {
+namespace ExchangerHelper {
 
 NeighborBlock const *find_bot_neighbor(MeshBlock const *pmb) {
   NeighborBlock *pbot = nullptr;
@@ -107,4 +108,4 @@ void find_neighbors(MeshBlock const *pmb, CoordinateID dir,
   }
 }
 
-}  // namespace NeighborExchangerHelper
+}  // namespace ExchangerHelper

@@ -1,4 +1,4 @@
-//! \file particle_multistage_time_integrator.cpp
+//! \file particle_integrator.cpp
 //! \brief Implements functions derived from clas MultistageTimeIntegrator
 
 // C/C++

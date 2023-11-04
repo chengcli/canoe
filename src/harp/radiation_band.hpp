@@ -22,7 +22,7 @@
 #include "spectral_grid.hpp"
 
 // exchanger
-#include <exchanger/column_exchanger.hpp>
+#include <exchanger/linear_exchanger.hpp>
 
 class OutputParameters;
 class Absorber;
@@ -33,7 +33,7 @@ class RadiationBand : public NamedGroup,
                       public FlagGroup,
                       public ParameterGroup,
                       public ASCIIOutputGroup,
-                      public ColumnExchanger<RadiationBand> {
+                      public LinearExchanger<RadiationBand> {
  public:  // public access data
   // implementation of RT Solver
   class RTSolver;
@@ -183,6 +183,19 @@ class RadiationBand : public NamedGroup,
 
 using RadiationBandPtr = std::shared_ptr<RadiationBand>;
 using RadiationBandContainer = std::vector<RadiationBandPtr>;
+
+// Specialization for RadiationBand Exchanger
+template <>
+struct MessageTraits<RadiationBand> {
+  using DataType = Real;
+
+  constexpr static int num_buffers = 2;
+  constexpr static std::string name = "RadiationBand";
+
+#ifdef MPI_PARALLEL
+  static MPI_Datatype mpi_type;
+#endif  // MPI_PARALLEL
+};
 
 class RadiationBandsFactory {
  public:

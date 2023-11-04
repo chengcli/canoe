@@ -2,7 +2,7 @@
 #include <configure.hpp>
 
 // exchanger
-#include <exchanger/column_exchanger.hpp>
+#include <exchanger/linear_exchanger.hpp>
 
 // harp
 #include "radiation_band.hpp"
@@ -11,25 +11,24 @@
 #include <mpi.h>
 #endif
 
-// Specialization for ParticleData Exchanger
 template <>
-struct Message<RadiationBand> {
-  constexpr static int num_buffers = 1;
-  constexpr static std::string name = "RadiationBand";
+void LinearExchanger<RadiationBand>::PackData(void* args) {
+  int nlayer = Me()->GetNumLayers();
+  int npmom = Me()->GetNumPhaseMoments();
 
-#ifdef MPI_PARALLEL
-  static MPI_Datatype mpi_type;
-#endif  // MPI_PARALLEL
-};
+  // first send buffer is temperature at levels
+  send_buffer_[0].swap(temf);
 
-template <>
-ColumnExchanger<RadiationBand>::PackData() {
-  T* buf = send_buffer_[0];
-  int npmom = pmy_->GetNumPhaseMoments();
+  auto& tau = Me()->tau_;
+  auto& ssa = Me()->ssa_;
+  auto& pmom = Me()->pmom_;
+
+  // second send buffer is tau, ssa, and pmom at layers
+  auto buf = send_buffer_[1].data();
 
   for (int i = 0; i < nlayer; ++i) {
-    *(buf++) = pmy_->tau_[i];
-    *(buf++) = pmy_->ssa_[i];
+    *(buf++) = tau(n, i);
+    *(buf++) = ssa(n, i);
     for (int j = 0; j < npmom; ++j) {
       *(buf++) = pmom[i * npmom + j];
     }
@@ -37,28 +36,40 @@ ColumnExchanger<RadiationBand>::PackData() {
 }
 
 template <>
-ColumnExchanger<RadiationBand>::UnpackData() {
+bool LinearExchanger<RadiationBand>::UnpackData() {
   npmom_max = std::max(npmom_max, npmom);
-  T* buf = recv_buffer_[0];
+
+  auto buf = recv_buffer_[0].data();
+
+#ifdef DISORT
+  auto ds = Me()->psolver->ds_;
 
   for (int n = 0; n < nblocks; ++n) {
     for (int i = 0; i < nlayer; ++i) {
-      tau[n * nlayer + i] = *(buf++);
-      ssa[n * nlayer + i] = *(buf++);
+      ds->dtauc[n * nlayer + i] = *(buf++);
+      ds->ssalb[n * nlayer + i] = *(buf++);
       for (int j = 0; j < npmom; ++j)
-        pmom[n * nlayer * npmom_max + i * npmom_max + j] = *(buf++);
+        ds->pmom[n * nlayer * npmom_max + i * npmom_max + j] = *(buf++);
       for (int j = npmom; j < npmom_max; ++j)
-        pmom[n * nlayer * npmom_max + i * npmom_max + j] = 0.;
+        ds->pmom[n * nlayer * npmom_max + i * npmom_max + j] = 0.;
     }
   }
+#endif
+
+  return true;
 }
 
 template <>
-ColumnExchanger<RadiationBand>::ClearBoundary() {
+void LinearExchanger<RadiationBand>::Execute() {
+  for (int n = 0; n < MessageTraits<RadiationBand>::num_buffers; ++n) {
+    int size = send_buffer_[n].size();
+
 #ifdef MPI_PARALLEL
-  MPI_Allgather(send_buffer_[0], send_size_, MPI_ATHENA_REAL, recv_buffer_[0],
-                send_size_, MPI_ATHENA_REAL, mpi_comm_);
+    MPI_Allgather(&send_buffer_[n], size,
+                  MessageTraits<RadiationBand>::mpi_type, &recv_buffer_[n],
+                  size, MessageTraits<RadiationBand>::mpi_trype, mpi_comm_);
 #else
-  memcpy(recv_buffer_[0], send_buffer_[0], send_size_ * sizeof(Real));
+    memcpy(&recv_buffer_[n], &send_buffer_[n], size * sizeof(Real));
 #endif
+  }
 }

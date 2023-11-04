@@ -1,7 +1,14 @@
+#ifndef SRC_EXCHANGER_NEIGHBOR_EXCHANGER_HPP_
+#define SRC_EXCHANGER_NEIGHBOR_EXCHANGER_HPP_
+
+// athena
+#include <athena/globals.hpp>
+#include <athena/mesh/mesh.hpp>
+
 // canoe
 #include <configure.hpp>
 
-// communication
+// exchanger
 #include "exchanger.hpp"
 
 #ifdef MPI_PARALLEL
@@ -69,27 +76,4 @@ void NeighborExchanger<T>::ClearBoundary() {
   }
 }
 
-namespace NeighborExchangerHelper {
-
-//! find bottom neighbor block
-NeighborBlock const *find_bot_neighbor(MeshBlock const *pmb);
-
-//! find top neighbor block
-NeighborBlock const *find_top_neighbor(MeshBlock const *pmb);
-
-//! find left neighbor block
-NeighborBlock const *find_left_neighbor(MeshBlock const *pmb);
-
-//! find right neighbor block
-NeighborBlock const *find_right_neighbor(MeshBlock const *pmb);
-
-//! find back neighbor block
-NeighborBlock const *find_back_neighbor(MeshBlock const *pmb);
-
-//! find front neighbor block
-NeighborBlock const *find_front_neighbor(MeshBlock const *pmb);
-
-//! find neighbors in one coordinate direction
-void find_neighbors(MeshBlock const *pmb, CoordianteID dir,
-                    NeighborBlock *bblock, NeighborBlock *tblock);
-}  // namespace NeighborExchangerHelper
+#endif  // SRC_EXCHANGER_NEIGHBOR_EXCHANGER_HPP_

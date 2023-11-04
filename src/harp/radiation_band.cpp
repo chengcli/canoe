@@ -89,8 +89,8 @@ RadiationBand::~RadiationBand() {
 
 void RadiationBand::Resize(int nc1, int nc2, int nc3) {
   // allocate memory for spectral properties
-  tem_.NewAthenaArray(nc1);
-  temf_.NewAthenaArray(nc1 + 1);
+  tem_.resize(nc1);
+  temf_.resize(nc1 + 1);
 
   tau_.NewAthenaArray(pgrid_->spec.size(), nc1);
   tau_.ZeroClear();
@@ -116,6 +116,9 @@ void RadiationBand::Resize(int nc1, int nc2, int nc3) {
   bpmom.NewAthenaArray(nphase_moments_ + 1, nc3, nc2, nc1);
 
   //! \note btoa, bflxup, bflxdn are shallow slices to Radiation variables
+
+  // exchanger
+  ResizeSendBuffer(0, (nphase_moments_ + 4) * nlo
 }
 
 AbsorberPtr RadiationBand::GetAbsorberByName(std::string const &name) {
