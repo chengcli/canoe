@@ -11,18 +11,15 @@
 // exchanger
 #include "exchanger.hpp"
 
-#ifndef MPI_PARALLEL
+#ifdef MPI_PARALLEL
 #include <mpi.h>
-#endif
+#endif  // MPI_PARALLEL
 
 template <typename T>
 LinearExchanger<T>::LinearExchanger() {
   color_.resize(Globals::nranks);
   brank_.resize(Globals::nranks);
 }
-
-template <typename T>
-LinearExchanger<T>::~LinearExchanger() {}
 
 template <typename T>
 int LinearExchanger<T>::GetRankInGroup() const {
@@ -36,9 +33,10 @@ int LinearExchanger<T>::GetRankInGroup() const {
 }
 
 template <typename T>
-void LinearExchanger<T>::Regroup(MeshBlock const *pmb, CoordinateID dir) {
+void LinearExchanger<T>::Regroup(MeshBlock const *pmb,
+                                 CoordinateDirection dir) {
   NeighborBlock bblock, tblock;
-  find_neighbors(pmb, dir, &bblock, &tblock);
+  ExchangerHelper::find_neighbors(pmb, dir, &bblock, &tblock);
 
   if (dir == X1DIR) {
     if (pmb->block_size.x1min <= pmb->pmy_mesh->mesh_size.x1min) {

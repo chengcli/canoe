@@ -19,7 +19,7 @@ MPI_Datatype MessageTraits<RadiationBand>::mpi_type = MPI_ATHENA_REAL;
 
 void RadiationBand::PackTemperature() {
   send_buffer_[0].resize(temf_.size());
-  send_buffer_[0].swap(temf);
+  send_buffer_[0].swap(temf_);
 }
 
 bool RadiationBand::UnpackTemperature() {
@@ -43,10 +43,10 @@ bool RadiationBand::UnpackTemperature() {
 }
 
 void RadiationBand::PackSpectralGrid(int b) {
+  int nlayer = GetNumLayers();
   send_buffer_[1].resize(nlayer * (nphase_moments_ + 3));
 
   auto buf = send_buffer_[1].data();
-  int nlayer = GetNumLayers();
 
   for (int i = 0; i < nlayer; ++i) {
     int i1 = i + NGHOST;

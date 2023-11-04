@@ -21,9 +21,6 @@
 // harp
 #include "radiation_band.hpp"
 
-// communication
-#include "column_exchanger.hpp"
-
 class RadiationBand::RTSolver : public NamedGroup {
  public:  // constructor and destructor
   RTSolver(RadiationBand *pmy_band, std::string name)

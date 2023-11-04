@@ -119,12 +119,12 @@ class RadiationBand : public NamedGroup,
   void PackTemperature();
 
   //! \breif Unpack temperature at cell face from receive buffer 0
-  bool UnpacTemperature();
+  bool UnpackTemperature();
 
   //! \brief Pack data in spectral grid b into send buffer 1
   //!
   //! \param[in] b spectral bin index
-  void PackDataSpectralGrid(int b);
+  void PackSpectralGrid(int b);
 
   //! \brief Unpack data from receive buffer 1 into spectral grid b
   bool UnpackSpectralGrid();
@@ -198,19 +198,6 @@ class RadiationBand : public NamedGroup,
 
 using RadiationBandPtr = std::shared_ptr<RadiationBand>;
 using RadiationBandContainer = std::vector<RadiationBandPtr>;
-
-// Specialization for RadiationBand Exchanger
-template <>
-struct MessageTraits<RadiationBand> {
-  using DataType = Real;
-
-  constexpr static int num_buffers = 2;
-  constexpr static std::string name = "RadiationBand";
-
-#ifdef MPI_PARALLEL
-  static MPI_Datatype mpi_type;
-#endif  // MPI_PARALLEL
-};
 
 class RadiationBandsFactory {
  public:

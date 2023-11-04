@@ -12,6 +12,7 @@
 #include "message_traits.hpp"
 
 class NeighborBlock;
+class MeshBlock;
 
 class ExchangerBase {
  public:  // constructor and destructor
@@ -20,13 +21,13 @@ class ExchangerBase {
     mpi_comm_ = MPI_COMM_WORLD;
 #endif
   }
-  virtual ExchangerBase() {}
+  virtual ~ExchangerBase() {}
 
   //! \brief Pack data to send buffer
-  virtual void PackData() {}
+  virtual void PackData(MeshBlock const *pmb) {}
 
   //! \brief Unpack data from receive buffer
-  virtual bool UnpackData() {}
+  virtual bool UnpackData(MeshBlock const *pmb) { return true; }
 
   //! \brief Send and receive data
   virtual void Transfer(MeshBlock const *pmb, int n = -1) = 0;
@@ -40,7 +41,7 @@ class ExchangerBase {
 template <typename T>
 class Exchanger : public ExchangerBase {
  public:  // constructor and destructor
-  using DataType = MessageTraits<T>::DataType;
+  using DataType = typename MessageTraits<T>::DataType;
   using BufferType = std::vector<DataType>;
 
   Exchanger() {
@@ -74,14 +75,20 @@ class Exchanger : public ExchangerBase {
     }
   }
 
+  //! \brief Set the boundary status
+  void SetBoundaryStatus(int bid, BoundaryStatus status) {
+    status_flag_[bid] = status;
+  }
+
  protected:
+  enum BoundaryStatus status_flag_[MessageTraits<T>::num_buffers];
   BufferType send_buffer_[MessageTraits<T>::num_buffers];
   BufferType recv_buffer_[MessageTraits<T>::num_buffers];
 
 #ifdef MPI_PARALLEL
   MPI_Request req_mpi_send_[MessageTraits<T>::num_buffers];
   MPI_Request req_mpi_recv_[MessageTraits<T>::num_buffers];
-#endif
+#endif  // MPI_PARALLEL
 };
 
 namespace ExchangerHelper {
@@ -105,26 +112,34 @@ NeighborBlock const *find_back_neighbor(MeshBlock const *pmb);
 NeighborBlock const *find_front_neighbor(MeshBlock const *pmb);
 
 //! find neighbors in one coordinate direction
-void find_neighbors(MeshBlock const *pmb, CoordianteID dir,
+void find_neighbors(MeshBlock const *pmb, CoordinateDirection dir,
                     NeighborBlock *bblock, NeighborBlock *tblock);
 }  // namespace ExchangerHelper
 
 template <typename T>
 class NeighborExchanger : public Exchanger<T> {
  public:
-  NeighborExchanger();
+  using Base = Exchanger<T>;
+  NeighborExchanger() {}
+
+  //! \brief Send and receive data
+  virtual void Transfer(MeshBlock const *pmb, int n = -1) override;
+
+  //! \brief Clear buffer
+  virtual void ClearBuffer(MeshBlock const *pmb) override;
 };
 
 template <typename T>
 class LinearExchanger : public Exchanger<T> {
  public:  // constructor and destructor
+  using Base = Exchanger<T>;
   LinearExchanger();
 
  public:  // member functions
   int GetRankInGroup() const;
-  void Regroup(MeshBlock const *pmb, CoordinateID dir);
+  void Regroup(MeshBlock const *pmb, CoordinateDirection dir);
 
- protected:
+ private:
   //! \brief MPI color of each block
   std::vector<int> color_;
 
@@ -136,12 +151,6 @@ template <typename T>
 class PlanarExchanger : public Exchanger<T> {
  public:
   PlanarExchanger();
-};
-
-template <typename T>
-class VolumetricExchanger : public Exchanger<T> {
- public:
-  VolumetricExchanger();
 };
 
 #endif  // SRC_EXCHANGER_EXCHANGER_HPP_

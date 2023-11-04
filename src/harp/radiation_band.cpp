@@ -115,8 +115,6 @@ void RadiationBand::Resize(int nc1, int nc2, int nc3) {
   bpmom.NewAthenaArray(nphase_moments_ + 1, nc3, nc2, nc1);
 
   //! \note btoa, bflxup, bflxdn are shallow slices to Radiation variables
-
-  ResizeBuffer();
 }
 
 AbsorberPtr RadiationBand::GetAbsorberByName(std::string const &name) {

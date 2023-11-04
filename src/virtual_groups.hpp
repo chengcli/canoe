@@ -13,8 +13,9 @@
 // canoe
 #include <index_map.hpp>
 
-class OutputType;
+class Mesh;
 class MeshBlock;
+class OutputType;
 class OutputParameters;
 
 class NamedGroup {
@@ -161,8 +162,8 @@ class CounterGroup {
 class RestartGroup {
  public:
   virtual ~RestartGroup() {}
-  virtual size_t RestartDataSizeInBytes() const = 0;
-  virtual size_t DumpRestartData(char *pdst) const = 0;
+  virtual size_t RestartDataSizeInBytes(Mesh const *pm) const = 0;
+  virtual void DumpRestartData(char *pdst) const = 0;
   virtual size_t LoadRestartData(char *psrt) = 0;
 };
 

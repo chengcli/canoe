@@ -16,29 +16,27 @@
 #endif
 
 template <typename T>
-void NeighborExchanger<T>::Transfer(MeshBlock const *pmb, int n) const {
-  auto pmb = getMeshBlock();
-
+void NeighborExchanger<T>::Transfer(MeshBlock const *pmb, int n) {
   for (auto &nb : pmb->pbval->neighbor) {
     if (nb.snb.rank == Globals::my_rank) {  // on the same process
       MeshBlock *neighbor = pmb->pmy_mesh->FindMeshBlock(nb.snb.gid);
-      auto &exchanger = static_cast<NeighborExchanger<T> *>(
-          neighbor->pimpl->GetExchanger(Message<T>::name));
-      exchanger->SetRecvBuffer(nb.targetid, send_buffer_[nb.bufid]);
+      auto exchanger = static_cast<T *>(
+          neighbor->pimpl->GetExchanger(MessageTraits<T>::name));
+      exchanger->recv_buffer_[nb.targetid].swap(Base::send_buffer_[nb.bufid]);
       exchanger->SetBoundaryStatus(nb.targetid, BoundaryStatus::arrived);
     }
 #ifdef MPI_PARALLEL
     else {  // MPI
-      int tag = create_mpi_tag(nb.snb.lid, nb.targetid, Message<T>::name);
-      int ssize = send_buffer_[nb.bufid].size();
-      MPI_Isend(send_buffer_[nb.bufid], ssize, Message<T>::mpi_type,
-                nb.snb.rank, tag, mpi_comm_, &req_mpi_send_[nb.bufid]);
+      int tag = create_mpi_tag(nb.snb.lid, nb.targetid, MessageTraits<T>::name);
+      int ssize = Base::send_buffer_[nb.bufid].size();
+      MPI_Isend(Base::send_buffer_[nb.bufid].data(), ssize,
+                MessageTraits<T>::mpi_type, nb.snb.rank, tag, mpi_comm_,
+                &req_mpi_send_[nb.bufid]);
     }
 #endif
   }
 
   int rsize, tag;
-  auto pmb = getMeshBlock();
 
 #ifdef MPI_PARALLEL
   MPI_Status status;
@@ -51,8 +49,8 @@ void NeighborExchanger<T>::Transfer(MeshBlock const *pmb, int n) const {
     MPI_Get_count(&status, Messeger<T>::mpi_type, &rsize);
 
     recv_buffer_[nb.bufid].resize(rsize);
-    MPI_Irecv(recv_buffer_[nb.bufid], rsize, Messeger<T>::mpi_type, nb.snb.rank,
-              tag, mpi_comm_, &req_mpi_recv_[nb.bufid]);
+    MPI_Irecv(recv_buffer_[nb.bufid].data(), rsize, MessegeTraits<T>::mpi_type,
+              nb.snb.rank, tag, mpi_comm_, &req_mpi_recv_[nb.bufid]);
   }
 #endif
 }

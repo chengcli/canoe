@@ -17,12 +17,10 @@
 #include "particle_data.hpp"
 #include "particles.hpp"
 
-template <>
-bool NeighborExchanger<ParticleBase>::AttachTo(ParticleContainer &container) {
+bool ParticleBase::UnpackData(MeshBlock const *pmb) {
   bool success = true;
   int test;
 
-  auto pmb = getMeshBlock();
   auto pm = pmb->pmy_mesh;
 
   for (auto &nb : pmb->pbval->neighbor) {
@@ -70,12 +68,12 @@ bool NeighborExchanger<ParticleBase>::AttachTo(ParticleContainer &container) {
             it->x3 += pm->mesh_size.x3max - pm->mesh_size.x3min;
         }
 
-        bool in_meshblock = check_in_meshblock(*it, pmb);
+        bool in_meshblock = ParticlesHelper::check_in_meshblock(*it, pmb);
         if (!in_meshblock) {
           throw RuntimeError("ParticleBase::AttachParticles",
                              "Particle moved out of MeshBlock limits");
         } else {
-          container.push_back(*it);
+          pc.push_back(*it);
         }
       }
 
@@ -88,8 +86,7 @@ bool NeighborExchanger<ParticleBase>::AttachTo(ParticleContainer &container) {
 
 // This subroutine will remove inactive particles (id < 0) and move particles to
 // appropriate buffers if they moved out of the current domain
-void NeighborExchanger<ParticleBase>::DetachTo(ParticleContainer &buffer) {
-  auto pmb = getMeshBlock();
+void ParticleBase::PackData(MeshBlock const *pmb) {
   auto pm = pmb->pmy_mesh;
 
   Real x1min = pmb->block_size.x1min;
@@ -100,8 +97,8 @@ void NeighborExchanger<ParticleBase>::DetachTo(ParticleContainer &buffer) {
   Real x3max = pmb->block_size.x3max;
 
   int ox1 = 0, ox2 = 0, ox3 = 0, fi1 = 0, fi2 = 0;
-  auto qi = buffer.begin();
-  auto qj = buffer.end();
+  auto qi = pc.begin();
+  auto qj = pc.end();
 
   while (qi < qj) {
     // if particle is inactive, swap the current one with the last one
@@ -176,5 +173,5 @@ void NeighborExchanger<ParticleBase>::DetachTo(ParticleContainer &buffer) {
   }
 
   // particles beyond qi are inactive particles. Remove them from the list
-  buffer.resize(qi - buffer.begin());
+  pc.resize(qi - pc.begin());
 }

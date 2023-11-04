@@ -6,6 +6,8 @@
 #include <athena/bvals/bvals.hpp>
 
 namespace MessageHelper {
+int mpi_tag_ub;
+
 int create_mpi_tag(int lid, int tid, std::string name) {
   int tag = BoundaryBase::CreateBvalsMPITag(lid, tid, 0);
 

@@ -46,13 +46,13 @@ void RadiationBand::RTSolverLambert::CalBandRadiance(MeshBlock const *pmb,
       for (int i = iu - 1; i >= il; --i) {
         taut[i] = taut[i + 1] + tau(n, i) / rayOutput[m].mu;
         toa(n, m) +=
-            0.5 * (temf(i + 1) * exp(-taut[i + 1]) + temf(i) * exp(-taut[i])) *
+            0.5 * (temf[i + 1] * exp(-taut[i + 1]) + temf[i] * exp(-taut[i])) *
             tau(n, i) / rayOutput[m].mu;
       }
-      toa(n, m) += temf(il) * exp(-taut[il]);
+      toa(n, m) += temf[il] * exp(-taut[il]);
       //! \note correction for small optical opacity
       if ((alpha > 0) && (taut[il] < 1000.)) {
-        toa(n, m) += temf(il) * alpha * gammq(alpha, taut[il]) *
+        toa(n, m) += temf[il] * alpha * gammq(alpha, taut[il]) *
                      pow(taut[il], -alpha) * tgamma(alpha);
       }
       btoa(m, k, j) += spec[n].wght * toa(n, m);

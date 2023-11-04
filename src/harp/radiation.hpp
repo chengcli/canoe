@@ -67,8 +67,8 @@ class Radiation : public RestartGroup,
   void AddRadiativeFlux(Hydro *phydro, int k, int j, int il, int iu) const;
 
  public:  // RestartGroup functions
-  size_t RestartDataSizeInBytes() const override;
-  size_t DumpRestartData(char *pdst) const override;
+  size_t RestartDataSizeInBytes(Mesh const *pm) const override;
+  void DumpRestartData(char *pdst) const override;
   size_t LoadRestartData(char *psrt) override;
 
  protected:

@@ -15,7 +15,7 @@
 #include <snap/thermodynamics/thermodynamics.hpp>
 
 // harp
-#include <harp/radiation_utils.hpp>  // get_phase_momentum
+#include <harp/radiation.hpp>
 
 // opacity
 #include "water_cloud.hpp"

@@ -143,21 +143,20 @@ void Radiation::AddRadiativeFlux(Hydro *phydro, int k, int j, int il,
   }
 }
 
-size_t Radiation::RestartDataSizeInBytes() const {
+size_t Radiation::RestartDataSizeInBytes(Mesh const *pm) const {
   return flxup.GetSizeInBytes() + flxdn.GetSizeInBytes();
 }
 
-size_t Radiation::DumpRestartData(char *pdst) const {
+void Radiation::DumpRestartData(char *pdst) const {
   int offset = 0;
 
   std::memcpy(pdst + offset, flxup.data(), flxup.GetSizeInBytes());
   offset += flxup.GetSizeInBytes();
   std::memcpy(pdst + offset, flxdn.data(), flxdn.GetSizeInBytes());
   offset += flxdn.GetSizeInBytes();
-
-  return RestartDataSizeInBytes();
 }
 
+//! \todo check me
 size_t Radiation::LoadRestartData(char *psrc) {
   Application::Logger app("harp");
   app->Log("Radiation restarted");
@@ -168,7 +167,7 @@ size_t Radiation::LoadRestartData(char *psrc) {
   std::memcpy(flxdn.data(), psrc + offset, flxdn.GetSizeInBytes());
   offset += flxdn.GetSizeInBytes();
 
-  return RestartDataSizeInBytes();
+  return offset;
 }
 
 namespace RadiationHelper {

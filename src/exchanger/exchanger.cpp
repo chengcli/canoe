@@ -41,7 +41,7 @@ NeighborBlock const *find_left_neighbor(MeshBlock const *pmb) {
   return pleft;
 }
 
-NeighborBlock const *find_right_neighbor(MeshBlock const *pmb) const {
+NeighborBlock const *find_right_neighbor(MeshBlock const *pmb) {
   NeighborBlock *pright = nullptr;
 
   for (int n = 0; n < pmb->pbval->nneighbor; ++n) {
@@ -53,7 +53,7 @@ NeighborBlock const *find_right_neighbor(MeshBlock const *pmb) const {
   return pright;
 }
 
-NeighborBlock const *find_back_neighbor(MeshBlock const *pmb) const {
+NeighborBlock const *find_back_neighbor(MeshBlock const *pmb) {
   NeighborBlock *pback = nullptr;
 
   for (int n = 0; n < pmb->pbval->nneighbor; ++n) {
@@ -65,7 +65,7 @@ NeighborBlock const *find_back_neighbor(MeshBlock const *pmb) const {
   return pback;
 }
 
-NeighborBlock const *find_front_neighbor(MeshBlock const *pmb) const {
+NeighborBlock const *find_front_neighbor(MeshBlock const *pmb) {
   NeighborBlock *pfront = nullptr;
 
   for (int n = 0; n < pmb->pbval->nneighbor; ++n) {
@@ -77,7 +77,7 @@ NeighborBlock const *find_front_neighbor(MeshBlock const *pmb) const {
   return pfront;
 }
 
-void find_neighbors(MeshBlock const *pmb, CoordinateID dir,
+void find_neighbors(MeshBlock const *pmb, CoordinateDirection dir,
                     NeighborBlock *bblock, NeighborBlock *tblock) {
   // set void bblock
   bblock->snb.gid = -1;

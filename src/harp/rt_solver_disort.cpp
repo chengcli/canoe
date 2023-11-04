@@ -23,9 +23,6 @@
 // climath
 #include <climath/special.h>
 
-// utils
-#include <utils/communicator.hpp>
-
 // harp
 #include "radiation.hpp"
 #include "rt_solvers.hpp"

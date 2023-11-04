@@ -41,32 +41,33 @@ class ParticleBase : public NamedGroup,
   //! mesh data container
   AthenaArray<Real> weight, charge;
 
-  /// constructor and destructor
+ public:  // constructor and destructor
   ParticleBase(MeshBlock *pmb, std::string name);
   virtual ~ParticleBase();
 
+ public:  // member functions
   /// particle-mesh
   void LinkMesh();
 
-  /// inbound functions
+ public:  // inbound functions
   void SetVelocitiesFromHydro(Hydro const *phydro, Coordinates const *pcoord);
 
-  /// RestartGroup functions
-  size_t RestartDataSizeInBytes() const override;
-  size_t DumpRestartData(char *pdst) const override;
+ public:  // RestartGroup functions
+  size_t RestartDataSizeInBytes(Mesh const *pm) const override;
+  void DumpRestartData(char *pdst) const override;
   size_t LoadRestartData(char *psrt) override;
 
-  /// MeshOutputGroup functions
+ public:  // MeshOutputGroup functions
   bool ShouldMeshOutput(std::string variable_name) const override;
   void LoadMeshOutputData(OutputType *pod, int *num_vars) const override;
 
-  /// MultiStageTimeIntegrator functions
+ public:  // MultiStageIntegrator functions
   void TimeIntegrate(Real time, Real dt) override;
   void WeightedAverage(Real ave_wghts[]) override;
 
-  /// NeighborExchanger functions
-  void DetachTo(ParticleContainer &buffer) override;
-  bool AttachTo(ParticleContainer &container) override;
+ public:  // NeighborExchanger functions
+  void PackData(MeshBlock const *pmb) override;
+  bool UnpackData(MeshBlock const *pmb) override;
 
  protected:
   /// protected data
@@ -88,19 +89,6 @@ using AllParticles = std::vector<ParticlePtr>;
 class ParticlesFactory {
  public:
   static AllParticles Create(MeshBlock *pmb, ParameterInput *pin);
-};
-
-// Specialization for Particle Exchanger
-template <>
-struct MessageTraits<ParticleBase> {
-  using DataType = ParticleData;
-
-  constexpr static int num_buffers = 56;
-  constexpr static std::string name = "ParticleBase";
-
-#ifdef MPI_PARALLEL
-  static MPI_Datatype mpi_type;
-#endif  // MPI_PARALLEL
 };
 
 // helper functions

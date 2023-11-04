@@ -39,6 +39,8 @@ class FITSOutputGroup;
 
 class CelestrialBody;
 
+class ExchangerBase;
+
 //! \class MeshBlock::Impl
 //! \brief opaque pointer class implements all physics on a MeshBlock
 class MeshBlock::Impl {
@@ -68,7 +70,9 @@ class MeshBlock::Impl {
   ~Impl();
 
  public:  // member functions
-  void *GetExchanger(std::string name) const { return exchangers_.at(name); }
+  ExchangerBase *GetExchanger(char const *name) const {
+    return exchangers_.at(name);
+  }
 
   Real GetDistanceInAu() const { return stellar_distance_au_; }
 
@@ -80,7 +84,7 @@ class MeshBlock::Impl {
   void MapScalarsConserved(AthenaArray<Real> &s);
 
  protected:
-  std::map<std::string, void *> exchangers_;
+  std::map<char const *, ExchangerBase *> exchangers_;
 
   std::vector<std::weak_ptr<MeshOutputGroup>> mesh_outputs_;
   std::vector<std::weak_ptr<FITSOutputGroup>> fits_outputs_;

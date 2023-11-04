@@ -12,9 +12,6 @@
 // canoe
 #include <configure.hpp>
 
-// communication
-#include <communication/neighbor_exchanger.hpp>
-
 #ifdef MPI_PARALLEL
 #include <mpi.h>
 #endif  // MPI_PARALLEL
