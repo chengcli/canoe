@@ -30,14 +30,9 @@ struct Message {
 };
 
 namespace MessageHelper {
-const int mpi_tag_ub;
 
-inline int create_mpi_tag(int lid, int tid, std::string name) {
-  int tag = BoundaryBase::CreateBvalsMPITag(lid, tid, 0);
-
-  std::string str = name + std::to_string(tag);
-  return std::hash<std::string>{}(str) % (mpi_tag_ub);
-}
+int mpi_tag_ub;
+int create_mpi_tag(int lid, int tid, std::string name);
 
 }  // namespace MessageHelper
 

@@ -1,5 +1,4 @@
 // athena
-#include <athena/bvals/bvals.hpp>
 #include <athena/mesh/mesh.hpp>
 
 // canoe

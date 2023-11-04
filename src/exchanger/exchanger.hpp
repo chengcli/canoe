@@ -77,37 +77,34 @@ class Exchanger {
 
     recv_buffer_[id] = new DataType[size];
   };
-}
 
-virtual void
-SendBuffer() const = 0;
-virtual void RecvRuffer() = 0;
-virtual void ClearBoundary() = 0;
+  virtual void SendBuffer() const = 0;
+  virtual void RecvRuffer() = 0;
+  virtual void ClearBoundary() = 0;
 
-virtual void PackData() = 0;
-virtual bool UnpackData() = 0;
+  virtual void PackData() = 0;
+  virtual bool UnpackData() = 0;
 
-// void reduceData23(Real *send, Real *recv);
-void GatherData(Real *send, Real *recv, int size) const;
-void GatherDataInPlace(Real *recv, int size) const;
+  // void reduceData23(Real *send, Real *recv);
+  void GatherData(Real *send, Real *recv, int size) const;
+  void GatherDataInPlace(Real *recv, int size) const;
 
-protected:
-T const *pmy_;
+ protected:
+  T const *pmy_;
 
-enum BoundaryStatus status_flag_[Message<T>::num_buffers];
-DataType *send_buffer_[Message<T>::num_buffers];
-DataType *recv_buffer_[Message<T>::num_buffers];
+  enum BoundaryStatus status_flag_[Message<T>::num_buffers];
+  DataType *send_buffer_[Message<T>::num_buffers];
+  DataType *recv_buffer_[Message<T>::num_buffers];
 
 #ifdef MPI_PARALLEL
-MPI_Request req_mpi_send_[Message<T>::num_buffers];
-MPI_Request req_mpi_recv_[Message<T>::num_buffers];
+  MPI_Request req_mpi_send_[Message<T>::num_buffers];
+  MPI_Request req_mpi_recv_[Message<T>::num_buffers];
 #endif
 
 #ifdef MPI_PARALLEL
-MPI_Comm mpi_comm_;
+  MPI_Comm mpi_comm_;
 #endif
-}
-;
+};
 
 template <typename T>
 class NeighbourExchanger : public Exchanger<T> {
