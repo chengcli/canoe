@@ -29,7 +29,8 @@ struct Direction;
 class RadiationBand : public NamedGroup,
                       public FlagGroup,
                       public ParameterGroup,
-                      public ASCIIOutputGroup {
+                      public ASCIIOutputGroup,
+                      public ColumnExchanger<RadiationBand> {
  public:  // public access data
   // implementation of RT Solver
   class RTSolver;
@@ -63,9 +64,9 @@ class RadiationBand : public NamedGroup,
   RadiationBand(std::string name, YAML::Node const &rad);
   virtual ~RadiationBand();
 
- public:  // functions
+ public:  // member functions
   //! \brief Allocate memory for radiation band
-  void Allocate(int nc1, int nc2 = 1, int nc3 = 1);
+  void Resize(int nc1, int nc2 = 1, int nc3 = 1);
 
   //! \brief Create radiative transfer solver from YAML node
   //!
@@ -77,6 +78,9 @@ class RadiationBand : public NamedGroup,
 
   //! Get number of absorbers
   size_t GetNumAbsorbers() const { return absorbers_.size(); }
+
+  //! Get number of phase function moments
+  size_t GetNumPhaseMoments() const { return nphase_moments; }
 
   //! Get an individual absorber
   std::shared_ptr<Absorber> GetAbsorber(int i) { return absorbers_[i]; }
@@ -104,9 +108,13 @@ class RadiationBand : public NamedGroup,
   void WriteAsciiHeader(OutputParameters const *) const override;
   void WriteAsciiData(OutputParameters const *) const override;
 
+ public:  // ColumnExchanger functions
+  void PackData() override;
+  bool UnpackData() override;
+
  protected:
   //! \brief number of phase function moments
-  int npmom_;
+  size_t nphase_moments_;
 
   //! spectral grid
   std::shared_ptr<SpectralGridBase> pgrid_;

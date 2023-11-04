@@ -4,6 +4,7 @@
 
 // athena
 #include <athena/athena.hpp>
+#include <athena/mesh/mesh.hpp>
 #include <athena/parameter_input.hpp>
 
 // canoe
@@ -31,10 +32,8 @@ PYBIND11_MODULE(pyharp, m) {
       .def_readonly("fluxup", &Radiation::flxup)
       .def_readonly("fluxdn", &Radiation::flxdn)
 
-      .def(py::init())
+      .def(py::init<MeshBlock, ParameterInput>())
 
-      .def("load_all_radiation_bands", &Radiation::LoadAllRadiationBands)
-      .def("load_radiation_bands", &Radiation::LoadRadiationBands)
       .def("get_num_bands", &Radiation::GetNumBands)
       .def("get_band", &Radiation::GetBand)
       .def("cal_radiative_flux", &Radiation::CalRadiativeFlux)
@@ -48,24 +47,19 @@ PYBIND11_MODULE(pyharp, m) {
       .def_readonly("bflxup", &RadiationBand::bflxup)
       .def_readonly("bflxdn", &RadiationBand::bflxdn)
 
-      .def(py::init())
+      .def(py::init<std::string, YAML::Node>())
 
-      .def("get_num_bins", &RadiationBand::GetNumBins)
+      .def("resize", &RadiationBand::Resize)
+      .def("get_num_spec_grids", &RadiationBand::GetNumSpecGrids)
       .def("get_wavenumber_min", &RadiationBand::GetWavenumberMin)
       .def("get_wavenumber_max", &RadiationBand::GetWavenumberMax)
       .def("get_wavenumber_res", &RadiationBand::GetWavenumberRes)
-      .def("has_parameter", &RadiationBand::HasParameter)
-      .def("get_parameter", &RadiationBand::GetParameter)
       .def("get_num_absorbers", &RadiationBand::GetNumAbsorbers)
       .def("get_absorber", &RadiationBand::GetAbsorber)
       .def("get_absorber_by_name", &RadiationBand::GetAbsorberByName)
-      .def("get_name", &RadiationBand::GetName);
 
-  // Absorber
-  py::class_<Absorber, AbsorberPtr>(m, "absorber")
-      .def("get_category", &Absorber::GetCategory)
-      .def("get_name", &Absorber::GetName)
-
+      // Absorber
+      py::class_<Absorber, AbsorberPtr>(m, "absorber")
       .def("get_attenuation",
            [](Absorber &ab, double wave1, double wave2, py::list lst) {
              AirParcel air;

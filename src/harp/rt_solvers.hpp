@@ -21,8 +21,11 @@
 // harp
 #include "radiation_band.hpp"
 
+// communication
+#include "column_exchanger.hpp"
+
 class RadiationBand::RTSolver : public NamedGroup {
- public:
+ public:  // constructor and destructor
   RTSolver(RadiationBand *pmy_band, std::string name)
       : NamedGroup(name), pmy_band_(pmy_band) {
     Application::Logger app("harp");
@@ -34,44 +37,45 @@ class RadiationBand::RTSolver : public NamedGroup {
     app->Log("Destroy RTSolver " + GetName());
   }
 
-  virtual void CalBandFlux(Direction const &rayInput, Real dist_au, int k,
-                           int j, int il, int iu) {}
+ public:  // inbound functions
+  virtual void CalBandFlux(MeshBlock const *pmb, int k, int j, int il, int iu) {
+  }
 
-  virtual void CalBandRadiance(Direction const &rayInput, Real dist_au, int k,
-                               int j, int il, int iu) {}
+  virtual void CalBandRadiance(MeshBlock const *pmb, int k, int j, int il,
+                               int iu) {}
 
  protected:
   RadiationBand *pmy_band_;
 };
 
 class RadiationBand::RTSolverLambert : public RadiationBand::RTSolver {
- public:
+ public:  // constructor and destructor
   explicit RTSolverLambert(RadiationBand *pmy_band)
       : RTSolver(pmy_band, "Lambert") {}
 
   ~RTSolverLambert() {}
 
-  void CalBandFlux(Direction const &rayInput, Real dist_au, int k, int j,
-                   int il, int iu) override;
+ public:  // inbound functions
+  void CalBandFlux(MeshBlock const *pmb, int k, int j, int il, int iu) override;
 
-  void CalBandRadiance(Direction const &rayInput, Real dist_au, int k, int j,
-                       int il, int iu) override;
+  void CalBandRadiance(MeshBlock const *pmb, int k, int j, int il,
+                       int iu) override;
 };
 
 #ifdef RT_DISORT
 class RadiationBand::RTSolverDisort : public RadiationBand::RTSolver,
                                       public DisortWrapper {
- public:
+ public:  // constructor and destructor
   explicit RTSolverDisort(RadiationBand *pmy_band)
       : RTSolver(pmy_band, "Disort") {}
 
   ~RTSolverDisort() {}
 
-  void CalBandFlux(Direction const &rayInput, Real dist_au, int k, int j,
-                   int il, int iu) override;
+ public:  // inbound functions
+  void CalBandFlux(MeshBlock const *pmb, int k, int j, int il, int iu) override;
 
-  void CalBandRadiance(Direction const &rayInput, Real dist_au, int k, int j,
-                       int il, int iu) override;
+  void CalBandRadiance(MeshBlock const *pmb, int k, int j, int il,
+                       int iu) override;
 };
 #endif
 

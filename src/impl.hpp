@@ -68,9 +68,7 @@ class MeshBlock::Impl {
   ~Impl();
 
  public:  // member functions
-  void *GetExchanger(std::string name) const {
-    return boundary_exchanger_.at(name);
-  }
+  void *GetExchanger(std::string name) const { return exchangers_.at(name); }
 
   Real GetDistanceInAu() const { return stellar_distance_au_; }
 
@@ -82,7 +80,7 @@ class MeshBlock::Impl {
   void MapScalarsConserved(AthenaArray<Real> &s);
 
  protected:
-  std::map<std::string, void *> boundary_exchanger_;
+  std::map<std::string, void *> exchangers_;
 
   std::vector<std::weak_ptr<MeshOutputGroup>> mesh_outputs_;
   std::vector<std::weak_ptr<FITSOutputGroup>> fits_outputs_;

@@ -2,4 +2,4 @@
 tracer = C2H2, C2H6
 
 <radiation>
-infrared_bands = example_giants_ir.yaml
+radiation_config = example_giants_ir.yaml

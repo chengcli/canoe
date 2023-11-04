@@ -1,22 +1,26 @@
-category: infrared
-
 opacity-sources:
   - name: H2-H2-CIA
+    class: XIZ-H2-H2-CIA
     long-name: "Hydrogen-Hydrogen collisional absorption"
 
   - name: H2-He-CIA
+    class: XIZ-H2-H2-CIA
     long-name: "Hydrogen-Helium collisional absorption"
 
   - name: CH4
+    class: Hitran
     long-name: "Methane line absorption"
 
   - name: C2H2
+    class: Hitran
     long-name: "Acetylene line absorption"
 
   - name: C2H4
+    class: Hitran
     long-name: "Ethylene line absorption"
 
   - name: C2H6
+    class: Hitran
     long-name: "Ethane line absorption"
 
 bands: [B4]

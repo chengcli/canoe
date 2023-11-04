@@ -23,9 +23,6 @@
 // utils
 #include <utils/vectorize.hpp>
 
-// astro
-#include <astro/celestrial_body.hpp>
-
 // canoe
 #include <common.hpp>
 #include <impl.hpp>
@@ -103,19 +100,9 @@ size_t Radiation::GetNumOutgoingRays() const {
   return num;
 }
 
-void Radiation::CalRadiativeFlux(MeshBlock const *pmb, Real time, int k, int j,
-                                 int il, int iu) {
+void Radiation::CalRadiativeFlux(MeshBlock const *pmb, int k, int j, int il,
+                                 int iu) {
   auto pcoord = pmb->pcoord;
-  auto planet = pmb->pimpl->planet;
-  Real dist = pmb->pimpl->GetDistanceInAu();
-
-  Direction ray;
-  if (TestFlag(RadiationFlags::Dynamic)) {
-    ray = planet->ParentZenithAngle(time, pcoord->x2v(j), pcoord->x3v(k));
-    dist = planet->ParentDistanceInAu(time);
-  } else {
-    ray = rayInput_[0];
-  }
 
   AirColumn &&ac =
       AirParcelHelper::gather_from_primitive(pmb, k, j, 0, pmb->ncells1 - 1);
@@ -124,26 +111,16 @@ void Radiation::CalRadiativeFlux(MeshBlock const *pmb, Real time, int k, int j,
   for (auto &p : bands_) {
     // iu ~= ie + 1
     p->SetSpectralProperties(ac, pcoord, k, j);
-    p->psolver->CalBandFlux(ray, dist, k, j, il, iu);
+    p->psolver->CalBandFlux(pmb, k, j, il, iu);
   }
 }
 
-void Radiation::CalRadiance(MeshBlock const *pmb, Real time, int k, int j,
-                            int il, int iu) {
+void Radiation::CalRadiance(MeshBlock const *pmb, int k, int j, int il,
+                            int iu) {
   Application::Logger app("harp");
   app->Log("CalRadiance");
 
   auto pcoord = pmb->pcoord;
-  auto planet = pmb->pimpl->planet;
-  Real dist = pmb->pimpl->GetDistanceInAu();
-
-  Direction ray;
-  if (TestFlag(RadiationFlags::Dynamic)) {
-    ray = planet->ParentZenithAngle(time, pcoord->x2v(j), pcoord->x3v(k));
-    dist = planet->ParentDistanceInAu(time);
-  } else {
-    ray = rayInput_[0];
-  }
 
   AirColumn &&ac =
       AirParcelHelper::gather_from_primitive(pmb, k, j, 0, pmb->ncells1 - 1);
@@ -152,7 +129,7 @@ void Radiation::CalRadiance(MeshBlock const *pmb, Real time, int k, int j,
   for (auto &p : bands_) {
     // iu ~= ie + 1
     p->SetSpectralProperties(ac, pcoord, k, j);
-    p->psolver->CalBandRadiance(ray, dist, k, j, il, iu);
+    p->psolver->CalBandRadiance(pmb, k, j, il, iu);
   }
 }
 

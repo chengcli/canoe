@@ -45,14 +45,10 @@ bool check_in_meshblock(ParticleData const& pd, MeshBlock const* pmb) {
   return inblock_x1 && (!pm->f2 || inblock_x2) && (!pm->f3 || inblock_x3);
 }
 
-std::string Communicator<ParticleData>::name = "ParticleData";
-
 #ifdef MPI_PARALLEL
 #include <mpi.h>
 MPI_Datatype MPI_PARTICLE_DATA;
-
 MPI_Datatype Communicator<ParticleData>::mpi_type = MPI_PARTICLE_DATA;
-MPI_Comm Communicator<ParticleData>::mpi_comm = MPI_COMM_WORLD;
 
 void commit_mpi_particle_data() {
   int counts[3] = {1, 2 + NINT_PARTICLE_DATA, 8 + NREAL_PARTICLE_DATA};

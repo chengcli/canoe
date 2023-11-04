@@ -16,15 +16,14 @@
 #include "radiation.hpp"
 #include "rt_solvers.hpp"
 
-void RadiationBand::RTSolverLambert::CalBandFlux(Direction const &rayInput,
-                                                 Real dist, int k, int j,
-                                                 int il, int iu) {
+void RadiationBand::RTSolverLambert::CalBandFlux(MeshBlock const *pmb, int k,
+                                                 int j, int il, int iu) {
   throw NotImplementedError("RTSolverLambert::CalBandFlux");
 }
 
-void RadiationBand::RTSolverLambert::CalBandRadiance(Direction const &rayInput,
-                                                     Real dist, int k, int j,
-                                                     int il, int iu) {
+void RadiationBand::RTSolverLambert::CalBandRadiance(MeshBlock const *pmb,
+                                                     int k, int j, int il,
+                                                     int iu) {
   RadiationBand *pband = pmy_band_;
   std::vector<Real> taut(iu + 1);
 

@@ -17,6 +17,9 @@
 #include <configure.hpp>
 #include <impl.hpp>
 
+// astro
+#include <astro/celestrial_body.hpp>
+
 // climath
 #include <climath/special.h>
 
@@ -30,24 +33,21 @@
 
 #ifdef RT_DISORT
 
-void RadiationBand::RTSolverDisort::CalBandFlux(Direction const &rayInput,
-                                                Real dist_au, int k, int j,
-                                                int il, int iu) {
-  auto pcomm = Communicator::GetInstance();
-  auto pmb = pmy_band_->pmy_block_;
+void RadiationBand::RTSolverDisort::CalBandFlux(MeshBlock const *pmb, int k,
+                                                int j, int il, int iu) {
   auto pcoord = pmb->pcoord;
-  auto planet = pmb->pimpl->prad->GetPlanet();
+  auto planet = pmb->pimpl->planet;
+  auto prad = pmb->pimpl->prad;
 
   auto &bflxup = pmy_band_->bflxup;
   auto &bflxdn = pmy_band_->bflxdn;
   auto &bpmom = pmy_band_->bpmom;
 
-  auto &bflags = pmy_band_->bflags_;
   auto &temf = pmy_band_->temf_;
 
-  auto &wmin = pmy_band_->wmin_;
-  auto &wmax = pmy_band_->wmax_;
-  auto &spec = pmy_band_->spec_;
+  auto &wmin = pmy_band_->wrange_.first;
+  auto &wmax = pmy_band_->wrange_.second;
+  auto &spec = pmy_band_->pgrid_->spec;
 
   auto &tau = pmy_band_->tau_;
   auto &ssa = pmy_band_->ssa_;
@@ -55,11 +55,23 @@ void RadiationBand::RTSolverDisort::CalBandFlux(Direction const &rayInput,
   auto &flxup = pmy_band_->flxup_;
   auto &flxdn = pmy_band_->flxdn_;
 
+  Direction ray;
+  Real dist_au;
+  Real time = pmb->pmy_mesh->time;
+
+  if (pmy_band_->TestFlag(RadiationFlags::Dynamic)) {
+    ray = planet->ParentZenithAngle(time, pcoord->x2v(j), pcoord->x3v(k));
+    dist_au = planet->ParentDistanceInAu(time);
+  } else {
+    ray = prad->GetRayInput(0);
+    dist_au = pmb->pimpl->GetDistanceInAu();
+  }
+
   if (ds_.flag.ibcnd != 0) {
     throw ValueError("RTSolverDisort::CalRadtranFlux", "ibcnd", ds_.flag.ibcnd,
                      0);
   }
-  pcomm->SetColor(pmb, X1DIR);
+  pmy_band_->SetColor(pmb, X1DIR);
 
   int nblocks = pmb->pmy_mesh->mesh_size.nx1 / pmb->block_size.nx1;
   Real *bufrecv = new Real[(iu - il) * nblocks * (ds_.nmom_nstr + 3)];
@@ -91,9 +103,9 @@ void RadiationBand::RTSolverDisort::CalBandFlux(Direction const &rayInput,
   pcoord->Face1Area(k, j, il, iu, farea);
   pcoord->CellVolume(k, j, il, iu, vol);
 
-  if (bflags & RadiationFlags::CorrelatedK) {
+  if (pmy_band_->TestFlag(RadiationFlags::CorrelatedK)) {
     // stellar source function
-    if (bflags & RadiationFlags::Star)
+    if (pmy_band_->TestFlag(RadiationFlags::Star))
       ds_.bc.fbeam = planet->ParentInsolationFlux(wmin, wmax, dist_au);
     // planck source function
     ds_.wvnmlo = wmin;
@@ -108,9 +120,9 @@ void RadiationBand::RTSolverDisort::CalBandFlux(Direction const &rayInput,
 
   // loop over bins in the band
   for (int n = 0; n < pmy_band_->GetNumBins(); ++n) {
-    if (!(bflags & RadiationFlags::CorrelatedK)) {
+    if (!(pmy_band_->TestFlag(RadiationFlags::CorrelatedK))) {
       // stellar source function
-      if (bflags & RadiationFlags::Star)
+      if (pmy_band_->TestFlag(RadiationFlags::Star))
         ds_.bc.fbeam =
             planet->ParentInsolationFlux(spec[n].wav1, spec[n].wav2, dist_au);
       // planck source function

@@ -212,24 +212,8 @@ void WriteHeatingRate(std::string fname, AthenaArray<Real> const& flux,
 }*/
 
 void packSpectralProperties(Real *buf, Real const *tau, Real const *ssa,
-                            Real const *pmom, int nlayer, int npmom) {
-  for (int i = 0; i < nlayer; ++i) *(buf++) = tau[i];
-  for (int i = 0; i < nlayer; ++i) *(buf++) = ssa[i];
-  for (int i = 0; i < nlayer; ++i)
-    for (int j = 0; j < npmom; ++j) *(buf++) = pmom[i * npmom + j];
-}
+                            Real const *pmom, int nlayer, int npmom) {}
 
 void unpackSpectralProperties(Real *tau, Real *ssa, Real *pmom, Real const *buf,
                               int slyr, int npmom, int nblocks, int npmom_max) {
-  npmom_max = std::max(npmom_max, npmom);
-  for (int n = 0; n < nblocks; ++n) {
-    for (int i = 0; i < slyr; ++i) tau[n * slyr + i] = *(buf++);
-    for (int i = 0; i < slyr; ++i) ssa[n * slyr + i] = *(buf++);
-    for (int i = 0; i < slyr; ++i) {
-      for (int j = 0; j < npmom; ++j)
-        pmom[n * slyr * npmom_max + i * npmom_max + j] = *(buf++);
-      for (int j = npmom; j < npmom_max; ++j)
-        pmom[n * slyr * npmom_max + i * npmom_max + j] = 0.;
-    }
-  }
 }

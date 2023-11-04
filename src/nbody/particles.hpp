@@ -32,7 +32,7 @@ class ParticleBase : public NamedGroup,
                      // BinaryOutputGroup,
                      public MeshOutputGroup,
                      public MultiStageIntegrator,
-                     public BoundaryExchanger<ParticleData> {
+                     public NeighborExchanger<ParticleData> {
  public:
   /// public data
   //! particle data container. pc1 is reserved for multi-stage integration

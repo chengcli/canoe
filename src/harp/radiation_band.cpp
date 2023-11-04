@@ -52,7 +52,9 @@ RadiationBand::RadiationBand(std::string myname, YAML::Node const &rad)
   }
 
   // number of phase function moments
-  npmom_ = my["phase-function-moments"] ? my["moments"].as<int>() : 1;
+  nphase_moments_ = my["phase-function-moments"]
+                        ? my["phase-function-moments"].as<size_t>()
+                        : 1;
 
   wrange_ = pgrid_->ReadRangeFrom(my);
 
@@ -85,7 +87,7 @@ RadiationBand::~RadiationBand() {
   app->Log("Destroy RadiationBand " + GetName());
 }
 
-void RadiationBand::Allocate(int nc1, int nc2, int nc3) {
+void RadiationBand::Resize(int nc1, int nc2, int nc3) {
   // allocate memory for spectral properties
   tem_.NewAthenaArray(nc1);
   temf_.NewAthenaArray(nc1 + 1);
@@ -99,7 +101,7 @@ void RadiationBand::Allocate(int nc1, int nc2, int nc3) {
   toa_.NewAthenaArray(pgrid_->spec.size(), rayOutput_.size());
   toa_.ZeroClear();
 
-  pmom_.NewAthenaArray(pgrid_->spec.size(), nc1, npmom_ + 1);
+  pmom_.NewAthenaArray(pgrid_->spec.size(), nc1, nphase_moments_ + 1);
   pmom_.ZeroClear();
 
   flxup_.NewAthenaArray(pgrid_->spec.size(), nc1);
@@ -111,7 +113,7 @@ void RadiationBand::Allocate(int nc1, int nc2, int nc3) {
   // band properties
   btau.NewAthenaArray(nc3, nc2, nc1);
   bssa.NewAthenaArray(nc3, nc2, nc1);
-  bpmom.NewAthenaArray(npmom_ + 1, nc3, nc2, nc1);
+  bpmom.NewAthenaArray(nphase_moments_ + 1, nc3, nc2, nc1);
 
   //! \note btoa, bflxup, bflxdn are shallow slices to Radiation variables
 }

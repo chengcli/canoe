@@ -12,8 +12,8 @@
 // canoe
 #include <configure.hpp>
 
-// communicator
-#include <communicator/communicator.hpp>
+// communication
+#include <communication/neighbor_exchanger.hpp>
 
 #ifdef MPI_PARALLEL
 #include <mpi.h>
@@ -49,17 +49,16 @@ struct ParticleData {
 
 std::ostream& operator<<(std::ostream& os, ParticleData const& mp);
 
-// Specialization for ParticleData Communicator
+// Specialization for ParticleData Exchanger
 template <>
-struct Communicator<ParticleData> {
+struct NeighborExchanger<ParticleData> {
   using container_t = std::vector<ParticleData>;
 
-  constexpr static int max_neighbors = 56;
-  static std::string name;
+  constexpr static int num_buffers = 56;
+  constexpr static std::string name = "ParticleData";
 
 #ifdef MPI_PARALLEL
   static MPI_Datatype mpi_type;
-  static MPI_Comm mpi_comm;
 #endif  // MPI_PARALLEL
 };
 

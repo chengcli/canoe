@@ -49,17 +49,18 @@ class Radiation : public RestartGroup,
   //! Get band by name
   std::shared_ptr<RadiationBand> GetBandByName(std::string const &name) const;
 
+  //! Get incoming ray by index
+  Direction const &GetRayInput(int i) const { return rayInput_[i]; }
+
   //! \brief Get total number of incoming rays
   size_t GetNumOutgoingRays() const;
 
  public:  // inbound functions
   //! \brief Calculate the radiative flux
-  void CalRadiativeFlux(MeshBlock const *pmb, Real time, int k, int j, int il,
-                        int iu);
+  void CalRadiativeFlux(MeshBlock const *pmb, int k, int j, int il, int iu);
 
   //! \brief Calculate the radiance
-  void CalRadiance(MeshBlock const *pmb, Real time, int k, int j, int il,
-                   int iu);
+  void CalRadiance(MeshBlock const *pmb, int k, int j, int il, int iu);
 
  public:  // outbound functions
   //! \brief Add the radiative flux to hydro energy flux
