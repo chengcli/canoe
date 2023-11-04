@@ -26,7 +26,9 @@ opacity-sources:
 bands: [B4]
 
 B4:
-  unit: cm-1
+  units: cm-1
+  grid-type: regular
   wavenumber-range: [600., 700.]
   resolution: 0.01
   opacity: [C2H2, C2H6]
+  outdir: (45., 0.)

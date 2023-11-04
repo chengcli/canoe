@@ -40,6 +40,15 @@ AbsorberPtr AbsorberFactory::CreateFrom(YAML::Node const& my,
                                         std::string band_name) {
   auto app = Application::GetInstance();
 
+  if (!my["name"]) {
+    throw NotFoundError("AbsorberFactory", "'name' field in absorber");
+  }
+
+  if (!my["class"]) {
+    throw NotFoundError("AbsorberFactory", "'class' field in absorber " +
+                                               my["name"].as<std::string>());
+  }
+
   auto ab = createAbsorberPartial(my["name"].as<std::string>(),
                                   my["class"].as<std::string>());
 
@@ -51,7 +60,7 @@ AbsorberPtr AbsorberFactory::CreateFrom(YAML::Node const& my,
     data_file = "kcoeff-" + band_name + ".nc";
   }
 
-  try {
+  /*try {
     full_path = app->FindInputFile(data_file);
     ab->LoadCoefficient(full_path, 0);
   } catch (NotFoundError const& e) {
@@ -59,7 +68,7 @@ AbsorberPtr AbsorberFactory::CreateFrom(YAML::Node const& my,
     std::stringstream ss;
     ss << e.what() << std::endl;
     log->Warn(ss.str());
-  }
+  }*/
 
   if (my["dependent-species"]) {
     auto species = my["dependent-species"].as<std::vector<std::string>>();

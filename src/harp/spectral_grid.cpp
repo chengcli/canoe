@@ -29,12 +29,24 @@ std::pair<Real, Real> SpectralGridBase::ReadRangeFrom(YAML::Node const& my) {
 }
 
 RegularSpacingSpectralGrid::RegularSpacingSpectralGrid(YAML::Node const& my) {
+  std::string units = my["units"] ? my["units"].as<std::string>() : "cm-1";
+
+  if (units == "cm-1") {
+    unit_type = "wavenumber";
+  } else if (units == "um") {
+    unit_type = "wavelength";
+  } else if (units == "GHz") {
+    unit_type = "frequency";
+  } else {
+    throw RuntimeError("RegularSpacingSpectralGrid",
+                       "unknown spectral unit type");
+  }
+
   auto&& wpair = ReadRangeFrom(my);
   Real wmin = wpair.first;
   Real wmax = wpair.second;
 
   int num_bins;
-  ;
 
   if (wmin == wmax) {
     num_bins = 1;

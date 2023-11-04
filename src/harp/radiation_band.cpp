@@ -55,12 +55,14 @@ RadiationBand::RadiationBand(std::string myname, YAML::Node const &rad)
                         ? my["phase-function-moments"].as<size_t>()
                         : 1;
 
-  wrange_ = pgrid_->ReadRangeFrom(my);
-
   pgrid_ = SpectralGridFactory::CreateFrom(my);
 
-  std::string dirstr = my["outdir"].as<std::string>();
-  rayOutput_ = RadiationHelper::parse_radiation_directions(dirstr);
+  wrange_ = pgrid_->ReadRangeFrom(my);
+
+  if (my["outdir"]) {
+    std::string dirstr = my["outdir"].as<std::string>();
+    rayOutput_ = RadiationHelper::parse_radiation_directions(dirstr);
+  }
 
   // set absorbers
   if (my["opacity"]) {

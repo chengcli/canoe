@@ -37,9 +37,13 @@ class Absorber : public NamedGroup,
     app->Log("Destroy Absorber " + GetName());
   }
 
- public:  // functions
+ public:  // member functions
   //! Set absorption model
   void SetModel(std::string name) { model_name_ = name; }
+
+  void SetOpacityFilename(std::string filename) const {
+    opacity_filename_ = filename
+  }
 
   //! Load absorption coefficient from file
   virtual void LoadCoefficient(std::string fname, size_t bid) {}
@@ -63,6 +67,9 @@ class Absorber : public NamedGroup,
  protected:
   //! absorption model model
   std::string model_name_;
+
+  //! opacity filename
+  std::string opacity_filename_;
 };
 
 using AbsorberPtr = std::shared_ptr<Absorber>;
