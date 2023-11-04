@@ -119,7 +119,7 @@ class RadiationBand : public NamedGroup,
   void PackTemperature();
 
   //! \breif Unpack temperature at cell face from receive buffer 0
-  bool UnpackTemperature();
+  bool UnpackTemperature(void *arg);
 
   //! \brief Pack data in spectral grid b into send buffer 1
   //!
@@ -127,7 +127,7 @@ class RadiationBand : public NamedGroup,
   void PackSpectralGrid(int b);
 
   //! \brief Unpack data from receive buffer 1 into spectral grid b
-  bool UnpackSpectralGrid();
+  bool UnpackSpectralGrid(void *arg);
 
   void Transfer(MeshBlock const *pmb, int n) override;
 

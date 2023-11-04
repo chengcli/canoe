@@ -13,7 +13,7 @@
 // canoe
 #include <configure.hpp>
 
-// pydisort
+// cppdisort
 #ifdef RT_DISORT
 #include <cppdisort/cppdisort.hpp>
 #endif

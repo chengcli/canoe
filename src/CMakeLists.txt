@@ -73,7 +73,7 @@ set(CANOE_LIBRARY_${buildu}
   "exchanger_${buildl}"
   "nbody_${buildl}"
   "yaml-cpp"
-  ${CDISORT_LIBRARY_${buildu}}
+  #${CDISORT_LIBRARY_${buildu}}
   ${CPPDISORT_LIBRARY_${buildu}}
   ${PYTHON_LIBRARY_RELEASE}
   ${NETCDF_LIBRARIES}

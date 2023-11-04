@@ -67,15 +67,15 @@ void RadiationBand::RTSolverDisort::CalBandFlux(MeshBlock const *pmb, int k,
   // transfer temperature
   if (ds_.flag.planck) {
     pmy_band_->PackTemperature();
-    pmy_band_->Transfer(0);
-    pmy_band_->UnpackTemperature();
+    pmy_band_->Transfer(pmb, 0);
+    pmy_band_->UnpackTemperature(&ds_);
   }
 
   // for (int i = 0; i <= ds_.nlyr; ++i)
   //   std::cout << ds_.temper[i] << std::endl;
 
-  ds_.bc.umu0 = rayInput.mu > 1.E-3 ? rayInput.mu : 1.E-3;
-  ds_.bc.phi0 = rayInput.phi;
+  ds_.bc.umu0 = ray.mu > 1.E-3 ? ray.mu : 1.E-3;
+  ds_.bc.phi0 = ray.phi;
   if (ds_.flag.planck) {
     ds_.bc.btemp = ds_.temper[ds_.nlyr];
     ds_.bc.ttemp = ds_.temper[0];
@@ -113,8 +113,8 @@ void RadiationBand::RTSolverDisort::CalBandFlux(MeshBlock const *pmb, int k,
 
     // transfer spectral grid data
     pmy_band_->PackSpectralGrid(n);
-    pmy_band_->Transfer(1);
-    pmy_band_->UnPackSpectralGrid(n);
+    pmy_band_->Transfer(pmb, 1);
+    pmy_band_->UnpackSpectralGrid(&ds_);
 
     // run disort
     c_disort(&ds_, &ds_out_);
@@ -172,9 +172,8 @@ void RadiationBand::RTSolverDisort::CalBandFlux(MeshBlock const *pmb, int k,
   }
 }
 
-void RadiationBand::RTSolverDisort::CalBandRadiance(Direction const &rayInput,
-                                                    Real dist, int k, int j,
-                                                    int il, int iu) {
+void RadiationBand::RTSolverDisort::CalBandRadiance(MeshBlock const *pmb, int k,
+                                                    int j, int il, int iu) {
   throw NotImplementedError("RTSolverDisort::CalBandRadiance");
 }
 
