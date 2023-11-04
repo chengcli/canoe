@@ -3,7 +3,23 @@
 #include <string>
 
 // athena++
+#include <athena/athena.hpp>
 #include <athena/bvals/bvals.hpp>
+
+// nbody
+#include <nbody/particles.hpp>
+
+// harp
+#include <harp/radiation_band.hpp>
+
+#ifdef MPI_PARALLEL
+#include <mpi.h>
+
+MPI_Datatype MPI_PARTICLE_DATA;
+MPI_Datatype MessageTraits<ParticleBase>::mpi_type = MPI_PARTICLE_DATA;
+MPI_Datatype MessageTraits<RadiationBand>::mpi_type = MPI_ATHENA_REAL;
+
+#endif  // MPI_PARALLEL
 
 namespace MessageHelper {
 int mpi_tag_ub;

@@ -22,7 +22,7 @@ class NamedGroup {
  public:
   explicit NamedGroup(std::string name) : myname_(name) {}
   virtual ~NamedGroup() {}
-  virtual std::string GetName() const { return myname_; }
+  std::string GetName() const { return myname_; }
 
  private:
   std::string myname_;

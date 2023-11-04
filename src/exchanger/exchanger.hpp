@@ -120,6 +120,12 @@ template <typename T>
 class NeighborExchanger : public Exchanger<T> {
  public:
   using Base = Exchanger<T>;
+  using Base::recv_buffer_;
+  using Base::req_mpi_recv_;
+  using Base::req_mpi_send_;
+  using Base::send_buffer_;
+  using ExchangerBase::mpi_comm_;
+
   NeighborExchanger() {}
 
   //! \brief Send and receive data
@@ -133,6 +139,8 @@ template <typename T>
 class LinearExchanger : public Exchanger<T> {
  public:  // constructor and destructor
   using Base = Exchanger<T>;
+  using ExchangerBase::mpi_comm_;
+
   LinearExchanger();
 
  public:  // member functions

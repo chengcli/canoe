@@ -12,9 +12,6 @@
 
 #ifdef MPI_PARALLEL
 #include <mpi.h>
-
-MPI_Datatype MessageTraits<RadiationBand>::mpi_type = MPI_ATHENA_REAL;
-
 #endif  // MPI_PARALLEL
 
 void RadiationBand::PackTemperature() {
