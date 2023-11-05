@@ -2,7 +2,9 @@
 #define SRC_VIRTUAL_GROUPS_HPP_
 
 // C/C++
+#include <map>
 #include <string>
+#include <unordered_map>
 
 // external
 #include <yaml-cpp/yaml.h>  // YAML::Node
