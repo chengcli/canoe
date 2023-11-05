@@ -30,7 +30,6 @@
 
 // utils
 #include <utils/fileio.hpp>
-#include <utils/parameter_map.hpp>
 
 // harp
 #include <harp/radiation_band.hpp>

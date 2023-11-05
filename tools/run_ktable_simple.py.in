@@ -70,13 +70,13 @@ def run_rfm() -> None:
 def create_netcdf_input(
     bane_name: str,
     absorbers: list,
+    atm: dict,
     wmin: float,
     wmax: float,
     wres: float,
     tnum: int,
     tmin: float,
     tmax: float,
-    atm: dict,
 ) -> str:
     print(f"# Creating kcoeff.inp-{band_name} ...")
     fname = "kcoeff.inp-%s" % band_name
@@ -151,33 +151,33 @@ if __name__ == "__main__":
     mu_kgmol = 29.0e-3
     Rgas_JKmol = 8.314
     Rgas_Jkg = Rgas_JKmol / mu_kgmol
-    Hscale_m = Rgas_Jkg * Ts_K / grav_ms2
+    Hscale_km = Rgas_Jkg * Ts_K / grav_ms2 * 1.e-3
     num_layers = 100
 
     # km
     atm["HGT"] = linspace(0, 20, num_layers, endpoint=False)
-    atm["PRE"] = ps_mbar * exp(-atm["HGT"] * 1e3 / Hscale_m)
+    atm["PRE"] = ps_mbar * exp(-atm["HGT"] / Hscale_km)
     atm["TEM"] = Ts_K * ones(num_layers)
     # ppmv
     atm["CO2"] = 400.0 * ones(num_layers)
     # ppmv
-    atm["H2O"] = 4000.0 * exp(-atm["HGT"] * 1e3 / (Hscale_m / 5.))
+    atm["H2O"] = 4000.0 * exp(-atm["HGT"] / (Hscale_km / 5.))
 
     create_rfm_atm(absorbers, atm)
 
     # create temperature pertubation
-    tem_pertub = (5, -20, 20)
-    wave_grid = (wmin, wmax, wres)
+    tem_grid = (5, -20, 20)
+    wav_grid = (wmin, wmax, wres)
 
     # create rfm driver file
     driver = OrderedDict(
         [
             ("*HDR", "Header for rfm"),
             ("*FLG", "TAB CTM"),
-            ("*SPC", "%.4f %.4f %.4f" % wave_grid),
+            ("*SPC", "%.4f %.4f %.4f" % wav_grid),
             ("*GAS", " ".join(absorbers)),
             ("*ATM", "rfm.atm"),
-            ("*DIM", "PLV \n    %d %.4f %.4f" % tem_pertub),
+            ("*DIM", "PLV \n    %d %.4f %.4f" % tem_grid),
             ("*TAB", "tab_*.txt"),
             ("*HIT", hitran_file),
             ("*END", ""),
@@ -186,5 +186,5 @@ if __name__ == "__main__":
     check_file_exist(hitran_file)
     create_rfm_drv(driver)
     run_rfm()
-    inp = create_netcdf_input(band_name, absorbers, *wave_grid, *tem_pertub, atm)
+    inp = create_netcdf_input(band_name, absorbers, atm, *wav_grid, *tem_grid)
     run_kcoeff(inp, f"kcoeff-{band_name}.nc")
