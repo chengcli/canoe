@@ -1,6 +1,7 @@
 clang-tools-extra
 cmake
 nco
+ncview
 netcdf-devel
 boost-devel
 eigen3-devel
