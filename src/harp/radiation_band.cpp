@@ -24,235 +24,98 @@
 #include <utils/extract_substring.hpp>
 #include <utils/fileio.hpp>
 #include <utils/ndarrays.hpp>
-#include <utils/parameter_map.hpp>
 #include <utils/vectorize.hpp>
 
+// opacity
+#include <opacity/absorber.hpp>
+
 // harp
-#include "absorber.hpp"
 #include "radiation.hpp"
 #include "radiation_band.hpp"
-#include "radiation_utils.hpp"  // readRadiationDirections
 #include "rt_solvers.hpp"
 
-RadiationBand::RadiationBand(MeshBlock *pmb, ParameterInput *pin,
-                             YAML::Node &node, std::string myname)
-    : name_(myname), bflags_(0LL), pmy_block_(pmb) {
+RadiationBand::RadiationBand(std::string myname, YAML::Node const &rad)
+    : NamedGroup(myname) {
   Application::Logger app("harp");
-  app->Log("Initialize RadiationBand " + name_);
+  app->Log("Initialize RadiationBand " + myname);
 
-  if (!node[name_]) {
-    throw NotFoundError("RadiationBand", name_);
+  if (!rad[myname]) {
+    throw NotFoundError("RadiationBand", myname);
   }
 
-  if (!node["category"]) {
-    throw NotFoundError("RadiationBand", "category");
+  auto my = rad[myname];
+
+  if (my["parameters"]) {
+    SetRealsFrom(my["parameters"]);
   }
 
-  category_ = node["category"].as<std::string>();
-  myfile_ =
-      extract_first(pin->GetString("radiation", category_ + "_bands"), ".");
+  // number of phase function moments
+  nphase_moments_ = my["phase-function-moments"]
+                        ? my["phase-function-moments"].as<size_t>()
+                        : 1;
 
-  auto my = node[name_];
+  pgrid_ = SpectralGridFactory::CreateFrom(my);
 
-  if (my["parameters"]) params_ = ToParameterMap(my["parameters"]);
+  wrange_ = pgrid_->ReadRangeFrom(my);
 
-  // number of Legendre moments
-  int npmom = my["moments"] ? my["moments"].as<int>() : 1;
-
-  // set wavenumber and weights
-  if (my["wavenumber-range"]) {
-    setWavenumberRange(my);
-  } else if (my["wavenumbers"]) {
-    setWavenumberGrid(my);
-  } else if (my["wavelength-range"]) {
-    setWavelengthRange(my);
-  } else if (my["wavelengths"]) {
-    setWavelengthGrid(my);
-  } else if (my["frequency-Range"]) {
-    setFrequencyRange(my);
-  } else if (my["frequencies"]) {
-    setFrequencyGrid(my);
-  } else {
-    throw NotFoundError("RadiationBand", "Spectral range");
+  if (my["outdir"]) {
+    std::string dirstr = my["outdir"].as<std::string>();
+    rayOutput_ = RadiationHelper::parse_radiation_directions(dirstr);
   }
 
-  // outgoing radiation direction (mu,phi) in degree
-  if (pin->DoesParameterExist("radiation", name_ + ".outdir")) {
-    auto str = pin->GetString("radiation", name_ + ".outdir");
-    read_radiation_directions(&rayOutput_, str);
-  } else if (pin->DoesParameterExist("radiation", "outdir")) {
-    auto str = pin->GetString("radiation", "outdir");
-    read_radiation_directions(&rayOutput_, str);
-  }
-
-  if (pmb != nullptr) {
-    // allocate memory
-    int ncells1 = pmb->ncells1;
-    int ncells2 = pmb->ncells2;
-    int ncells3 = pmb->ncells3;
-
-    // spectral properties
-    tem_.NewAthenaArray(ncells1);
-    temf_.NewAthenaArray(ncells1 + 1);
-
-    tau_.NewAthenaArray(spec_.size(), ncells1);
-    tau_.ZeroClear();
-
-    ssa_.NewAthenaArray(spec_.size(), ncells1);
-    ssa_.ZeroClear();
-
-    toa_.NewAthenaArray(spec_.size(), rayOutput_.size());
-    toa_.ZeroClear();
-
-    pmom_.NewAthenaArray(spec_.size(), ncells1, npmom + 1);
-    pmom_.ZeroClear();
-
-    flxup_.NewAthenaArray(spec_.size(), ncells1);
-    flxup_.ZeroClear();
-
-    flxdn_.NewAthenaArray(spec_.size(), ncells1);
-    flxdn_.ZeroClear();
-
-    // band properties
-    btau.NewAthenaArray(ncells3, ncells2, ncells1);
-    bssa.NewAthenaArray(ncells3, ncells2, ncells1);
-    bpmom.NewAthenaArray(npmom + 1, ncells3, ncells2, ncells1);
-  }
-
-  //! \note btoa, bflxup, bflxdn are shallow slices to Radiation variables
-
-  // add absorbers
+  // set absorbers
   if (my["opacity"]) {
-    for (auto aname : my["opacity"]) {
-      bool found = false;
-      for (auto absorber : node["opacity-sources"]) {
-        if (aname.as<std::string>() == absorber["name"].as<std::string>()) {
-          AddAbsorber(pin, absorber);
-          found = true;
-          break;
-        }
-      }
-
-      if (!found) {
-        throw NotFoundError("RadiationBand",
-                            "Opacity " + aname.as<std::string>());
-      }
-    }
-  } else {
-    throw NotFoundError("RadiationBand", "Band " + name_ + " opacity");
+    auto names = my["opacity"].as<std::vector<std::string>>();
+    absorbers_ = AbsorberFactory::CreateFrom(names, GetName(), rad);
   }
 
   // set rt solver
   if (my["rt-solver"]) {
-    if (my["rt-solver"].as<std::string>() == "Lambert") {
-      psolver = std::make_shared<RTSolverLambert>(this);
-#ifdef RT_DISORT
-    } else if (my["rt-solver"].as<std::string>() == "Disort") {
-      psolver = std::make_shared<RTSolverDisort>(this);
-#endif
-    } else {
-      throw NotFoundError("RadiationBand", my["rt-solver"].as<std::string>());
-    }
+    psolver = CreateRTSolverFrom(my["rt-solver"].as<std::string>());
   } else {
-    psolver = std::make_shared<RTSolver>(this, "Null");
+    psolver = nullptr;
   }
 
   char buf[80];
-  snprintf(buf, sizeof(buf), "%.2f - %.2f", wmin_, wmax_);
+  snprintf(buf, sizeof(buf), "%.2f - %.2f", wrange_.first, wrange_.second);
   app->Log("Spectral range", buf);
-  app->Log("Number of spectral bins", spec_.size());
+  app->Log("Number of spectral bins", pgrid_->spec.size());
 }
 
 RadiationBand::~RadiationBand() {
   Application::Logger app("harp");
-  app->Log("Destroy RadiationBand " + name_);
+  app->Log("Destroy RadiationBand " + GetName());
 }
 
-void RadiationBand::setWavenumberRange(YAML::Node &my) {
-  wmin_ = my["wavenumber-range"][0].as<Real>();
-  wmax_ = my["wavenumber-range"][1].as<Real>();
-  if (wmin_ > wmax_) {
-    throw RuntimeError("setWavenumberRange", "wmin > wmax");
-  }
+void RadiationBand::Resize(int nc1, int nc2, int nc3) {
+  // allocate memory for spectral properties
+  tem_.resize(nc1);
+  temf_.resize(nc1 + 1);
 
-  int num_bins = 1;
-  if (wmin_ == wmax_) {
-    num_bins = 1;
-    spec_.resize(num_bins);
-    spec_[0].wav1 = spec_[0].wav2 = wmin_;
-    spec_[0].wght = 1.;
-  } else if (my["resolution"]) {
-    Real dwave = my["resolution"].as<Real>();
-    num_bins = static_cast<int>((wmax_ - wmin_) / dwave) + 1;
-    spec_.resize(num_bins);
-    for (int i = 0; i < num_bins; ++i) {
-      spec_[i].wav1 = spec_[i].wav2 = wmin_ + dwave * i;
-      spec_[i].wght = (i == 0) || (i == num_bins - 1) ? 0.5 * dwave : dwave;
-    }
-  } else if (my["num-bins"]) {
-    Real dwave = static_cast<Real>(1. * (wmax_ - wmin_) / num_bins);
-    num_bins = my["num-bins"].as<int>();
-    spec_.resize(num_bins);
-    for (int i = 0; i < num_bins; ++i) {
-      spec_[i].wav1 = wmin_ + dwave * i;
-      spec_[i].wav2 = spec_[i].wav1 + dwave;
-      spec_[i].wght = 1.;
-    }
-  } else if (my["gpoints"]) {
-    num_bins = my["gpoints"].size();
-    spec_.resize(num_bins);
-    for (int i = 0; i < num_bins; ++i) {
-      spec_[i].wav1 = wmin_;
-      spec_[i].wav2 = wmax_;
-      spec_[i].wght = my["gpoints"][i].as<Real>();
-    }
-  } else {
-    throw NotFoundError(
-        "RadiationBand",
-        "either 'resolution' or 'num-bins' or 'gpoints' must be defined");
-  }
-}
+  tau_.NewAthenaArray(pgrid_->spec.size(), nc1);
+  tau_.ZeroClear();
 
-void RadiationBand::setWavenumberGrid(YAML::Node &my) {
-  throw NotImplementedError("setWavenumberGrid");
-}
+  ssa_.NewAthenaArray(pgrid_->spec.size(), nc1);
+  ssa_.ZeroClear();
 
-void RadiationBand::setFrequencyRange(YAML::Node &my) {
-  throw NotImplementedError("setFrequencyRange");
-}
+  toa_.NewAthenaArray(pgrid_->spec.size(), rayOutput_.size());
+  toa_.ZeroClear();
 
-void RadiationBand::setFrequencyGrid(YAML::Node &my) {
-  std::vector<Real> freqs = my["frequencies"].as<std::vector<Real>>();
+  pmom_.NewAthenaArray(pgrid_->spec.size(), nc1, nphase_moments_ + 1);
+  pmom_.ZeroClear();
 
-  wmin_ = freqs.front();
-  wmax_ = freqs.back();
+  flxup_.NewAthenaArray(pgrid_->spec.size(), nc1);
+  flxup_.ZeroClear();
 
-  if (wmin_ > wmax_) {
-    throw RuntimeError("setWavenumberRange", "wmin > wmax");
-  }
+  flxdn_.NewAthenaArray(pgrid_->spec.size(), nc1);
+  flxdn_.ZeroClear();
 
-  spec_.resize(freqs.size());
+  // band properties
+  btau.NewAthenaArray(nc3, nc2, nc1);
+  bssa.NewAthenaArray(nc3, nc2, nc1);
+  bpmom.NewAthenaArray(nphase_moments_ + 1, nc3, nc2, nc1);
 
-  for (int i = 0; i < spec_.size(); ++i) {
-    spec_[i].wav1 = freqs[i];
-    spec_[i].wav2 = freqs[i];
-    spec_[i].wght = 1.;
-  }
-}
-
-Real RadiationBand::GetWavenumberRes() const {
-  if (spec_.size() > 1)
-    return (wmax_ - wmin_) / (spec_.size() - 1);
-  else
-    return (wmax_ - wmin_) / spec_.size();
-}
-
-void RadiationBand::setWavelengthRange(YAML::Node &my) {
-  throw NotImplementedError("setWavelengthRange");
-}
-
-void RadiationBand::setWavelengthGrid(YAML::Node &my) {
-  throw NotImplementedError("setWavelengthGrid");
+  //! \note btoa, bflxup, bflxdn are shallow slices to Radiation variables
 }
 
 AbsorberPtr RadiationBand::GetAbsorberByName(std::string const &name) {
@@ -267,27 +130,28 @@ AbsorberPtr RadiationBand::GetAbsorberByName(std::string const &name) {
   return nullptr;
 }
 
-void RadiationBand::WriteBinRadiance(OutputParameters const *pout) const {
-  if (!test(RadiationFlags::WriteBinRadiance)) return;
+void RadiationBand::WriteAsciiHeader(OutputParameters const *pout) const {
+  if (!TestFlag(RadiationFlags::WriteBinRadiance)) return;
 
   char fname[80], number[6];
   snprintf(number, sizeof(number), "%05d", pout->file_number);
-  snprintf(fname, sizeof(fname), "%s.radiance.%s.txt", name_.c_str(), number);
+  snprintf(fname, sizeof(fname), "%s.radiance.%s.txt", GetName().c_str(),
+           number);
   FILE *pfile = fopen(fname, "w");
 
-  fprintf(pfile, "# Bin Radiances of Band %s: %.3g - %.3g\n", name_.c_str(),
-          wmin_, wmax_);
+  fprintf(pfile, "# Bin Radiances of Band %s: %.3g - %.3g\n", GetName().c_str(),
+          wrange_.first, wrange_.second);
   fprintf(pfile, "# Ray output size: %lu\n", rayOutput_.size());
 
   fprintf(pfile, "# Polar angles: ");
-  for (size_t j = 0; j < rayOutput_.size(); ++j) {
-    fprintf(pfile, "%.3f", rad2deg(acos(rayOutput_[j].mu)));
+  for (auto &ray : rayOutput_) {
+    fprintf(pfile, "%.3f", rad2deg(acos(ray.mu)));
   }
   fprintf(pfile, "\n");
 
   fprintf(pfile, "# Azimuthal angles: ");
-  for (size_t j = 0; j < rayOutput_.size(); ++j) {
-    fprintf(pfile, "%.3f", rad2deg(rayOutput_[j].phi));
+  for (auto &ray : rayOutput_) {
+    fprintf(pfile, "%.3f", rad2deg(ray.phi));
   }
   fprintf(pfile, "\n");
 
@@ -297,17 +161,83 @@ void RadiationBand::WriteBinRadiance(OutputParameters const *pout) const {
   }
   fprintf(pfile, "%12s\n", "weight");
 
-  for (size_t i = 0; i < spec_.size(); ++i) {
-    fprintf(pfile, "%13.3g%12.3g", spec_[i].wav1, spec_[i].wav2);
+  fclose(pfile);
+}
+
+void RadiationBand::WriteAsciiData(OutputParameters const *pout) const {
+  if (!TestFlag(RadiationFlags::WriteBinRadiance)) return;
+
+  char fname[80], number[6];
+  snprintf(number, sizeof(number), "%05d", pout->file_number);
+  snprintf(fname, sizeof(fname), "%s.radiance.%s.txt", GetName().c_str(),
+           number);
+  FILE *pfile = fopen(fname, "w");
+
+  for (size_t i = 0; i < pgrid_->spec.size(); ++i) {
+    fprintf(pfile, "%13.3g%12.3g", pgrid_->spec[i].wav1, pgrid_->spec[i].wav2);
     for (size_t j = 0; j < rayOutput_.size(); ++j) {
       fprintf(pfile, "%12.3f", toa_(i, j));
     }
-    if (test(RadiationFlags::Normalize) && (wmax_ != wmin_)) {
-      fprintf(pfile, "%12.3g\n", spec_[i].wght / (wmax_ - wmin_));
+    if (TestFlag(RadiationFlags::Normalize) &&
+        (wrange_.first != wrange_.second)) {
+      fprintf(pfile, "%12.3g\n",
+              pgrid_->spec[i].wght / (wrange_.second - wrange_.first));
     } else {
-      fprintf(pfile, "%12.3g\n", spec_[i].wght);
+      fprintf(pfile, "%12.3g\n", pgrid_->spec[i].wght);
     }
   }
 
   fclose(pfile);
+}
+
+std::shared_ptr<RadiationBand::RTSolver> RadiationBand::CreateRTSolverFrom(
+    std::string const &rt_name) {
+  std::shared_ptr<RTSolver> psolver;
+
+  if (rt_name == "Lambert") {
+    psolver = std::make_shared<RTSolverLambert>(this);
+#ifdef RT_DISORT
+  } else if (rt_name == "Disort") {
+    psolver = std::make_shared<RTSolverDisort>(this);
+#endif  // RT_DISORT
+  } else {
+    throw NotFoundError("RadiationBand", rt_name);
+  }
+
+  return psolver;
+}
+
+RadiationBandContainer RadiationBandsFactory::CreateFrom(std::string filename) {
+  Application::Logger app("harp");
+  app->Log("Load Radiation bands from " + filename);
+
+  std::vector<RadiationBandPtr> bands;
+
+  std::ifstream stream(filename);
+  if (stream.good() == false) {
+    app->Error("Cannot open radiation bands file: " + filename);
+  }
+  YAML::Node rad = YAML::Load(stream);
+
+  for (auto bname : rad["bands"]) {
+    auto p = std::make_shared<RadiationBand>(bname.as<std::string>(), rad);
+    bands.push_back(p);
+  }
+
+  return bands;
+}
+
+RadiationBandContainer RadiationBandsFactory::CreateFrom(ParameterInput *pin,
+                                                         std::string key) {
+  std::vector<RadiationBandPtr> bands;
+
+  auto rt_band_files =
+      Vectorize<std::string>(pin->GetOrAddString("radiation", key, "").c_str());
+
+  for (auto &filename : rt_band_files) {
+    auto &&tmp = CreateFrom(filename);
+    bands.insert(bands.end(), tmp.begin(), tmp.end());
+  }
+
+  return bands;
 }

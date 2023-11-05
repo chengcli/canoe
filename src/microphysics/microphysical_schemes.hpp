@@ -19,11 +19,7 @@
 
 // canoe
 #include <air_parcel.hpp>
-#include <index_map.hpp>
 #include <virtual_groups.hpp>
-
-// utils
-#include <utils/parameter_map.hpp>
 
 // microphysics
 #include "chemistry_solver.hpp"
@@ -72,7 +68,9 @@ class MicrophysicalSchemesFactory {
 
 //! \brief base class for all microphysical schemes
 template <int D>
-class MicrophysicalScheme : public MicrophysicalSchemeBase {
+class MicrophysicalScheme : public MicrophysicalSchemeBase,
+                            public ParameterGroup,
+                            public SpeciesIndexGroup {
  public:
   // needed for Eigen small matrix
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -84,22 +82,17 @@ class MicrophysicalScheme : public MicrophysicalSchemeBase {
  public:  /// constructor and destructor
   MicrophysicalScheme(std::string name, YAML::Node const &node)
       : MicrophysicalSchemeBase(name) {
-    if (node["parameters"]) params_ = ToParameterMap(node["parameters"]);
+    if (node["parameters"]) SetRealsFrom(node["parameters"]);
 
-    std::vector<std::string> species;
-    if (node["dependent-species"])
-      species = node["dependent-species"].as<std::vector<std::string>>();
-
-    auto pindex = IndexMap::GetInstance();
-
-    for (int i = 0; i < Size; ++i) {
-      species_index_[i] = pindex->GetSpeciesId(species[i]);
+    if (node["dependent-species"]) {
+      auto species = node["dependent-species"].as<std::vector<std::string>>();
+      SetSpeciesIndex(species);
     }
   }
 
   virtual ~MicrophysicalScheme() {}
 
- public:  /// functions
+ public:  /// member functions
   Real const *GetRatePtr() const { return rate_.data(); }
   Real const *GetJacobianPtr() const { return jacb_.data(); }
 
@@ -107,23 +100,17 @@ class MicrophysicalScheme : public MicrophysicalSchemeBase {
   void SetVsedFromConserved(AthenaArray<Real> vsed[3], Hydro const *phydro,
                             int kl, int ku, int jl, int ju, int il,
                             int iu) override {
-    for (auto n : species_index_)
+    for (auto n : GetCloudIndexArray())
       for (int k = kl; k <= ku; ++k)
         for (int j = jl; j <= ju; ++j)
           for (int i = il; i <= iu; ++i) {
-            vsed[0](n - NHYDRO, k, j, i) = 0.0;
-            vsed[1](n - NHYDRO, k, j, i) = 0.0;
-            vsed[2](n - NHYDRO, k, j, i) = 0.0;
+            vsed[0](n, k, j, i) = 0.0;
+            vsed[1](n, k, j, i) = 0.0;
+            vsed[2](n, k, j, i) = 0.0;
           }
   }
 
  protected:
-  //! parameters used in microphysics
-  ParameterMap params_;
-
-  //! indices of species
-  std::array<int, D> species_index_;
-
   //! rate and jacobian
   Eigen::Matrix<Real, D, 1> rate_;
   Eigen::Matrix<Real, D, D> jacb_;

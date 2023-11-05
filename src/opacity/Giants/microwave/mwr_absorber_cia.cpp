@@ -11,18 +11,16 @@
 
 namespace GiantPlanets {
 
-MwrAbsorberCIA::MwrAbsorberCIA(std::vector<std::string> const& species,
-                               ParameterMap params)
-    : Absorber("CIA", species, params) {
-  if (!params_.count("xHe")) {
+void MwrAbsorberCIA::CheckFail() const {
+  if (!HasPar("xHe")) {
     throw NotFoundError("MwrAbsorberCIA", "parameter 'xHe'");
   }
 
-  if (!params_.count("xCH4")) {
+  if (!HasPar("xCH4")) {
     throw NotFoundError("MwrAbsorberCIA", "parameter 'xCH4'");
   }
 
-  if (!params_.count("mix")) {
+  if (!HasPar("mix")) {
     throw NotFoundError("MwrAbsorberCIA", "parameter 'mix'");
   }
 }
@@ -33,10 +31,10 @@ Real MwrAbsorberCIA::GetAttenuation(Real wave1, Real wave2,
   Real T = var.w[IDN];
   Real xdry = 1.;
   for (int i = 1; i <= NVAPOR; ++i) xdry -= var.w[i];
-  Real XHe = params_.at("xHe") * xdry;
-  Real XCH4 = params_.at("xCH4") * xdry;
-  Real XH2 = (1. - params_.at("xHe") - params_.at("xCH4")) * xdry;
-  Real mix = params_.at("mix");
+  Real XHe = GetPar<Real>("xHe") * xdry;
+  Real XCH4 = GetPar<Real>("xCH4") * xdry;
+  Real XH2 = (1. - GetPar<Real>("xHe") - GetPar<Real>("xCH4")) * xdry;
+  Real mix = GetPar<Real>("mix");
   Real wave = (wave1 + wave2) / 2.;
 
   // 1/cm -> 1/m

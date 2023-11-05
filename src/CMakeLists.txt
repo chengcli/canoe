@@ -49,7 +49,7 @@ add_subdirectory(c3m)
 add_subdirectory(tracer)
 add_subdirectory(tasklist)
 add_subdirectory(exo3)
-add_subdirectory(communicator)
+add_subdirectory(exchanger)
 add_subdirectory(nbody)
 add_subdirectory(special)
 
@@ -70,9 +70,10 @@ set(CANOE_LIBRARY_${buildu}
   "tracer_${buildl}"
   "tasklist_${buildl}"
   "exo3_${buildl}"
+  "exchanger_${buildl}"
   "nbody_${buildl}"
   "yaml-cpp"
-  ${CDISORT_LIBRARY_${buildu}}
+  #${CDISORT_LIBRARY_${buildu}}
   ${CPPDISORT_LIBRARY_${buildu}}
   ${PYTHON_LIBRARY_RELEASE}
   ${NETCDF_LIBRARIES}

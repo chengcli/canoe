@@ -13,16 +13,11 @@
 #include <constants.hpp>
 #include <index_map.hpp>
 
-// harp
-#include <harp/absorber.hpp>
-#include <harp/radiation.hpp>
-#include <harp/radiation_band.hpp>
-
 namespace py = pybind11;
 
 PYBIND11_MODULE(pycanoe, m) {
   m.attr("__name__") = "pycanoe";
-  m.doc() = "Python bindings for CANOE";
+  m.doc() = "Python bindings for canoe";
 
   // Constants
   py::module m_constants = m.def_submodule("constants");

@@ -37,6 +37,10 @@ class Scheduler;
 class MeshOutputGroup;
 class FITSOutputGroup;
 
+class CelestrialBody;
+
+class ExchangerBase;
+
 //! \class MeshBlock::Impl
 //! \brief opaque pointer class implements all physics on a MeshBlock
 class MeshBlock::Impl {
@@ -51,6 +55,7 @@ class MeshBlock::Impl {
   std::shared_ptr<Chemistry> pchem;
   std::shared_ptr<Tracer> ptracer;
   std::shared_ptr<TurbulenceModel> pturb;
+  std::shared_ptr<CelestrialBody> planet;
 
   // StaticVariablePtr pstatic;
 
@@ -60,14 +65,16 @@ class MeshBlock::Impl {
   // scheduler
   std::shared_ptr<Scheduler> scheduler;
 
-  /// constructor and destructor
+ public:  // constructor and destructor
   Impl(MeshBlock *pmb, ParameterInput *pin);
   ~Impl();
 
-  /// functions
-  void *GetExchanger(std::string name) const {
-    return boundary_exchanger_.at(name);
+ public:  // member functions
+  ExchangerBase *GetExchanger(char const *name) const {
+    return exchangers_.at(name);
   }
+
+  Real GetDistanceInAu() const { return stellar_distance_au_; }
 
   auto &GetMeshOutputGroups() const { return mesh_outputs_; }
   auto &GetFITSOutputGroups() const { return fits_outputs_; }
@@ -77,10 +84,12 @@ class MeshBlock::Impl {
   void MapScalarsConserved(AthenaArray<Real> &s);
 
  protected:
-  std::map<std::string, void *> boundary_exchanger_;
+  std::map<char const *, ExchangerBase *> exchangers_;
 
   std::vector<std::weak_ptr<MeshOutputGroup>> mesh_outputs_;
   std::vector<std::weak_ptr<FITSOutputGroup>> fits_outputs_;
+
+  Real stellar_distance_au_;
 
  private:
   MeshBlock const *pmy_block_;

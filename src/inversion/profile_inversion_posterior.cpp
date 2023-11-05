@@ -62,7 +62,7 @@ Real ProfileInversion::LogPosteriorProbability(Radiation *prad, Hydro *phydro,
   // calculate radiation for updated profiles located at j = jl_ ... ju_
   for (int j = jl_; j <= ju_; ++j) {
     app->Log("run RT for model = " + std::to_string(j));
-    prad->CalRadiance(0., k, j, is, ie + 1);
+    prad->CalRadiance(pmy_block_, k, j, is, ie + 1);
   }
 
   // prior probability

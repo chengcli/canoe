@@ -1,25 +1,29 @@
-name: example bands file
-category: radio
+name: example radio bands file
 
 opacity-sources:
   - name: NH3
+    class: radio-NH3
     long-name: "Ammonia line absorption"
     model: Hanley09
     dependent-species: [vapor.NH3, vapor.H2O]
     parameters: {xHe: 0.2, power: 0.}
 
   - name: H2O
+    class: radio-H2O
     long-name: "H2O line absorption"
     model: Karpowicz
     dependent-species: [vapor.H2O]
     parameters: {xHe: 0.2, scale: 0.}
 
   - name: Electron
+    class: radio-Electron
     long-name: "Electron absorption"
 
 bands: [radio]
 
 radio:
-  unit: GHz
-  frequencies: [0.6, 1.25, 2.6, 5.2, 10., 22.]
+  units: GHz
+  grid-type: custom
+  frequency-range: [0.6, 22.]
+  frequency-points: [0.6, 1.25, 2.6, 5.2, 10., 22.]
   opacity: [NH3, H2O, Electron]

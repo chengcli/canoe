@@ -1,6 +1,9 @@
 // application
 #include <application/exceptions.hpp>
 
+// athena
+#include <athena/mesh/mesh.hpp>
+
 // climath
 #include <climath/core.h>  // sqr
 
@@ -572,7 +575,7 @@ AirParcel gather_from_conserved(MeshBlock const* pmb, int k, int j, int i) {
     cvt += air.w[n] * pthermo->GetCvMassRef(n);
   }
 
-  // TODO(cli): not correct for cubed sphere
+  //! \todo not correct for cubed sphere
   Real KE = 0.5 / rho * (sqr(air.w[IVX]) + sqr(air.w[IVY]) + sqr(air.w[IVZ]));
 
   Real tem = (air.w[IEN] - KE) / cvt;
@@ -721,6 +724,24 @@ void distribute_to_conserved(MeshBlock* pmb, int k, int j, int i,
   if (air_in.GetType() != AirParcel::Type::MassConc) {
     delete air;
   }
+}
+
+AirColumn gather_from_primitive(MeshBlock const* pmb, int k, int j) {
+  return gather_from_primitive(pmb, k, j, 0, pmb->ncells1 - 1);
+}
+
+AirColumn gather_from_conserved(MeshBlock const* pmb, int k, int j) {
+  return gather_from_conserved(pmb, k, j, 0, pmb->ncells1 - 1);
+}
+
+void distribute_to_primitive(MeshBlock* pmb, int k, int j,
+                             AirColumn const& ac) {
+  distribute_to_primitive(pmb, k, j, 0, pmb->ncells1 - 1, ac);
+}
+
+void distribute_to_conserved(MeshBlock* pmb, int k, int j,
+                             AirColumn const& ac) {
+  distribute_to_conserved(pmb, k, j, 0, pmb->ncells1 - 1, ac);
 }
 
 }  // namespace AirParcelHelper

@@ -15,8 +15,7 @@
 #include <snap/thermodynamics/thermodynamics.hpp>
 
 // harp
-#include <harp/absorber.hpp>
-#include <harp/radiation_utils.hpp>  // GetPhaseMomentum
+#include <harp/radiation.hpp>
 
 // opacity
 #include "water_cloud.hpp"
@@ -127,7 +126,7 @@ Real FuWaterIceCloud::getAttenuation1(Real wave, AirParcel const& qfrac) const {
 
   result = ap[iband - 1][0] + ap[iband - 1][1] / fw1 + ap[iband - 1][2] / fw2;
 
-  return 1e3 * dens * qfrac.c[imols_[0]] * result;
+  return 1e3 * dens * qfrac.c[GetCloudIndex(0)] * result;
 }
 
 Real FuWaterIceCloud::getSingleScatteringAlbedo1(Real wave,
@@ -186,6 +185,6 @@ void FuWaterIceCloud::getPhaseMomentum1(Real* pp, Real wave,
   // if (prim[imols_[0]]<2e-19){
   //   GetMom(0, 0.0, np, pp); // 0 for HENYEY_GREENSTEIN
   // }else{
-  get_phase_momentum(pp, 0, gg, np);
+  RadiationHelper::get_phase_momentum(pp, 0, gg, np);
   //}
 }

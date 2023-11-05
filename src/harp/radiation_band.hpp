@@ -11,128 +11,211 @@
 #include <yaml-cpp/yaml.h>
 
 // athena
-#include <athena/athena.hpp>
+#include <athena/athena.hpp>  // Real
+
+// canoe
+#include <air_parcel.hpp>
+#include <common.hpp>
+#include <virtual_groups.hpp>
 
 // harp
-#include "absorber.hpp"
+#include "spectral_grid.hpp"
 
-struct Spectrum {
-  Real rad, wav1, wav2, wght;
-};
-
-struct Direction {
-  Real mu, phi;
-};
+// exchanger
+#include <exchanger/linear_exchanger.hpp>
 
 class OutputParameters;
+class Absorber;
+class SpectralGridBase;
+struct Direction;
 
-class RadiationBand {
- public:
-  // access data
-  AthenaArray<Real> btau, bssa, bpmom;
-  AthenaArray<Real> bflxup, bflxdn;
-
-  // btoa is a reference to radiance in Radiation
-  AthenaArray<Real> btoa;
-
-  // functions
-  RadiationBand() {}
-
-  RadiationBand(MeshBlock *pmb, ParameterInput *pin, YAML::Node &node,
-                std::string name);
-
-  ~RadiationBand();
-
-  size_t GetNumBins() const { return spec_.size(); }
-
-  Real GetWavenumberMin() const { return wmin_; }
-
-  Real GetWavenumberMax() const { return wmax_; }
-
-  Real GetWavenumberRes() const;
-
-  bool HasParameter(std::string const &name) const {
-    return params_.count(name);
-  }
-
-  Real GetParameter(std::string const &name) const { return params_.at(name); }
-
-  size_t GetNumAbsorbers() const { return absorbers_.size(); }
-
-  AbsorberPtr GetAbsorber(int i) { return absorbers_[i]; }
-
-  AbsorberPtr GetAbsorberByName(std::string const &name);
-
-  size_t GetNumOutgoingRays() { return rayOutput_.size(); }
-
-  std::string GetName() { return name_; }
-
-  std::string GetCategory() { return category_; }
-
-  Real GetCosinePolarAngle(int n) const { return rayOutput_[n].mu; }
-
-  Real GetAzimuthalAngle(int n) const { return rayOutput_[n].phi; }
-
-  void AddAbsorber(ParameterInput *pin, YAML::Node &node);
-
-  void SetSpectralProperties(int k, int j, int il, int iu);
-
-  void WriteBinRadiance(OutputParameters const *) const;
-
+class RadiationBand : public NamedGroup,
+                      public FlagGroup,
+                      public ParameterGroup,
+                      public ASCIIOutputGroup,
+                      public LinearExchanger<RadiationBand> {
+ public:  // public access data
   // implementation of RT Solver
   class RTSolver;
   class RTSolverLambert;
   class RTSolverDisort;
+
+  //! radiative transfer solver
   std::shared_ptr<RTSolver> psolver;
 
+  //! band optical depth
+  AthenaArray<Real> btau;
+
+  //! band single scattering albedo
+  AthenaArray<Real> bssa;
+
+  //! band phase function moments
+  AthenaArray<Real> bpmom;
+
+  //! band upward flux
+  AthenaArray<Real> bflxup;
+
+  //! band downward flux
+  AthenaArray<Real> bflxdn;
+
+  //! \brief band top-of-the-atmosphere radiance
+  //!
+  //! This is a shallow reference to radiance in Radiation
+  AthenaArray<Real> btoa;
+
+ public:  // constructor and destructor
+  RadiationBand(std::string name, YAML::Node const &rad);
+  virtual ~RadiationBand();
+
+ public:  // member functions
+  //! \brief Allocate memory for radiation band
+  void Resize(int nc1, int nc2 = 1, int nc3 = 1);
+
+  //! \brief Create radiative transfer solver from YAML node
+  //!
+  //! \param[in] name Name of the solver
+  std::shared_ptr<RTSolver> CreateRTSolverFrom(std::string const &rt_name);
+
+  //! Get number of spectral grids
+  size_t GetNumSpecGrids() const { return pgrid_->spec.size(); }
+
+  //! Get number of absorbers
+  size_t GetNumAbsorbers() const { return absorbers_.size(); }
+
+  //! Get number of phase function moments
+  size_t GetNumPhaseMoments() const { return nphase_moments_; }
+
+  //! Get number of phase function moments
+  size_t GetNumLayers() const { return tem_.size() - 2 * NGHOST; }
+
+  //! Get range of wavenumbers
+  std::pair<Real, Real> GetRange() const { return wrange_; }
+
+  //! Get an individual absorber
+  std::shared_ptr<Absorber> GetAbsorber(int i) { return absorbers_[i]; }
+
+  //! Get an individual absorber by name
+  std::shared_ptr<Absorber> GetAbsorberByName(std::string const &name);
+
+  //! Get number of outgoing rays
+  size_t GetNumOutgoingRays() { return rayOutput_.size(); }
+
+  //! Get cosine polar angle of the outgoing ray
+  Real GetCosinePolarAngle(int n) const { return rayOutput_[n].mu; }
+
+  //! Get azimuthal angle of the outgoing ray
+  Real GetAzimuthalAngle(int n) const { return rayOutput_[n].phi; }
+
+ public:  // inbound functions
+  //! \brief Set spectral properties for an air column
+  //!
+  //! \param[in] air mole fraction representation of air column
+  //! \param[in] pcoord coordinates
+  //! \param[in] grav gravitational acceleration
+  //! \param[in] k horizontal index
+  //! \param[in] j horizontal index
+  void SetSpectralProperties(AirColumn &air, Coordinates const *pcoord,
+                             Real grav, int k, int j);
+
+  //! \brief Set outgoing ray directions
+  //!
+  //! \param[in] rayOutput outgoing ray directions
+  void SetOutgoingRays(std::vector<Direction> const &ray) { rayOutput_ = ray; }
+
+ public:  // ASCIIOutputGroup functions
+  void WriteAsciiHeader(OutputParameters const *) const override;
+  void WriteAsciiData(OutputParameters const *) const override;
+
+ public:  // Exchanger functions
+  //! \brief Pack temperature at cell face into send buffer 0
+  void PackTemperature();
+
+  //! \brief Unpack temperature at cell face from receive buffer 0
+  bool UnpackTemperature(void *arg);
+
+  //! \brief Pack data in spectral grid b into send buffer 1
+  //!
+  //! \param[in] b spectral bin index
+  void PackSpectralGrid(int b);
+
+  //! \brief Unpack data from receive buffer 1 into spectral grid b
+  bool UnpackSpectralGrid(void *arg);
+
+  void Transfer(MeshBlock const *pmb, int n) override;
+
  protected:
-  void setWavenumberRange(YAML::Node &my);
-  void setWavenumberGrid(YAML::Node &my);
-  void setFrequencyRange(YAML::Node &my);
-  void setFrequencyGrid(YAML::Node &my);
-  void setWavelengthRange(YAML::Node &my);
-  void setWavelengthGrid(YAML::Node &my);
+  //! \brief number of phase function moments
+  size_t nphase_moments_;
 
-  void addAbsorberRadio(YAML::Node &node);
-  void addAbsorberInfrared(YAML::Node &node);
-  void addAbsorberVisible(YAML::Node &node);
-  void addAbsorberUltraviolet(YAML::Node &node);
+  //! spectral grid
+  std::shared_ptr<SpectralGridBase> pgrid_;
 
-  int test(uint64_t flag) const { return bflags_ & flag; }
-  void set(uint64_t flag) { bflags_ |= flag; }
+  //! \brief identify wave- number (wavelength, frequency) range
+  std::pair<Real, Real> wrange_;
 
-  // absorbers
-  std::vector<AbsorberPtr> absorbers_;
+  //! all absorbers
+  std::vector<std::shared_ptr<Absorber>> absorbers_;
 
-  // data
-  std::string name_;
-  std::string myfile_;
-  std::string category_;
-  uint64_t bflags_;
-
-  // spectra
-  Real wmin_, wmax_;
-  std::vector<Spectrum> spec_;
-
-  // outgoing rays
+  //! outgoing rays
   std::vector<Direction> rayOutput_;
 
-  // bin data
-  // 2d
-  AthenaArray<Real> tau_, ssa_, toa_;
-  AthenaArray<Real> flxup_, flxdn_;
-  // 3d
+  //! \brief spectral bin optical depth
+  //!
+  //! This is a two-dimensional array. The first dimension is the size of the
+  //! spectral bin and the second dimension is the size of the vertical
+  //! dimension.
+  AthenaArray<Real> tau_;
+
+  //! \brief spectral bin single scattering albedo
+  //!
+  //! This is a two-dimensional array. The first dimension is the size of the
+  //! spectral bin and the second dimension is the size of the vertical
+  //! dimension.
+  AthenaArray<Real> ssa_;
+
+  //! \brief spectral bin top-of-the-atmosphere radiance
+  //!
+  //! This is a two-dimensional array. The first dimension is the size of the
+  //! spectral bin and the second dimension is the size of the vertical
+  //! dimension.
+  AthenaArray<Real> toa_;
+
+  //! \brief spectral bin upward flux
+  //!
+  //! This is a two-dimensional array. The first dimension is the size of the
+  //! spectral bin and the second dimension is the size of the vertical
+  //! dimension.
+  AthenaArray<Real> flxup_;
+
+  //! \brief spectral bin downward flux
+  //!
+  //! This is a two-dimensional array. The first dimension is the size of the
+  //! spectral bin and the second dimension is the size of the vertical
+  //! dimension.
+  AthenaArray<Real> flxdn_;
+
+  //! \brief spectral bin phase function moments
+  //!
+  //! This is a three-dimensional array. The first dimension is the size of the
+  //! spectral bin. The second dimension is the size of the vertical dimension.
+  //! The third dimension is the size of the phase function moments (1 + npmom).
   AthenaArray<Real> pmom_;
-  // 1d
-  AthenaArray<Real> tem_, temf_;
 
-  Real alpha_;  // T ~ Ts*(\tau/\tau_s)^\alpha at lower boundary
-  ParameterMap params_;
+  //! temperature at cell center
+  std::vector<Real> tem_;
 
-  // connection
-  MeshBlock *pmy_block_;
+  //! temperature at cell boundary (face)
+  std::vector<Real> temf_;
 };
 
 using RadiationBandPtr = std::shared_ptr<RadiationBand>;
+using RadiationBandContainer = std::vector<RadiationBandPtr>;
+
+class RadiationBandsFactory {
+ public:
+  static RadiationBandContainer CreateFrom(ParameterInput *pin,
+                                           std::string key);
+  static RadiationBandContainer CreateFrom(std::string filename);
+};
 
 #endif  // SRC_HARP_RADIATION_BAND_HPP_

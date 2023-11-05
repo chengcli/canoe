@@ -30,11 +30,10 @@
 
 // utils
 #include <utils/fileio.hpp>
-#include <utils/parameter_map.hpp>
 
 // harp
-#include <harp/absorber.hpp>
 #include <harp/radiation_band.hpp>
+#include <opacity/absorber.hpp>
 
 // outputs
 #include <outputs/output_utils.hpp>
@@ -152,44 +151,6 @@ Real Thermodynamics::GetGammad(AirParcel const& qfrac) const {
 
   Real cp_real = (1. - xHe - xCH4) * cp_h2 + xHe * cp_he + xCH4 * cp_ch4;
   return cp_real / (cp_real - Constants::Rgas);
-}
-
-// radiation
-void RadiationBand::addAbsorberRadio(YAML::Node& node) {
-  auto name = node["name"].as<std::string>();
-  auto params = ToParameterMap(node["parameters"]);
-
-  std::vector<std::string> species;
-  if (node["dependent-species"])
-    species = node["dependent-species"].as<std::vector<std::string>>();
-
-  if (name == "NH3") {
-    auto ab = std::make_unique<gp::MwrAbsorberNH3>(species, params);
-
-    absorbers_.push_back(std::move(ab));
-  } else if (name == "H2O") {
-    auto ab = std::make_unique<gp::MwrAbsorberH2O>(species, params);
-
-    absorbers_.push_back(std::move(ab));
-  } else if (name == "H2S") {
-    auto ab = std::make_unique<gp::MwrAbsorberH2S>(species, params);
-
-    absorbers_.push_back(std::move(ab));
-  } else if (name == "PH3") {
-    auto ab = std::make_unique<gp::MwrAbsorberPH3>(species, params);
-
-    absorbers_.push_back(std::move(ab));
-  } else if (name == "CIA") {
-    auto ab = std::make_unique<gp::MwrAbsorberCIA>(species, params);
-
-    absorbers_.push_back(std::move(ab));
-  } else if (name == "Electron") {
-    auto ab = std::make_unique<gp::MwrAbsorberElectron>(species, params);
-
-    absorbers_.push_back(std::move(ab));
-  } else {
-    throw NotFoundError("addAbsorberRadio", "Absorber " + name);
-  }
 }
 
 // outputs

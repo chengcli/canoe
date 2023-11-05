@@ -13,15 +13,16 @@
 #include <index_map.hpp>
 
 // harp
-#include <harp/absorber.hpp>
 #include <harp/radiation.hpp>
 #include <harp/radiation_band.hpp>
+
+// opacity
+#include <opacity/absorber.hpp>
 
 // snap
 #include <snap/thermodynamics/thermodynamics.hpp>
 
 // special includes
-#include <special/giants_add_absorber_v1.hpp>
 #include <special/giants_enroll_vapor_functions_v1.hpp>
 
 class TestRadiation : public testing::Test {
@@ -91,7 +92,7 @@ int main(int argc, char **argv) {
   app->InstallMonitor("inversion", "main.out", "main.err");
   app->InstallMonitor("astro", "main.out", "main.err");
   app->InstallMonitor("snap", "main.out", "main.err");
-  app->InstallMonitor("harp", "main.out", "main.err");
+  // app->InstallMonitor("harp", "main.out", "main.err");
 
   int result = RUN_ALL_TESTS();
 

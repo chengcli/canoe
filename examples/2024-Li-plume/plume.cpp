@@ -26,6 +26,9 @@
 // snap
 #include <snap/thermodynamics/thermodynamics.hpp>
 
+// specifics
+#include "plume_specs.hpp"
+
 int iH2O, iH2Oc;
 Real p0, grav;
 Real flux_h2o, flux_dry, flux_heat, flux_width;

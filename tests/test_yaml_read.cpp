@@ -35,7 +35,6 @@ TEST_F(YamlReadTests, OpacitySource) {
   EXPECT_EQ("H2-H2-CIA", sources[0]["name"].as<std::string>());
   EXPECT_EQ("Hydrogen-Hydrogen collisional absorption",
             sources[0]["long-name"].as<std::string>());
-  EXPECT_EQ("xiz", sources[0]["model"].as<std::string>());
 
   // Check third source
   EXPECT_EQ("CH4", sources[2]["name"].as<std::string>());

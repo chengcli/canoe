@@ -91,7 +91,7 @@ void HitranAbsorber::LoadCoefficient(std::string fname, size_t bid) {
   nc_inq_dimid(fileid, "Pressure", &dimid);
   nc_inq_dimlen(fileid, dimid, len_ + 1);
   snprintf(tname, sizeof(tname), "%s", "T_");
-  snprintf(tname, sizeof(tname), "%s%s", tname, name_.c_str());
+  snprintf(tname, sizeof(tname), "%s%s", tname, GetName().c_str());
   nc_inq_dimid(fileid, tname, &dimid);
   nc_inq_dimlen(fileid, dimid, len_ + 2);
 
@@ -117,7 +117,7 @@ void HitranAbsorber::LoadCoefficient(std::string fname, size_t bid) {
   }
 
   kcoeff_.resize(len_[0] * len_[1] * len_[2]);
-  nc_inq_varid(fileid, name_.c_str(), &varid);
+  nc_inq_varid(fileid, GetName().c_str(), &varid);
   nc_get_var_double(fileid, varid, kcoeff_.data());
   nc_close(fileid);
   delete[] temp;
@@ -132,10 +132,10 @@ Real HitranAbsorber::GetAttenuation(Real wave1, Real wave2,
 
   Real dens = var.w[IPR] / (Constants::Rgas * var.w[IDN]);
   Real x0 = 1.;
-  if (imols_[0] == 0) {
+  if (GetSpeciesIndex(0) == 0) {
     for (int n = 1; n <= NVAPOR; ++n) x0 -= var.w[n];
   } else {
-    x0 = var.w[imols_[0]];
+    x0 = var.w[GetSpeciesIndex(0)];
   }
   return 1.E-3 * exp(val) * dens * x0;  // ln(m*2/kmol) -> 1/m
 }

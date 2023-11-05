@@ -17,8 +17,8 @@
 #include <string>
 #include <vector>
 
-// harp
-#include <harp/absorber.hpp>
+// opacity
+#include <opacity/absorber.hpp>
 
 class MeshBlock;
 
@@ -26,17 +26,16 @@ namespace GiantPlanets {
 
 class MwrAbsorberCIA : public Absorber {
  public:
-  MwrAbsorberCIA(std::vector<std::string> const& species, ParameterMap params);
+  MwrAbsorberCIA() : Absorber("CIA") {}
 
-  Real GetAttenuation(Real wave1, Real wave2, AirParcel const& var) const;
-
- private:
-  Real xHe_, xCH4_, mix_;
+  void CheckFail() const override;
+  Real GetAttenuation(Real wave1, Real wave2,
+                      AirParcel const& var) const override;
 };
 
 class MwrAbsorberNH3 : public Absorber {
  public:
-  MwrAbsorberNH3(std::vector<std::string> const& species, ParameterMap params);
+  MwrAbsorberNH3() : Absorber("NH3") {}
 
   MwrAbsorberNH3& SetModelHanley() {
     model_name_ = "Hanley09";
@@ -59,13 +58,14 @@ class MwrAbsorberNH3 : public Absorber {
     return *this;
   }
 
-  Real GetAttenuation(Real wave1, Real wave2, AirParcel const& var) const;
+  void CheckFail() const override;
+  Real GetAttenuation(Real wave1, Real wave2,
+                      AirParcel const& var) const override;
 };
 
 class MwrAbsorberPH3 : public Absorber {
  public:
-  MwrAbsorberPH3(std::vector<std::string> const& species, ParameterMap params)
-      : Absorber("PH3", species, params) {}
+  MwrAbsorberPH3() : Absorber("PH3") {}
 
   MwrAbsorberPH3& SetModelRadtran() {
     model_name_ = "Radtran";
@@ -81,8 +81,8 @@ class MwrAbsorberPH3 : public Absorber {
 
 class MwrAbsorberH2O : public Absorber {
  public:
-  // TODO(cli) check Karpowics model
-  MwrAbsorberH2O(std::vector<std::string> const& species, ParameterMap params);
+  //! \todo check Karpowics model
+  MwrAbsorberH2O() : Absorber("H2O") {}
 
   MwrAbsorberH2O& SetModeldeBoer() {
     model_name_ = "deBoer";
@@ -101,22 +101,21 @@ class MwrAbsorberH2O : public Absorber {
     return *this;
   }
 
-  Real GetAttenuation(Real wave1, Real wave2, AirParcel const& var) const;
+  void CheckFail() const override;
+  Real GetAttenuation(Real wave1, Real wave2,
+                      AirParcel const& var) const override;
 };
 
 class MwrAbsorberH2S : public Absorber {
  public:
-  MwrAbsorberH2S(std::vector<std::string> const& species, ParameterMap params)
-      : Absorber("H2S", species, params) {}
+  MwrAbsorberH2S() : Absorber("H2S") {}
 
   Real GetAttenuation(Real wave1, Real wave2, AirParcel const& var) const;
 };
 
 class MwrAbsorberElectron : public Absorber {
  public:
-  MwrAbsorberElectron(std::vector<std::string> const& species,
-                      ParameterMap params)
-      : Absorber("Electron", species, params) {}
+  MwrAbsorberElectron() : Absorber("Electron") {}
 
   MwrAbsorberElectron& SetModelAppletonHartree() {
     model_name_ = "AppletonHartree";

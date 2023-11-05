@@ -52,8 +52,8 @@ Real FreedmanMean2::GetAttenuation(Real wave1, Real wave2,
   }
   Real logp = log10(p * 10.);  // Pa to dyn/cm2
   Real logT = log10(T);
-  Real met = params_.at("met");
-  Real scale = params_.at("scale");
+  Real met = GetPar<Real>("met");
+  Real scale = GetPar<Real>("scale");
 
   Real klowp = c1 * atan(logT - c2) -
                c3 / (logp + c4) * exp(pow(logT - c5, 2.0)) + c7;  // Eqn 4

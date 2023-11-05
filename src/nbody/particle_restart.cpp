@@ -16,13 +16,11 @@
 #include <mpi.h>
 #endif
 
-size_t ParticleBase::RestartDataSizeInBytes() const {
+size_t ParticleBase::RestartDataSizeInBytes(Mesh const *pm) const {
   size_t size = sizeof(int);
   size += pc.size() * sizeof(ParticleData);
 
   // gather maximum size across all local blocks
-  auto pm = getMeshBlock()->pmy_mesh;
-
   for (int b = 0; b < pm->nbtotal; b++) {
     auto pmb = pm->my_blocks(b);
     for (auto &pt : pmb->pimpl->all_particles) {
@@ -39,15 +37,14 @@ size_t ParticleBase::RestartDataSizeInBytes() const {
   return size;
 }
 
-size_t ParticleBase::DumpRestartData(char *pdst) const {
+//! \todo mark out invalid particles
+void ParticleBase::DumpRestartData(char *pdst) const {
   int size = pc.size();
 
   std::memcpy(pdst, &size, sizeof(int));
   pdst += sizeof(int);
   std::memcpy(pdst, pc.data(), size * sizeof(ParticleData));
   pdst += size * sizeof(ParticleData);
-
-  return RestartDataSizeInBytes();
 }
 
 size_t ParticleBase::LoadRestartData(char *psrc) {
@@ -59,5 +56,5 @@ size_t ParticleBase::LoadRestartData(char *psrc) {
   std::memcpy(pc.data(), psrc, size * sizeof(ParticleData));
   psrc += size * sizeof(ParticleData);
 
-  return RestartDataSizeInBytes();
+  return size;
 }

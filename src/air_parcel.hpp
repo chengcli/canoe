@@ -122,6 +122,7 @@ using AirColumn = std::vector<AirParcel>;
 
 namespace AirParcelHelper {
 AirParcel gather_from_primitive(MeshBlock const *pmb, int k, int j, int i);
+AirColumn gather_from_primitive(MeshBlock const *pmb, int k, int j);
 
 inline AirColumn gather_from_primitive(MeshBlock const *pmb, int k, int j,
                                        int il, int iu) {
@@ -134,6 +135,7 @@ inline AirColumn gather_from_primitive(MeshBlock const *pmb, int k, int j,
 }
 
 AirParcel gather_from_conserved(MeshBlock const *pmb, int k, int j, int i);
+AirColumn gather_from_conserved(MeshBlock const *pmb, int k, int j);
 
 inline AirColumn gather_from_conserved(MeshBlock const *pmb, int k, int j,
                                        int il, int iu) {
@@ -146,7 +148,8 @@ inline AirColumn gather_from_conserved(MeshBlock const *pmb, int k, int j,
 }
 
 void distribute_to_primitive(MeshBlock *pmb, int k, int j, int i,
-                             AirParcel const &prim);
+                             AirParcel const &ac);
+void distribute_to_primitive(MeshBlock *pmb, int k, int j, AirColumn const &ac);
 
 inline void distribute_to_primitive(MeshBlock *pmb, int k, int j, int il,
                                     int iu, AirColumn const &ac) {
@@ -156,7 +159,8 @@ inline void distribute_to_primitive(MeshBlock *pmb, int k, int j, int il,
 }
 
 void distribute_to_conserved(MeshBlock *pmb, int k, int j, int i,
-                             AirParcel const &cons);
+                             AirParcel const &ac);
+void distribute_to_conserved(MeshBlock *pmb, int k, int j, AirColumn const &ac);
 
 inline void distribute_to_conserved(MeshBlock *pmb, int k, int j, int il,
                                     int iu, AirColumn const &ac) {
@@ -164,6 +168,7 @@ inline void distribute_to_conserved(MeshBlock *pmb, int k, int j, int il,
     distribute_to_conserved(pmb, k, j, i, ac[i - il]);
   }
 }
+
 }  // namespace AirParcelHelper
 
 #endif  // SRC_AIR_PARCEL_HPP_

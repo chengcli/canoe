@@ -4,8 +4,8 @@
 // application
 #include <application/application.hpp>
 
-// harp
-#include <harp/absorber.hpp>
+// opacity
+#include <opacity/absorber.hpp>
 
 TEST(TestAbsorber, Construct) {
   Absorber ab("dummy");

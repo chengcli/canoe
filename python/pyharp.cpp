@@ -4,6 +4,7 @@
 
 // athena
 #include <athena/athena.hpp>
+#include <athena/mesh/mesh.hpp>
 #include <athena/parameter_input.hpp>
 
 // canoe
@@ -11,9 +12,11 @@
 #include <index_map.hpp>
 
 // harp
-#include <harp/absorber.hpp>
 #include <harp/radiation.hpp>
 #include <harp/radiation_band.hpp>
+
+// opacity
+#include <opacity/absorber.hpp>
 
 namespace py = pybind11;
 
@@ -21,7 +24,7 @@ void init_index_map(ParameterInput *pin) { IndexMap::InitFromAthenaInput(pin); }
 
 PYBIND11_MODULE(pyharp, m) {
   m.attr("__name__") = "pyharp";
-  m.doc() = "Python bindings for HARP";
+  m.doc() = "Python bindings for harp module";
 
   m.def("init_index_map", &init_index_map);
 
@@ -31,10 +34,8 @@ PYBIND11_MODULE(pyharp, m) {
       .def_readonly("fluxup", &Radiation::flxup)
       .def_readonly("fluxdn", &Radiation::flxdn)
 
-      .def(py::init())
+      .def(py::init<MeshBlock *, ParameterInput *>())
 
-      .def("load_all_radiation_bands", &Radiation::LoadAllRadiationBands)
-      .def("load_radiation_bands", &Radiation::LoadRadiationBands)
       .def("get_num_bands", &Radiation::GetNumBands)
       .def("get_band", &Radiation::GetBand)
       .def("cal_radiative_flux", &Radiation::CalRadiativeFlux)
@@ -48,22 +49,30 @@ PYBIND11_MODULE(pyharp, m) {
       .def_readonly("bflxup", &RadiationBand::bflxup)
       .def_readonly("bflxdn", &RadiationBand::bflxdn)
 
-      .def(py::init())
+      .def(py::init<std::string, YAML::Node>())
 
-      .def("get_num_bins", &RadiationBand::GetNumBins)
-      .def("get_wavenumber_min", &RadiationBand::GetWavenumberMin)
-      .def("get_wavenumber_max", &RadiationBand::GetWavenumberMax)
-      .def("get_wavenumber_res", &RadiationBand::GetWavenumberRes)
-      .def("has_parameter", &RadiationBand::HasParameter)
-      .def("get_parameter", &RadiationBand::GetParameter)
+      .def("resize", &RadiationBand::Resize)
+      .def("get_num_spec_grids", &RadiationBand::GetNumSpecGrids)
       .def("get_num_absorbers", &RadiationBand::GetNumAbsorbers)
       .def("get_absorber", &RadiationBand::GetAbsorber)
       .def("get_absorber_by_name", &RadiationBand::GetAbsorberByName)
-      .def("get_name", &RadiationBand::GetName);
+      .def("get_range", &RadiationBand::GetRange)
+
+      .def("__str__", [](RadiationBand &band) {
+        std::stringstream ss;
+        ss << "RadiationBand: " << band.GetName() << std::endl;
+        ss << "Absorbers: ";
+        for (int n = 0; n < band.GetNumAbsorbers() - 1; ++n) {
+          ss << band.GetAbsorber(n)->GetName() << ", ";
+        }
+        ss << band.GetAbsorber(band.GetNumAbsorbers() - 1)->GetName();
+        return ss.str();
+      });
 
   // Absorber
   py::class_<Absorber, AbsorberPtr>(m, "absorber")
-      .def("get_category", &Absorber::GetCategory)
+      .def("load_opacity_from_file", &Absorber::LoadOpacityFromFile)
+
       .def("get_name", &Absorber::GetName)
 
       .def("get_attenuation",
@@ -82,5 +91,11 @@ PYBIND11_MODULE(pyharp, m) {
                  lst.begin(), lst.end(), air.w,
                  [](const py::handle &elem) { return py::cast<double>(elem); });
              return ab.GetSingleScatteringAlbedo(wave1, wave2, air);
-           });
+           })
+
+      .def("__str__", [](Absorber &ab) {
+        std::stringstream ss;
+        ss << "Absorber: " << ab.GetName();
+        return ss.str();
+      });
 }

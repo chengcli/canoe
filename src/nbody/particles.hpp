@@ -12,8 +12,8 @@
 // canoe
 #include <virtual_groups.hpp>
 
-// communication
-#include <communicator/boundary_exchanger.hpp>
+// exchanger
+#include <exchanger/neighbor_exchanger.hpp>
 
 // integrator
 #include <integrator/integrators.hpp>
@@ -32,7 +32,7 @@ class ParticleBase : public NamedGroup,
                      // BinaryOutputGroup,
                      public MeshOutputGroup,
                      public MultiStageIntegrator,
-                     public BoundaryExchanger<ParticleData> {
+                     public NeighborExchanger<ParticleBase> {
  public:
   /// public data
   //! particle data container. pc1 is reserved for multi-stage integration
@@ -41,37 +41,35 @@ class ParticleBase : public NamedGroup,
   //! mesh data container
   AthenaArray<Real> weight, charge;
 
-  /// constructor and destructor
+ public:  // constructor and destructor
   ParticleBase(MeshBlock *pmb, std::string name);
   virtual ~ParticleBase();
 
+ public:  // member functions
   /// particle-mesh
   void LinkMesh();
 
-  /// inbound functions
+ public:  // inbound functions
   void SetVelocitiesFromHydro(Hydro const *phydro, Coordinates const *pcoord);
 
-  /// RestartGroup functions
-  size_t RestartDataSizeInBytes() const override;
-  size_t DumpRestartData(char *pdst) const override;
+ public:  // RestartGroup functions
+  size_t RestartDataSizeInBytes(Mesh const *pm) const override;
+  void DumpRestartData(char *pdst) const override;
   size_t LoadRestartData(char *psrt) override;
 
-  /// MeshOutputGroup functions
+ public:  // MeshOutputGroup functions
   bool ShouldMeshOutput(std::string variable_name) const override;
   void LoadMeshOutputData(OutputType *pod, int *num_vars) const override;
 
-  /// MultiStageTimeIntegrator functions
+ public:  // MultiStageIntegrator functions
   void TimeIntegrate(Real time, Real dt) override;
   void WeightedAverage(Real ave_wghts[]) override;
 
-  /// BoundaryExchanger functions
-  void DetachTo(ParticleContainer &buffer) override;
-  bool AttachTo(ParticleContainer &container) override;
+ public:  // NeighborExchanger functions
+  void PackData(MeshBlock const *pmb) override;
+  bool UnpackData(MeshBlock const *pmb) override;
 
  protected:
-  /// BoundaryExchanger functions
-  MeshBlock const *getMeshBlock() const override { return pmy_block_; }
-
   /// protected data
   //! linked list of particles in cell
   AthenaArray<ParticleData *> pd_in_cell_;

@@ -132,10 +132,10 @@ size_t IndexMap::GetSpeciesId(std::string category_name) const {
     return GetVaporId(name);
   } else if (category == "cloud") {
     return NHYDRO + GetCloudId(name);
-  } else if (category == "tracer") {
-    return NHYDRO + NCLOUD + GetTracerId(name);
   } else if (category == "chemistry") {
-    return NHYDRO + NCLOUD + NTRACER + GetChemistryId(name);
+    return NHYDRO + NCLOUD + GetChemistryId(name);
+  } else if (category == "tracer") {
+    return NHYDRO + NCLOUD + NCHEMISTRY + GetTracerId(name);
   } else {
     throw NotFoundError("GetSpeciesId", "Category " + category);
   }

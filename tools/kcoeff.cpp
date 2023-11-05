@@ -188,6 +188,7 @@ int main(int argc, char* argv[]) {
   for (int i = 0; i < nmols; i++) {
     int dims[3] = {wave_dimid, pres_dimid, temp_dimid[i]};
     nc_def_var(ncid, mols[i].c_str(), NC_DOUBLE, 3, dims, mol_varid + i);
+    nc_put_att_text(ncid, mol_varid[i], "units", 12, "ln(m^2/kmol)");
   }
 
   nc_put_att_text(ncid, wave_varid, "units", 4, "1/cm");
@@ -227,6 +228,10 @@ int main(int argc, char* argv[]) {
   // kcoeff_mol.DeleteAthenaArray();
 
   nc_close(ncid);
+
+  delete[] temp_dimid;
+  delete[] temp_varid;
+  delete[] mol_varid;
 
 #else   // NO_NETCDFOUTPUT
   std::cout << "NO NETCDF, NO OUPUT" << std::endl;

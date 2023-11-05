@@ -56,12 +56,12 @@ Real XizH2H2CIA::GetAttenuation(Real wave1, Real wave2,
 
   Real amagat = var.w[IPR] / (Constants::kBoltz * var.w[IDN] * Constants::Lo);
   Real x0 = 1.;
-  if (imols_[0] == 0) {
+  if (GetSpeciesIndex(0) == 0) {
     for (int n = 1; n <= NVAPOR; ++n) x0 -= var.w[n];
   } else {
-    x0 = var.w[imols_[0]];
+    x0 = var.w[GetSpeciesIndex(0)];
   }
 
   return 100. * exp(-val) *
-         sqr(x0 * amagat * params_.at("mixr"));  // 1/cm -> 1/m
+         sqr(x0 * amagat * GetPar<Real>("mixr"));  // 1/cm -> 1/m
 }

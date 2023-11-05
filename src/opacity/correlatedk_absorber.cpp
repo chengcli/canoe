@@ -44,7 +44,7 @@ void CorrelatedKAbsorber::LoadCoefficient(std::string fname, size_t bid) {
   nc_get_var_double(fileid, varid, axis_.data() + len_[0] + len_[1]);
 
   kcoeff_.resize(len_[0] * len_[1] * len_[2]);
-  nc_inq_varid(fileid, name_.c_str(), &varid);
+  nc_inq_varid(fileid, GetName().c_str(), &varid);
   size_t start[4] = {0, 0, bid, 0};
   size_t count[4] = {len_[0], len_[1], 1, len_[2]};
   nc_get_vara_double(fileid, varid, start, count, kcoeff_.data());

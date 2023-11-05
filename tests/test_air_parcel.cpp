@@ -17,7 +17,6 @@
 #include <snap/thermodynamics/thermodynamics.hpp>
 
 // special includes
-#include <special/giants_add_absorber_v1.hpp>
 #include <special/giants_enroll_vapor_functions_v1.hpp>
 
 class TestAirParcel : public testing::Test {

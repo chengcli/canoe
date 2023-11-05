@@ -6,18 +6,14 @@
 #include <vector>
 
 // harp
-#include <harp/absorber.hpp>
+#include "absorber.hpp"
 
 class HitranAbsorber : public Absorber {
   friend std::ostream& operator<<(std::ostream& os, HitranAbsorber const& ab);
   // friend HitranAbsorber const& MakeCKAbsorber<>(HitranAbsorber const& albl,
   //   int const *ck_axis, Real const *ck_wave, int nbins);
  public:
-  HitranAbsorber(std::string name, std::vector<std::string> const& species,
-                 ParameterMap params)
-      : Absorber(name, species, params) {
-    category_ = "hitran";
-  }
+  HitranAbsorber(std::string name) : Absorber(name) {}
 
   virtual ~HitranAbsorber() {}
   void LoadCoefficient(std::string fname, size_t bid = 0) override;

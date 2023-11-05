@@ -25,14 +25,14 @@ void Kessler94::AssembleReactionMatrix(AirParcel const &air, Real time) {
   auto pthermo = Thermodynamics::GetInstance();
 
   // get indices
-  int iv = species_index_[0];
-  int ic = species_index_[1];
-  int ip = species_index_[2];
+  int iv = GetSpeciesIndex(0);
+  int ic = GetSpeciesIndex(1);
+  int ip = GetSpeciesIndex(2);
 
   // get parameters
-  Real k1 = params_["autoconversion"];
-  Real k2 = params_["accretion"];
-  Real k3 = params_["evaporation"];
+  Real k1 = GetPar<Real>("autoconversion");
+  Real k2 = GetPar<Real>("accretion");
+  Real k3 = GetPar<Real>("evaporation");
 
   // calculate saturation deficit (negative means sub-saturation)
   auto rates = pthermo->TryEquilibriumTP_VaporCloud(air, iv, 0., true);
@@ -72,21 +72,22 @@ void Kessler94::EvolveOneStep(AirParcel *air, Real time, Real dt) {
   // auto sol = solver_.solveBDF1<Base::RealVector>(rate_, jacb_, dt);
   // auto sol = solver_.solveTRBDF2<Base::RealVector>(rate_, jacb_, dt);
   auto sol = solver_.solveTRBDF2Blend<Base::RealVector>(
-      rate_, jacb_, dt, air->w, species_index_.data());
+      rate_, jacb_, dt, air->w, GetSpeciesIndexArray().data());
 
+  //! \todo check this
   // 0 is a special buffer place for cloud in equilibrium with vapor at the same
   // temperature
-  int jbuf = pthermo->GetCloudIndex(species_index_[0], 0);
+  int jbuf = pthermo->GetCloudIndex(GetSpeciesIndex(0), 0);
 
   air->c[jbuf] += sol(0);
-  for (int n = 1; n < Size; ++n) air->w[species_index_[n]] += sol(n);
+  for (int n = 1; n < Size; ++n) air->w[GetSpeciesIndex(n)] += sol(n);
 }
 
 void Kessler94::SetVsedFromConserved(AthenaArray<Real> vsed[3],
                                      Hydro const *phydro, int kl, int ku,
                                      int jl, int ju, int il, int iu) {
-  int ip = species_index_[2] - NHYDRO;
-  Real vel = params_.at("sedimentation");
+  int ip = GetCloudIndex(2);
+  Real vel = GetPar<Real>("sedimentation");
 
   for (int k = kl; k <= ku; ++k)
     for (int j = jl; j <= ju; ++j)

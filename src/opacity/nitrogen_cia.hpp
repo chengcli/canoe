@@ -5,15 +5,12 @@
 #include <string>
 #include <vector>
 
-// harp
-#include <harp/absorber.hpp>
+// opacity
+#include "absorber.hpp"
 
 class N2N2CIA : public Absorber {
  public:
-  N2N2CIA(std::vector<std::string> const& species, ParameterMap params)
-      : Absorber("N2-N2", species, params) {
-    category_ = "cia";
-  }
+  N2N2CIA() : Absorber("N2-N2") {}
 
   virtual ~N2N2CIA() {}
 
