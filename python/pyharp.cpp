@@ -55,5 +55,47 @@ PYBIND11_MODULE(pyharp, m) {
       .def("get_num_spec_grids", &RadiationBand::GetNumSpecGrids)
       .def("get_num_absorbers", &RadiationBand::GetNumAbsorbers)
       .def("get_absorber", &RadiationBand::GetAbsorber)
-      .def("get_absorber_by_name", &RadiationBand::GetAbsorberByName);
+      .def("get_absorber_by_name", &RadiationBand::GetAbsorberByName)
+      .def("get_range", &RadiationBand::GetRange)
+
+      .def("__str__", [](RadiationBand &band) {
+        std::stringstream ss;
+        ss << "RadiationBand: " << band.GetName() << std::endl;
+        ss << "Absorbers: ";
+        for (int n = 0; n < band.GetNumAbsorbers() - 1; ++n) {
+          ss << band.GetAbsorber(n)->GetName() << ", ";
+        }
+        ss << band.GetAbsorber(band.GetNumAbsorbers() - 1)->GetName();
+        return ss.str();
+      });
+
+  // Absorber
+  py::class_<Absorber, AbsorberPtr>(m, "absorber")
+      .def("load_opacity_from_file", &Absorber::LoadOpacityFromFile)
+
+      .def("get_name", &Absorber::GetName)
+
+      .def("get_attenuation",
+           [](Absorber &ab, double wave1, double wave2, py::list lst) {
+             AirParcel air;
+             std::transform(
+                 lst.begin(), lst.end(), air.w,
+                 [](const py::handle &elem) { return py::cast<double>(elem); });
+             return ab.GetAttenuation(wave1, wave2, air);
+           })
+
+      .def("get_single_scattering_albedo",
+           [](Absorber &ab, double wave1, double wave2, py::list lst) {
+             AirParcel air;
+             std::transform(
+                 lst.begin(), lst.end(), air.w,
+                 [](const py::handle &elem) { return py::cast<double>(elem); });
+             return ab.GetSingleScatteringAlbedo(wave1, wave2, air);
+           })
+
+      .def("__str__", [](Absorber &ab) {
+        std::stringstream ss;
+        ss << "Absorber: " << ab.GetName();
+        return ss.str();
+      });
 }

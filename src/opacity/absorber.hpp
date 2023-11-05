@@ -41,12 +41,24 @@ class Absorber : public NamedGroup,
   //! Set absorption model
   void SetModel(std::string name) { model_name_ = name; }
 
-  void SetOpacityFilename(std::string filename) const {
-    opacity_filename_ = filename
+  void SetOpacityFile(std::string filename) { opacity_filename_ = filename; }
+
+  void LoadOpacity() {
+    Application::Logger app("opacity");
+    app->Log("Load opacity from " + opacity_filename_);
+    LoadCoefficient(opacity_filename_, 0);
+  }
+
+  void LoadOpacityFromFile(std::string filename) {
+    Application::Logger app("opacity");
+    app->Log("Load opacity from " + filename);
+    LoadCoefficient(filename, 0);
   }
 
   //! Load absorption coefficient from file
-  virtual void LoadCoefficient(std::string fname, size_t bid) {}
+  virtual void LoadCoefficient(std::string fname, size_t bid) {
+    opacity_filename_ = fname;
+  }
 
   //! Get attenuation coefficient [1/m]
   virtual Real GetAttenuation(Real wave1, Real wave2,

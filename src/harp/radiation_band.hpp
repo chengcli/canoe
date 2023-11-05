@@ -88,6 +88,9 @@ class RadiationBand : public NamedGroup,
   //! Get number of phase function moments
   size_t GetNumLayers() const { return tem_.size() - 2 * NGHOST; }
 
+  //! Get range of wavenumbers
+  std::pair<Real, Real> GetRange() const { return wrange_; }
+
   //! Get an individual absorber
   std::shared_ptr<Absorber> GetAbsorber(int i) { return absorbers_[i]; }
 
