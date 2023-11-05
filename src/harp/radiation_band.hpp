@@ -110,8 +110,12 @@ class RadiationBand : public NamedGroup,
   //! \brief Set spectral properties for an air column
   //!
   //! \param[in] air mole fraction representation of air column
-  void SetSpectralProperties(AirColumn &air, Coordinates const *pcoord, int k,
-                             int j);
+  //! \param[in] pcoord coordinates
+  //! \param[in] grav gravitational acceleration
+  //! \param[in] k horizontal index
+  //! \param[in] j horizontal index
+  void SetSpectralProperties(AirColumn &air, Coordinates const *pcoord,
+                             Real grav, int k, int j);
 
  public:  // ASCIIOutputGroup functions
   void WriteAsciiHeader(OutputParameters const *) const override;

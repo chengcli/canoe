@@ -26,8 +26,8 @@
 
 // setting optical properties
 void RadiationBand::SetSpectralProperties(AirColumn& ac,
-                                          Coordinates const* pcoord, int k,
-                                          int j) {
+                                          Coordinates const* pcoord, Real grav,
+                                          int k, int j) {
   int nspec = pgrid_->spec.size();
   int npmom = nphase_moments_;
 
@@ -81,13 +81,12 @@ void RadiationBand::SetSpectralProperties(AirColumn& ac,
         for (int p = 1; p <= npmom; ++p) pmom_(m, i, p) = 0.;
       }
 #ifdef HYDROSTATIC
-      auto phydro = pmb->phydro;
-      Real grav = -phydro->hsrc.GetG1();
+      auto pthermo = Thermodynamics::GetInstance();
       Real H0 = pcoord->GetPressureScaleHeight();
+      Real Rgas = pthermo->RovRd(ac[i]) * pthermo->GetRd();
       // TODO(cli) check this
-      // \delta z = \delt Z * P/(\rho g H)
-      tau_(m, i) *= pcoord->dx1f(i) * phydro->w(IPR, k, j, i) /
-                    (phydro->w(IDN, k, j, i) * grav * H0);
+      // \delta z = \delt Z * (R T)/(g H0)
+      tau_(m, i) *= pcoord->dx1f(i) * (Rgas * tem_[i]) / (grav * H0);
 #else
       tau_(m, i) *= pcoord->dx1f(i);
 #endif

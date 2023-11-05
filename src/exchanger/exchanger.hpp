@@ -43,6 +43,9 @@ class Exchanger : public ExchangerBase {
  public:  // constructor and destructor
   using DataType = typename MessageTraits<T>::DataType;
   using BufferType = std::vector<DataType>;
+#ifdef MPI_PARALLEL
+  using ExchangerBase::mpi_comm_;
+#endif
 
   Exchanger() {
     for (int n = 0; n < MessageTraits<T>::num_buffers; ++n) {
@@ -121,25 +124,29 @@ class NeighborExchanger : public Exchanger<T> {
  public:
   using Base = Exchanger<T>;
   using Base::recv_buffer_;
+  using Base::send_buffer_;
+#ifdef MPI_PARALLEL
+  using Base::mpi_comm_;
   using Base::req_mpi_recv_;
   using Base::req_mpi_send_;
-  using Base::send_buffer_;
-  using ExchangerBase::mpi_comm_;
+#endif  // MPI_PARALLEL
 
   NeighborExchanger() {}
 
   //! \brief Send and receive data
-  virtual void Transfer(MeshBlock const *pmb, int n = -1) override;
+  void Transfer(MeshBlock const *pmb, int n = -1) override;
 
   //! \brief Clear buffer
-  virtual void ClearBuffer(MeshBlock const *pmb) override;
+  void ClearBuffer(MeshBlock const *pmb) override;
 };
 
 template <typename T>
 class LinearExchanger : public Exchanger<T> {
  public:  // constructor and destructor
   using Base = Exchanger<T>;
-  using ExchangerBase::mpi_comm_;
+#ifdef MPI_PARALLEL
+  using Base::mpi_comm_;
+#endif  // MPI_PARALLEL
 
   LinearExchanger();
 
