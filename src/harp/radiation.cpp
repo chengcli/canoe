@@ -38,6 +38,11 @@ Radiation::Radiation(MeshBlock *pmb, ParameterInput *pin) {
   Application::Logger app("harp");
   app->Log("Initialize Radiation");
 
+  // dimensions
+  int ncells1 = pmb->ncells1;
+  int ncells2 = pmb->ncells2;
+  int ncells3 = pmb->ncells3;
+
   // radiation flags
   SetFlag(RadiationHelper::parse_radiation_flags(
       pin->GetOrAddString("radiation", "flags", "")));
@@ -45,13 +50,23 @@ Radiation::Radiation(MeshBlock *pmb, ParameterInput *pin) {
   // radiation bands
   bands_ = RadiationBandsFactory::CreateFrom(pin, input_key);
 
-  // incoming radiation direction (mu, phi) in degree
+  // incoming radiation direction (mu, phi) in degrees
   std::string str = pin->GetOrAddString("radiation", "indir", "(0.,0.)");
   rayInput_ = RadiationHelper::parse_radiation_directions(str);
 
-  int ncells1 = pmb->ncells1;
-  int ncells2 = pmb->ncells2;
-  int ncells3 = pmb->ncells3;
+  for (auto &p : bands_) {
+    // outgoing radiation direction (mu,phi) in degrees
+    if (pin->DoesParameterExist("radiation", p->GetName() + ".outdir")) {
+      auto str = pin->GetString("radiation", p->GetName() + ".outdir");
+      p->SetOutgoingRays(RadiationHelper::parse_radiation_directions(str));
+    } else if (pin->DoesParameterExist("radiation", "outdir")) {
+      auto str = pin->GetString("radiation", "outdir");
+      p->SetOutgoingRays(RadiationHelper::parse_radiation_directions(str));
+    }
+
+    // allocate memory
+    p->Resize(ncells1, ncells2, ncells3);
+  }
 
   // output radiance
   int nout = GetNumOutgoingRays();

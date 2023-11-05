@@ -34,7 +34,7 @@ void RadiationBand::RTSolverLambert::CalBandRadiance(MeshBlock const *pmb,
   auto &spec = pband->pgrid_->spec;
 
   auto &btoa = pband->btoa;
-  //! \note T ~ Ts*(\tau/\tau_s)^\alpha at lower boundary
+  //! \note $T ~ Ts*(\tau/\tau_s)^\alpha$ at lower boundary
   Real alpha = pband->HasPar("alpha") ? pband->GetPar<Real>("alpha") : 0.;
 
   // integrate from top to bottom

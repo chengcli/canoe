@@ -90,7 +90,7 @@ Ttriple2    = 195.4
 Ptriple2    = 6060.
 
 <radiation>
-radio_bands = mwr_channels.yaml
+radiation_config = mwr_channels.yaml
 outdir      = (0,) (15,) (30,) (45,)
 
 #<inversion>

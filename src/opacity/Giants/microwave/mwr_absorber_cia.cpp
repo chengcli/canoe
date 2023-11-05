@@ -12,15 +12,15 @@
 namespace GiantPlanets {
 
 void MwrAbsorberCIA::CheckFail() const {
-  if (HasPar("xHe")) {
+  if (!HasPar("xHe")) {
     throw NotFoundError("MwrAbsorberCIA", "parameter 'xHe'");
   }
 
-  if (HasPar("xCH4")) {
+  if (!HasPar("xCH4")) {
     throw NotFoundError("MwrAbsorberCIA", "parameter 'xCH4'");
   }
 
-  if (HasPar("mix")) {
+  if (!HasPar("mix")) {
     throw NotFoundError("MwrAbsorberCIA", "parameter 'mix'");
   }
 }

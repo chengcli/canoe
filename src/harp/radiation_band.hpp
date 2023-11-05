@@ -73,8 +73,8 @@ class RadiationBand : public NamedGroup,
 
   //! \brief Create radiative transfer solver from YAML node
   //!
-  //! \param[in] my YAML node containing the current band
-  std::shared_ptr<RTSolver> CreateRTSolverFrom(YAML::Node const &my);
+  //! \param[in] name Name of the solver
+  std::shared_ptr<RTSolver> CreateRTSolverFrom(std::string const &rt_name);
 
   //! Get number of spectral grids
   size_t GetNumSpecGrids() const { return pgrid_->spec.size(); }
@@ -117,6 +117,11 @@ class RadiationBand : public NamedGroup,
   void SetSpectralProperties(AirColumn &air, Coordinates const *pcoord,
                              Real grav, int k, int j);
 
+  //! \brief Set outgoing ray directions
+  //!
+  //! \param[in] rayOutput outgoing ray directions
+  void SetOutgoingRays(std::vector<Direction> const &ray) { rayOutput_ = ray; }
+
  public:  // ASCIIOutputGroup functions
   void WriteAsciiHeader(OutputParameters const *) const override;
   void WriteAsciiData(OutputParameters const *) const override;
@@ -125,7 +130,7 @@ class RadiationBand : public NamedGroup,
   //! \brief Pack temperature at cell face into send buffer 0
   void PackTemperature();
 
-  //! \breif Unpack temperature at cell face from receive buffer 0
+  //! \brief Unpack temperature at cell face from receive buffer 0
   bool UnpackTemperature(void *arg);
 
   //! \brief Pack data in spectral grid b into send buffer 1
