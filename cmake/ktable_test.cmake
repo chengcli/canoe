@@ -18,7 +18,6 @@ set_if_empty(NTRACER 2)
 
 # canoe configure
 set(CMAKE_INSTALL_PREFIX "$ENV{HOME}/opt/")
-set(USER_MODS ${CMAKE_SOURCE_DIR}/examples/giants_add_absorber)
 set(HYDROSTATIC ON)
 set(RFM ON)
 set(NETCDF ON)
