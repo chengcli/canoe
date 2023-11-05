@@ -1,6 +1,11 @@
 // athena
 #include <athena/athena.hpp>
 
+// external
+#include <yaml-cpp/yaml.h>
+
+#include <application/exceptions.hpp>
+
 // canoe
 #include <air_parcel.hpp>
 #include <index_map.hpp>
@@ -38,8 +43,6 @@ AbsorberContainer AbsorberFactory::CreateFrom(
 
 AbsorberPtr AbsorberFactory::CreateFrom(YAML::Node const& my,
                                         std::string band_name) {
-  auto app = Application::GetInstance();
-
   if (!my["name"]) {
     throw NotFoundError("AbsorberFactory", "'name' field in absorber");
   }
@@ -52,23 +55,11 @@ AbsorberPtr AbsorberFactory::CreateFrom(YAML::Node const& my,
   auto ab = createAbsorberPartial(my["name"].as<std::string>(),
                                   my["class"].as<std::string>());
 
-  std::string data_file, full_path;
-
   if (my["data"]) {
-    data_file = my["data"].as<std::string>();
+    ab->SetOpacityFile(my["data"].as<std::string>());
   } else {
-    data_file = "kcoeff-" + band_name + ".nc";
+    ab->SetOpacityFile("kcoeff-" + band_name + ".nc");
   }
-
-  /*try {
-    full_path = app->FindInputFile(data_file);
-    ab->LoadCoefficient(full_path, 0);
-  } catch (NotFoundError const& e) {
-    auto log = app->GetMonitor("opacity");
-    std::stringstream ss;
-    ss << e.what() << std::endl;
-    log->Warn(ss.str());
-  }*/
 
   if (my["dependent-species"]) {
     auto species = my["dependent-species"].as<std::vector<std::string>>();
@@ -80,8 +71,10 @@ AbsorberPtr AbsorberFactory::CreateFrom(YAML::Node const& my,
   }
 
   if (my["parameters"]) {
-    ab->SetRealsFrom(my["parameter"]);
+    ab->SetRealsFrom(my["parameters"]);
   }
+
+  ab->CheckFail();
 
   return ab;
 }

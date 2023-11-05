@@ -11,7 +11,7 @@
 
 namespace GiantPlanets {
 
-MwrAbsorberCIA::MwrAbsorberCIA() : Absorber("CIA") {
+void MwrAbsorberCIA::CheckFail() const {
   if (HasPar("xHe")) {
     throw NotFoundError("MwrAbsorberCIA", "parameter 'xHe'");
   }

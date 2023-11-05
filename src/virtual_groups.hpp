@@ -4,13 +4,14 @@
 // C/C++
 #include <string>
 
+// external
+#include <yaml-cpp/yaml.h>  // YAML::Node
+
 // athena
 #include <athena/athena.hpp>  // Real
 
-// utils
-#include <utils/parameter_map.hpp>
-
 // canoe
+#include <configure.hpp>
 #include <index_map.hpp>
 
 class Mesh;
@@ -104,7 +105,6 @@ inline std::string ParameterGroup::GetPar<std::string>(
   return params_str_.at(name);
 }
 
-template <int D>
 class SpeciesIndexGroup {
  public:
   virtual ~SpeciesIndexGroup() {}
@@ -113,38 +113,44 @@ class SpeciesIndexGroup {
   void SetSpeciesIndex(std::vector<std::string> const &species_names) {
     auto pindex = IndexMap::GetInstance();
 
-    for (int i = 0; i < D; ++i) {
-      species_index_[i] = pindex->GetSpeciesId(species_names[i]);
-      cloud_index_[i] = species_index_[i] - NHYDRO;
+    for (auto const &name : species_names) {
+      species_index_.push_back(pindex->GetSpeciesId(name));
+      cloud_index_.push_back(species_index_.back() - NHYDRO);
+      chemistry_index_.push_back(species_index_.back() - NHYDRO - NCLOUD);
     }
   }
 
   //! \return Array of species indices
-  std::array<int, D> const &GetSpeciesIndexArray() const {
+  std::vector<int> const &GetSpeciesIndexArray() const {
     return species_index_;
   }
 
-  //! \return Pointer to array of species indices
-  int const *GetSpeciesIndexPtr() const { return species_index_.data(); }
-
-  //! \return The Species Index of the n-th species
+  //! \return The species index of the n-th species
   int GetSpeciesIndex(int n) const { return species_index_[n]; }
 
   //! \return Array of cloud indices
-  std::array<int, D> const &GetCloudIndexArray() const { return cloud_index_; }
+  std::vector<int> const &GetCloudIndexArray() const { return cloud_index_; }
 
-  //! \return Pointer to array of cloud indices
-  int const *GetCloudIndexPtr() const { return cloud_index_.data(); }
-
-  //! \return The Cloud Index of the n-th species
+  //! \return The cloud index of the n-th cloud species
   int GetCloudIndex(int n) const { return cloud_index_[n]; }
+
+  //! \return Array of chemistry indices
+  std::vector<int> const &GetChemistryIndexArray() const {
+    return chemistry_index_;
+  }
+
+  //! \return The chemistry index of the n-th chemistry species
+  int GetChemistryIndex(int n) const { return chemistry_index_[n]; }
 
  private:
   //! indices of species
-  std::array<int, D> species_index_;
+  std::vector<int> species_index_;
 
   //! indices of clouds
-  std::array<int, D> cloud_index_;
+  std::vector<int> cloud_index_;
+
+  //! indices of chemical species
+  std::vector<int> chemistry_index_;
 };
 
 class CounterGroup {
@@ -157,6 +163,18 @@ class CounterGroup {
 
  private:
   Real cooldown_, current_ = 0.;
+};
+
+class CheckGroup {
+ public:
+  virtual ~CheckGroup() {}
+
+  //! This function fails if the check fails
+  virtual void CheckFail() const {}
+
+  //! This function emits a warning if the check fails
+  //! \return true if the check passes, false if it fails
+  virtual bool CheckWarn() const { return true; }
 };
 
 class RestartGroup {

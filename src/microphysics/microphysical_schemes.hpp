@@ -21,9 +21,6 @@
 #include <air_parcel.hpp>
 #include <virtual_groups.hpp>
 
-// utils
-#include <utils/parameter_map.hpp>
-
 // microphysics
 #include "chemistry_solver.hpp"
 
@@ -73,7 +70,7 @@ class MicrophysicalSchemesFactory {
 template <int D>
 class MicrophysicalScheme : public MicrophysicalSchemeBase,
                             public ParameterGroup,
-                            public SpeciesIndexGroup<D> {
+                            public SpeciesIndexGroup {
  public:
   // needed for Eigen small matrix
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -89,7 +86,7 @@ class MicrophysicalScheme : public MicrophysicalSchemeBase,
 
     if (node["dependent-species"]) {
       auto species = node["dependent-species"].as<std::vector<std::string>>();
-      SpeciesIndexGroup<D>::SetSpeciesIndex(species);
+      SetSpeciesIndex(species);
     }
   }
 
@@ -103,7 +100,7 @@ class MicrophysicalScheme : public MicrophysicalSchemeBase,
   void SetVsedFromConserved(AthenaArray<Real> vsed[3], Hydro const *phydro,
                             int kl, int ku, int jl, int ju, int il,
                             int iu) override {
-    for (auto n : SpeciesIndexGroup<D>::GetCloudIndexArray())
+    for (auto n : GetCloudIndexArray())
       for (int k = kl; k <= ku; ++k)
         for (int j = jl; j <= ju; ++j)
           for (int i = il; i <= iu; ++i) {

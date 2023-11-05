@@ -14,12 +14,12 @@
 
 namespace GiantPlanets {
 
-MwrAbsorberNH3::MwrAbsorberNH3() : Absorber("NH3") {
-  if (HasPar("xHe")) {
+void MwrAbsorberNH3::CheckFail() const {
+  if (!HasPar("xHe")) {
     throw NotFoundError("MwrAbsorberNH3", "parameter 'xHe'");
   }
 
-  if (HasPar("power")) {
+  if (!HasPar("power")) {
     throw NotFoundError("MwrAbsorberNH3", "parameter 'power'");
   }
 }

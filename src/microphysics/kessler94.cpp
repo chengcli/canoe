@@ -72,7 +72,7 @@ void Kessler94::EvolveOneStep(AirParcel *air, Real time, Real dt) {
   // auto sol = solver_.solveBDF1<Base::RealVector>(rate_, jacb_, dt);
   // auto sol = solver_.solveTRBDF2<Base::RealVector>(rate_, jacb_, dt);
   auto sol = solver_.solveTRBDF2Blend<Base::RealVector>(
-      rate_, jacb_, dt, air->w, GetSpeciesIndexPtr());
+      rate_, jacb_, dt, air->w, GetSpeciesIndexArray().data());
 
   //! \todo check this
   // 0 is a special buffer place for cloud in equilibrium with vapor at the same

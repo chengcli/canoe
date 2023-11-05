@@ -10,10 +10,6 @@
 // external
 #include <yaml-cpp/yaml.h>
 
-// application
-#include <application/application.hpp>
-#include <application/exceptions.hpp>
-
 // athena
 #include <athena/athena.hpp>
 
@@ -25,40 +21,27 @@ class AirParcel;
 //! \brief base class of all absorbers
 class Absorber : public NamedGroup,
                  public ParameterGroup,
-                 public SpeciesIndexGroup<3> {
+                 public SpeciesIndexGroup,
+                 public CheckGroup {
  public:  // constructor and destructor
-  Absorber(std::string name) : NamedGroup(name) {
-    Application::Logger app("opacity");
-    app->Log("Create Absorber " + name);
-  }
-
-  virtual ~Absorber() {
-    Application::Logger app("opacity");
-    app->Log("Destroy Absorber " + GetName());
-  }
+  Absorber(std::string name);
+  virtual ~Absorber();
 
  public:  // member functions
   //! Set absorption model
   void SetModel(std::string name) { model_name_ = name; }
 
-  void SetOpacityFile(std::string filename) { opacity_filename_ = filename; }
+  //! Combines SetOpacityFile() and LoadOpacity()
+  void LoadOpacityFromFile(std::string filename);
 
-  void LoadOpacity() {
-    Application::Logger app("opacity");
-    app->Log("Load opacity from " + opacity_filename_);
-    LoadCoefficient(opacity_filename_, 0);
-  }
+  //! Set opacity filename to internal variable, does not load opacity
+  void SetOpacityFile(std::string filename);
 
-  void LoadOpacityFromFile(std::string filename) {
-    Application::Logger app("opacity");
-    app->Log("Load opacity from " + filename);
-    LoadCoefficient(filename, 0);
-  }
+  //! Load opacity from internal variable
+  void LoadOpacity();
 
   //! Load absorption coefficient from file
-  virtual void LoadCoefficient(std::string fname, size_t bid) {
-    opacity_filename_ = fname;
-  }
+  virtual void LoadCoefficient(std::string fname, size_t bid) {}
 
   //! Get attenuation coefficient [1/m]
   virtual Real GetAttenuation(Real wave1, Real wave2,

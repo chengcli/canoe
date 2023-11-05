@@ -26,17 +26,16 @@ namespace GiantPlanets {
 
 class MwrAbsorberCIA : public Absorber {
  public:
-  MwrAbsorberCIA();
+  MwrAbsorberCIA() : Absorber("CIA") {}
 
-  Real GetAttenuation(Real wave1, Real wave2, AirParcel const& var) const;
-
- private:
-  Real xHe_, xCH4_, mix_;
+  void CheckFail() const override;
+  Real GetAttenuation(Real wave1, Real wave2,
+                      AirParcel const& var) const override;
 };
 
 class MwrAbsorberNH3 : public Absorber {
  public:
-  MwrAbsorberNH3();
+  MwrAbsorberNH3() : Absorber("NH3") {}
 
   MwrAbsorberNH3& SetModelHanley() {
     model_name_ = "Hanley09";
@@ -59,7 +58,9 @@ class MwrAbsorberNH3 : public Absorber {
     return *this;
   }
 
-  Real GetAttenuation(Real wave1, Real wave2, AirParcel const& var) const;
+  void CheckFail() const override;
+  Real GetAttenuation(Real wave1, Real wave2,
+                      AirParcel const& var) const override;
 };
 
 class MwrAbsorberPH3 : public Absorber {
@@ -80,8 +81,8 @@ class MwrAbsorberPH3 : public Absorber {
 
 class MwrAbsorberH2O : public Absorber {
  public:
-  // TODO(cli) check Karpowics model
-  MwrAbsorberH2O();
+  //! \todo check Karpowics model
+  MwrAbsorberH2O() : Absorber("H2O") {}
 
   MwrAbsorberH2O& SetModeldeBoer() {
     model_name_ = "deBoer";
@@ -100,7 +101,9 @@ class MwrAbsorberH2O : public Absorber {
     return *this;
   }
 
-  Real GetAttenuation(Real wave1, Real wave2, AirParcel const& var) const;
+  void CheckFail() const override;
+  Real GetAttenuation(Real wave1, Real wave2,
+                      AirParcel const& var) const override;
 };
 
 class MwrAbsorberH2S : public Absorber {

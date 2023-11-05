@@ -11,7 +11,7 @@
 
 namespace GiantPlanets {
 
-MwrAbsorberH2O::MwrAbsorberH2O() : Absorber("H2O") {
+void MwrAbsorberH2O::CheckFail() const {
   if (!HasPar("xHe")) {
     throw NotFoundError("MwrAbsorberH2O", "parameter 'xHe'");
   }
