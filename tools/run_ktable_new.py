@@ -11,7 +11,7 @@ from collections import OrderedDict
 from numpy import *
 
 
-def check_file_exist(filename) -> bool:
+def check_file_exist(filename: str) -> bool:
     if not os.path.isfile(filename):
         print("File %s does not exist!" % filename)
         sys.exit(1)
@@ -19,7 +19,7 @@ def check_file_exist(filename) -> bool:
 
 
 # create rfm atmosphere file
-def create_rfm_atm(absorbers, atm) -> None:
+def create_rfm_atm(absorbers: list, atm: dict) -> None:
     print("# Creating rfm.atm ...")
     num_layers = atm["HGT"].shape[0]
     num_absorbers = len(absorbers)
@@ -44,25 +44,86 @@ def create_rfm_atm(absorbers, atm) -> None:
 
 
 # create rfm driver file
-def create_rfm_drv(driver) -> None:
+def create_rfm_drv(driver: dict) -> None:
     print("# Creating rfm.drv ...")
     with open("rfm.drv", "w") as file:
         for sec in driver:
             if driver[sec] != None:
                 file.write(sec + "\n")
-                print(driver[sec])
                 file.write(" " * 4 + driver[sec] + "\n")
     print("# rfm.drv written.")
 
 
 def run_rfm() -> None:
-    print("# Running rfm ...")
-    script = ["rfm", "rfm.drv"]
-    out, err = subprocess.Popen(
-        script, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-    ).communicate()
-    os.system("rfm")
-    print("# rfm finished.")
+    process = subprocess.Popen(
+        ["./rfm.release"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+    )
+
+    for line in iter(process.stdout.readline, b""):
+        # decode the byte string and end='' to avoid double newlines
+        print(line.decode(), end="")
+
+    process.communicate()
+
+
+def create_netcdf_input(
+    bane_name: str,
+    absorbers: list,
+    wmin: float,
+    wmax: float,
+    wres: float,
+    tnum: int,
+    tmin: float,
+    tmax: float,
+    atm: dict,
+) -> str:
+    print(f"# Creating kcoeff.inp-{band_name} ...")
+    fname = "kcoeff.inp-%s" % band_name
+    with open("kcoeff.inp-%s" % band_name, "w") as file:
+        file.write("# Molecular absorber\n")
+        file.write("%d\n" % len(absorbers))
+        file.write(" ".join(absorbers) + "\n")
+        file.write("# Molecule data files\n")
+        for ab in absorbers:
+            file.write("%-40s\n" % ("./tab_" + ab.lower() + ".txt",))
+        file.write("# Wavenumber range\n")
+        file.write(
+            "%-14.6g%-14.6g%-14.6g\n" % (wmin, wmax, int((wmax - wmin) / wres) + 1)
+        )
+        file.write("# Relative temperature range\n")
+        file.write("%-14.6g%-14.6g%-14.6g\n" % (tmin, tmax, tnum))
+        file.write("# Number of vertical levels\n")
+        file.write("%d\n" % len(atm["TEM"]))
+        file.write("# Temperature\n")
+        for i in range(len(atm["TEM"])):
+            file.write("%-14.6g" % atm["TEM"][-(i + 1)])
+            if (i + 1) % 10 == 0:
+                file.write("\n")
+        if (i + 1) % 10 != 0:
+            file.write("\n")
+        file.write("# Pressure\n")
+        for i in range(len(atm["PRE"])):
+            file.write("%-14.6g" % atm["PRE"][-(i + 1)])
+            if (i + 1) % 10 == 0:
+                file.write("\n")
+        if (i + 1) % 10 != 0:
+            file.write("\n")
+    print(f"# kcoeff.inp-{band_name} written.")
+    return fname
+
+
+def run_kcoeff(inpfile: str, ncfile: str) -> None:
+    process = subprocess.Popen(
+        ["./kcoeff.release", "-i", inpfile, "-o", ncfile],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+    )
+
+    for line in iter(process.stdout.readline, b""):
+        # decode the byte string and end='' to avoid double newlines
+        print(line.decode(), end="")
+
+    process.communicate()
 
 
 if __name__ == "__main__":
@@ -75,7 +136,6 @@ if __name__ == "__main__":
     nspec = band.get_num_spec_grids()
     wmin, wmax = band.get_range()
     wres = (wmax - wmin) / (nspec - 1)
-    print(wmin, wmax, wres)
 
     num_absorbers = band.get_num_absorbers()
     absorbers = []
@@ -102,13 +162,14 @@ if __name__ == "__main__":
 
     # create temperature pertubation
     tem_pertub = (5, -20, 20)
+    wave_grid = (wmin, wmax, wres)
 
     # create rfm driver file
     driver = OrderedDict(
         [
             ("*HDR", "Header for rfm"),
             ("*FLG", "TAB CTM"),
-            ("*SPC", "%.4f %.4f %.4f" % (wmin, wmax, wres)),
+            ("*SPC", "%.4f %.4f %.4f" % wave_grid),
             ("*GAS", " ".join(absorbers)),
             ("*ATM", "rfm.atm"),
             ("*DIM", "PLV \n    %d %.4f %.4f" % tem_pertub),
@@ -119,3 +180,6 @@ if __name__ == "__main__":
     )
     check_file_exist(hitran_file)
     create_rfm_drv(driver)
+    # run_rfm()
+    inp = create_netcdf_input(band_name, absorbers, *wave_grid, *tem_pertub, atm)
+    run_kcoeff(inp, f"kcoeff-{band_name}.nc")
