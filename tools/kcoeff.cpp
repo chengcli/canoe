@@ -229,6 +229,10 @@ int main(int argc, char* argv[]) {
 
   nc_close(ncid);
 
+  delete[] temp_dimid;
+  delete[] temp_varid;
+  delete[] mol_varid;
+
 #else   // NO_NETCDFOUTPUT
   std::cout << "NO NETCDF, NO OUPUT" << std::endl;
 #endif  // NETCDFOUTPUT
@@ -237,8 +241,4 @@ int main(int argc, char* argv[]) {
   std::cout << "kcoeff program ends successfully in "
             << double(cpu_toc - cpu_tic) / CLOCKS_PER_SEC << " s." << std::endl
             << "output file written into " << outfile << std::endl;
-
-  delete[] temp_dimid;
-  delete[] temp_varid;
-  delete[] mol_varid;
 }
