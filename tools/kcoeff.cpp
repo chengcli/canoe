@@ -188,6 +188,7 @@ int main(int argc, char* argv[]) {
   for (int i = 0; i < nmols; i++) {
     int dims[3] = {wave_dimid, pres_dimid, temp_dimid[i]};
     nc_def_var(ncid, mols[i].c_str(), NC_DOUBLE, 3, dims, mol_varid + i);
+    nc_put_att_text(ncid, mol_varid[i], "units", 12, "ln(m^2/kmol)");
   }
 
   nc_put_att_text(ncid, wave_varid, "units", 4, "1/cm");
@@ -236,4 +237,8 @@ int main(int argc, char* argv[]) {
   std::cout << "kcoeff program ends successfully in "
             << double(cpu_toc - cpu_tic) / CLOCKS_PER_SEC << " s." << std::endl
             << "output file written into " << outfile << std::endl;
+
+  delete[] temp_dimid;
+  delete[] temp_varid;
+  delete[] mol_varid;
 }

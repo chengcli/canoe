@@ -144,7 +144,7 @@ if __name__ == "__main__":
 
     # create atmosphere dictionary
     atm = {}
-    ps_pa = 1.0e5
+    ps_mbar = 1.0e3
     Ts_K = 300.0
     grav_ms2 = 9.8
     mu_kgmol = 29.0e-3
@@ -153,9 +153,11 @@ if __name__ == "__main__":
     Hscale_m = Rgas_Jkg * Ts_K / grav_ms2
     num_layers = 100
 
-    atm["HGT"] = linspace(0, 20, num_layers, endpoint=False) * 1.0e3
-    atm["PRE"] = ps_pa * exp(-atm["HGT"] / Hscale_m)
+    # km
+    atm["HGT"] = linspace(0, 20, num_layers, endpoint=False)
+    atm["PRE"] = ps_mbar * exp(-atm["HGT"] * 1e3 / Hscale_m)
     atm["TEM"] = Ts_K * ones(num_layers)
+    # ppmv
     atm["CO2"] = 400.0 * ones(num_layers)
 
     create_rfm_atm(absorbers, atm)
@@ -180,6 +182,6 @@ if __name__ == "__main__":
     )
     check_file_exist(hitran_file)
     create_rfm_drv(driver)
-    # run_rfm()
+    run_rfm()
     inp = create_netcdf_input(band_name, absorbers, *wave_grid, *tem_pertub, atm)
     run_kcoeff(inp, f"kcoeff-{band_name}.nc")
