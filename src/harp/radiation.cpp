@@ -119,8 +119,7 @@ void Radiation::CalRadiativeFlux(MeshBlock const *pmb, int k, int j, int il,
                                  int iu) {
   auto pcoord = pmb->pcoord;
 
-  AirColumn &&ac =
-      AirParcelHelper::gather_from_primitive(pmb, k, j, 0, pmb->ncells1 - 1);
+  AirColumn &&ac = AirParcelHelper::gather_from_primitive(pmb, k, j);
 
   Real grav = -pmb->phydro->hsrc.GetG1();
 
@@ -138,8 +137,7 @@ void Radiation::CalRadiance(MeshBlock const *pmb, int k, int j, int il,
 
   auto pcoord = pmb->pcoord;
 
-  AirColumn &&ac =
-      AirParcelHelper::gather_from_primitive(pmb, k, j, 0, pmb->ncells1 - 1);
+  AirColumn &&ac = AirParcelHelper::gather_from_primitive(pmb, k, j);
 
   Real grav = -pmb->phydro->hsrc.GetG1();
 
