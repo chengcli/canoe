@@ -1,15 +1,16 @@
 #! /usr/bin/env python3
 import sys, os, subprocess
 
-sys.path.append("/Users/chengcli/Development/canoe/build/python")
-
-hitran_file = "/Users/chengcli/Development/canoe/data/HITRAN2020.par"
+sys.path.append("@CMAKE_BINARY_DIR@/python")
 
 from pyharp import radiation_band
 from utilities import load_file
 from collections import OrderedDict
 from numpy import *
 
+cmake_source_dir = "@CMAKE_SOURCE_DIR@"
+cmake_binary_dir = "@CMAKE_BINARY_DIR@"
+hitran_file = f"{cmake_source_dir}/data/HITRAN2020.par"
 
 def check_file_exist(filename: str) -> bool:
     if not os.path.isfile(filename):
@@ -159,6 +160,8 @@ if __name__ == "__main__":
     atm["TEM"] = Ts_K * ones(num_layers)
     # ppmv
     atm["CO2"] = 400.0 * ones(num_layers)
+    # ppmv
+    atm["H2O"] = 4000.0 * exp(-atm["HGT"] * 1e3 / (Hscale_m / 5.))
 
     create_rfm_atm(absorbers, atm)
 

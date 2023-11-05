@@ -14,8 +14,6 @@ set_if_empty(NVAPOR 0)
 set_if_empty(NCLOUD 0)
 set_if_empty(NTRACER 2)
 
-# canoe task set(TASKLIST InversionTasks)
-
 # canoe configure
 set(CMAKE_INSTALL_PREFIX "$ENV{HOME}/opt/")
 set(HYDROSTATIC ON)

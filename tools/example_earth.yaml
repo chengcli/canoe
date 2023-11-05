@@ -15,5 +15,5 @@ B1:
   grid-type: regular
   wavenumber-range: [600., 700.]
   resolution: 0.01
-  opacity: [CO2]
+  opacity: [H2O, CO2]
   outdir: (0., 0.)
