@@ -102,17 +102,17 @@ AbsorberPtr AbsorberFactory::createAbsorberPartial(std::string name,
     ab = std::make_shared<FreedmanSimple>();
   } else if (type == "freedman_mean") {
     ab = std::make_shared<FreedmanSimple>();
-  } else if (type == "JunoMWR-NH3") {
+  } else if (type == "radio-NH3") {
     ab = std::make_shared<gp::MwrAbsorberNH3>();
-  } else if (type == "JunoMWR-H2O") {
+  } else if (type == "radio-H2O") {
     ab = std::make_shared<gp::MwrAbsorberH2O>();
-  } else if (type == "JunoMWR-H2S") {
+  } else if (type == "radio-H2S") {
     ab = std::make_shared<gp::MwrAbsorberH2S>();
-  } else if (type == "JunoMWR-PH3") {
+  } else if (type == "radio-PH3") {
     ab = std::make_shared<gp::MwrAbsorberPH3>();
-  } else if (type == "JunoMWR-CIA") {
+  } else if (type == "radio-CIA") {
     ab = std::make_shared<gp::MwrAbsorberCIA>();
-  } else if (type == "JunoMWR-Electron") {
+  } else if (type == "radio-Electron") {
     ab = std::make_shared<gp::MwrAbsorberElectron>();
   } else {
     throw NotFoundError("createAbsorberPartial", "Class = " + type);
