@@ -9,7 +9,7 @@
 
 #ifdef RT_DISORT
 
-void RTSolverDisort::setFlagsFromNode(YAML::Node const& flags) {
+void RadiationBand::RTSolverDisort::setFlagsFromNode(YAML::Node const& my) {
   if (my["ibcnd"]) {
     ds_.flag.ibcnd = my["ibcnd"].as<bool>();
   } else {
@@ -90,8 +90,9 @@ void RTSolverDisort::setFlagsFromNode(YAML::Node const& flags) {
   }
 
   if (my["prnt"]) {
+    std::vector<int> prnt = my["prnt"].as<std::vector<int>>();
     for (int i = 0; i < 5; ++i) {
-      ds_.flag.prnt[i] = my["prnt"][i].as<bool>();
+      ds_.flag.prnt[i] = prnt[i];
     }
   } else {
     for (int i = 0; i < 5; ++i) {

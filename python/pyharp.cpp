@@ -51,7 +51,10 @@ PYBIND11_MODULE(pyharp, m) {
 
       .def(py::init<std::string, YAML::Node>())
 
-      .def("resize", &RadiationBand::Resize)
+      .def("resize", &RadiationBand::Resize, py::arg("nc1"), py::arg("nc2") = 1,
+           py::arg("nc3") = 1, py::arg("nstr") = 8)
+      .def("resize_solver", &RadiationBand::ResizeSolver, py::arg("nlyr"),
+           py::arg("nstr") = 1, py::arg("nuphi") = 1, py::arg("numu") = 1)
       .def("get_num_spec_grids", &RadiationBand::GetNumSpecGrids)
       .def("get_num_absorbers", &RadiationBand::GetNumAbsorbers)
       .def("get_absorber", &RadiationBand::GetAbsorber)

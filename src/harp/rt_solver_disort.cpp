@@ -29,13 +29,15 @@
 
 #ifdef RT_DISORT
 
-RTSolverDisort(RadiationBand *pmy_band, YAML::Node const &rad)
+RadiationBand::RTSolverDisort::RTSolverDisort(RadiationBand *pmy_band,
+                                              YAML::Node const &rad)
     : RTSolver(pmy_band, "Disort") {
   if (rad["Disort"]) setFlagsFromNode(rad["Disort"]);
 }
 
 //! \todo update based on band outdir
-void RTSolverDisort::Resize(int nlyr, int nstr, int nuphi, int numu) {
+void RadiationBand::RTSolverDisort::Resize(int nlyr, int nstr, int nuphi,
+                                           int numu) {
   SetAtmosphereDimension(nlyr, nstr, nstr, nstr);
   SetIntensityDimension(nuphi, 1, numu);
   Finalize();
@@ -44,7 +46,7 @@ void RTSolverDisort::Resize(int nlyr, int nstr, int nuphi, int numu) {
   Real uphi = 0.;
   Real umu = 1.;
 
-  SetUserAzimuthalAngle(&phi, 1);
+  SetUserAzimuthalAngle(&uphi, 1);
   SetUserOpticalDepth(&utau, 1);
   SetUserCosinePolarAngle(&umu, 1);
 }
@@ -64,9 +66,12 @@ void RTSolverDisort::Resize(int nlyr, int nstr, int nuphi, int numu) {
 //! block r = 1 gets, 4 - 3 - 2
 //! block r = 2 gets, 2 - 1 - 0
 
-Real RadiationBand::RTSolverDisort::prepareSpectralBand(MeshBlock const *pmb) {
+Real RadiationBand::RTSolverDisort::prepareSpectralBand(MeshBlock const *pmb,
+                                                        int k, int j) {
   auto &wmin = pmy_band_->wrange_.first;
   auto &wmax = pmy_band_->wrange_.second;
+  auto planet = pmb->pimpl->planet;
+  auto pcoord = pmb->pcoord;
 
   Direction ray;
   Real dist_au;
@@ -120,8 +125,8 @@ Real RadiationBand::RTSolverDisort::prepareSpectralBand(MeshBlock const *pmb) {
 void RadiationBand::RTSolverDisort::CalBandFlux(MeshBlock const *pmb, int k,
                                                 int j, int il, int iu) {
   if (!IsFinalized()) {
-    throw std::runtime_error("RTSolverDisort::CalBandFlux",
-                             "DISORT solver not finalized");
+    throw RuntimeError("RTSolverDisort::CalBandFlux",
+                       "DISORT solver not finalized");
   }
 
   // reset flux of this column
@@ -133,7 +138,7 @@ void RadiationBand::RTSolverDisort::CalBandFlux(MeshBlock const *pmb, int k,
   pmb->pcoord->Face1Area(k, j, il, iu, farea_);
   pmb->pcoord->CellVolume(k, j, il, iu - 1, vol_);
 
-  Real dist_au = prepareSpectralBand(pmb);
+  Real dist_au = prepareSpectralBand(pmb, k, j);
 
   // loop over spectral grids in the band
   int b = 0;
@@ -215,8 +220,8 @@ void RadiationBand::RTSolverDisort::addDisortFlux(Coordinates const *pcoord,
 void RadiationBand::RTSolverDisort::CalBandRadiance(MeshBlock const *pmb, int k,
                                                     int j) {
   if (!IsFinalized()) {
-    throw std::runtime_error("RTSolverDisort::CalBandRadiance",
-                             "DISORT solver not finalized");
+    throw RuntimeError("RTSolverDisort::CalBandRadiance",
+                       "DISORT solver not finalized");
   }
 
   if (ds_.flag.onlyfl) {
@@ -242,7 +247,7 @@ void RadiationBand::RTSolverDisort::CalBandRadiance(MeshBlock const *pmb, int k,
     pmy_band_->btoa(n, k, j) = 0.;
   }
 
-  Real dist_au = prepareSpectralBand(pmb);
+  Real dist_au = prepareSpectralBand(pmb, k, j);
 
   // loop over spectral grids in the band
   int b = 0;
@@ -276,8 +281,9 @@ void RadiationBand::RTSolverDisort::addDisortRadiance(Coordinates const *pcoord,
   auto &btoa = pmy_band_->btoa;
   auto &spec = pmy_band_->pgrid_->spec;
 
-  for (int count = 0; cout < ds_.nphi * ds_.ntau * ds_.numu; ++count) {
-    btoa(count, k, j) += spec[b].wght * ds_out_.uu[count];
+  for (int c = 0; c < ds_.nphi * ds_.ntau * ds_.numu; ++c) {
+    btoa(c, k, j) += spec[b].wght * ds_out_.uu[c];
   }
+}
 
 #endif  // RT_DISORT

@@ -70,9 +70,8 @@ Radiation::Radiation(MeshBlock *pmb, ParameterInput *pin) {
     }
 
     // allocate memory
-    p->Resize(ncells1, ncells2, ncells3);
-    if (p->psolver != nullptr)
-      p->psolver->Resize(ncells1 - 2 * NGHOST, nstr, nuphi, numu);
+    p->Resize(ncells1, ncells2, ncells3, nstr);
+    p->ResizeSolver(ncells1 - 2 * NGHOST, nstr, nuphi, numu);
   }
 
   // output radiance

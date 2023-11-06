@@ -126,6 +126,28 @@ def run_kcoeff(inpfile: str, ncfile: str) -> None:
 
     process.communicate()
 
+# create atmosphere dictionary
+def create_atmosphere(nlyr: int) -> dict:
+    atm = {}
+    ps_mbar = 1.0e3
+    Ts_K = 300.0
+    grav_ms2 = 9.8
+    mu_kgmol = 29.0e-3
+    Rgas_JKmol = 8.314
+    Rgas_Jkg = Rgas_JKmol / mu_kgmol
+    Hscale_km = Rgas_Jkg * Ts_K / grav_ms2 * 1.e-3
+
+    # km
+    atm["HGT"] = linspace(0, 20, nlyr, endpoint=False)
+    atm["PRE"] = ps_mbar * exp(-atm["HGT"] / Hscale_km)
+    atm["TEM"] = Ts_K * ones(nlyr)
+    # ppmv
+    atm["CO2"] = 400.0 * ones(nlyr)
+    # ppmv
+    atm["H2O"] = 4000.0 * exp(-atm["HGT"] / (Hscale_km / 5.))
+
+    return atm
+
 
 if __name__ == "__main__":
     info = load_file("example_earth.yaml")
@@ -144,28 +166,13 @@ if __name__ == "__main__":
         absorbers.append(band.get_absorber(i).get_name())
 
     # create atmosphere dictionary
-    atm = {}
-    ps_mbar = 1.0e3
-    Ts_K = 300.0
-    grav_ms2 = 9.8
-    mu_kgmol = 29.0e-3
-    Rgas_JKmol = 8.314
-    Rgas_Jkg = Rgas_JKmol / mu_kgmol
-    Hscale_km = Rgas_Jkg * Ts_K / grav_ms2 * 1.e-3
     num_layers = 100
+    atm = create_atmosphere(num_layers)
 
-    # km
-    atm["HGT"] = linspace(0, 20, num_layers, endpoint=False)
-    atm["PRE"] = ps_mbar * exp(-atm["HGT"] / Hscale_km)
-    atm["TEM"] = Ts_K * ones(num_layers)
-    # ppmv
-    atm["CO2"] = 400.0 * ones(num_layers)
-    # ppmv
-    atm["H2O"] = 4000.0 * exp(-atm["HGT"] / (Hscale_km / 5.))
-
+    # create rfm atmosphere file
     create_rfm_atm(absorbers, atm)
 
-    # create temperature pertubation
+    # create spectral grid
     tem_grid = (5, -20, 20)
     wav_grid = (wmin, wmax, wres)
 

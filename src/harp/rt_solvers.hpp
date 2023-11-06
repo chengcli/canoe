@@ -39,7 +39,7 @@ class RadiationBand::RTSolver : public NamedGroup {
   }
 
  public:  // member functions
-  virtual void Resize(int nlyr, int nstr, int numu, int nuphi) {}
+  virtual void Resize(int nlyr, int nstr, int nuphi, int numu) {}
 
  public:  // inbound functions
   virtual void CalBandFlux(MeshBlock const *pmb, int k, int j, int il, int iu) {
@@ -55,9 +55,8 @@ class RadiationBand::RTSolver : public NamedGroup {
 
 class RadiationBand::RTSolverLambert : public RadiationBand::RTSolver {
  public:  // constructor and destructor
-  RTSolverLambert(RadiationBand *pmy_band, YAML::Node const &rt)
+  RTSolverLambert(RadiationBand *pmy_band, YAML::Node const &rad)
       : RTSolver(pmy_band, "Lambert") {}
-
   ~RTSolverLambert() {}
 
  public:  // inbound functions
@@ -70,11 +69,11 @@ class RadiationBand::RTSolverLambert : public RadiationBand::RTSolver {
 class RadiationBand::RTSolverDisort : public RadiationBand::RTSolver,
                                       protected DisortWrapper {
  public:  // constructor and destructor
-  RTSolverDisort(RadiationBand *pmy_band,
-                 YAML::Node const &rt) ~RTSolverDisort() {}
+  RTSolverDisort(RadiationBand *pmy_band, YAML::Node const &rad);
+  ~RTSolverDisort() {}
 
  public:  // member functions
-  virtual void Resize(int nlyr, int nstr, int numu, int nuphi) override;
+  virtual void Resize(int nlyr, int nstr, int nuphi, int numu) override;
 
  public:  // inbound functions
   void CalBandFlux(MeshBlock const *pmb, int k, int j, int il, int iu) override;
@@ -84,7 +83,7 @@ class RadiationBand::RTSolverDisort : public RadiationBand::RTSolver,
  protected:
   void setFlagsFromNode(YAML::Node const &flags);
 
-  Real prepareSpectralBand(MeshBlock const *pmb);
+  Real prepareSpectralBand(MeshBlock const *pmb, int k, int j);
 
   void addDisortFlux(Coordinates const *pcoord, int n, int k, int j, int il,
                      int iu);
