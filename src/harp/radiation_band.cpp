@@ -66,9 +66,9 @@ RadiationBand::RadiationBand(std::string myname, YAML::Node const &rad)
 
   // set rt solver
   if (my["rt-solver"]) {
-    psolver = CreateRTSolverFrom(my["rt-solver"].as<std::string>(), rad);
+    psolver_ = CreateRTSolverFrom(my["rt-solver"].as<std::string>(), rad);
   } else {
-    psolver = nullptr;
+    psolver_ = nullptr;
   }
 
   char buf[80];
@@ -114,7 +114,7 @@ void RadiationBand::Resize(int nc1, int nc2, int nc3, int nstr) {
 }
 
 void RadiationBand::ResizeSolver(int nlyr, int nstr, int nuphi, int numu) {
-  psolver->Resize(nlyr, nstr, nuphi, numu);
+  if (psolver_ != nullptr) psolver_->Resize(nlyr, nstr, nuphi, numu);
 }
 
 AbsorberPtr RadiationBand::GetAbsorberByName(std::string const &name) {
@@ -127,6 +127,29 @@ AbsorberPtr RadiationBand::GetAbsorberByName(std::string const &name) {
   throw NotFoundError("RadiationBand", "Absorber " + name);
 
   return nullptr;
+}
+
+void RadiationBand::CalBandFlux(MeshBlock const *pmb, int k, int j, int il,
+                                int iu) {
+  // reset flux of this column
+  for (int i = il; i <= iu; ++i) {
+    bflxup(k, j, i) = 0.;
+    bflxdn(k, j, i) = 0.;
+  }
+
+  psolver_->Prepare(pmb, k, j);
+  psolver_->CalBandFlux(pmb, k, j, il, iu);
+}
+
+void RadiationBand::CalBandRadiance(MeshBlock const *pmb, int k, int j) {
+  // reset radiance of this column
+  for (int n = 0; n < GetNumOutgoingRays(); ++n) {
+    btoa(n, k, j) = 0.;
+    btoa(n, k, j) = 0.;
+  }
+
+  psolver_->Prepare(pmb, k, j);
+  psolver_->CalBandRadiance(pmb, k, j);
 }
 
 void RadiationBand::WriteAsciiHeader(OutputParameters const *pout) const {

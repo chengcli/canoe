@@ -132,7 +132,7 @@ void Radiation::CalRadiativeFlux(MeshBlock const *pmb, int k, int j, int il,
   for (auto &p : bands_) {
     // iu ~= ie + 1
     p->SetSpectralProperties(ac, pcoord, grav, k, j);
-    p->psolver->CalBandFlux(pmb, k, j, il, iu);
+    p->CalBandFlux(pmb, k, j, il, iu);
   }
 }
 
@@ -149,7 +149,7 @@ void Radiation::CalRadiance(MeshBlock const *pmb, int k, int j) {
   for (auto &p : bands_) {
     // iu ~= ie + 1
     p->SetSpectralProperties(ac, pcoord, grav, k, j);
-    p->psolver->CalBandRadiance(pmb, k, j);
+    p->CalBandRadiance(pmb, k, j);
   }
 }
 

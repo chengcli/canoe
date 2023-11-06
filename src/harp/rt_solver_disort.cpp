@@ -66,8 +66,8 @@ void RadiationBand::RTSolverDisort::Resize(int nlyr, int nstr, int nuphi,
 //! block r = 1 gets, 4 - 3 - 2
 //! block r = 2 gets, 2 - 1 - 0
 
-Real RadiationBand::RTSolverDisort::prepareSpectralBand(MeshBlock const *pmb,
-                                                        int k, int j) {
+void RadiationBand::RTSolverDisort::Prepare(MeshBlock const *pmb, int k,
+                                            int j) {
   auto &wmin = pmy_band_->wrange_.first;
   auto &wmax = pmy_band_->wrange_.second;
   auto planet = pmb->pimpl->planet;
@@ -119,26 +119,20 @@ Real RadiationBand::RTSolverDisort::prepareSpectralBand(MeshBlock const *pmb,
     ds_.wvnmhi = wmax;
   }
 
-  return dist_au;
+  pmb->pcoord->Face1Area(k, j, pmb->is, pmb->ie + 1, farea_);
+  pmb->pcoord->CellVolume(k, j, pmb->is, pmb->ie, vol_);
+
+  Finalize();
 }
 
 void RadiationBand::RTSolverDisort::CalBandFlux(MeshBlock const *pmb, int k,
                                                 int j, int il, int iu) {
-  if (!IsFinalized()) {
-    throw RuntimeError("RTSolverDisort::CalBandFlux",
-                       "DISORT solver not finalized");
+  Real dist_au;
+  if (pmy_band_->TestFlag(RadiationFlags::Dynamic)) {
+    dist_au = pmb->pimpl->planet->ParentDistanceInAu(time);
+  } else {
+    dist_au = pmb->pimpl->GetDistanceInAu();
   }
-
-  // reset flux of this column
-  for (int i = il; i <= iu; ++i) {
-    pmy_band_->bflxup(k, j, i) = 0.;
-    pmy_band_->bflxdn(k, j, i) = 0.;
-  }
-
-  pmb->pcoord->Face1Area(k, j, il, iu, farea_);
-  pmb->pcoord->CellVolume(k, j, il, iu - 1, vol_);
-
-  Real dist_au = prepareSpectralBand(pmb, k, j);
 
   // loop over spectral grids in the band
   int b = 0;
@@ -219,11 +213,6 @@ void RadiationBand::RTSolverDisort::addDisortFlux(Coordinates const *pcoord,
 
 void RadiationBand::RTSolverDisort::CalBandRadiance(MeshBlock const *pmb, int k,
                                                     int j) {
-  if (!IsFinalized()) {
-    throw RuntimeError("RTSolverDisort::CalBandRadiance",
-                       "DISORT solver not finalized");
-  }
-
   if (ds_.flag.onlyfl) {
     throw RuntimeError("RTSolverDisort::CalBandRadiance",
                        "Only flux calculation is requested");
@@ -241,13 +230,12 @@ void RadiationBand::RTSolverDisort::CalBandRadiance(MeshBlock const *pmb, int k,
                        "Number of outgoing rays does not match");
   }
 
-  // reset radiance of this column
-  for (int n = 0; n < pmy_band_->GetNumOutgoingRays(); ++n) {
-    pmy_band_->btoa(n, k, j) = 0.;
-    pmy_band_->btoa(n, k, j) = 0.;
+  Real dist_au;
+  if (pmy_band_->TestFlag(RadiationFlags::Dynamic)) {
+    dist_au = pmb->pimpl->planet->ParentDistanceInAu(time);
+  } else {
+    dist_au = pmb->pimpl->GetDistanceInAu();
   }
-
-  Real dist_au = prepareSpectralBand(pmb, k, j);
 
   // loop over spectral grids in the band
   int b = 0;

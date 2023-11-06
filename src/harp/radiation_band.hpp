@@ -40,9 +40,6 @@ class RadiationBand : public NamedGroup,
   class RTSolverLambert;
   class RTSolverDisort;
 
-  //! radiative transfer solver
-  std::shared_ptr<RTSolver> psolver;
-
   //! band optical depth
   AthenaArray<Real> btau;
 
@@ -121,6 +118,12 @@ class RadiationBand : public NamedGroup,
   void SetSpectralProperties(AirColumn &air, Coordinates const *pcoord,
                              Real grav, int k, int j);
 
+  //! \brief Calculate band radiative fluxes
+  void CalBandFlux(MeshBlock const *pmb, int k, int j, int il, int iu);
+
+  //! \brief Calculate band radiances
+  void CalBandRadiance(MeshBlock const *pmb, int k, int j);
+
   //! \brief Set outgoing ray directions
   //!
   //! \param[in] rayOutput outgoing ray directions
@@ -148,6 +151,9 @@ class RadiationBand : public NamedGroup,
   void Transfer(MeshBlock const *pmb, int n) override;
 
  protected:
+  //! radiative transfer solver
+  std::shared_ptr<RTSolver> psolver_;
+
   //! spectral grid
   std::shared_ptr<SpectralGridBase> pgrid_;
 
