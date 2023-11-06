@@ -73,8 +73,9 @@ class RadiationBand : public NamedGroup,
 
   //! \brief Create radiative transfer solver from YAML node
   //!
-  //! \param[in] name Name of the solver
-  std::shared_ptr<RTSolver> CreateRTSolverFrom(std::string const &rt_name);
+  //! \param[in] rad YAML node containing whole radiation configuration
+  std::shared_ptr<RTSolver> CreateRTSolverFrom(std::string const &name,
+                                               YAML::Node const &rad);
 
   //! Get number of spectral grids
   size_t GetNumSpecGrids() const { return pgrid_->spec.size(); }

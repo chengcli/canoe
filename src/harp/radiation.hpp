@@ -60,7 +60,7 @@ class Radiation : public RestartGroup,
   void CalRadiativeFlux(MeshBlock const *pmb, int k, int j, int il, int iu);
 
   //! \brief Calculate the radiance
-  void CalRadiance(MeshBlock const *pmb, int k, int j, int il, int iu);
+  void CalRadiance(MeshBlock const *pmb, int k, int j);
 
  public:  // outbound functions
   //! \brief Add the radiative flux to hydro energy flux

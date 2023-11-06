@@ -54,6 +54,11 @@ Radiation::Radiation(MeshBlock *pmb, ParameterInput *pin) {
   std::string str = pin->GetOrAddString("radiation", "indir", "(0.,0.)");
   rayInput_ = RadiationHelper::parse_radiation_directions(str);
 
+  // radiation configuration
+  int nstr = pin->GetOrAddInteger("radiation", "nstr", 8);
+  int nuphi = pin->GetOrAddInteger("radiation", "nuphi", 1);
+  int numu = pin->GetOrAddInteger("radiation", "numu", 1);
+
   for (auto &p : bands_) {
     // outgoing radiation direction (mu,phi) in degrees
     if (pin->DoesParameterExist("radiation", p->GetName() + ".outdir")) {
@@ -66,6 +71,8 @@ Radiation::Radiation(MeshBlock *pmb, ParameterInput *pin) {
 
     // allocate memory
     p->Resize(ncells1, ncells2, ncells3);
+    if (p->psolver != nullptr)
+      p->psolver->Resize(ncells1 - 2 * NGHOST, nstr, nuphi, numu);
   }
 
   // output radiance
@@ -130,8 +137,7 @@ void Radiation::CalRadiativeFlux(MeshBlock const *pmb, int k, int j, int il,
   }
 }
 
-void Radiation::CalRadiance(MeshBlock const *pmb, int k, int j, int il,
-                            int iu) {
+void Radiation::CalRadiance(MeshBlock const *pmb, int k, int j) {
   Application::Logger app("harp");
   app->Log("CalRadiance");
 
@@ -144,7 +150,7 @@ void Radiation::CalRadiance(MeshBlock const *pmb, int k, int j, int il,
   for (auto &p : bands_) {
     // iu ~= ie + 1
     p->SetSpectralProperties(ac, pcoord, grav, k, j);
-    p->psolver->CalBandRadiance(pmb, k, j, il, iu);
+    p->psolver->CalBandRadiance(pmb, k, j);
   }
 }
 

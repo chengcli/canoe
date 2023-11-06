@@ -22,10 +22,8 @@ void RadiationBand::RTSolverLambert::CalBandFlux(MeshBlock const *pmb, int k,
 }
 
 void RadiationBand::RTSolverLambert::CalBandRadiance(MeshBlock const *pmb,
-                                                     int k, int j, int il,
-                                                     int iu) {
+                                                     int k, int j) {
   RadiationBand *pband = pmy_band_;
-  std::vector<Real> taut(iu + 1);
 
   auto &rayOutput = pband->rayOutput_;
   auto &toa = pband->toa_;
@@ -36,6 +34,11 @@ void RadiationBand::RTSolverLambert::CalBandRadiance(MeshBlock const *pmb,
   auto &btoa = pband->btoa;
   //! \note $T ~ Ts*(\tau/\tau_s)^\alpha$ at lower boundary
   Real alpha = pband->HasPar("alpha") ? pband->GetPar<Real>("alpha") : 0.;
+
+  Real il = pmb->is;
+  Real iu = pmb->ie + 1;
+
+  std::vector<Real> taut(iu + 1);
 
   // integrate from top to bottom
   for (int m = 0; m < pband->GetNumOutgoingRays(); ++m) {

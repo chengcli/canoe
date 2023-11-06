@@ -71,7 +71,7 @@ RadiationBand::RadiationBand(std::string myname, YAML::Node const &rad)
 
   // set rt solver
   if (my["rt-solver"]) {
-    psolver = CreateRTSolverFrom(my["rt-solver"].as<std::string>());
+    psolver = CreateRTSolverFrom(my["rt-solver"].as<std::string>(), rad);
   } else {
     psolver = nullptr;
   }
@@ -191,14 +191,14 @@ void RadiationBand::WriteAsciiData(OutputParameters const *pout) const {
 }
 
 std::shared_ptr<RadiationBand::RTSolver> RadiationBand::CreateRTSolverFrom(
-    std::string const &rt_name) {
+    std::string const &rt_name, YAML::Node const &rad) {
   std::shared_ptr<RTSolver> psolver;
 
   if (rt_name == "Lambert") {
-    psolver = std::make_shared<RTSolverLambert>(this);
+    psolver = std::make_shared<RTSolverLambert>(this, rad);
 #ifdef RT_DISORT
   } else if (rt_name == "Disort") {
-    psolver = std::make_shared<RTSolverDisort>(this);
+    psolver = std::make_shared<RTSolverDisort>(this, rad);
 #endif  // RT_DISORT
   } else {
     throw NotFoundError("RadiationBand", rt_name);
