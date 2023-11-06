@@ -49,11 +49,6 @@ RadiationBand::RadiationBand(std::string myname, YAML::Node const &rad)
     SetRealsFrom(my["parameters"]);
   }
 
-  // number of phase function moments
-  nphase_moments_ = my["phase-function-moments"]
-                        ? my["phase-function-moments"].as<size_t>()
-                        : 1;
-
   pgrid_ = SpectralGridFactory::CreateFrom(my);
 
   wrange_ = pgrid_->ReadRangeFrom(my);
@@ -71,9 +66,9 @@ RadiationBand::RadiationBand(std::string myname, YAML::Node const &rad)
 
   // set rt solver
   if (my["rt-solver"]) {
-    psolver = CreateRTSolverFrom(my["rt-solver"].as<std::string>());
+    psolver_ = CreateRTSolverFrom(my["rt-solver"].as<std::string>(), rad);
   } else {
-    psolver = nullptr;
+    psolver_ = nullptr;
   }
 
   char buf[80];
@@ -87,7 +82,7 @@ RadiationBand::~RadiationBand() {
   app->Log("Destroy RadiationBand " + GetName());
 }
 
-void RadiationBand::Resize(int nc1, int nc2, int nc3) {
+void RadiationBand::Resize(int nc1, int nc2, int nc3, int nstr) {
   // allocate memory for spectral properties
   tem_.resize(nc1);
   temf_.resize(nc1 + 1);
@@ -101,7 +96,7 @@ void RadiationBand::Resize(int nc1, int nc2, int nc3) {
   toa_.NewAthenaArray(pgrid_->spec.size(), rayOutput_.size());
   toa_.ZeroClear();
 
-  pmom_.NewAthenaArray(pgrid_->spec.size(), nc1, nphase_moments_ + 1);
+  pmom_.NewAthenaArray(pgrid_->spec.size(), nc1, nstr + 1);
   pmom_.ZeroClear();
 
   flxup_.NewAthenaArray(pgrid_->spec.size(), nc1);
@@ -113,9 +108,13 @@ void RadiationBand::Resize(int nc1, int nc2, int nc3) {
   // band properties
   btau.NewAthenaArray(nc3, nc2, nc1);
   bssa.NewAthenaArray(nc3, nc2, nc1);
-  bpmom.NewAthenaArray(nphase_moments_ + 1, nc3, nc2, nc1);
+  bpmom.NewAthenaArray(nstr + 1, nc3, nc2, nc1);
 
   //! \note btoa, bflxup, bflxdn are shallow slices to Radiation variables
+}
+
+void RadiationBand::ResizeSolver(int nlyr, int nstr, int nuphi, int numu) {
+  if (psolver_ != nullptr) psolver_->Resize(nlyr, nstr, nuphi, numu);
 }
 
 AbsorberPtr RadiationBand::GetAbsorberByName(std::string const &name) {
@@ -128,6 +127,29 @@ AbsorberPtr RadiationBand::GetAbsorberByName(std::string const &name) {
   throw NotFoundError("RadiationBand", "Absorber " + name);
 
   return nullptr;
+}
+
+void RadiationBand::CalBandFlux(MeshBlock const *pmb, int k, int j, int il,
+                                int iu) {
+  // reset flux of this column
+  for (int i = il; i <= iu; ++i) {
+    bflxup(k, j, i) = 0.;
+    bflxdn(k, j, i) = 0.;
+  }
+
+  psolver_->Prepare(pmb, k, j);
+  psolver_->CalBandFlux(pmb, k, j, il, iu);
+}
+
+void RadiationBand::CalBandRadiance(MeshBlock const *pmb, int k, int j) {
+  // reset radiance of this column
+  for (int n = 0; n < GetNumOutgoingRays(); ++n) {
+    btoa(n, k, j) = 0.;
+    btoa(n, k, j) = 0.;
+  }
+
+  psolver_->Prepare(pmb, k, j);
+  psolver_->CalBandRadiance(pmb, k, j);
 }
 
 void RadiationBand::WriteAsciiHeader(OutputParameters const *pout) const {
@@ -191,14 +213,14 @@ void RadiationBand::WriteAsciiData(OutputParameters const *pout) const {
 }
 
 std::shared_ptr<RadiationBand::RTSolver> RadiationBand::CreateRTSolverFrom(
-    std::string const &rt_name) {
+    std::string const &rt_name, YAML::Node const &rad) {
   std::shared_ptr<RTSolver> psolver;
 
   if (rt_name == "Lambert") {
-    psolver = std::make_shared<RTSolverLambert>(this);
+    psolver = std::make_shared<RTSolverLambert>(this, rad);
 #ifdef RT_DISORT
   } else if (rt_name == "Disort") {
-    psolver = std::make_shared<RTSolverDisort>(this);
+    psolver = std::make_shared<RTSolverDisort>(this, rad);
 #endif  // RT_DISORT
   } else {
     throw NotFoundError("RadiationBand", rt_name);

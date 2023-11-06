@@ -1,6 +1,7 @@
 clang-format
 cmake
 nco
+ncview
 libnetcdf-dev
 libpnetcdf-dev
 libboost-all-dev

@@ -16,3 +16,8 @@ B1:
   wavenumber-range: [600., 700.]
   resolution: 0.01
   opacity: [H2O, CO2]
+  rt-solver: Disort
+  outdir: (0,0)
+
+Disort:
+  prnt: [1,1,1,1,1]

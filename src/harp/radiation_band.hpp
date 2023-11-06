@@ -40,9 +40,6 @@ class RadiationBand : public NamedGroup,
   class RTSolverLambert;
   class RTSolverDisort;
 
-  //! radiative transfer solver
-  std::shared_ptr<RTSolver> psolver;
-
   //! band optical depth
   AthenaArray<Real> btau;
 
@@ -69,12 +66,16 @@ class RadiationBand : public NamedGroup,
 
  public:  // member functions
   //! \brief Allocate memory for radiation band
-  void Resize(int nc1, int nc2 = 1, int nc3 = 1);
+  void Resize(int nc1, int nc2 = 1, int nc3 = 1, int nstr = 8);
+
+  //! \brief Allocate memory for radiation solver
+  void ResizeSolver(int nlyr, int nstr = 8, int nuphi = 1, int numu = 1);
 
   //! \brief Create radiative transfer solver from YAML node
   //!
-  //! \param[in] name Name of the solver
-  std::shared_ptr<RTSolver> CreateRTSolverFrom(std::string const &rt_name);
+  //! \param[in] rad YAML node containing whole radiation configuration
+  std::shared_ptr<RTSolver> CreateRTSolverFrom(std::string const &name,
+                                               YAML::Node const &rad);
 
   //! Get number of spectral grids
   size_t GetNumSpecGrids() const { return pgrid_->spec.size(); }
@@ -83,7 +84,7 @@ class RadiationBand : public NamedGroup,
   size_t GetNumAbsorbers() const { return absorbers_.size(); }
 
   //! Get number of phase function moments
-  size_t GetNumPhaseMoments() const { return nphase_moments_; }
+  size_t GetNumPhaseMoments() const { return pmom_.GetDim1() - 1; }
 
   //! Get number of phase function moments
   size_t GetNumLayers() const { return tem_.size() - 2 * NGHOST; }
@@ -117,6 +118,12 @@ class RadiationBand : public NamedGroup,
   void SetSpectralProperties(AirColumn &air, Coordinates const *pcoord,
                              Real grav, int k, int j);
 
+  //! \brief Calculate band radiative fluxes
+  void CalBandFlux(MeshBlock const *pmb, int k, int j, int il, int iu);
+
+  //! \brief Calculate band radiances
+  void CalBandRadiance(MeshBlock const *pmb, int k, int j);
+
   //! \brief Set outgoing ray directions
   //!
   //! \param[in] rayOutput outgoing ray directions
@@ -144,8 +151,8 @@ class RadiationBand : public NamedGroup,
   void Transfer(MeshBlock const *pmb, int n) override;
 
  protected:
-  //! \brief number of phase function moments
-  size_t nphase_moments_;
+  //! radiative transfer solver
+  std::shared_ptr<RTSolver> psolver_;
 
   //! spectral grid
   std::shared_ptr<SpectralGridBase> pgrid_;

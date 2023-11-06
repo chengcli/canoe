@@ -45,6 +45,7 @@ endforeach()
 file(COPY clean_rfm_runs.sh DESTINATION ${CMAKE_BINARY_DIR}/bin)
 
 configure_file(run_ktable_simple.py.in ${CMAKE_BINARY_DIR}/bin/run_ktable_simple.py @ONLY)
+configure_file(run_disort_rt.py.in ${CMAKE_BINARY_DIR}/bin/run_disort_rt.py @ONLY)
 configure_file(cktable.py.in ${CMAKE_BINARY_DIR}/bin/cktable.py @ONLY)
 
 # copy yaml and inp files

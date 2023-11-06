@@ -12,6 +12,7 @@
 
 // canoe
 #include <configure.hpp>
+#include <virtual_groups.hpp>
 
 // cppdisort
 #ifdef RT_DISORT
@@ -27,6 +28,9 @@ class RadiationBand::RTSolver : public NamedGroup {
       : NamedGroup(name), pmy_band_(pmy_band) {
     Application::Logger app("harp");
     app->Log("Initialize RTSolver " + GetName());
+
+    farea_.NewAthenaArray(pmy_band_->GetNumLayers() + 2 * NGHOST);
+    vol_.NewAthenaArray(pmy_band_->GetNumLayers() + 2 * NGHOST);
   }
 
   virtual ~RTSolver() {
@@ -34,45 +38,59 @@ class RadiationBand::RTSolver : public NamedGroup {
     app->Log("Destroy RTSolver " + GetName());
   }
 
+ public:  // member functions
+  //! \brief Prepare and seal the solver for the current column
+  virtual void Prepare(MeshBlock const *pmb, int k, int j) {}
+
+  //! \brief Allocate memory for radiation solver
+  virtual void Resize(int nlyr, int nstr, int nuphi, int numu) {}
+
  public:  // inbound functions
   virtual void CalBandFlux(MeshBlock const *pmb, int k, int j, int il, int iu) {
   }
 
-  virtual void CalBandRadiance(MeshBlock const *pmb, int k, int j, int il,
-                               int iu) {}
+  virtual void CalBandRadiance(MeshBlock const *pmb, int k, int j) {}
 
  protected:
   RadiationBand *pmy_band_;
+  AthenaArray<Real> farea_, vol_;
+  int myrank_in_column_;
 };
 
 class RadiationBand::RTSolverLambert : public RadiationBand::RTSolver {
  public:  // constructor and destructor
-  explicit RTSolverLambert(RadiationBand *pmy_band)
+  RTSolverLambert(RadiationBand *pmy_band, YAML::Node const &rad)
       : RTSolver(pmy_band, "Lambert") {}
-
   ~RTSolverLambert() {}
 
  public:  // inbound functions
   void CalBandFlux(MeshBlock const *pmb, int k, int j, int il, int iu) override;
 
-  void CalBandRadiance(MeshBlock const *pmb, int k, int j, int il,
-                       int iu) override;
+  void CalBandRadiance(MeshBlock const *pmb, int k, int j) override;
 };
 
 #ifdef RT_DISORT
 class RadiationBand::RTSolverDisort : public RadiationBand::RTSolver,
-                                      public DisortWrapper {
+                                      protected DisortWrapper {
  public:  // constructor and destructor
-  explicit RTSolverDisort(RadiationBand *pmy_band)
-      : RTSolver(pmy_band, "Disort") {}
-
+  RTSolverDisort(RadiationBand *pmy_band, YAML::Node const &rad);
   ~RTSolverDisort() {}
+
+ public:  // member functions
+  void Prepare(MeshBlock const *pmb, int k, int j) override;
+  void Resize(int nlyr, int nstr, int nuphi, int numu) override;
 
  public:  // inbound functions
   void CalBandFlux(MeshBlock const *pmb, int k, int j, int il, int iu) override;
+  void CalBandRadiance(MeshBlock const *pmb, int k, int j) override;
 
-  void CalBandRadiance(MeshBlock const *pmb, int k, int j, int il,
-                       int iu) override;
+ protected:
+  void setFlagsFromNode(YAML::Node const &flags);
+
+  void addDisortFlux(Coordinates const *pcoord, int n, int k, int j, int il,
+                     int iu);
+
+  void addDisortRadiance(Coordinates const *pcoord, int n, int k, int j);
 };
 #endif
 

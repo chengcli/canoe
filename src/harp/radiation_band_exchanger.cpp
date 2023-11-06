@@ -45,7 +45,8 @@ bool RadiationBand::UnpackTemperature(void *arg) {
 
 void RadiationBand::PackSpectralGrid(int b) {
   int nlayers = GetNumLayers();
-  send_buffer_[1].resize(nlayers * (nphase_moments_ + 3));
+  int npmom = GetNumPhaseMoments();
+  send_buffer_[1].resize(nlayers * (npmom + 3));
 
   auto buf = send_buffer_[1].data();
 
@@ -53,7 +54,7 @@ void RadiationBand::PackSpectralGrid(int b) {
     int i1 = i + NGHOST;
     *(buf++) = tau_(b, i1);
     *(buf++) = ssa_(b, i1);
-    for (int j = 0; j <= nphase_moments_; ++j) {
+    for (int j = 0; j <= npmom; ++j) {
       *(buf++) = pmom_(b, i1, j);
     }
   }
@@ -62,7 +63,7 @@ void RadiationBand::PackSpectralGrid(int b) {
 bool RadiationBand::UnpackSpectralGrid(void *arg) {
   int nblocks = 1;
   int nlayers = GetNumLayers();
-  int npmom = nphase_moments_;
+  int npmom = GetNumPhaseMoments();
 
 #ifdef MPI_PARALLEL
   MPI_Comm_size(mpi_comm_, &nblocks);
@@ -106,6 +107,7 @@ bool RadiationBand::UnpackSpectralGrid(void *arg) {
 void RadiationBand::Transfer(MeshBlock const *pmb, int n) {
   int nblocks = 1;
   int nlayers = GetNumLayers();
+  int npmom = GetNumPhaseMoments();
   int size = send_buffer_[n].size();
 
 #ifdef MPI_PARALLEL
@@ -115,7 +117,7 @@ void RadiationBand::Transfer(MeshBlock const *pmb, int n) {
   if (n == 0) {
     recv_buffer_[0].resize(nblocks * size);
   } else if (n == 1) {
-    recv_buffer_[1].resize(nblocks * nlayers * (nphase_moments_ + 3));
+    recv_buffer_[1].resize(nblocks * nlayers * (npmom + 3));
   }
 
 #ifdef MPI_PARALLEL

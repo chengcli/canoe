@@ -28,8 +28,8 @@
 void RadiationBand::SetSpectralProperties(AirColumn& ac,
                                           Coordinates const* pcoord, Real grav,
                                           int k, int j) {
-  int nspec = pgrid_->spec.size();
-  int npmom = nphase_moments_;
+  int nspec = GetNumSpecGrids();
+  int npmom = GetNumPhaseMoments();
 
   // set tau, ssalb, pmom, etc...
   tau_.ZeroClear();
