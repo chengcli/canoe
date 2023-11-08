@@ -1,12 +1,15 @@
 opacity-sources:
-  - name: CO2
-    class: Hitran
-
   - name: H2O
     class: Hitran
+    dependent-species: [vapor.H2O]
+
+  - name: CO2
+    class: Hitran
+    dependent-species: [tracer.CO2]
 
   - name: O3
     class: Hitran
+    dependent-species: [tracer.O3]
 
 bands: [B1]
 

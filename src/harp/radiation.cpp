@@ -128,10 +128,11 @@ void Radiation::CalRadiativeFlux(MeshBlock const *pmb, int k, int j, int il,
   AirColumn &&ac = AirParcelHelper::gather_from_primitive(pmb, k, j);
 
   Real grav = -pmb->phydro->hsrc.GetG1();
+  Real H0 = pmb->pcoord->GetPressureScaleHeight();
 
   for (auto &p : bands_) {
     // iu ~= ie + 1
-    p->SetSpectralProperties(ac, pcoord, grav, k, j);
+    p->SetSpectralProperties(ac, pcoord->dx1f.data(), grav * H0, k, j);
     p->CalBandFlux(pmb, k, j, il, iu);
   }
 }
@@ -145,10 +146,11 @@ void Radiation::CalRadiance(MeshBlock const *pmb, int k, int j) {
   AirColumn &&ac = AirParcelHelper::gather_from_primitive(pmb, k, j);
 
   Real grav = -pmb->phydro->hsrc.GetG1();
+  Real H0 = pmb->pcoord->GetPressureScaleHeight();
 
   for (auto &p : bands_) {
     // iu ~= ie + 1
-    p->SetSpectralProperties(ac, pcoord, grav, k, j);
+    p->SetSpectralProperties(ac, pcoord->dx1f.data(), grav * H0, k, j);
     p->CalBandRadiance(pmb, k, j);
   }
 }

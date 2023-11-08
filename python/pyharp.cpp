@@ -20,13 +20,16 @@
 
 namespace py = pybind11;
 
-void init_index_map(ParameterInput *pin) { IndexMap::InitFromAthenaInput(pin); }
+void subscribe_species(std::map<std::string, std::vector<std::string>> smap) {
+  IndexMap::InitFromSpeciesMap(smap);
+}
 
 PYBIND11_MODULE(pyharp, m) {
   m.attr("__name__") = "pyharp";
   m.doc() = "Python bindings for harp module";
 
   m.def("init_index_map", &init_index_map);
+  m.def("subscribe_species", &subscribe_species);
 
   // Radiation
   py::class_<Radiation>(m, "radiation")
@@ -43,23 +46,34 @@ PYBIND11_MODULE(pyharp, m) {
 
   // RadiationBand
   py::class_<RadiationBand, RadiationBandPtr>(m, "radiation_band")
-      .def_readonly("btau", &RadiationBand::btau)
-      .def_readonly("bssa", &RadiationBand::bssa)
-      .def_readonly("bpmom", &RadiationBand::bpmom)
-      .def_readonly("bflxup", &RadiationBand::bflxup)
-      .def_readonly("bflxdn", &RadiationBand::bflxdn)
+          .def_readonly("btau", &RadiationBand::btau)
+          .def_readonly("bssa", &RadiationBand::bssa)
+          .def_readonly("bpmom", &RadiationBand::bpmom)
+          .def_readonly("bflxup", &RadiationBand::bflxup)
+          .def_readonly("bflxdn", &RadiationBand::bflxdn)
 
-      .def(py::init<std::string, YAML::Node>())
+          .def(py::init<std::string, YAML::Node>())
 
-      .def("resize", &RadiationBand::Resize, py::arg("nc1"), py::arg("nc2") = 1,
-           py::arg("nc3") = 1, py::arg("nstr") = 8)
-      .def("resize_solver", &RadiationBand::ResizeSolver, py::arg("nlyr"),
-           py::arg("nstr") = 1, py::arg("nuphi") = 1, py::arg("numu") = 1)
-      .def("get_num_spec_grids", &RadiationBand::GetNumSpecGrids)
-      .def("get_num_absorbers", &RadiationBand::GetNumAbsorbers)
-      .def("get_absorber", &RadiationBand::GetAbsorber)
-      .def("get_absorber_by_name", &RadiationBand::GetAbsorberByName)
-      .def("get_range", &RadiationBand::GetRange)
+          .def("resize", &RadiationBand::Resize, py::arg("nc1"),
+               py::arg("nc2") = 1, py::arg("nc3") = 1, py::arg("nstr") = 8)
+          .def("resize_solver", &RadiationBand::ResizeSolver, py::arg("nlyr"),
+               py::arg("nstr") = 1, py::arg("nuphi") = 1, py::arg("numu") = 1)
+          .def("get_num_spec_grids", &RadiationBand::GetNumSpecGrids)
+          .def("get_num_absorbers", &RadiationBand::GetNumAbsorbers)
+          .def("get_absorber", &RadiationBand::GetAbsorber)
+          .def("get_absorber_by_name", &RadiationBand::GetAbsorberByName)
+          .def("get_range", &RadiationBand::GetRange)
+
+          .def("set_spectral_properties",
+               [](std::map<std::string, std::vector<double>> &atm) {
+                 auto pindex = IndexMap::GetInstance();
+
+                 AirColumn ac;
+
+                 RadiationBand::SetSpectralProperties(ac, x1f, 0., 0, 0);
+               })
+
+      & RadiationBand::SetSpectralProperties,
 
       .def("__str__", [](RadiationBand &band) {
         std::stringstream ss;

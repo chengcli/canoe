@@ -90,8 +90,7 @@ void HitranAbsorber::LoadCoefficient(std::string fname, size_t bid) {
   nc_inq_dimlen(fileid, dimid, len_);
   nc_inq_dimid(fileid, "Pressure", &dimid);
   nc_inq_dimlen(fileid, dimid, len_ + 1);
-  snprintf(tname, sizeof(tname), "%s", "T_");
-  snprintf(tname, sizeof(tname), "%s%s", tname, GetName().c_str());
+  snprintf(tname, sizeof(tname), "T_%s", GetName().c_str());
   nc_inq_dimid(fileid, tname, &dimid);
   nc_inq_dimlen(fileid, dimid, len_ + 2);
 
@@ -103,8 +102,10 @@ void HitranAbsorber::LoadCoefficient(std::string fname, size_t bid) {
   if (err != NC_NOERR) throw std::runtime_error(nc_strerror(err));
   err = nc_get_var_double(fileid, varid, axis_.data() + len_[0]);
   if (err != NC_NOERR) throw std::runtime_error(nc_strerror(err));
-  nc_inq_varid(fileid, tname, &varid);
-  nc_get_var_double(fileid, varid, axis_.data() + len_[0] + len_[1]);
+  err = nc_inq_varid(fileid, tname, &varid);
+  if (err != NC_NOERR) throw std::runtime_error(nc_strerror(err));
+  err = nc_get_var_double(fileid, varid, axis_.data() + len_[0] + len_[1]);
+  if (err != NC_NOERR) throw std::runtime_error(nc_strerror(err));
 
   Real *temp = new Real[len_[1]];
   nc_inq_varid(fileid, "Temperature", &varid);

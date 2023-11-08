@@ -115,8 +115,8 @@ class RadiationBand : public NamedGroup,
   //! \param[in] grav gravitational acceleration
   //! \param[in] k horizontal index
   //! \param[in] j horizontal index
-  void SetSpectralProperties(AirColumn &air, Coordinates const *pcoord,
-                             Real grav, int k, int j);
+  void SetSpectralProperties(AirColumn &air, Real const *dx1f, Real gH0, int k,
+                             int j);
 
   //! \brief Calculate band radiative fluxes
   void CalBandFlux(MeshBlock const *pmb, int k, int j, int il, int iu);

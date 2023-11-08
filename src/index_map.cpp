@@ -37,15 +37,68 @@ IndexMap const* IndexMap::GetInstance() {
   return myindex_map_;
 }
 
-IndexMap const* IndexMap::InitFromAthenaInput(ParameterInput* pin) {
+void IndexMap::InitFromSpeciesMap(
+    std::map<std::string, std::vector<std::string>> const& smap) {
   if (myindex_map_ != nullptr) {
     throw RuntimeError("IndexMap", "IndexMap has been initialized");
   }
 
+  myindex_map_ = new IndexMap();
+
   Application::Logger app("canoe");
   app->Log("Initialize IndexMap");
 
+  std::vector<std::string> names;
+
+  // vapor id
+  if (smap.find("vapor") != smap.end()) {
+    names = smap.at("vapor");
+    if (names.size() > NVAPOR)
+      throw ValueError("IndexMap", "Number of vapors", NVAPOR, names.size());
+    for (size_t i = 0; i < names.size(); ++i)
+      myindex_map_->vapor_index_map_[names[i]] = 1 + i;
+  }
+
+  // cloud id
+  if (smap.find("cloud") != smap.end()) {
+    names = smap.at("cloud");
+    if (names.size() > NCLOUD)
+      throw ValueError("IndexMap", "Number of clouds", NCLOUD, names.size());
+    for (size_t i = 0; i < names.size(); ++i)
+      myindex_map_->cloud_index_map_[names[i]] = 1 + i;
+  }
+
+  // chemistry id
+  if (smap.find("chemistry") != smap.end()) {
+    names = smap.at("chemistry");
+    if (names.size() > NCHEMISTRY)
+      throw ValueError("IndexMap", "Number of chemistry", NCHEMISTRY,
+                       names.size());
+    for (size_t i = 0; i < names.size(); ++i)
+      myindex_map_->chemistry_index_map_[names[i]] = 1 + i;
+  }
+
+  // tracer id
+  if (smap.find("tracer") != smap.end()) {
+    names = smap.at("tracer");
+    if (names.size() > NTRACER)
+      throw ValueError("IndexMap", "Number of tracers", NTRACER, names.size());
+    for (size_t i = 0; i < names.size(); ++i)
+      myindex_map_->tracer_index_map_[names[i]] = i;
+  }
+
+  //! \todo add particle
+}
+
+void IndexMap::InitFromAthenaInput(ParameterInput* pin) {
+  if (myindex_map_ != nullptr) {
+    throw RuntimeError("IndexMap", "IndexMap has been initialized");
+  }
+
   myindex_map_ = new IndexMap();
+
+  Application::Logger app("canoe");
+  app->Log("Initialize IndexMap");
 
   auto& vapor_index_map = myindex_map_->vapor_index_map_;
   auto& cloud_index_map = myindex_map_->cloud_index_map_;
@@ -109,8 +162,6 @@ IndexMap const* IndexMap::InitFromAthenaInput(ParameterInput* pin) {
   for (size_t i = 0; i < names.size(); ++i) {
     particle_index_map[names[i]] = i;
   }
-
-  return myindex_map_;
 }
 
 size_t IndexMap::GetSpeciesId(std::string category_name) const {

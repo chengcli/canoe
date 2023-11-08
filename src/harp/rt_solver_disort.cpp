@@ -128,6 +128,7 @@ void RadiationBand::RTSolverDisort::Prepare(MeshBlock const *pmb, int k,
 void RadiationBand::RTSolverDisort::CalBandFlux(MeshBlock const *pmb, int k,
                                                 int j, int il, int iu) {
   Real dist_au;
+  Real time = pmb->pmy_mesh->time;
   if (pmy_band_->TestFlag(RadiationFlags::Dynamic)) {
     dist_au = pmb->pimpl->planet->ParentDistanceInAu(time);
   } else {
@@ -231,6 +232,7 @@ void RadiationBand::RTSolverDisort::CalBandRadiance(MeshBlock const *pmb, int k,
   }
 
   Real dist_au;
+  Real time = pmb->pmy_mesh->time;
   if (pmy_band_->TestFlag(RadiationFlags::Dynamic)) {
     dist_au = pmb->pimpl->planet->ParentDistanceInAu(time);
   } else {
