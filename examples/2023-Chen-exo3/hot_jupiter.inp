@@ -1,0 +1,80 @@
+<comment>
+problem   = Dense sinking bubble test
+reference = Straka et al., 1993
+configure = --patch=drum --coord=spherical_polar --prob=hjupiter --flux=lmars --nghost=3 --pnetcdf_path=../pnetcdf -pnetcdf -mpi
+
+<job>
+problem_id = hotjupiter   # problem ID: basename of output filenames
+
+<output1>
+file_type  = hst          # History data dump
+dt         = 1.728E4      # time increment between outputs
+
+<output2>
+file_type  = pnetcdf      # Binary data dump
+variable   = prim         # variables to be output
+dt         = 1.728E5      # time increment between outputs
+
+<output3>
+file_type  = pnetcdf
+variable   = uov
+dt         = 1.728E5
+
+<output4>
+file_type  = rst
+dt         = 1.728E7
+
+<time>
+cfl_number = 0.9          # The Courant, Friedrichs, & Lewy (CFL) Number
+nlim       = -1           # cycle limit
+tlim       = 1.0368E8     # time limit
+xorder     = 5            # horizontal reconstruction order
+integrator = rk3          # integration method
+
+<mesh>
+nx1        = 32           # Number of zones in X1-direction
+x1min      = 1.E8         # minimum value of X1
+x1max      = 1.03E8       # maximum value of X1
+ix1_bc     = reflecting   # inner-X1 boundary flag
+ox1_bc     = reflecting   # outer-X1 boundary flag
+
+nx2        = 80           # Number of zones in X2-direction
+x2min      = 0.     # minimum value of X2
+x2max      = 1.E3      # maximum value of X2
+ix2_bc     = periodic        # inner-X2 boundary flag
+ox2_bc     = periodic        # outer-X2 boundary flag
+
+nx3        = 120          # Number of zones in X3-direction
+x3min      = 0.0          # minimum value of X3
+x3max      = 1.E3      # maximum value of X3
+ix3_bc     = periodic     # inner-X3 boundary flag
+ox3_bc     = periodic     # outer-X3 boundary flag
+
+ReferencePressure = 1.E5
+PressureScaleHeight = 7.56E5
+
+<meshblock>
+nx1        = 32
+nx2        = 20
+nx3        = 20
+
+<hydro>
+grav_acc1   = -8.0
+gamma       = 1.4         # gamma = C_p/C_v
+implicit_flag = 1
+
+<thermodynamics>
+Rd          = 3779.       # Gas constant
+dT_e2p      = 300.        # Temperature contrast from equator to pole, K
+dT_stra     = 10.         # Temperature contrast, K
+z_stra      = 2.E6        # Stratosphere height, m 
+Gamma_trop  = 2.E-4       # Lapse rate, K/m
+
+<problem>
+Kt         = 1.5E5            # Damping timescale, s
+Ts         = 1600.            # Surface temperature, K
+p0         = 1.E5             # Surface pressure, Pa
+Rp         = 1.E8             # Planetary Radius, m
+Omega      = 2.1E-5           # Rotational frequency
+sigma_stra = 0.12
+sponge_tau = 1E4.

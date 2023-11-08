@@ -1,0 +1,75 @@
+<comment>
+problem   = Held-Suarez-1994 test of global circulation model
+reference = Held, I.M and Suarez, M.J. (1994)
+configure = --prob=hs94 --patch=drum --coord=spherical_polar --flux=lmars --nghost=3 --pnetcdf_path=../pnetcdf -pnetcdf -mpi
+<job>
+problem_id = polar_dry        # problem ID: basename of output filenames
+<output2>
+file_type  = pnetcdf     # netcdf data dump
+variable   = prim        # variables to be output
+dt         = 3.456E5     # time increment between outputs
+<output3>
+file_type  = pnetcdf     # netcdf data dump
+variable   = uov         # variables to be output
+dt         = 3.456E5     # time increment between outputs
+<output1>
+file_type   = hst         # History data dump
+dt          = 3.456E5      # time increment between outputs
+data_format = %15.12e
+<output4>
+file_type  = rst
+dt         = 1.0368E8
+<time>
+cfl_number = 0.8          # The Courant, Friedrichs, & Lewy (CFL) Number
+integrator = rk3          # integration method
+xorder     = 5            # horizontal reconstruction order
+nlim       = -1          # cycle limit
+tlim       = 1.0368E8    # time limit
+<mesh>
+nx1        = 25          # Number of zones in X1-direction (radial)
+x1min      = 0     # minimum value of X1
+x1max      = 100.E3     # maximum value of X1
+ix1_bc     = reflecting  # inner-X1 boundary flag
+ox1_bc     = reflecting  # outer-X1 boundary flag
+
+nx2        = 64          # Number of zones in X2-direction (polar angle)
+x2min      = -1.8E7          # minimum value of X2
+x2max      = 1.8E7   # maximum value of X2
+ix2_bc     = periodic       # inner-X2 boundary flag
+ox2_bc     = periodic       # outer-X2 boundary flag
+
+nx3        = 64         # Number of zones in X3-direction (azimuthal angle)
+x3min      = -1.8E7          # minimum value of X3
+x3max      = 1.8E7 # maximum value of X3
+ix3_bc     = periodic    # inner-X3 boundary flag
+ox3_bc     = periodic    # outer-X3 boundary flag
+
+ReferencePressure = 300.E5
+PressureScaleHeight = 27.E3
+
+<meshblock>
+nx1        = 25
+nx2        = 16
+nx3        = 16
+
+<hydro>
+gamma          = 1.47         # gamma = C_p/C_v
+grav_acc1      = -25.92         # gravity accelaration
+osponge1_tau   = 1.E5
+implicit_flag  = 1
+
+<thermodynamics>
+Rd         = 3613.
+cp         = 11300.
+
+<problem>
+Omega      = 1.74E-4
+Rp         = 7.149E7
+p0         = 300.E5      # surface pressure
+Ts         = 166.      # surface temperature
+Kf         = 1.
+z_iso      = 80.E3
+sponge_lat = 78.
+sponge_tau = 1E5.
+vis        = 0.
+heat_flux  = 7.7
