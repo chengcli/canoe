@@ -74,6 +74,34 @@ Radiation::Radiation(MeshBlock *pmb, ParameterInput *pin) {
     p->ResizeSolver(ncells1 - 2 * NGHOST, nstr, nuphi, numu);
   }
 
+  // output radiance
+  int nout = GetNumOutgoingRays();
+  if (nout > 0) {
+    radiance.NewAthenaArray(nout, ncells3, ncells2);
+    // set band toa
+    int n = 0;
+    for (auto &p : bands_) {
+      //! Delete the old array and initialize with a shallow slice
+      p->btoa.DeleteAthenaArray();
+      p->btoa.InitWithShallowSlice(radiance, 3, n, p->GetNumOutgoingRays());
+      n += p->GetNumOutgoingRays();
+    }
+  }
+
+  // output flux
+  flxup.NewAthenaArray(bands_.size(), ncells3, ncells2, ncells1 + 1);
+  flxdn.NewAthenaArray(bands_.size(), ncells3, ncells2, ncells1 + 1);
+
+  for (int n = 0; n < bands_.size(); ++n) {
+    //! Delete the old array and initialize with a shallow slice
+    bands_[n]->bflxup.DeleteAthenaArray();
+    bands_[n]->bflxup.InitWithShallowSlice(flxup, 4, n, 1);
+
+    //! Delete the old array and initialize with a shallow slice
+    bands_[n]->bflxdn.DeleteAthenaArray();
+    bands_[n]->bflxdn.InitWithShallowSlice(flxdn, 4, n, 1);
+  }
+
   // time control
   SetCooldownTime(pin->GetOrAddReal("radiation", "dt", 0.));
 }
@@ -173,6 +201,17 @@ size_t Radiation::LoadRestartData(char *psrc) {
 }
 
 namespace RadiationHelper {
+Direction parse_radiation_direction(std::string_view str) {
+  Direction ray;
+  ray.phi = 0.;
+
+  sscanf(str.data(), "(%lf,%lf)", &ray.mu, &ray.phi);
+  ray.mu = cos(deg2rad(ray.mu));
+  ray.phi = deg2rad(ray.phi);
+
+  return ray;
+}
+
 std::vector<Direction> parse_radiation_directions(std::string str) {
   std::vector<std::string> dstr = Vectorize<std::string>(str.c_str());
   int nray = dstr.size();
@@ -180,12 +219,8 @@ std::vector<Direction> parse_radiation_directions(std::string str) {
   std::vector<Direction> ray(nray);
 
   auto jt = dstr.begin();
-  for (auto it = ray.begin(); it != ray.end(); ++it, ++jt) {
-    it->phi = 0.;
-    sscanf(jt->c_str(), "(%lf,%lf)", &it->mu, &it->phi);
-    it->mu = cos(deg2rad(it->mu));
-    it->phi = deg2rad(it->phi);
-  }
+  for (auto it = ray.begin(); it != ray.end(); ++it, ++jt)
+    *it = parse_radiation_direction(*jt);
 
   return ray;
 }

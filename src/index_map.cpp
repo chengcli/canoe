@@ -37,7 +37,7 @@ IndexMap const* IndexMap::GetInstance() {
   return myindex_map_;
 }
 
-void IndexMap::InitFromSpeciesMap(
+IndexMap const* IndexMap::InitFromSpeciesMap(
     std::map<std::string, std::vector<std::string>> const& smap) {
   if (myindex_map_ != nullptr) {
     throw RuntimeError("IndexMap", "IndexMap has been initialized");
@@ -88,9 +88,10 @@ void IndexMap::InitFromSpeciesMap(
   }
 
   //! \todo add particle
+  return myindex_map_;
 }
 
-void IndexMap::InitFromAthenaInput(ParameterInput* pin) {
+IndexMap const* IndexMap::InitFromAthenaInput(ParameterInput* pin) {
   if (myindex_map_ != nullptr) {
     throw RuntimeError("IndexMap", "IndexMap has been initialized");
   }
@@ -99,12 +100,6 @@ void IndexMap::InitFromAthenaInput(ParameterInput* pin) {
 
   Application::Logger app("canoe");
   app->Log("Initialize IndexMap");
-
-  auto& vapor_index_map = myindex_map_->vapor_index_map_;
-  auto& cloud_index_map = myindex_map_->cloud_index_map_;
-  auto& chemistry_index_map = myindex_map_->chemistry_index_map_;
-  auto& tracer_index_map = myindex_map_->tracer_index_map_;
-  auto& particle_index_map = myindex_map_->particle_index_map_;
 
   // vapor id
   std::string str = pin->GetOrAddString("species", "vapor", "");
@@ -115,7 +110,7 @@ void IndexMap::InitFromAthenaInput(ParameterInput* pin) {
   }
 
   for (size_t i = 0; i < names.size(); ++i) {
-    vapor_index_map[names[i]] = 1 + i;
+    myindex_map_->vapor_index_map_[names[i]] = 1 + i;
   }
 
   // cloud id
@@ -127,7 +122,7 @@ void IndexMap::InitFromAthenaInput(ParameterInput* pin) {
   }
 
   for (size_t i = 0; i < names.size(); ++i) {
-    cloud_index_map[names[i]] = i;
+    myindex_map_->cloud_index_map_[names[i]] = i;
   }
 
   // chemistry id
@@ -140,7 +135,7 @@ void IndexMap::InitFromAthenaInput(ParameterInput* pin) {
   }
 
   for (size_t i = 0; i < names.size(); ++i) {
-    chemistry_index_map[names[i]] = i;
+    myindex_map_->chemistry_index_map_[names[i]] = i;
   }
 
   // tracer id
@@ -152,7 +147,7 @@ void IndexMap::InitFromAthenaInput(ParameterInput* pin) {
   }
 
   for (size_t i = 0; i < names.size(); ++i) {
-    tracer_index_map[names[i]] = i;
+    myindex_map_->tracer_index_map_[names[i]] = i;
   }
 
   // particle id
@@ -160,8 +155,10 @@ void IndexMap::InitFromAthenaInput(ParameterInput* pin) {
   names = Vectorize<std::string>(str.c_str(), " ,");
 
   for (size_t i = 0; i < names.size(); ++i) {
-    particle_index_map[names[i]] = i;
+    myindex_map_->particle_index_map_[names[i]] = i;
   }
+
+  return myindex_map_;
 }
 
 size_t IndexMap::GetSpeciesId(std::string category_name) const {

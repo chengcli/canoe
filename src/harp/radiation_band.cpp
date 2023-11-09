@@ -54,20 +54,36 @@ RadiationBand::RadiationBand(std::string myname, YAML::Node const &rad)
   wrange_ = pgrid_->ReadRangeFrom(my);
 
   if (my["outdir"]) {
-    std::string dirstr = my["outdir"].as<std::string>();
-    rayOutput_ = RadiationHelper::parse_radiation_directions(dirstr);
+    if (!my["outdir"].IsSequence()) {
+      throw RuntimeError("RadiationBand", "outdir must be a sequence");
+    }
+
+    for (const auto &item : my["outdir"]) {
+      rayOutput_.push_back(
+          RadiationHelper::parse_radiation_direction(item.as<std::string>()));
+    }
   }
 
   // set absorbers
   if (my["opacity"]) {
+    if (!my["opacity"].IsSequence()) {
+      throw RuntimeError("RadiationBand", "opacity must be a sequence");
+    }
+
     auto names = my["opacity"].as<std::vector<std::string>>();
     absorbers_ = AbsorberFactory::CreateFrom(names, GetName(), rad);
   }
 
   // set flags
   if (my["flags"]) {
-    SetFlag(
-        RadiationHelper::parse_radiation_flags(my["flags"].as<std::string>()));
+    if (!my["flags"].IsSequence()) {
+      throw RuntimeError("RadiationBand", "flags must be a sequence");
+    }
+
+    auto flag_strs = my["flags"].as<std::vector<std::string>>();
+    for (auto flag : flag_strs) {
+      SetFlag(RadiationHelper::parse_radiation_flags(flag));
+    }
   }
 
   // set rt solver

@@ -4,6 +4,7 @@
 // C/C++ headers
 #include <memory>
 #include <string>
+#include <string_view>
 #include <vector>
 
 // athena
@@ -100,6 +101,7 @@ const uint64_t WriteBinRadiance = 1LL << 8;
 }  // namespace RadiationFlags
 
 namespace RadiationHelper {
+Direction parse_radiation_direction(std::string_view str);
 std::vector<Direction> parse_radiation_directions(std::string str);
 uint64_t parse_radiation_flags(std::string str);
 void get_phase_momentum(Real *pmom, int iphas, Real gg, int npmom);

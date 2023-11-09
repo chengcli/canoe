@@ -45,7 +45,8 @@ RadiationBand::RTSolverDisort::RTSolverDisort(RadiationBand *pmy_band,
 void RadiationBand::RTSolverDisort::Resize(int nlyr, int nstr, int nuphi,
                                            int numu) {
   SetAtmosphereDimension(nlyr, nstr, nstr, nstr);
-  SetIntensityDimension(nuphi, 1, numu);
+  //! \todo revise this
+  SetIntensityDimension(nuphi, 1, pmy_band_->GetNumOutgoingRays());
   Finalize();
 
   Real utau = 0.;
