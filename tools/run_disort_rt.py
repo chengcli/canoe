@@ -1,22 +1,22 @@
 #! /usr/bin/env python3
-import sys, os, subprocess
-
-sys.path.append("@CMAKE_BINARY_DIR@/python")
-
-from pyharp import radiation_band
+from canoe import *
+from pyharp import radiation_band, subscribe_species
 from utilities import load_file
 from collections import OrderedDict
+from run_ktable_simple import create_atmosphere
 from numpy import *
 
-cmake_source_dir = "@CMAKE_SOURCE_DIR@"
-cmake_binary_dir = "@CMAKE_BINARY_DIR@"
-hitran_file = f"{cmake_source_dir}/data/HITRAN2020.par"
-
 if __name__ == "__main__":
-    info = load_file("example_earth_rt.yaml")
-    opacity = info["opacity-sources"]
-    band_name = str(info["bands"][0])
+    subscribe_species(
+        {
+            "vapor": ["H2O"],
+            "tracer": ["CO2", "O3"],
+        }
+    )
 
+    info = load_file("example_earth_rt.yaml")
+
+    band_name = str(info["bands"][0])
     band = radiation_band(band_name, info)
 
     num_absorbers = band.get_num_absorbers()
@@ -29,6 +29,7 @@ if __name__ == "__main__":
     band.resize_solver(num_layers)
 
     atm = create_atmosphere(num_layers)
+    band.set_spectral_properties(atm)
 
-    band.set_spectral_properties(atm);
-    rad = band.cal_radiance();
+    # print(band.btau)
+    band.cal_band_radiance()

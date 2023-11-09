@@ -74,27 +74,6 @@ Radiation::Radiation(MeshBlock *pmb, ParameterInput *pin) {
     p->ResizeSolver(ncells1 - 2 * NGHOST, nstr, nuphi, numu);
   }
 
-  // output radiance
-  int nout = GetNumOutgoingRays();
-  if (nout > 0) {
-    radiance.NewAthenaArray(nout, ncells3, ncells2);
-    // set band toa
-    int n = 0;
-    for (auto &p : bands_) {
-      p->btoa.InitWithShallowSlice(radiance, 3, n, p->GetNumOutgoingRays());
-      n += p->GetNumOutgoingRays();
-    }
-  }
-
-  // output flux
-  flxup.NewAthenaArray(bands_.size(), ncells3, ncells2, ncells1 + 1);
-  flxdn.NewAthenaArray(bands_.size(), ncells3, ncells2, ncells1 + 1);
-
-  for (int n = 0; n < bands_.size(); ++n) {
-    bands_[n]->bflxup.InitWithShallowSlice(flxup, 4, n, 1);
-    bands_[n]->bflxup.InitWithShallowSlice(flxdn, 4, n, 1);
-  }
-
   // time control
   SetCooldownTime(pin->GetOrAddReal("radiation", "dt", 0.));
 }
@@ -132,7 +111,7 @@ void Radiation::CalRadiativeFlux(MeshBlock const *pmb, int k, int j, int il,
 
   for (auto &p : bands_) {
     // iu ~= ie + 1
-    p->SetSpectralProperties(ac, pcoord->dx1f.data(), grav * H0, k, j);
+    p->SetSpectralProperties(ac, pcoord->x1f.data(), grav * H0, k, j);
     p->CalBandFlux(pmb, k, j, il, iu);
   }
 }
@@ -150,7 +129,7 @@ void Radiation::CalRadiance(MeshBlock const *pmb, int k, int j) {
 
   for (auto &p : bands_) {
     // iu ~= ie + 1
-    p->SetSpectralProperties(ac, pcoord->dx1f.data(), grav * H0, k, j);
+    p->SetSpectralProperties(ac, pcoord->x1f.data(), grav * H0, k, j);
     p->CalBandRadiance(pmb, k, j);
   }
 }
@@ -240,7 +219,7 @@ uint64_t parse_radiation_flags(std::string str) {
     } else if (dstr[i] == "write_bin_radiance") {
       flags |= RadiationFlags::WriteBinRadiance;
     } else {
-      msg << "flag:" << dstr[i] << "unrecognized" << std::endl;
+      msg << "flag: '" << dstr[i] << "' unrecognized" << std::endl;
       throw RuntimeError("parse_radiation_flags", msg.str());
     }
 

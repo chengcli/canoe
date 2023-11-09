@@ -16,6 +16,7 @@
 // canoe
 #include <air_parcel.hpp>
 #include <common.hpp>
+#include <configure.hpp>
 #include <virtual_groups.hpp>
 
 // harp
@@ -23,6 +24,15 @@
 
 // exchanger
 #include <exchanger/linear_exchanger.hpp>
+
+#ifdef PYTHON_BINDINGS
+// pybind11
+// #include <pybind11/numpy.h>
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
+
+namespace py = pybind11;
+#endif  // PYTHON_BINDINGS
 
 class OutputParameters;
 class Absorber;
@@ -56,8 +66,6 @@ class RadiationBand : public NamedGroup,
   AthenaArray<Real> bflxdn;
 
   //! \brief band top-of-the-atmosphere radiance
-  //!
-  //! This is a shallow reference to radiance in Radiation
   AthenaArray<Real> btoa;
 
  public:  // constructor and destructor
@@ -107,22 +115,29 @@ class RadiationBand : public NamedGroup,
   //! Get azimuthal angle of the outgoing ray
   Real GetAzimuthalAngle(int n) const { return rayOutput_[n].phi; }
 
+#ifdef PYTHON_BINDINGS
+  py::array_t<double> GetTOAIntensity() const {
+    py::array_t<double> ndarray({GetNumSpecGrids(), 1}, toa_.data());
+    return ndarray;
+  }
+#endif  // PYTHON_BINDINGS
+
  public:  // inbound functions
   //! \brief Set spectral properties for an air column
   //!
   //! \param[in] air mole fraction representation of air column
   //! \param[in] pcoord coordinates
-  //! \param[in] grav gravitational acceleration
+  //! \param[in] gH0 grav * H0
   //! \param[in] k horizontal index
   //! \param[in] j horizontal index
-  void SetSpectralProperties(AirColumn &air, Real const *dx1f, Real gH0, int k,
-                             int j);
+  void SetSpectralProperties(AirColumn &air, Real const *x1f, Real gH0 = 0,
+                             int k = 0, int j = 0);
 
   //! \brief Calculate band radiative fluxes
   void CalBandFlux(MeshBlock const *pmb, int k, int j, int il, int iu);
 
   //! \brief Calculate band radiances
-  void CalBandRadiance(MeshBlock const *pmb, int k, int j);
+  void CalBandRadiance(MeshBlock const *pmb = nullptr, int k = 0, int j = 0);
 
   //! \brief Set outgoing ray directions
   //!

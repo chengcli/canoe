@@ -20,7 +20,9 @@ B1:
   resolution: 0.01
   opacity: [H2O, CO2]
   rt-solver: Disort
-  outdir: (0,0)
+  outdir: (45,)
+  flags: "static, planck"
 
 Disort:
-  prnt: [1,1,1,1,1]
+  prnt: [0,0,0,0,0]
+  quiet: true

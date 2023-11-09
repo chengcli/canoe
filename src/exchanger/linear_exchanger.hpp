@@ -17,8 +17,13 @@
 
 template <typename T>
 LinearExchanger<T>::LinearExchanger() {
+#ifdef MPI_PARALLEL
   color_.resize(Globals::nranks);
   brank_.resize(Globals::nranks);
+#else
+  color_.resize(1);
+  brank_.resize(1);
+#endif  // MPI_PARALLEL
 }
 
 template <typename T>
@@ -35,6 +40,7 @@ int LinearExchanger<T>::GetRankInGroup() const {
 template <typename T>
 void LinearExchanger<T>::Regroup(MeshBlock const *pmb,
                                  CoordinateDirection dir) {
+#ifdef MPI_PARALLEL
   NeighborBlock bblock, tblock;
   ExchangerHelper::find_neighbors(pmb, dir, &bblock, &tblock);
 
@@ -67,7 +73,6 @@ void LinearExchanger<T>::Regroup(MeshBlock const *pmb,
     }
   }
 
-#ifdef MPI_PARALLEL
   MPI_Allgather(&bblock.snb.rank, 1, MPI_INT, brank_.data(), 1, MPI_INT,
                 MPI_COMM_WORLD);
 #else

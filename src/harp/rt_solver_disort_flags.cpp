@@ -16,6 +16,18 @@ void RadiationBand::RTSolverDisort::setFlagsFromNode(YAML::Node const& my) {
     ds_.flag.ibcnd = 0;
   }
 
+  if (my["accur"]) {
+    ds_.accur = my["accur"].as<double>();
+  } else {
+    ds_.accur = 1.e-3;
+  }
+
+  if (my["fisot"]) {
+    ds_.bc.fisot = my["fisot"].as<double>();
+  } else {
+    ds_.bc.fisot = 0.;
+  }
+
   if (my["usrtau"]) {
     ds_.flag.usrtau = my["usrtau"].as<bool>();
   } else {
@@ -31,7 +43,7 @@ void RadiationBand::RTSolverDisort::setFlagsFromNode(YAML::Node const& my) {
   if (my["lamber"]) {
     ds_.flag.lamber = my["lamber"].as<bool>();
   } else {
-    ds_.flag.lamber = 0;
+    ds_.flag.lamber = 1;
   }
 
   if (my["planck"]) {
@@ -67,14 +79,14 @@ void RadiationBand::RTSolverDisort::setFlagsFromNode(YAML::Node const& my) {
   if (my["intensity_correction"]) {
     ds_.flag.intensity_correction = my["intensity_correction"].as<bool>();
   } else {
-    ds_.flag.intensity_correction = 0;
+    ds_.flag.intensity_correction = 1;
   }
 
   if (my["old_intensity_correction"]) {
     ds_.flag.old_intensity_correction =
         my["old_intensity_correction"].as<bool>();
   } else {
-    ds_.flag.old_intensity_correction = 0;
+    ds_.flag.old_intensity_correction = 1;
   }
 
   if (my["general_source"]) {

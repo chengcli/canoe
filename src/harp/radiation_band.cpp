@@ -64,6 +64,12 @@ RadiationBand::RadiationBand(std::string myname, YAML::Node const &rad)
     absorbers_ = AbsorberFactory::CreateFrom(names, GetName(), rad);
   }
 
+  // set flags
+  if (my["flags"]) {
+    SetFlag(
+        RadiationHelper::parse_radiation_flags(my["flags"].as<std::string>()));
+  }
+
   // set rt solver
   if (my["rt-solver"]) {
     psolver_ = CreateRTSolverFrom(my["rt-solver"].as<std::string>(), rad);
@@ -110,7 +116,9 @@ void RadiationBand::Resize(int nc1, int nc2, int nc3, int nstr) {
   bssa.NewAthenaArray(nc3, nc2, nc1);
   bpmom.NewAthenaArray(nstr + 1, nc3, nc2, nc1);
 
-  //! \note btoa, bflxup, bflxdn are shallow slices to Radiation variables
+  btoa.NewAthenaArray(rayOutput_.size(), nc3, nc2);
+  bflxup.NewAthenaArray(nc3, nc2, nc1 + 1);
+  bflxdn.NewAthenaArray(nc3, nc2, nc1 + 1);
 }
 
 void RadiationBand::ResizeSolver(int nlyr, int nstr, int nuphi, int numu) {
