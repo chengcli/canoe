@@ -18,7 +18,7 @@ def check_file_exist(filename: str) -> bool:
 
 
 # create rfm atmosphere file
-def create_rfm_atm(absorbers: list, atm: dict) -> None:
+def create_rfm_atm(atm: dict) -> None:
     print("# Creating rfm.atm ...")
     num_layers = atm["HGT"].shape[0]
     with open("rfm.atm", "w") as file:
@@ -172,7 +172,7 @@ if __name__ == "__main__":
     atm = create_atmosphere(num_layers)
 
     # create rfm atmosphere file
-    create_rfm_atm(absorbers, atm)
+    create_rfm_atm(atm)
 
     # create spectral grid
     tem_grid = (5, -20, 20)

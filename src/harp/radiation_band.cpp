@@ -137,8 +137,8 @@ AbsorberPtr RadiationBand::GetAbsorberByName(std::string const &name) {
   return nullptr;
 }
 
-void RadiationBand::CalBandFlux(MeshBlock const *pmb, int k, int j, int il,
-                                int iu) {
+RadiationBand const *RadiationBand::CalBandFlux(MeshBlock const *pmb, int k,
+                                                int j, int il, int iu) {
   // reset flux of this column
   for (int i = il; i <= iu; ++i) {
     bflxup(k, j, i) = 0.;
@@ -147,9 +147,12 @@ void RadiationBand::CalBandFlux(MeshBlock const *pmb, int k, int j, int il,
 
   psolver_->Prepare(pmb, k, j);
   psolver_->CalBandFlux(pmb, k, j, il, iu);
+
+  return this;
 }
 
-void RadiationBand::CalBandRadiance(MeshBlock const *pmb, int k, int j) {
+RadiationBand const *RadiationBand::CalBandRadiance(MeshBlock const *pmb, int k,
+                                                    int j) {
   // reset radiance of this column
   for (int n = 0; n < GetNumOutgoingRays(); ++n) {
     btoa(n, k, j) = 0.;
@@ -158,6 +161,8 @@ void RadiationBand::CalBandRadiance(MeshBlock const *pmb, int k, int j) {
 
   psolver_->Prepare(pmb, k, j);
   psolver_->CalBandRadiance(pmb, k, j);
+
+  return this;
 }
 
 void RadiationBand::WriteAsciiHeader(OutputParameters const *pout) const {

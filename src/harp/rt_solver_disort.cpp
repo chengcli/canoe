@@ -297,7 +297,7 @@ void RadiationBand::RTSolverDisort::addDisortRadiance(int b, int k, int j) {
   auto &spec = pmy_band_->pgrid_->spec;
 
   for (int c = 0; c < ds_.nphi * ds_.ntau * ds_.numu; ++c) {
-    toa_(b, 0) = ds_out_.uu[c];
+    pmy_band_->toa_(b, 0) = ds_out_.uu[c];
     btoa(c, k, j) += spec[b].wght * ds_out_.uu[c];
   }
 }

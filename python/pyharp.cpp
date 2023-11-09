@@ -1,4 +1,5 @@
 // pybind
+#include <pybind11/numpy.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
@@ -62,12 +63,28 @@ PYBIND11_MODULE(pyharp, m) {
            py::arg("nstr") = 4, py::arg("nuphi") = 1, py::arg("numu") = 1)
       .def("get_num_spec_grids", &RadiationBand::GetNumSpecGrids)
       .def("get_num_absorbers", &RadiationBand::GetNumAbsorbers)
+      .def("absorbers", &RadiationBand::Absorbers)
       .def("get_absorber", &RadiationBand::GetAbsorber)
       .def("get_absorber_by_name", &RadiationBand::GetAbsorberByName)
       .def("get_range", &RadiationBand::GetRange)
-      .def("cal_band_radiance", &RadiationBand::CalBandRadiance,
+      .def("cal_radiance", &RadiationBand::CalBandRadiance,
            py::arg("pmb") = nullptr, py::arg("k") = 0, py::arg("j") = 0)
-      .def("get_toa_intensity", &RadiationBand::GetTOAIntensity)
+
+      .def("get_toa",
+           [](RadiationBand &band) {
+             py::array_t<Real> ndarray(
+                 {band.GetNumSpecGrids(), band.GetNumOutgoingRays()},
+                 band._GetToaPtr());
+             return ndarray;
+           })
+
+      .def("get_tau",
+           [](RadiationBand &band) {
+             py::array_t<Real> ndarray(
+                 {band.GetNumSpecGrids(), band.GetNumLayers()},
+                 band._GetTauPtr());
+             return ndarray;
+           })
 
       .def("set_spectral_properties",
            [](RadiationBand &band,

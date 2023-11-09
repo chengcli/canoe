@@ -16,23 +16,13 @@
 // canoe
 #include <air_parcel.hpp>
 #include <common.hpp>
-#include <configure.hpp>
 #include <virtual_groups.hpp>
-
-// harp
-#include "spectral_grid.hpp"
 
 // exchanger
 #include <exchanger/linear_exchanger.hpp>
 
-#ifdef PYTHON_BINDINGS
-// pybind11
-// #include <pybind11/numpy.h>
-#include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
-
-namespace py = pybind11;
-#endif  // PYTHON_BINDINGS
+// harp
+#include "spectral_grid.hpp"
 
 class OutputParameters;
 class Absorber;
@@ -91,6 +81,10 @@ class RadiationBand : public NamedGroup,
   //! Get number of absorbers
   size_t GetNumAbsorbers() const { return absorbers_.size(); }
 
+  std::vector<std::shared_ptr<Absorber>> const &Absorbers() const {
+    return absorbers_;
+  }
+
   //! Get number of phase function moments
   size_t GetNumPhaseMoments() const { return pmom_.GetDim1() - 1; }
 
@@ -115,12 +109,9 @@ class RadiationBand : public NamedGroup,
   //! Get azimuthal angle of the outgoing ray
   Real GetAzimuthalAngle(int n) const { return rayOutput_[n].phi; }
 
-#ifdef PYTHON_BINDINGS
-  py::array_t<double> GetTOAIntensity() const {
-    py::array_t<double> ndarray({GetNumSpecGrids(), 1}, toa_.data());
-    return ndarray;
-  }
-#endif  // PYTHON_BINDINGS
+ public:  // python bindings
+  Real const *_GetToaPtr() const { return toa_.data(); }
+  Real const *_GetTauPtr() const { return tau_.data(); }
 
  public:  // inbound functions
   //! \brief Set spectral properties for an air column
@@ -134,10 +125,12 @@ class RadiationBand : public NamedGroup,
                              int k = 0, int j = 0);
 
   //! \brief Calculate band radiative fluxes
-  void CalBandFlux(MeshBlock const *pmb, int k, int j, int il, int iu);
+  RadiationBand const *CalBandFlux(MeshBlock const *pmb, int k, int j, int il,
+                                   int iu);
 
   //! \brief Calculate band radiances
-  void CalBandRadiance(MeshBlock const *pmb = nullptr, int k = 0, int j = 0);
+  RadiationBand const *CalBandRadiance(MeshBlock const *pmb = nullptr,
+                                       int k = 0, int j = 0);
 
   //! \brief Set outgoing ray directions
   //!
