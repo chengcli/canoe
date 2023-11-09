@@ -18,11 +18,11 @@
 #include <common.hpp>
 #include <virtual_groups.hpp>
 
-// harp
-#include "spectral_grid.hpp"
-
 // exchanger
 #include <exchanger/linear_exchanger.hpp>
+
+// harp
+#include "spectral_grid.hpp"
 
 class OutputParameters;
 class Absorber;
@@ -56,8 +56,6 @@ class RadiationBand : public NamedGroup,
   AthenaArray<Real> bflxdn;
 
   //! \brief band top-of-the-atmosphere radiance
-  //!
-  //! This is a shallow reference to radiance in Radiation
   AthenaArray<Real> btoa;
 
  public:  // constructor and destructor
@@ -83,6 +81,10 @@ class RadiationBand : public NamedGroup,
   //! Get number of absorbers
   size_t GetNumAbsorbers() const { return absorbers_.size(); }
 
+  std::vector<std::shared_ptr<Absorber>> const &Absorbers() const {
+    return absorbers_;
+  }
+
   //! Get number of phase function moments
   size_t GetNumPhaseMoments() const { return pmom_.GetDim1() - 1; }
 
@@ -107,22 +109,28 @@ class RadiationBand : public NamedGroup,
   //! Get azimuthal angle of the outgoing ray
   Real GetAzimuthalAngle(int n) const { return rayOutput_[n].phi; }
 
+ public:  // python bindings
+  Real const *_GetToaPtr() const { return toa_.data(); }
+  Real const *_GetTauPtr() const { return tau_.data(); }
+
  public:  // inbound functions
   //! \brief Set spectral properties for an air column
   //!
   //! \param[in] air mole fraction representation of air column
   //! \param[in] pcoord coordinates
-  //! \param[in] grav gravitational acceleration
+  //! \param[in] gH0 grav * H0
   //! \param[in] k horizontal index
   //! \param[in] j horizontal index
-  void SetSpectralProperties(AirColumn &air, Coordinates const *pcoord,
-                             Real grav, int k, int j);
+  void SetSpectralProperties(AirColumn &air, Real const *x1f, Real gH0 = 0,
+                             int k = 0, int j = 0);
 
   //! \brief Calculate band radiative fluxes
-  void CalBandFlux(MeshBlock const *pmb, int k, int j, int il, int iu);
+  RadiationBand const *CalBandFlux(MeshBlock const *pmb, int k, int j, int il,
+                                   int iu);
 
   //! \brief Calculate band radiances
-  void CalBandRadiance(MeshBlock const *pmb, int k, int j);
+  RadiationBand const *CalBandRadiance(MeshBlock const *pmb = nullptr,
+                                       int k = 0, int j = 0);
 
   //! \brief Set outgoing ray directions
   //!

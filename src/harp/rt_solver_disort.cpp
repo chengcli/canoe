@@ -31,15 +31,22 @@
 
 RadiationBand::RTSolverDisort::RTSolverDisort(RadiationBand *pmy_band,
                                               YAML::Node const &rad)
-    : RTSolver(pmy_band, "Disort") {
+    : RTSolver(pmy_band, "Disort"), DisortWrapper() {
   if (rad["Disort"]) setFlagsFromNode(rad["Disort"]);
+
+  if (pmy_band->TestFlag(RadiationFlags::Planck)) {
+    ds_.flag.planck = 1;
+  }
+
+  SetHeader("Disort solver");
 }
 
 //! \todo update based on band outdir
 void RadiationBand::RTSolverDisort::Resize(int nlyr, int nstr, int nuphi,
                                            int numu) {
   SetAtmosphereDimension(nlyr, nstr, nstr, nstr);
-  SetIntensityDimension(nuphi, 1, numu);
+  //! \todo revise this
+  SetIntensityDimension(nuphi, 1, pmy_band_->GetNumOutgoingRays());
   Finalize();
 
   Real utau = 0.;
@@ -48,7 +55,7 @@ void RadiationBand::RTSolverDisort::Resize(int nlyr, int nstr, int nuphi,
 
   SetUserAzimuthalAngle(&uphi, 1);
   SetUserOpticalDepth(&utau, 1);
-  SetUserCosinePolarAngle(&umu, 1);
+  SetUserCosinePolarAngle(&pmy_band_->rayOutput_[0].mu, 1);
 }
 
 //! \note Counting Disort Index
@@ -70,19 +77,21 @@ void RadiationBand::RTSolverDisort::Prepare(MeshBlock const *pmb, int k,
                                             int j) {
   auto &wmin = pmy_band_->wrange_.first;
   auto &wmax = pmy_band_->wrange_.second;
-  auto planet = pmb->pimpl->planet;
-  auto pcoord = pmb->pcoord;
 
   Direction ray;
   Real dist_au;
-  Real time = pmb->pmy_mesh->time;
 
-  if (pmy_band_->TestFlag(RadiationFlags::Dynamic)) {
-    ray = planet->ParentZenithAngle(time, pcoord->x2v(j), pcoord->x3v(k));
-    dist_au = planet->ParentDistanceInAu(time);
-  } else {
-    ray = pmb->pimpl->prad->GetRayInput(0);
-    dist_au = pmb->pimpl->GetDistanceInAu();
+  if (pmb != nullptr) {
+    Real time = pmb->pmy_mesh->time;
+    auto planet = pmb->pimpl->planet;
+    if (pmy_band_->TestFlag(RadiationFlags::Dynamic)) {
+      ray = planet->ParentZenithAngle(time, pmb->pcoord->x2v(j),
+                                      pmb->pcoord->x3v(k));
+      dist_au = planet->ParentDistanceInAu(time);
+    } else if (pmb != nullptr) {
+      ray = pmb->pimpl->prad->GetRayInput(0);
+      dist_au = pmb->pimpl->GetDistanceInAu();
+    }
   }
 
   if (ds_.flag.ibcnd != 0) {
@@ -100,9 +109,6 @@ void RadiationBand::RTSolverDisort::Prepare(MeshBlock const *pmb, int k,
     pmy_band_->UnpackTemperature(&ds_);
   }
 
-  // for (int i = 0; i <= ds_.nlyr; ++i)
-  //   std::cout << ds_.temper[i] << std::endl;
-
   ds_.bc.umu0 = ray.mu > 1.E-3 ? ray.mu : 1.E-3;
   ds_.bc.phi0 = ray.phi;
   if (ds_.flag.planck) {
@@ -113,14 +119,23 @@ void RadiationBand::RTSolverDisort::Prepare(MeshBlock const *pmb, int k,
   if (pmy_band_->TestFlag(RadiationFlags::CorrelatedK)) {
     // stellar source function
     if (pmy_band_->TestFlag(RadiationFlags::Star))
-      ds_.bc.fbeam = planet->ParentInsolationFlux(wmin, wmax, dist_au);
+      ds_.bc.fbeam =
+          pmb->pimpl->planet->ParentInsolationFlux(wmin, wmax, dist_au);
+    else
+      ds_.bc.fbeam = 0.;
     // planck source function
     ds_.wvnmlo = wmin;
     ds_.wvnmhi = wmax;
   }
 
-  pmb->pcoord->Face1Area(k, j, pmb->is, pmb->ie + 1, farea_);
-  pmb->pcoord->CellVolume(k, j, pmb->is, pmb->ie, vol_);
+  if (pmb != nullptr) {
+    pmb->pcoord->Face1Area(k, j, pmb->is, pmb->ie + 1, farea_);
+    pmb->pcoord->CellVolume(k, j, pmb->is, pmb->ie, vol_);
+  }
+
+  ds_.bc.fluor = 0.;
+  ds_.bc.albedo = 0.;
+  ds_.bc.temis = 1.;
 
   Finalize();
 }
@@ -128,6 +143,7 @@ void RadiationBand::RTSolverDisort::Prepare(MeshBlock const *pmb, int k,
 void RadiationBand::RTSolverDisort::CalBandFlux(MeshBlock const *pmb, int k,
                                                 int j, int il, int iu) {
   Real dist_au;
+  Real time = pmb->pmy_mesh->time;
   if (pmy_band_->TestFlag(RadiationFlags::Dynamic)) {
     dist_au = pmb->pimpl->planet->ParentDistanceInAu(time);
   } else {
@@ -137,11 +153,13 @@ void RadiationBand::RTSolverDisort::CalBandFlux(MeshBlock const *pmb, int k,
   // loop over spectral grids in the band
   int b = 0;
   for (auto &spec : pmy_band_->pgrid_->spec) {
-    if (!(pmy_band_->TestFlag(RadiationFlags::CorrelatedK))) {
+    if (!pmy_band_->TestFlag(RadiationFlags::CorrelatedK)) {
       // stellar source function
       if (pmy_band_->TestFlag(RadiationFlags::Star)) {
         ds_.bc.fbeam = pmb->pimpl->planet->ParentInsolationFlux(
             spec.wav1, spec.wav2, dist_au);
+      } else {
+        ds_.bc.fbeam = 0.;
       }
       // planck source function
       ds_.wvnmlo = spec.wav1;
@@ -231,11 +249,16 @@ void RadiationBand::RTSolverDisort::CalBandRadiance(MeshBlock const *pmb, int k,
   }
 
   Real dist_au;
-  if (pmy_band_->TestFlag(RadiationFlags::Dynamic)) {
-    dist_au = pmb->pimpl->planet->ParentDistanceInAu(time);
-  } else {
-    dist_au = pmb->pimpl->GetDistanceInAu();
+  if (pmy_band_->TestFlag(RadiationFlags::Star)) {
+    Real time = pmb->pmy_mesh->time;
+    if (pmy_band_->TestFlag(RadiationFlags::Dynamic)) {
+      dist_au = pmb->pimpl->planet->ParentDistanceInAu(time);
+    } else {
+      dist_au = pmb->pimpl->GetDistanceInAu();
+    }
   }
+
+  RadiationHelper::get_phase_momentum(ds_.pmom, ISOTROPIC, 0., ds_.nmom);
 
   // loop over spectral grids in the band
   int b = 0;
@@ -245,31 +268,37 @@ void RadiationBand::RTSolverDisort::CalBandRadiance(MeshBlock const *pmb, int k,
       if (pmy_band_->TestFlag(RadiationFlags::Star)) {
         ds_.bc.fbeam = pmb->pimpl->planet->ParentInsolationFlux(
             spec.wav1, spec.wav2, dist_au);
+      } else {
+        ds_.bc.fbeam = 0.0;
       }
       // planck source function
       ds_.wvnmlo = spec.wav1;
       ds_.wvnmhi = spec.wav2;
     }
 
-    // transfer spectral grid data
+    /* transfer spectral grid data
     pmy_band_->PackSpectralGrid(b);
     pmy_band_->Transfer(pmb, 1);
-    pmy_band_->UnpackSpectralGrid(&ds_);
+    pmy_band_->UnpackSpectralGrid(&ds_);*/
+    for (int i = 0; i < ds_.nlyr; ++i) {
+      ds_.dtauc[i] = pmy_band_->tau_(b, i);
+    }
+    std::reverse(ds_.dtauc, ds_.dtauc + ds_.nlyr);
 
     // run disort
     c_disort(&ds_, &ds_out_);
 
     // add spectral bin radiance
-    addDisortRadiance(pmb->pcoord, b++, k, j);
+    addDisortRadiance(b++, k, j);
   }
 }
 
-void RadiationBand::RTSolverDisort::addDisortRadiance(Coordinates const *pcoord,
-                                                      int b, int k, int j) {
+void RadiationBand::RTSolverDisort::addDisortRadiance(int b, int k, int j) {
   auto &btoa = pmy_band_->btoa;
   auto &spec = pmy_band_->pgrid_->spec;
 
   for (int c = 0; c < ds_.nphi * ds_.ntau * ds_.numu; ++c) {
+    pmy_band_->toa_(b, 0) = ds_out_.uu[c];
     btoa(c, k, j) += spec[b].wght * ds_out_.uu[c];
   }
 }

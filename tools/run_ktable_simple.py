@@ -1,16 +1,14 @@
 #! /usr/bin/env python3
-import sys, os, subprocess
-
-sys.path.append("@CMAKE_BINARY_DIR@/python")
+import os, subprocess
+from canoe import *
+from numpy import *
 
 from pyharp import radiation_band
 from utilities import load_file
 from collections import OrderedDict
-from numpy import *
 
-cmake_source_dir = "@CMAKE_SOURCE_DIR@"
-cmake_binary_dir = "@CMAKE_BINARY_DIR@"
 hitran_file = f"{cmake_source_dir}/data/HITRAN2020.par"
+
 
 def check_file_exist(filename: str) -> bool:
     if not os.path.isfile(filename):
@@ -20,10 +18,9 @@ def check_file_exist(filename: str) -> bool:
 
 
 # create rfm atmosphere file
-def create_rfm_atm(absorbers: list, atm: dict) -> None:
+def create_rfm_atm(atm: dict) -> None:
     print("# Creating rfm.atm ...")
     num_layers = atm["HGT"].shape[0]
-    num_absorbers = len(absorbers)
     with open("rfm.atm", "w") as file:
         file.write("%d\n" % num_layers)
         file.write("*HGT [km]\n")
@@ -35,11 +32,12 @@ def create_rfm_atm(absorbers: list, atm: dict) -> None:
         file.write("\n*TEM [K]\n")
         for i in range(num_layers):
             file.write("%.8g " % atm["TEM"][i])
-        for i in range(num_absorbers):
-            name = absorbers[i]
+        for name, val in atm.items():
+            if name in ["HGT", "PRE", "TEM"]:
+                continue
             file.write("\n*" + name + " [ppmv]\n")
             for j in range(num_layers):
-                file.write("%.8g " % atm[name][j])
+                file.write("%.8g " % val[j])
         file.write("\n*END")
     print("# rfm.atm written.")
 
@@ -126,6 +124,7 @@ def run_kcoeff(inpfile: str, ncfile: str) -> None:
 
     process.communicate()
 
+
 # create atmosphere dictionary
 def create_atmosphere(nlyr: int) -> dict:
     atm = {}
@@ -135,7 +134,7 @@ def create_atmosphere(nlyr: int) -> dict:
     mu_kgmol = 29.0e-3
     Rgas_JKmol = 8.314
     Rgas_Jkg = Rgas_JKmol / mu_kgmol
-    Hscale_km = Rgas_Jkg * Ts_K / grav_ms2 * 1.e-3
+    Hscale_km = Rgas_Jkg * Ts_K / grav_ms2 * 1.0e-3
 
     # km
     atm["HGT"] = linspace(0, 20, nlyr, endpoint=False)
@@ -144,7 +143,10 @@ def create_atmosphere(nlyr: int) -> dict:
     # ppmv
     atm["CO2"] = 400.0 * ones(nlyr)
     # ppmv
-    atm["H2O"] = 4000.0 * exp(-atm["HGT"] / (Hscale_km / 5.))
+    atm["H2O"] = 4000.0 * exp(-atm["HGT"] / (Hscale_km / 5.0))
+    atm["O2"] = (1e6 - atm["CO2"] - atm["H2O"]) * 0.21
+    atm["N2"] = (1e6 - atm["CO2"] - atm["H2O"]) * 0.78
+    atm["Ar"] = (1e6 - atm["CO2"] - atm["H2O"]) * 0.01
 
     return atm
 
@@ -170,7 +172,7 @@ if __name__ == "__main__":
     atm = create_atmosphere(num_layers)
 
     # create rfm atmosphere file
-    create_rfm_atm(absorbers, atm)
+    create_rfm_atm(atm)
 
     # create spectral grid
     tem_grid = (5, -20, 20)

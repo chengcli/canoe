@@ -54,14 +54,36 @@ RadiationBand::RadiationBand(std::string myname, YAML::Node const &rad)
   wrange_ = pgrid_->ReadRangeFrom(my);
 
   if (my["outdir"]) {
-    std::string dirstr = my["outdir"].as<std::string>();
-    rayOutput_ = RadiationHelper::parse_radiation_directions(dirstr);
+    if (!my["outdir"].IsSequence()) {
+      throw RuntimeError("RadiationBand", "outdir must be a sequence");
+    }
+
+    for (const auto &item : my["outdir"]) {
+      rayOutput_.push_back(
+          RadiationHelper::parse_radiation_direction(item.as<std::string>()));
+    }
   }
 
   // set absorbers
   if (my["opacity"]) {
+    if (!my["opacity"].IsSequence()) {
+      throw RuntimeError("RadiationBand", "opacity must be a sequence");
+    }
+
     auto names = my["opacity"].as<std::vector<std::string>>();
     absorbers_ = AbsorberFactory::CreateFrom(names, GetName(), rad);
+  }
+
+  // set flags
+  if (my["flags"]) {
+    if (!my["flags"].IsSequence()) {
+      throw RuntimeError("RadiationBand", "flags must be a sequence");
+    }
+
+    auto flag_strs = my["flags"].as<std::vector<std::string>>();
+    for (auto flag : flag_strs) {
+      SetFlag(RadiationHelper::parse_radiation_flags(flag));
+    }
   }
 
   // set rt solver
@@ -110,7 +132,9 @@ void RadiationBand::Resize(int nc1, int nc2, int nc3, int nstr) {
   bssa.NewAthenaArray(nc3, nc2, nc1);
   bpmom.NewAthenaArray(nstr + 1, nc3, nc2, nc1);
 
-  //! \note btoa, bflxup, bflxdn are shallow slices to Radiation variables
+  btoa.NewAthenaArray(rayOutput_.size(), nc3, nc2);
+  bflxup.NewAthenaArray(nc3, nc2, nc1 + 1);
+  bflxdn.NewAthenaArray(nc3, nc2, nc1 + 1);
 }
 
 void RadiationBand::ResizeSolver(int nlyr, int nstr, int nuphi, int numu) {
@@ -129,8 +153,8 @@ AbsorberPtr RadiationBand::GetAbsorberByName(std::string const &name) {
   return nullptr;
 }
 
-void RadiationBand::CalBandFlux(MeshBlock const *pmb, int k, int j, int il,
-                                int iu) {
+RadiationBand const *RadiationBand::CalBandFlux(MeshBlock const *pmb, int k,
+                                                int j, int il, int iu) {
   // reset flux of this column
   for (int i = il; i <= iu; ++i) {
     bflxup(k, j, i) = 0.;
@@ -139,9 +163,12 @@ void RadiationBand::CalBandFlux(MeshBlock const *pmb, int k, int j, int il,
 
   psolver_->Prepare(pmb, k, j);
   psolver_->CalBandFlux(pmb, k, j, il, iu);
+
+  return this;
 }
 
-void RadiationBand::CalBandRadiance(MeshBlock const *pmb, int k, int j) {
+RadiationBand const *RadiationBand::CalBandRadiance(MeshBlock const *pmb, int k,
+                                                    int j) {
   // reset radiance of this column
   for (int n = 0; n < GetNumOutgoingRays(); ++n) {
     btoa(n, k, j) = 0.;
@@ -150,6 +177,8 @@ void RadiationBand::CalBandRadiance(MeshBlock const *pmb, int k, int j) {
 
   psolver_->Prepare(pmb, k, j);
   psolver_->CalBandRadiance(pmb, k, j);
+
+  return this;
 }
 
 void RadiationBand::WriteAsciiHeader(OutputParameters const *pout) const {

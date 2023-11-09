@@ -90,7 +90,7 @@ class RadiationBand::RTSolverDisort : public RadiationBand::RTSolver,
   void addDisortFlux(Coordinates const *pcoord, int n, int k, int j, int il,
                      int iu);
 
-  void addDisortRadiance(Coordinates const *pcoord, int n, int k, int j);
+  void addDisortRadiance(int n, int k, int j);
 };
 #endif
 

@@ -81,6 +81,8 @@ Radiation::Radiation(MeshBlock *pmb, ParameterInput *pin) {
     // set band toa
     int n = 0;
     for (auto &p : bands_) {
+      //! Delete the old array and initialize with a shallow slice
+      p->btoa.DeleteAthenaArray();
       p->btoa.InitWithShallowSlice(radiance, 3, n, p->GetNumOutgoingRays());
       n += p->GetNumOutgoingRays();
     }
@@ -91,8 +93,13 @@ Radiation::Radiation(MeshBlock *pmb, ParameterInput *pin) {
   flxdn.NewAthenaArray(bands_.size(), ncells3, ncells2, ncells1 + 1);
 
   for (int n = 0; n < bands_.size(); ++n) {
+    //! Delete the old array and initialize with a shallow slice
+    bands_[n]->bflxup.DeleteAthenaArray();
     bands_[n]->bflxup.InitWithShallowSlice(flxup, 4, n, 1);
-    bands_[n]->bflxup.InitWithShallowSlice(flxdn, 4, n, 1);
+
+    //! Delete the old array and initialize with a shallow slice
+    bands_[n]->bflxdn.DeleteAthenaArray();
+    bands_[n]->bflxdn.InitWithShallowSlice(flxdn, 4, n, 1);
   }
 
   // time control
@@ -128,10 +135,11 @@ void Radiation::CalRadiativeFlux(MeshBlock const *pmb, int k, int j, int il,
   AirColumn &&ac = AirParcelHelper::gather_from_primitive(pmb, k, j);
 
   Real grav = -pmb->phydro->hsrc.GetG1();
+  Real H0 = pmb->pcoord->GetPressureScaleHeight();
 
   for (auto &p : bands_) {
     // iu ~= ie + 1
-    p->SetSpectralProperties(ac, pcoord, grav, k, j);
+    p->SetSpectralProperties(ac, pcoord->x1f.data(), grav * H0, k, j);
     p->CalBandFlux(pmb, k, j, il, iu);
   }
 }
@@ -145,10 +153,11 @@ void Radiation::CalRadiance(MeshBlock const *pmb, int k, int j) {
   AirColumn &&ac = AirParcelHelper::gather_from_primitive(pmb, k, j);
 
   Real grav = -pmb->phydro->hsrc.GetG1();
+  Real H0 = pmb->pcoord->GetPressureScaleHeight();
 
   for (auto &p : bands_) {
     // iu ~= ie + 1
-    p->SetSpectralProperties(ac, pcoord, grav, k, j);
+    p->SetSpectralProperties(ac, pcoord->x1f.data(), grav * H0, k, j);
     p->CalBandRadiance(pmb, k, j);
   }
 }
@@ -192,6 +201,17 @@ size_t Radiation::LoadRestartData(char *psrc) {
 }
 
 namespace RadiationHelper {
+Direction parse_radiation_direction(std::string_view str) {
+  Direction ray;
+  ray.phi = 0.;
+
+  sscanf(str.data(), "(%lf,%lf)", &ray.mu, &ray.phi);
+  ray.mu = cos(deg2rad(ray.mu));
+  ray.phi = deg2rad(ray.phi);
+
+  return ray;
+}
+
 std::vector<Direction> parse_radiation_directions(std::string str) {
   std::vector<std::string> dstr = Vectorize<std::string>(str.c_str());
   int nray = dstr.size();
@@ -199,12 +219,8 @@ std::vector<Direction> parse_radiation_directions(std::string str) {
   std::vector<Direction> ray(nray);
 
   auto jt = dstr.begin();
-  for (auto it = ray.begin(); it != ray.end(); ++it, ++jt) {
-    it->phi = 0.;
-    sscanf(jt->c_str(), "(%lf,%lf)", &it->mu, &it->phi);
-    it->mu = cos(deg2rad(it->mu));
-    it->phi = deg2rad(it->phi);
-  }
+  for (auto it = ray.begin(); it != ray.end(); ++it, ++jt)
+    *it = parse_radiation_direction(*jt);
 
   return ray;
 }
@@ -238,7 +254,7 @@ uint64_t parse_radiation_flags(std::string str) {
     } else if (dstr[i] == "write_bin_radiance") {
       flags |= RadiationFlags::WriteBinRadiance;
     } else {
-      msg << "flag:" << dstr[i] << "unrecognized" << std::endl;
+      msg << "flag: '" << dstr[i] << "' unrecognized" << std::endl;
       throw RuntimeError("parse_radiation_flags", msg.str());
     }
 

@@ -25,9 +25,8 @@
 #include "radiation_band.hpp"
 
 // setting optical properties
-void RadiationBand::SetSpectralProperties(AirColumn& ac,
-                                          Coordinates const* pcoord, Real grav,
-                                          int k, int j) {
+void RadiationBand::SetSpectralProperties(AirColumn& ac, Real const* x1f,
+                                          Real gH0, int k, int j) {
   int nspec = GetNumSpecGrids();
   int npmom = GetNumPhaseMoments();
 
@@ -69,7 +68,7 @@ void RadiationBand::SetSpectralProperties(AirColumn& ac,
   temf_[iu] = (tem_[iu] + tem_[iu - 1]) / 2.;
   temf_[iu + 1] = 3. * tem_[iu] - 2. * tem_[iu - 1];
 
-  // absorption coefficiunts -> optical thickness
+  // absorption coefficients -> optical thickness
   for (int m = 0; m < nspec; ++m) {
     for (int i = 0; i < ac.size(); ++i) {
       if (tau_(m, i) > 1e-6 && ssa_(m, i) > 1e-6) {  // has scattering
@@ -82,13 +81,12 @@ void RadiationBand::SetSpectralProperties(AirColumn& ac,
       }
 #ifdef HYDROSTATIC
       auto pthermo = Thermodynamics::GetInstance();
-      Real H0 = pcoord->GetPressureScaleHeight();
       Real Rgas = pthermo->RovRd(ac[i]) * pthermo->GetRd();
       // TODO(cli) check this
       // \delta z = \delt Z * (R T)/(g H0)
-      tau_(m, i) *= pcoord->dx1f(i) * (Rgas * tem_[i]) / (grav * H0);
+      tau_(m, i) *= (x1f[i + 1] - x1f[i]) * (Rgas * tem_[i]) / (gH0);
 #else
-      tau_(m, i) *= pcoord->dx1f(i);
+      tau_(m, i) *= x1f[i + 1] - x1f[i];
 #endif
     }
   }

@@ -92,12 +92,12 @@ bool RadiationBand::UnpackSpectralGrid(void *arg) {
   // single scatering albedo
   std::reverse(ds->ssalb, ds->ssalb + ds->nlyr);
 
-  // phase function moments
+  /* phase function moments
   std::reverse(ds->pmom, ds->pmom + ds->nlyr * (ds->nmom_nstr + 1));
   for (int i = 0; i < ds->nlyr; ++i) {
     std::reverse(ds->pmom + i * (ds->nmom_nstr + 1),
                  ds->pmom + (i + 1) * (ds->nmom_nstr + 1));
-  }
+  }*/
 #endif  // RT_DISORT
 
   return true;
