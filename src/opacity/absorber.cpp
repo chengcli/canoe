@@ -1,4 +1,5 @@
 // C/C++
+#include <sstream>
 #include <string>
 
 // application
@@ -42,4 +43,12 @@ void Absorber::LoadOpacity() {
     ss << e.what() << std::endl;
     log->Warn(ss.str());
   }
+}
+
+std::string Absorber::ToString() const {
+  std::stringstream ss;
+  ss << "Absorber: " << GetName();
+  ss << "Opacity file: " << opacity_filename_;
+
+  return ss.str();
 }

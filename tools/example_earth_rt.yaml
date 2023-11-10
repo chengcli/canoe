@@ -23,7 +23,5 @@ B1:
   outdir: ["(45,)"]
   flags: [static, planck]
 
-Disort:
-  prnt: [0,0,0,0,0]
-  quiet: true
-  accur: 1.e-6
+Disort-flags:
+  quiet: false

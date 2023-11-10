@@ -115,16 +115,17 @@ void RadiationBand::Resize(int nc1, int nc2, int nc3, int nstr) {
   ssa_.NewAthenaArray(pgrid_->spec.size(), nc1);
   ssa_.ZeroClear();
 
-  toa_.NewAthenaArray(pgrid_->spec.size(), rayOutput_.size());
-  toa_.ZeroClear();
-
   pmom_.NewAthenaArray(pgrid_->spec.size(), nc1, nstr + 1);
   pmom_.ZeroClear();
 
-  flxup_.NewAthenaArray(pgrid_->spec.size(), nc1);
+  // spectral grids properties
+  toa_.NewAthenaArray(pgrid_->spec.size(), rayOutput_.size(), nc3, nc2);
+  toa_.ZeroClear();
+
+  flxup_.NewAthenaArray(pgrid_->spec.size(), nc3, nc2, nc1);
   flxup_.ZeroClear();
 
-  flxdn_.NewAthenaArray(pgrid_->spec.size(), nc1);
+  flxdn_.NewAthenaArray(pgrid_->spec.size(), nc3, nc2, nc1);
   flxdn_.ZeroClear();
 
   // band properties
@@ -135,10 +136,10 @@ void RadiationBand::Resize(int nc1, int nc2, int nc3, int nstr) {
   btoa.NewAthenaArray(rayOutput_.size(), nc3, nc2);
   bflxup.NewAthenaArray(nc3, nc2, nc1 + 1);
   bflxdn.NewAthenaArray(nc3, nc2, nc1 + 1);
-}
 
-void RadiationBand::ResizeSolver(int nlyr, int nstr, int nuphi, int numu) {
-  if (psolver_ != nullptr) psolver_->Resize(nlyr, nstr, nuphi, numu);
+  if (psolver_ != nullptr) {
+    psolver_->Resize(nc1 - 2 * NGHOST, nstr);
+  }
 }
 
 AbsorberPtr RadiationBand::GetAbsorberByName(std::string const &name) {
@@ -239,6 +240,17 @@ void RadiationBand::WriteAsciiData(OutputParameters const *pout) const {
   }
 
   fclose(pfile);
+}
+
+std::string RadiationBand::ToString() const {
+  std::stringstream ss;
+  ss << "RadiationBand: " << GetName() << std::endl;
+  ss << "Absorbers: ";
+  for (auto &ab : absorbers_) {
+    ss << ab->GetName() << ", ";
+  }
+  ss << absorbers_.back()->GetName();
+  return ss.str();
 }
 
 std::shared_ptr<RadiationBand::RTSolver> RadiationBand::CreateRTSolverFrom(

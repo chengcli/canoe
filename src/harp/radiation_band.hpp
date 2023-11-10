@@ -33,6 +33,7 @@ class RadiationBand : public NamedGroup,
                       public FlagGroup,
                       public ParameterGroup,
                       public ASCIIOutputGroup,
+                      public StringReprGroup,
                       public LinearExchanger<RadiationBand> {
  public:  // public access data
   // implementation of RT Solver
@@ -64,10 +65,7 @@ class RadiationBand : public NamedGroup,
 
  public:  // member functions
   //! \brief Allocate memory for radiation band
-  void Resize(int nc1, int nc2 = 1, int nc3 = 1, int nstr = 8);
-
-  //! \brief Allocate memory for radiation solver
-  void ResizeSolver(int nlyr, int nstr = 8, int nuphi = 1, int numu = 1);
+  void Resize(int nc1, int nc2, int nc3, int nstr);
 
   //! \brief Create radiative transfer solver from YAML node
   //!
@@ -157,6 +155,9 @@ class RadiationBand : public NamedGroup,
   bool UnpackSpectralGrid(void *arg);
 
   void Transfer(MeshBlock const *pmb, int n) override;
+
+ public:  // StringReprGroup functions
+  std::string ToString() const override;
 
  protected:
   //! radiative transfer solver

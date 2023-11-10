@@ -44,7 +44,8 @@ PYBIND11_MODULE(pyharp, m) {
 
       .def("get_num_bands", &Radiation::GetNumBands)
       .def("get_band", &Radiation::GetBand)
-      .def("cal_radiative_flux", &Radiation::CalRadiativeFlux)
+
+      .def("cal_flux", &Radiation::CalRadiativeFlux)
       .def("cal_radiance", &Radiation::CalRadiance);
 
   // RadiationBand
@@ -56,17 +57,20 @@ PYBIND11_MODULE(pyharp, m) {
       .def_readonly("bflxdn", &RadiationBand::bflxdn)
 
       .def(py::init<std::string, YAML::Node>())
+      .def("__str__", &RadiationBand::ToString)
 
       .def("resize", &RadiationBand::Resize, py::arg("nc1"), py::arg("nc2") = 1,
            py::arg("nc3") = 1, py::arg("nstr") = 4)
-      .def("resize_solver", &RadiationBand::ResizeSolver, py::arg("nlyr"),
-           py::arg("nstr") = 4, py::arg("nuphi") = 1, py::arg("numu") = 1)
       .def("get_num_spec_grids", &RadiationBand::GetNumSpecGrids)
       .def("get_num_absorbers", &RadiationBand::GetNumAbsorbers)
       .def("absorbers", &RadiationBand::Absorbers)
       .def("get_absorber", &RadiationBand::GetAbsorber)
       .def("get_absorber_by_name", &RadiationBand::GetAbsorberByName)
       .def("get_range", &RadiationBand::GetRange)
+
+      .def("cal_flux", &RadiationBand::CalBandFlux, py::arg("pmb") = nullptr,
+           py::arg("k") = 0, py::arg("j") = 0, py::arg("is") = 0,
+           py::arg("ie") = 0)
       .def("cal_radiance", &RadiationBand::CalBandRadiance,
            py::arg("pmb") = nullptr, py::arg("k") = 0, py::arg("j") = 0)
 
@@ -143,21 +147,11 @@ PYBIND11_MODULE(pyharp, m) {
              }
 
              band.SetSpectralProperties(ac, x1f.data());
-           })
-
-      .def("__str__", [](RadiationBand &band) {
-        std::stringstream ss;
-        ss << "RadiationBand: " << band.GetName() << std::endl;
-        ss << "Absorbers: ";
-        for (int n = 0; n < band.GetNumAbsorbers() - 1; ++n) {
-          ss << band.GetAbsorber(n)->GetName() << ", ";
-        }
-        ss << band.GetAbsorber(band.GetNumAbsorbers() - 1)->GetName();
-        return ss.str();
-      });
+           });
 
   // Absorber
   py::class_<Absorber, AbsorberPtr>(m, "absorber")
+      .def("__str__", &Absorber::ToString)
       .def("load_opacity_from_file", &Absorber::LoadOpacityFromFile)
 
       .def("get_name", &Absorber::GetName)
@@ -178,11 +172,5 @@ PYBIND11_MODULE(pyharp, m) {
                  lst.begin(), lst.end(), air.w,
                  [](const py::handle &elem) { return py::cast<double>(elem); });
              return ab.GetSingleScatteringAlbedo(wave1, wave2, air);
-           })
-
-      .def("__str__", [](Absorber &ab) {
-        std::stringstream ss;
-        ss << "Absorber: " << ab.GetName();
-        return ss.str();
-      });
+           });
 }

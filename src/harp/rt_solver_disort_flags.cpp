@@ -16,18 +16,6 @@ void RadiationBand::RTSolverDisort::setFlagsFromNode(YAML::Node const& my) {
     ds_.flag.ibcnd = 0;
   }
 
-  if (my["accur"]) {
-    ds_.accur = my["accur"].as<double>();
-  } else {
-    ds_.accur = 1.e-3;
-  }
-
-  if (my["fisot"]) {
-    ds_.bc.fisot = my["fisot"].as<double>();
-  } else {
-    ds_.bc.fisot = 0.;
-  }
-
   if (my["usrtau"]) {
     ds_.flag.usrtau = my["usrtau"].as<bool>();
   } else {
