@@ -91,10 +91,7 @@ const uint64_t None = 0LL;
 const uint64_t Dynamic = 1LL << 0;
 const uint64_t LineByLine = 1LL << 1;
 const uint64_t CorrelatedK = 1LL << 2;
-const uint64_t Planck = 1LL << 3;
 const uint64_t Star = 1LL << 4;
-const uint64_t Sphere = 1LL << 5;
-const uint64_t FluxOnly = 1LL << 6;
 const uint64_t Normalize = 1LL << 7;
 const uint64_t WriteBinRadiance = 1LL << 8;
 

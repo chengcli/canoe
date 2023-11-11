@@ -274,14 +274,8 @@ uint64_t parse_radiation_flags(std::string str) {
       flags |= RadiationFlags::LineByLine;
     } else if (dstr[i] == "ck") {
       flags |= RadiationFlags::CorrelatedK;
-    } else if (dstr[i] == "planck") {
-      flags |= RadiationFlags::Planck;
     } else if (dstr[i] == "star") {
       flags |= RadiationFlags::Star;
-    } else if (dstr[i] == "spher") {
-      flags |= RadiationFlags::Sphere;
-    } else if (dstr[i] == "only") {
-      flags |= RadiationFlags::FluxOnly;
     } else if (dstr[i] == "normalize") {
       flags |= RadiationFlags::Normalize;
     } else if (dstr[i] == "write_bin_radiance") {

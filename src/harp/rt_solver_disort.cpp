@@ -49,10 +49,6 @@ RadiationBand::RTSolverDisort::RTSolverDisort(RadiationBand *pmy_band,
     SetFlags(to_map_bool(rad["Disort-flags"]));
   }
 
-  if (pmy_band->TestFlag(RadiationFlags::Planck)) {
-    ds_.flag.planck = 1;
-  }
-
   SetHeader("Disort solver");
 }
 
@@ -169,6 +165,7 @@ void RadiationBand::RTSolverDisort::Prepare(MeshBlock const *pmb, int k,
       dir_axis_[i] = 1.;
     }
   } else {
+    std::cout << "umu.size() = " << umu.size() << std::endl;
     throw RuntimeError("RTSolverDisort::Prepare",
                        "Number of polar angles in Disort is too small");
   }
