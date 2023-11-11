@@ -11,7 +11,7 @@ opacity-sources:
     class: Hitran
     dependent-species: [tracer.O3]
 
-bands: [B1]
+bands: [B1, B2]
 
 B1:
   units: cm-1
@@ -20,10 +20,19 @@ B1:
   resolution: 0.01
   opacity: [H2O, CO2]
   rt-solver: Disort
-  outdir: ["(45,)"]
-  flags: [static, planck]
+  outdir: ["(0,)","(45,)"]
+  flags: [static]
 
-Disort:
-  prnt: [0,0,0,0,0]
+Disort-flags:
+  ibcnd: false
+  usrtau: true
+  usrang: true
+  lamber: true
+  planck: true
+  onlyfl: false
+  spher: false
+  intensity_correction: true
+  old_intensity_correction: false
+  general_source: false
+  output_uum: false
   quiet: true
-  accur: 1.e-6

@@ -43,7 +43,7 @@ class RadiationBand::RTSolver : public NamedGroup {
   virtual void Prepare(MeshBlock const *pmb, int k, int j) {}
 
   //! \brief Allocate memory for radiation solver
-  virtual void Resize(int nlyr, int nstr, int nuphi, int numu) {}
+  virtual void Resize(int nlyr, int nstr) {}
 
  public:  // inbound functions
   virtual void CalBandFlux(MeshBlock const *pmb, int k, int j, int il, int iu) {
@@ -78,13 +78,16 @@ class RadiationBand::RTSolverDisort : public RadiationBand::RTSolver,
 
  public:  // member functions
   void Prepare(MeshBlock const *pmb, int k, int j) override;
-  void Resize(int nlyr, int nstr, int nuphi, int numu) override;
+  void Resize(int nlyr, int nstr) override;
 
  public:  // inbound functions
   void CalBandFlux(MeshBlock const *pmb, int k, int j, int il, int iu) override;
   void CalBandRadiance(MeshBlock const *pmb, int k, int j) override;
 
  protected:
+  size_t dir_dim_[2];
+  std::vector<Real> dir_axis_;
+
   void setFlagsFromNode(YAML::Node const &flags);
 
   void addDisortFlux(Coordinates const *pcoord, int n, int k, int j, int il,

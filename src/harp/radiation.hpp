@@ -10,6 +10,9 @@
 // athena
 #include <athena/athena.hpp>
 
+// canoe
+#include <common.hpp>  // Direction
+
 // harp
 #include "radiation_band.hpp"
 
@@ -88,10 +91,7 @@ const uint64_t None = 0LL;
 const uint64_t Dynamic = 1LL << 0;
 const uint64_t LineByLine = 1LL << 1;
 const uint64_t CorrelatedK = 1LL << 2;
-const uint64_t Planck = 1LL << 3;
 const uint64_t Star = 1LL << 4;
-const uint64_t Sphere = 1LL << 5;
-const uint64_t FluxOnly = 1LL << 6;
 const uint64_t Normalize = 1LL << 7;
 const uint64_t WriteBinRadiance = 1LL << 8;
 
@@ -101,7 +101,21 @@ const uint64_t WriteBinRadiance = 1LL << 8;
 }  // namespace RadiationFlags
 
 namespace RadiationHelper {
+//! \brief Get the number of grids in the outgoing ray directions
+std::pair<std::vector<Real>, std::vector<Real>> get_direction_grids(
+    std::vector<Direction> const &dirs);
+
+//! \brief Parse radiation direction string
+//!
+//! First number is the polar angle (degrees), second number is the azimuthal
+//! angle (degrees) \param[in] str radiation direction string, e.g. (45, 30)
+//! \return radiation direction
 Direction parse_radiation_direction(std::string_view str);
+
+//! \brief Parse radiation directions string, sperated by comma
+//!
+//! Example input string: "(45, 30), (45, 60)"
+//! \param[in] str radiation directions string
 std::vector<Direction> parse_radiation_directions(std::string str);
 uint64_t parse_radiation_flags(std::string str);
 void get_phase_momentum(Real *pmom, int iphas, Real gg, int npmom);

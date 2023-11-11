@@ -1,4 +1,5 @@
 // C/C++ headers
+#include <algorithm>
 #include <fstream>
 #include <sstream>
 #include <stdexcept>
@@ -56,8 +57,6 @@ Radiation::Radiation(MeshBlock *pmb, ParameterInput *pin) {
 
   // radiation configuration
   int nstr = pin->GetOrAddInteger("radiation", "nstr", 8);
-  int nuphi = pin->GetOrAddInteger("radiation", "nuphi", 1);
-  int numu = pin->GetOrAddInteger("radiation", "numu", 1);
 
   for (auto &p : bands_) {
     // outgoing radiation direction (mu,phi) in degrees
@@ -71,7 +70,6 @@ Radiation::Radiation(MeshBlock *pmb, ParameterInput *pin) {
 
     // allocate memory
     p->Resize(ncells1, ncells2, ncells3, nstr);
-    p->ResizeSolver(ncells1 - 2 * NGHOST, nstr, nuphi, numu);
   }
 
   // output radiance
@@ -201,6 +199,41 @@ size_t Radiation::LoadRestartData(char *psrc) {
 }
 
 namespace RadiationHelper {
+bool real_close(Real num1, Real num2, Real tolerance) {
+  return std::fabs(num1 - num2) <= tolerance;
+}
+
+std::pair<std::vector<Real>, std::vector<Real>> get_direction_grids(
+    std::vector<Direction> const &dirs) {
+  std::vector<Real> uphi;
+  std::vector<Real> umu;
+
+  for (auto &dir : dirs) {
+    // find phi
+    bool found = false;
+    for (auto &phi : uphi)
+      if (real_close(phi, dir.phi, 1.e-3)) {
+        found = true;
+        break;
+      }
+    if (!found) uphi.push_back(dir.phi);
+
+    // find mu
+    found = false;
+    for (auto &mu : umu)
+      if (real_close(mu, dir.mu, 1.e-3)) {
+        found = true;
+        break;
+      }
+    if (!found) umu.push_back(dir.mu);
+  }
+
+  std::sort(uphi.begin(), uphi.end());
+  std::sort(umu.begin(), umu.end());
+
+  return std::make_pair(uphi, umu);
+}
+
 Direction parse_radiation_direction(std::string_view str) {
   Direction ray;
   ray.phi = 0.;
@@ -241,14 +274,8 @@ uint64_t parse_radiation_flags(std::string str) {
       flags |= RadiationFlags::LineByLine;
     } else if (dstr[i] == "ck") {
       flags |= RadiationFlags::CorrelatedK;
-    } else if (dstr[i] == "planck") {
-      flags |= RadiationFlags::Planck;
     } else if (dstr[i] == "star") {
       flags |= RadiationFlags::Star;
-    } else if (dstr[i] == "spher") {
-      flags |= RadiationFlags::Sphere;
-    } else if (dstr[i] == "only") {
-      flags |= RadiationFlags::FluxOnly;
     } else if (dstr[i] == "normalize") {
       flags |= RadiationFlags::Normalize;
     } else if (dstr[i] == "write_bin_radiance") {

@@ -16,6 +16,9 @@
 #include <application/application.hpp>
 #include <application/exceptions.hpp>
 
+// climath
+#include <climath/interpolation.h>
+
 // canoe
 #include <configure.hpp>
 #include <impl.hpp>
@@ -29,33 +32,41 @@
 
 #ifdef RT_DISORT
 
+std::map<std::string, bool> to_map_bool(YAML::Node const &node) {
+  std::map<std::string, bool> flags;
+
+  for (auto it = node.begin(); it != node.end(); ++it) {
+    flags[it->first.as<std::string>()] = it->second.as<bool>();
+  }
+
+  return flags;
+}
+
 RadiationBand::RTSolverDisort::RTSolverDisort(RadiationBand *pmy_band,
                                               YAML::Node const &rad)
-    : RTSolver(pmy_band, "Disort"), DisortWrapper() {
-  if (rad["Disort"]) setFlagsFromNode(rad["Disort"]);
-
-  if (pmy_band->TestFlag(RadiationFlags::Planck)) {
-    ds_.flag.planck = 1;
+    : RTSolver(pmy_band, "Disort") {
+  if (rad["Disort-flags"]) {
+    SetFlags(to_map_bool(rad["Disort-flags"]));
   }
 
   SetHeader("Disort solver");
 }
 
 //! \todo update based on band outdir
-void RadiationBand::RTSolverDisort::Resize(int nlyr, int nstr, int nuphi,
-                                           int numu) {
+void RadiationBand::RTSolverDisort::Resize(int nlyr, int nstr) {
+  Unseal();
+
+  auto &rayout = pmy_band_->rayOutput_;
+  auto &&uphi_umu = RadiationHelper::get_direction_grids(rayout);
+
   SetAtmosphereDimension(nlyr, nstr, nstr, nstr);
-  //! \todo revise this
-  SetIntensityDimension(nuphi, 1, pmy_band_->GetNumOutgoingRays());
-  Finalize();
 
-  Real utau = 0.;
-  Real uphi = 0.;
-  Real umu = 1.;
+  dir_dim_[0] = uphi_umu.second.size();  // umu
+  dir_dim_[1] = uphi_umu.first.size();   // uphi
+  dir_axis_.resize(dir_dim_[0] + dir_dim_[1]);
 
-  SetUserAzimuthalAngle(&uphi, 1);
-  SetUserOpticalDepth(&utau, 1);
-  SetUserCosinePolarAngle(&pmy_band_->rayOutput_[0].mu, 1);
+  SetIntensityDimension(dir_dim_[1], 1, dir_dim_[0]);
+  Seal();
 }
 
 //! \note Counting Disort Index
@@ -133,11 +144,46 @@ void RadiationBand::RTSolverDisort::Prepare(MeshBlock const *pmb, int k,
     pmb->pcoord->CellVolume(k, j, pmb->is, pmb->ie, vol_);
   }
 
-  ds_.bc.fluor = 0.;
-  ds_.bc.albedo = 0.;
+  //! \todo update this
+  ds_.bc.fluor = fluor;
+  ds_.bc.fisot = fisot;
+  ds_.bc.albedo = albedo;
   ds_.bc.temis = 1.;
 
-  Finalize();
+  auto &&uphi_umu = RadiationHelper::get_direction_grids(pmy_band_->rayOutput_);
+  auto &uphi = uphi_umu.first;
+  auto &umu = uphi_umu.second;
+
+  if (umu.size() <= ds_.numu) {
+    SetUserCosinePolarAngle(umu);
+
+    for (int i = 0; i < umu.size(); ++i) {
+      dir_axis_[i] = umu[i];
+    }
+
+    for (int i = umu.size(); i < ds_.numu; ++i) {
+      dir_axis_[i] = 1.;
+    }
+  } else {
+    std::cout << "umu.size() = " << umu.size() << std::endl;
+    throw RuntimeError("RTSolverDisort::Prepare",
+                       "Number of polar angles in Disort is too small");
+  }
+
+  if (uphi.size() <= ds_.nphi) {
+    SetUserAzimuthalAngle(uphi);
+
+    for (int i = 0; i < uphi.size(); ++i) {
+      dir_axis_[ds_.numu + i] = uphi[i];
+    }
+
+    for (int i = uphi.size(); i < ds_.nphi; ++i) {
+      dir_axis_[ds_.numu + i] = 2. * M_PI;
+    }
+  } else {
+    throw RuntimeError("RTSolverDisort::Prepare",
+                       "Number of azimuthal angles in Disort is too small");
+  }
 }
 
 void RadiationBand::RTSolverDisort::CalBandFlux(MeshBlock const *pmb, int k,
@@ -195,15 +241,15 @@ void RadiationBand::RTSolverDisort::addDisortFlux(Coordinates const *pcoord,
     //! \bug does not work for spherical geometry, need to scale area using
     //! farea(il)/farea(i)
     // flux up
-    flxup(n, i) = ds_out_.rad[m].flup;
+    flxup(n, k, j, i) = ds_out_.rad[m].flup;
 
     //! \bug does not work for spherical geomtry, need to scale area using
     //! farea(il)/farea(i)
     // flux down
-    flxdn(n, i) = ds_out_.rad[m].rfldir + ds_out_.rad[m].rfldn;
+    flxdn(n, k, j, i) = ds_out_.rad[m].rfldir + ds_out_.rad[m].rfldn;
 
-    bflxup(k, j, i) += spec[n].wght * flxup(n, i);
-    bflxdn(k, j, i) += spec[n].wght * flxdn(n, i);
+    bflxup(k, j, i) += spec[n].wght * flxup(n, k, j, i);
+    bflxdn(k, j, i) += spec[n].wght * flxdn(n, k, j, i);
   }
 
   //! \note Spherical correction by XIZ
@@ -233,7 +279,7 @@ void RadiationBand::RTSolverDisort::CalBandRadiance(MeshBlock const *pmb, int k,
                                                     int j) {
   if (ds_.flag.onlyfl) {
     throw RuntimeError("RTSolverDisort::CalBandRadiance",
-                       "Only flux calculation is requested");
+                       "Radiance calculation disabled");
   }
 
   if (ds_.ntau != 1) {
@@ -241,11 +287,11 @@ void RadiationBand::RTSolverDisort::CalBandRadiance(MeshBlock const *pmb, int k,
                        "Only toa radiance (ds.ntau = 1) is supported");
   }
 
-  int nrays = ds_.nphi * ds_.ntau * ds_.numu;
+  int nrays = ds_.nphi * ds_.numu;
 
-  if (nrays != pmy_band_->GetNumOutgoingRays()) {
+  if (nrays < pmy_band_->GetNumOutgoingRays()) {
     throw RuntimeError("RTSolverDisort::CalBandRadiance",
-                       "Number of outgoing rays does not match");
+                       "Number of outgoing rays more than DISORT can host");
   }
 
   Real dist_au;
@@ -294,12 +340,17 @@ void RadiationBand::RTSolverDisort::CalBandRadiance(MeshBlock const *pmb, int k,
 }
 
 void RadiationBand::RTSolverDisort::addDisortRadiance(int b, int k, int j) {
+  auto &toa = pmy_band_->toa_;
   auto &btoa = pmy_band_->btoa;
   auto &spec = pmy_band_->pgrid_->spec;
+  auto &rayout = pmy_band_->rayOutput_;
 
-  for (int c = 0; c < ds_.nphi * ds_.ntau * ds_.numu; ++c) {
-    pmy_band_->toa_(b, 0) = ds_out_.uu[c];
-    btoa(c, k, j) += spec[b].wght * ds_out_.uu[c];
+  for (int n = 0; n < pmy_band_->GetNumOutgoingRays(); ++n) {
+    Real val;
+    Real coor[2] = {rayout[n].mu, rayout[n].phi};
+    interpn(&val, coor, ds_out_.uu, dir_axis_.data(), dir_dim_, 2, 1);
+    toa(b, n, k, j) = val;
+    btoa(n, k, j) += spec[b].wght * toa(b, n, k, j);
   }
 }
 

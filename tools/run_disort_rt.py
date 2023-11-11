@@ -2,8 +2,7 @@
 from canoe import *
 from pyharp import radiation_band, subscribe_species
 from utilities import load_file
-from collections import OrderedDict
-from numpy import *
+from numpy import linspace, ones, exp
 
 
 # create atmosphere dictionary
@@ -25,9 +24,6 @@ def create_atmosphere(nlyr: int) -> dict:
     atm["CO2"] = 400.0 * ones(nlyr)
     # ppmv
     atm["H2O"] = 4000.0 * exp(-atm["HGT"] / (Hscale_km / 5.0))
-    atm["O2"] = (1e6 - atm["CO2"] - atm["H2O"]) * 0.21
-    atm["N2"] = (1e6 - atm["CO2"] - atm["H2O"]) * 0.78
-    atm["Ar"] = (1e6 - atm["CO2"] - atm["H2O"]) * 0.01
 
     return atm
 
@@ -50,7 +46,6 @@ if __name__ == "__main__":
 
     num_layers = 100
     band.resize(num_layers)
-    band.resize_solver(num_layers)
 
     atm = create_atmosphere(num_layers)
     band.set_spectral_properties(atm)
