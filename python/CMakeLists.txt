@@ -7,9 +7,12 @@ string(TOUPPER ${CMAKE_BUILD_TYPE} buildu)
 # global library
 add_library(search_path OBJECT ${CMAKE_BINARY_DIR}/tests/globals.cpp)
 
-# python site
-get_filename_component(PYTHON_PARENT_DIR ${Python_SITELIB} DIRECTORY)
-get_filename_component(PYTHON_VERSION_DIR ${PYTHON_PARENT_DIR} NAME)
+# Execute a Python script to get the site-packages path
+execute_process(
+    COMMAND ${Python3_EXECUTABLE} -c "import site; print(site.getsitepackages()[0])"
+    OUTPUT_VARIABLE PYTHON_SITE_PACKAGES
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
 
 macro(add_python_module namel)
   # set module targets
@@ -38,7 +41,8 @@ macro(add_python_module namel)
   # Install configuration
   install(
     TARGETS ${namel}
-    DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/site-packages)
+    COMPONENT python
+    DESTINATION ${PYTHON_SITE_PACKAGES})
 endmacro()
 
 # add python modules

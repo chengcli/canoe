@@ -88,5 +88,11 @@ ENDFOREACH()
 add_subdirectory(examples)
 add_subdirectory(tests)
 
-## 7. install library and executables ##
-message(STATUS "7. Install python library and executables")
+## 7. add uninstall targets ##
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/cmake_uninstall.cmake.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
+    IMMEDIATE @ONLY)
+
+add_custom_target(uninstall
+    COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)

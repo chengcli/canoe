@@ -7,4 +7,5 @@ FetchContent_Declare(
   DOWNLOAD_EXTRACT_TIMESTAMP TRUE
   URL https://github.com/google/googletest/archive/refs/tags/v1.13.0.tar.gz)
 
+set(INSTALL_GTEST OFF)
 FetchContent_MakeAvailable(gtest)

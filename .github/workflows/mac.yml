@@ -216,7 +216,7 @@ jobs:
 
   shallow-xy:
     if: github.event.pull_request.draft == false
-    runs-on: macos-13
+    runs-on: macos-11
     steps:
       - uses: actions/checkout@v3
         with:
@@ -272,7 +272,7 @@ jobs:
 
   polar-vortex:
     if: github.event.pull_request.draft == false
-    runs-on: macos-13
+    runs-on: [self-hosted, macOS, ARM64]
     steps:
       - uses: actions/checkout@v3
         with:
@@ -328,7 +328,7 @@ jobs:
 
   juno-mwr:
     if: github.event.pull_request.draft == false
-    runs-on: macos-13
+    runs-on: macos-11
     steps:
       - uses: actions/checkout@v3
         with:
