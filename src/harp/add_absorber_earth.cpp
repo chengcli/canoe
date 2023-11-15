@@ -33,9 +33,9 @@ void RadiationBand::addAbsorberEarth(ParameterInput *pin, YAML::Node &node) {
   if (category_ == "infrared") {
     addAbsorberEarthInfrared(node);
   } else if (category_ == "visible") {
-    addAbsorberGiantsVisible(node);
+    addAbsorberEarthVisible(node);
   } else if (category_ == "ultraviolet") {
-    addAbsorberGiantsUltraviolet(node);
+    addAbsorberEarthUltraviolet(node);
   } else {
     throw NotFoundError("addAbsorberEarth", "Category: " + category_);
   }
@@ -90,7 +90,7 @@ void RadiationBand::addAbsorberEarthVisible(YAML::Node &node) {
     auto ab = std::make_unique<HitranAbsorber>(name, species, params);
     absorbers_.push_back(std::move(ab));
   } else {
-    throw NotFoundError("addAbsorberEarthInfrared", "Absorber " + name);
+    throw NotFoundError("addAbsorberEarthVisible", "Absorber " + name);
   }
 }
 
@@ -106,6 +106,6 @@ void RadiationBand::addAbsorberEarthUltraviolet(YAML::Node &node) {
     auto ab = std::make_unique<HitranAbsorber>(name, species, params);
     absorbers_.push_back(std::move(ab));
   } else {
-    throw NotFoundError("addAbsorberEarthInfrared", "Absorber " + name);
+    throw NotFoundError("addAbsorberEarthUltraviolet", "Absorber " + name);
   }
 }
