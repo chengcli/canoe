@@ -322,14 +322,10 @@ void RadiationBand::RTSolverDisort::CalBandRadiance(MeshBlock const *pmb, int k,
       ds_.wvnmhi = spec.wav2;
     }
 
-    /* transfer spectral grid data
+    // transfer spectral grid data
     pmy_band_->PackSpectralGrid(b);
     pmy_band_->Transfer(pmb, 1);
-    pmy_band_->UnpackSpectralGrid(&ds_);*/
-    for (int i = 0; i < ds_.nlyr; ++i) {
-      ds_.dtauc[i] = pmy_band_->tau_(b, i);
-    }
-    std::reverse(ds_.dtauc, ds_.dtauc + ds_.nlyr);
+    pmy_band_->UnpackSpectralGrid(&ds_);
 
     // run disort
     c_disort(&ds_, &ds_out_);

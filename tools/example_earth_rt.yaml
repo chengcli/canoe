@@ -35,4 +35,9 @@ Disort-flags:
   old_intensity_correction: false
   general_source: false
   output_uum: false
-  quiet: true
+  quiet: false
+  print-input: false
+  print-fluxes: false
+  print-intensity: false
+  print-transmissivity: false
+  print-phase-function: false
