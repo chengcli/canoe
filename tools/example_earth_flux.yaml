@@ -20,16 +20,22 @@ B1:
   resolution: 0.01
   opacity: [H2O, CO2]
   rt-solver: Disort
-  outdir: ["(0,)","(45,)"]
+  flags: [static]
+
+B2:
+  units: cm-1
+  grid-type: regular
+  wavenumber-range: [700., 800.]
+  resolution: 0.01
+  opacity: [H2O, CO2]
+  rt-solver: Disort
   flags: [static]
 
 Disort-flags:
   ibcnd: false
-  usrtau: true
-  usrang: true
   lamber: true
   planck: true
-  onlyfl: false
+  onlyfl: true
   spher: false
   intensity_correction: true
   old_intensity_correction: false

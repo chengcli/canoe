@@ -88,8 +88,6 @@ class RadiationBand::RTSolverDisort : public RadiationBand::RTSolver,
   size_t dir_dim_[2];
   std::vector<Real> dir_axis_;
 
-  void setFlagsFromNode(YAML::Node const &flags);
-
   void addDisortFlux(Coordinates const *pcoord, int n, int k, int j, int il,
                      int iu);
 

@@ -78,11 +78,13 @@ bool RadiationBand::UnpackSpectralGrid(void *arg) {
     for (int i = 0; i < nlayers; ++i) {
       ds->dtauc[n * nlayers + i] = *(buf++);
       ds->ssalb[n * nlayers + i] = *(buf++);
-      for (int j = 0; j <= npmom; ++j)
-        ds->pmom[n * nlayers * ds->nmom_nstr + i * ds->nmom_nstr + j] =
-            *(buf++);
-      for (int j = npmom + 1; j < ds->nmom_nstr; ++j)
-        ds->pmom[n * nlayers * ds->nmom_nstr + i * ds->nmom_nstr + j] = 0.;
+      for (int j = 0; j <= npmom; ++j) {
+        ds->pmom[n * nlayers * (ds->nmom_nstr + 1) + i * (ds->nmom_nstr + 1) +
+                 j] = *(buf++);
+      }
+      for (int j = npmom + 1; j <= ds->nmom_nstr; ++j)
+        ds->pmom[n * nlayers * (ds->nmom_nstr + 1) + i * (ds->nmom_nstr + 1) +
+                 j] = 0.;
     }
   }
 
@@ -92,12 +94,12 @@ bool RadiationBand::UnpackSpectralGrid(void *arg) {
   // single scatering albedo
   std::reverse(ds->ssalb, ds->ssalb + ds->nlyr);
 
-  /* phase function moments
+  // phase function moments
   std::reverse(ds->pmom, ds->pmom + ds->nlyr * (ds->nmom_nstr + 1));
   for (int i = 0; i < ds->nlyr; ++i) {
     std::reverse(ds->pmom + i * (ds->nmom_nstr + 1),
                  ds->pmom + (i + 1) * (ds->nmom_nstr + 1));
-  }*/
+  }
 #endif  // RT_DISORT
 
   return true;
