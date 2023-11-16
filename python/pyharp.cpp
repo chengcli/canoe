@@ -105,9 +105,9 @@ PYBIND11_MODULE(pyharp, m) {
       .def("get_absorber_by_name", &RadiationBand::GetAbsorberByName)
       .def("get_range", &RadiationBand::GetRange)
 
-      .def("cal_flux", &RadiationBand::CalBandFlux, py::arg("pmb") = nullptr,
-           py::arg("k") = 0, py::arg("j") = 0, py::arg("is") = 0,
-           py::arg("ie") = 0)
+      .def("cal_flux", &RadiationBand::CalBandFluxColumn,
+           py::arg("pmb") = nullptr, py::arg("k") = 0, py::arg("j") = 0)
+
       .def("cal_radiance", &RadiationBand::CalBandRadiance,
            py::arg("pmb") = nullptr, py::arg("k") = 0, py::arg("j") = 0)
 

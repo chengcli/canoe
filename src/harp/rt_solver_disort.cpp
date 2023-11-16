@@ -92,7 +92,11 @@ void RadiationBand::RTSolverDisort::Prepare(MeshBlock const *pmb, int k,
   Direction ray;
   Real dist_au;
 
-  if (pmb != nullptr) {
+  if (pmy_band_->TestFlag(RadiationFlags::Star)) {
+    if (pmb == nullptr) {
+      throw RuntimeError("RTSolverDisort::Prepare",
+                         "MeshBlock must be allocated for stellar radiation");
+    }
     Real time = pmb->pmy_mesh->time;
     auto planet = pmb->pimpl->planet;
     if (pmy_band_->TestFlag(RadiationFlags::Dynamic)) {
@@ -165,7 +169,6 @@ void RadiationBand::RTSolverDisort::Prepare(MeshBlock const *pmb, int k,
       dir_axis_[i] = 1.;
     }
   } else {
-    std::cout << "umu.size() = " << umu.size() << std::endl;
     throw RuntimeError("RTSolverDisort::Prepare",
                        "Number of polar angles in Disort is too small");
   }
@@ -189,12 +192,16 @@ void RadiationBand::RTSolverDisort::Prepare(MeshBlock const *pmb, int k,
 void RadiationBand::RTSolverDisort::CalBandFlux(MeshBlock const *pmb, int k,
                                                 int j, int il, int iu) {
   Real dist_au;
-  Real time = pmb->pmy_mesh->time;
-  if (pmy_band_->TestFlag(RadiationFlags::Dynamic)) {
-    dist_au = pmb->pimpl->planet->ParentDistanceInAu(time);
-  } else {
-    dist_au = pmb->pimpl->GetDistanceInAu();
+  if (pmy_band_->TestFlag(RadiationFlags::Star)) {
+    Real time = pmb->pmy_mesh->time;
+    if (pmy_band_->TestFlag(RadiationFlags::Dynamic)) {
+      dist_au = pmb->pimpl->planet->ParentDistanceInAu(time);
+    } else {
+      dist_au = pmb->pimpl->GetDistanceInAu();
+    }
   }
+
+  // bflxup and bflxdn has been reset in RadiationBand::CalBandFlux
 
   // loop over spectral grids in the band
   int b = 0;
@@ -221,19 +228,23 @@ void RadiationBand::RTSolverDisort::CalBandFlux(MeshBlock const *pmb, int k,
     c_disort(&ds_, &ds_out_);
 
     // add spectral bin flux
-    addDisortFlux(pmb->pcoord, b++, k, j, il, iu);
+    if (pmb != nullptr) {
+      addDisortFlux(pmb->pcoord, b++, k, j, il, iu);
+    } else {
+      addDisortFlux(nullptr, b++, k, j, il, iu);
+    }
   }
 }
 
 void RadiationBand::RTSolverDisort::addDisortFlux(Coordinates const *pcoord,
-                                                  int n, int k, int j, int il,
+                                                  int b, int k, int j, int il,
                                                   int iu) {
   auto &bflxup = pmy_band_->bflxup;
   auto &bflxdn = pmy_band_->bflxdn;
 
   auto &flxup = pmy_band_->flxup_;
   auto &flxdn = pmy_band_->flxdn_;
-  auto &spec = pmy_band_->pgrid_->spec;
+  auto const &spec = pmy_band_->pgrid_->spec;
 
   /// accumulate flux from spectral bins
   for (int i = il; i <= iu; ++i) {
@@ -241,15 +252,15 @@ void RadiationBand::RTSolverDisort::addDisortFlux(Coordinates const *pcoord,
     //! \bug does not work for spherical geometry, need to scale area using
     //! farea(il)/farea(i)
     // flux up
-    flxup(n, k, j, i) = ds_out_.rad[m].flup;
+    flxup(b, k, j, i) = ds_out_.rad[m].flup;
 
     //! \bug does not work for spherical geomtry, need to scale area using
     //! farea(il)/farea(i)
     // flux down
-    flxdn(n, k, j, i) = ds_out_.rad[m].rfldir + ds_out_.rad[m].rfldn;
+    flxdn(b, k, j, i) = ds_out_.rad[m].rfldir + ds_out_.rad[m].rfldn;
 
-    bflxup(k, j, i) += spec[n].wght * flxup(n, k, j, i);
-    bflxdn(k, j, i) += spec[n].wght * flxdn(n, k, j, i);
+    bflxup(k, j, i) += spec[b].wght * flxup(b, k, j, i);
+    bflxdn(k, j, i) += spec[b].wght * flxdn(b, k, j, i);
   }
 
   //! \note Spherical correction by XIZ
@@ -259,19 +270,23 @@ void RadiationBand::RTSolverDisort::addDisortFlux(Coordinates const *pcoord,
   //! volume divided by dx1f then solve for F using F1*S1-F2*S2 = volheating
   //! the top fluxes are the still the same as the plane-paralell values
   Real volh;
-  Real bflxup1 = bflxup(k, j, iu);
-  Real bflxdn1 = bflxdn(k, j, iu);
+  Real bflxup_iu = bflxup(k, j, iu);
+  Real bflxdn_iu = bflxdn(k, j, iu);
 
-  for (int i = iu - 1; i >= il; --i) {
-    // upward
-    volh = (bflxup1 - bflxup(k, j, i)) / pcoord->dx1f(i) * vol_(i);
-    bflxup1 = bflxup(k, j, i);
-    bflxup(k, j, i) = (bflxup(k, j, i + 1) * farea_(i + 1) - volh) / farea_(i);
+  if (pcoord != nullptr) {
+    for (int i = iu - 1; i >= il; --i) {
+      // upward
+      volh = (bflxup_iu - bflxup(k, j, i)) / pcoord->dx1f(i) * vol_(i);
+      bflxup_iu = bflxup(k, j, i);
+      bflxup(k, j, i) =
+          (bflxup(k, j, i + 1) * farea_(i + 1) - volh) / farea_(i);
 
-    // downward
-    volh = (bflxdn1 - bflxdn(k, j, i)) / pcoord->dx1f(i) * vol_(i);
-    bflxdn1 = bflxdn(k, j, i);
-    bflxdn(k, j, i) = (bflxdn(k, j, i + 1) * farea_(i + 1) - volh) / farea_(i);
+      // downward
+      volh = (bflxdn_iu - bflxdn(k, j, i)) / pcoord->dx1f(i) * vol_(i);
+      bflxdn_iu = bflxdn(k, j, i);
+      bflxdn(k, j, i) =
+          (bflxdn(k, j, i + 1) * farea_(i + 1) - volh) / farea_(i);
+    }
   }
 }
 
@@ -293,6 +308,8 @@ void RadiationBand::RTSolverDisort::CalBandRadiance(MeshBlock const *pmb, int k,
     throw RuntimeError("RTSolverDisort::CalBandRadiance",
                        "Number of outgoing rays more than DISORT can host");
   }
+
+  // toa has been reset in RadiationBand::CalBandRadiance
 
   Real dist_au;
   if (pmy_band_->TestFlag(RadiationFlags::Star)) {

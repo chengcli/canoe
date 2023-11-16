@@ -168,11 +168,18 @@ RadiationBand const *RadiationBand::CalBandFlux(MeshBlock const *pmb, int k,
   return this;
 }
 
+RadiationBand const *RadiationBand::CalBandFluxColumn(MeshBlock const *pmb,
+                                                      int k, int j) {
+  int il = NGHOST;
+  int iu = NGHOST + GetNumLayers();
+
+  return CalBandFlux(pmb, k, j, il, iu);
+}
+
 RadiationBand const *RadiationBand::CalBandRadiance(MeshBlock const *pmb, int k,
                                                     int j) {
   // reset radiance of this column
   for (int n = 0; n < GetNumOutgoingRays(); ++n) {
-    btoa(n, k, j) = 0.;
     btoa(n, k, j) = 0.;
   }
 

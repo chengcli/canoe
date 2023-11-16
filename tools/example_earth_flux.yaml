@@ -1,0 +1,49 @@
+opacity-sources:
+  - name: H2O
+    class: Hitran
+    dependent-species: [vapor.H2O]
+
+  - name: CO2
+    class: Hitran
+    dependent-species: [tracer.CO2]
+
+  - name: O3
+    class: Hitran
+    dependent-species: [tracer.O3]
+
+bands: [B1, B2]
+
+B1:
+  units: cm-1
+  grid-type: regular
+  wavenumber-range: [600., 700.]
+  resolution: 0.01
+  opacity: [H2O, CO2]
+  rt-solver: Disort
+  flags: [static]
+
+B2:
+  units: cm-1
+  grid-type: regular
+  wavenumber-range: [700., 800.]
+  resolution: 0.01
+  opacity: [H2O, CO2]
+  rt-solver: Disort
+  flags: [static]
+
+Disort-flags:
+  ibcnd: false
+  lamber: true
+  planck: true
+  onlyfl: true
+  spher: false
+  intensity_correction: true
+  old_intensity_correction: false
+  general_source: false
+  output_uum: false
+  quiet: false
+  print-input: false
+  print-fluxes: false
+  print-intensity: false
+  print-transmissivity: false
+  print-phase-function: false

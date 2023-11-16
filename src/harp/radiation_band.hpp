@@ -126,9 +126,11 @@ class RadiationBand : public NamedGroup,
   RadiationBand const *CalBandFlux(MeshBlock const *pmb, int k, int j, int il,
                                    int iu);
 
+  //! \brief Calculate band flux for the entire column
+  RadiationBand const *CalBandFluxColumn(MeshBlock const *pmb, int k, int j);
+
   //! \brief Calculate band radiances
-  RadiationBand const *CalBandRadiance(MeshBlock const *pmb = nullptr,
-                                       int k = 0, int j = 0);
+  RadiationBand const *CalBandRadiance(MeshBlock const *pmb, int k, int j);
 
   //! \brief Set outgoing ray directions
   //!
