@@ -97,7 +97,7 @@ AbsorberPtr AbsorberFactory::createAbsorberPartial(std::string name,
     ab = std::make_shared<FreedmanSimple2>(name);
   } else if (type == "FreedmanMean") {
     ab = std::make_shared<FreedmanMean>(name);
-  } else if (type == "FreedmanMean") {
+  } else if (type == "FreedmanMean2") {
     ab = std::make_shared<FreedmanMean2>(name);
   } else if (type == "radio-NH3") {
     ab = std::make_shared<gp::MwrAbsorberNH3>();

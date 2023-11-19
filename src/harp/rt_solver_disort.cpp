@@ -21,6 +21,7 @@
 
 // canoe
 #include <configure.hpp>
+#include <constants.hpp>
 #include <impl.hpp>
 
 // astro
@@ -49,7 +50,12 @@ RadiationBand::RTSolverDisort::RTSolverDisort(RadiationBand *pmy_band,
     SetFlags(to_map_bool(rad["Disort-flags"]));
   }
 
-  SetHeader("Disort solver");
+  // override disort planck flag
+  if (pmy_band->TestFlag(RadiationFlags::ThermalEmission)) {
+    ds_.flag.planck = true;
+  }
+
+  SetHeader("Disort solving band " + pmy_band_->GetName());
 }
 
 //! \todo update based on band outdir
@@ -92,14 +98,14 @@ void RadiationBand::RTSolverDisort::Prepare(MeshBlock const *pmb, int k,
   Direction ray;
   Real dist_au;
 
-  if (pmy_band_->TestFlag(RadiationFlags::Star)) {
+  if (pmy_band_->TestFlag(RadiationFlags::StellarBeam)) {
     if (pmb == nullptr) {
       throw RuntimeError("RTSolverDisort::Prepare",
                          "MeshBlock must be allocated for stellar radiation");
     }
     Real time = pmb->pmy_mesh->time;
     auto planet = pmb->pimpl->planet;
-    if (pmy_band_->TestFlag(RadiationFlags::Dynamic)) {
+    if (pmy_band_->TestFlag(RadiationFlags::TimeDependent)) {
       ray = planet->ParentZenithAngle(time, pmb->pcoord->x2v(j),
                                       pmb->pcoord->x3v(k));
       dist_au = planet->ParentDistanceInAu(time);
@@ -131,13 +137,20 @@ void RadiationBand::RTSolverDisort::Prepare(MeshBlock const *pmb, int k,
     ds_.bc.ttemp = ds_.temper[0];
   }
 
-  if (pmy_band_->TestFlag(RadiationFlags::CorrelatedK)) {
-    // stellar source function
-    if (pmy_band_->TestFlag(RadiationFlags::Star))
+  if (pmy_band_->TestFlag(RadiationFlags::BroadBand)) {
+    // stellar source function overrides fbeam
+    if (pmy_band_->TestFlag(RadiationFlags::StellarBeam)) {
       ds_.bc.fbeam =
           pmb->pimpl->planet->ParentInsolationFlux(wmin, wmax, dist_au);
-    else
+    } else if (pmy_band_->HasPar("fbeam_K")) {
+      Real Ttop = pmy_band_->GetPar<Real>("fbeam_K");
+      ds_.bc.fbeam = Constants::stefanBoltzmann * pow(Ttop, 4);
+    } else if (pmy_band_->HasPar("fbeam")) {
+      ds_.bc.fbeam = pmy_band_->GetPar<Real>("fbeam");
+    } else {
       ds_.bc.fbeam = 0.;
+    }
+
     // planck source function
     ds_.wvnmlo = wmin;
     ds_.wvnmhi = wmax;
@@ -192,9 +205,9 @@ void RadiationBand::RTSolverDisort::Prepare(MeshBlock const *pmb, int k,
 void RadiationBand::RTSolverDisort::CalBandFlux(MeshBlock const *pmb, int k,
                                                 int j, int il, int iu) {
   Real dist_au;
-  if (pmy_band_->TestFlag(RadiationFlags::Star)) {
+  if (pmy_band_->TestFlag(RadiationFlags::StellarBeam)) {
     Real time = pmb->pmy_mesh->time;
-    if (pmy_band_->TestFlag(RadiationFlags::Dynamic)) {
+    if (pmy_band_->TestFlag(RadiationFlags::TimeDependent)) {
       dist_au = pmb->pimpl->planet->ParentDistanceInAu(time);
     } else {
       dist_au = pmb->pimpl->GetDistanceInAu();
@@ -206,9 +219,9 @@ void RadiationBand::RTSolverDisort::CalBandFlux(MeshBlock const *pmb, int k,
   // loop over spectral grids in the band
   int b = 0;
   for (auto &spec : pmy_band_->pgrid_->spec) {
-    if (!pmy_band_->TestFlag(RadiationFlags::CorrelatedK)) {
+    if (!pmy_band_->TestFlag(RadiationFlags::BroadBand)) {
       // stellar source function
-      if (pmy_band_->TestFlag(RadiationFlags::Star)) {
+      if (pmy_band_->TestFlag(RadiationFlags::StellarBeam)) {
         ds_.bc.fbeam = pmb->pimpl->planet->ParentInsolationFlux(
             spec.wav1, spec.wav2, dist_au);
       } else {
@@ -312,9 +325,9 @@ void RadiationBand::RTSolverDisort::CalBandRadiance(MeshBlock const *pmb, int k,
   // toa has been reset in RadiationBand::CalBandRadiance
 
   Real dist_au;
-  if (pmy_band_->TestFlag(RadiationFlags::Star)) {
-    Real time = pmb->pmy_mesh->time;
-    if (pmy_band_->TestFlag(RadiationFlags::Dynamic)) {
+  if (pmy_band_->TestFlag(RadiationFlags::StellarBeam)) {
+    if (pmy_band_->TestFlag(RadiationFlags::TimeDependent)) {
+      Real time = pmb->pmy_mesh->time;
       dist_au = pmb->pimpl->planet->ParentDistanceInAu(time);
     } else {
       dist_au = pmb->pimpl->GetDistanceInAu();
@@ -326,9 +339,10 @@ void RadiationBand::RTSolverDisort::CalBandRadiance(MeshBlock const *pmb, int k,
   // loop over spectral grids in the band
   int b = 0;
   for (auto &spec : pmy_band_->pgrid_->spec) {
-    if (!(pmy_band_->TestFlag(RadiationFlags::CorrelatedK))) {
+    // override source function for non-broadband radiation
+    if (!(pmy_band_->TestFlag(RadiationFlags::BroadBand))) {
       // stellar source function
-      if (pmy_band_->TestFlag(RadiationFlags::Star)) {
+      if (pmy_band_->TestFlag(RadiationFlags::StellarBeam)) {
         ds_.bc.fbeam = pmb->pimpl->planet->ParentInsolationFlux(
             spec.wav1, spec.wav2, dist_au);
       } else {

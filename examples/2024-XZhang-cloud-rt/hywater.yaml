@@ -14,7 +14,7 @@ opacity-sources:
 
   - name: H2-ir
     class: FreedmanMean
-    parameters: {met: 1.7}
+    parameters: {met: 1.7, scale: 1.}
 
 bands: [ir, vis]
 
@@ -22,19 +22,18 @@ ir:
   units: cm-1
   grid-type: regular
   wavenumber-range: [100., 10000.]
-  resolution: 0.01
+  num-bins: 1
   opacity: [H2-ir]
   rt-solver: Disort
-  flags: [static, planck]
+  flags: [broad_band, thermal_emission]
 
 vis:
   units: cm-1
   grid-type: regular
   wavenumber-range: [10000., 50000.]
-  resolution: 0.01
+  num-bins: 1
   opacity: [H2-vis, H2O(c)]
   rt-solver: Disort
-  flags: [static]
   parameters: {fbeam_K: 265.}
 
 Disort-flags:

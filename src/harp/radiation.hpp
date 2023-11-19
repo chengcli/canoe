@@ -88,15 +88,12 @@ using RadiationPtr = std::shared_ptr<Radiation>;
 namespace RadiationFlags {
 
 const uint64_t None = 0LL;
-const uint64_t Dynamic = 1LL << 0;
-const uint64_t LineByLine = 1LL << 1;
-const uint64_t CorrelatedK = 1LL << 2;
-const uint64_t Star = 1LL << 4;
+const uint64_t TimeDependent = 1LL << 0;
+const uint64_t BroadBand = 1LL << 1;
+const uint64_t ThermalEmission = 1LL << 2;
+const uint64_t StellarBeam = 1LL << 3;
 const uint64_t Normalize = 1LL << 7;
 const uint64_t WriteBinRadiance = 1LL << 8;
-
-//! \todo Do we put scattering model flag here?
-//! e.g. HENYEY_GREENSTEIN, ISOTROPIC, RAYLEIGH, MIE, etc.
 
 }  // namespace RadiationFlags
 

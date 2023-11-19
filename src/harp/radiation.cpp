@@ -264,31 +264,20 @@ uint64_t parse_radiation_flags(std::string str) {
 
   std::vector<std::string> dstr = Vectorize<std::string>(str.c_str(), " ,");
   for (int i = 0; i < dstr.size(); ++i) {
-    if (dstr[i] == "static") {
-      flags &= !RadiationFlags::Dynamic;
-    } else if (dstr[i] == "dynamic") {
-      flags |= RadiationFlags::Dynamic;
-    } else if (dstr[i] == "bin") {
-      flags &= !RadiationFlags::LineByLine;
-    } else if (dstr[i] == "lbl") {
-      flags |= RadiationFlags::LineByLine;
-    } else if (dstr[i] == "ck") {
-      flags |= RadiationFlags::CorrelatedK;
-    } else if (dstr[i] == "star") {
-      flags |= RadiationFlags::Star;
+    if (dstr[i] == "time_dependent") {
+      flags |= RadiationFlags::TimeDependent;
+    } else if (dstr[i] == "broad_band") {
+      flags |= RadiationFlags::BroadBand;
+    } else if (dstr[i] == "stellar_beam") {
+      flags |= RadiationFlags::StellarBeam;
+    } else if (dstr[i] == "thermal_emission") {
+      flags |= RadiationFlags::ThermalEmission;
     } else if (dstr[i] == "normalize") {
       flags |= RadiationFlags::Normalize;
     } else if (dstr[i] == "write_bin_radiance") {
       flags |= RadiationFlags::WriteBinRadiance;
     } else {
       msg << "flag: '" << dstr[i] << "' unrecognized" << std::endl;
-      throw RuntimeError("parse_radiation_flags", msg.str());
-    }
-
-    // check flags consistency
-    if ((flags & RadiationFlags::LineByLine) &&
-        (flags & RadiationFlags::CorrelatedK)) {
-      msg << "ck cannot be used with lbl." << std::endl;
       throw RuntimeError("parse_radiation_flags", msg.str());
     }
   }

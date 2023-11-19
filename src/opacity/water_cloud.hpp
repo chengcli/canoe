@@ -17,12 +17,16 @@ class SimpleCloud : public Absorber {
 
   Real GetAttenuation(Real wave1, Real wave2,
                       AirParcel const& var) const override {
-    return getAttenuation1((wave1 + wave2) / 2, var);
+    Real a = getAttenuation1(wave1, var);
+    Real b = getAttenuation1(wave2, var);
+    return (a + b) / 2.;
   }
 
   Real GetSingleScatteringAlbedo(Real wave1, Real wave2,
                                  AirParcel const& var) const override {
-    return getSingleScatteringAlbedo1((wave1 + wave2) / 2., var);
+    Real a = getSingleScatteringAlbedo1(wave1, var);
+    Real b = getSingleScatteringAlbedo1(wave2, var);
+    return (a + b) / 2.;
   }
 
   void GetPhaseMomentum(Real* pp, Real wave1, Real wave2, AirParcel const& var,

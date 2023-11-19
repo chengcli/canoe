@@ -31,7 +31,9 @@ def create_atmosphere(nlyr: int) -> dict:
     # ppmv
     atm["H2O"] = 4000.0 * exp(-atm["HGT"] / (Hscale_km / 5.0))
     # ppmv
-    atm["H2"] = 1.0e6 - atm["H2O"]
+    atm["H2O(c)"] = 40.0 * (1.0 - exp(-atm["HGT"] / (Hscale_km / 5.0)))
+    # ppmv
+    atm["H2"] = 1.0e6 - atm["H2O"] - atm["H2O(c)"]
 
     return atm
 
