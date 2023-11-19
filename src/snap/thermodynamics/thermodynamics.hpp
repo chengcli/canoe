@@ -76,7 +76,7 @@ class Thermodynamics {
   //! Protected ctor access thru static member function Instance
   Thermodynamics() {}
   static Thermodynamics *fromLegacyInput(ParameterInput *pin);
-  static Thermodynamics *fromYAMLInput(YAML::Node node);
+  static Thermodynamics *fromYAMLInput(YAML::Node const &node);
 
  public:
   using SVPFunc1Container = std::vector<std::vector<SatVaporPresFunc1>>;
@@ -95,11 +95,16 @@ class Thermodynamics {
   static constexpr Real RefTemp = 300.;
   static constexpr Real RefPres = 1.e5;
 
+  //! thermodynamics input key in the input file [thermodynamics_config]
+  static const std::string input_key;
+
   // member functions
   ~Thermodynamics();
 
   //! Return a pointer to the one and only instance of Thermodynamics
   static Thermodynamics const *GetInstance();
+
+  static Thermodynamics const *InitFromYAMLInput(YAML::Node const &node);
 
   static Thermodynamics const *InitFromAthenaInput(ParameterInput *pin);
 

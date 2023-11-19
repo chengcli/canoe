@@ -55,6 +55,12 @@ void RadiationBand::SetSpectralProperties(AirColumn& ac, Real const* x1f,
         // pmom
         a->GetPhaseMomentum(mypmom.data(), spec.wav1, spec.wav2, air, npmom);
         for (int p = 0; p <= npmom; ++p) pmom_(m, i, p) += mypmom[p] * dssalb;
+        std::cout << "absorber = " << a->GetName() << std::endl;
+        std::cout << "tau[" << i << "] = " << kcoeff << std::endl;
+        std::cout << "ssa[" << i << "] = " << dssalb << std::endl;
+        std::cout << "pmom[" << i << "] = ";
+        for (int p = 0; p <= npmom; ++p) std::cout << mypmom[p] << " ";
+        std::cout << std::endl << std::endl;
       }
     }
   }

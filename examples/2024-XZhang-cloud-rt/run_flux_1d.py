@@ -1,7 +1,8 @@
 """
 This is an example of how to run the 1D flux model.
 """
-from pyharp import radiation_band, subscribe_species
+from pyharp import radiation_band, subscribe_species, init_thermo
+from pyathena import nghost
 from utilities import load_file
 from numpy import linspace, ones, exp, array
 
@@ -16,7 +17,7 @@ def create_atmosphere(nlyr: int) -> dict:
     """
 
     atm = {}
-    ps_mbar = 1.0e3
+    ps_mbar = 1.0e2
     Ts_K = 300.0
     grav_ms2 = 9.8
     mu_kgmol = 29.0e-3
@@ -43,17 +44,19 @@ if __name__ == "__main__":
     subscribe_species(
         {
             "vapor": ["H2O"],
-            "cloud": ["H2O(c)"],
+            "cloud": ["H2O(c)", "H2O(p)"],
         }
     )
 
     # number of atmopheric layers
-    num_layers = 100
+    num_layers = 40 + 2 * nghost()
 
     # create an atmosphere dictionary
     atm = create_atmosphere(num_layers)
 
     info = load_file("hywater.yaml")
+
+    init_thermo(info)
 
     band_names = ["ir", "vis"]
     bands = [radiation_band(name, info) for name in band_names]
@@ -61,9 +64,11 @@ if __name__ == "__main__":
     bflxup, bflxdn = [], []
 
     for band in bands:
-        band.resize(num_layers)
+        band.resize(num_layers, nstr=4)
         band.set_spectral_properties(atm)
         band.cal_flux()
 
         bflxup.append(array(band.bflxup))
         bflxdn.append(array(band.bflxdn))
+
+    # print(bflxup, bflxdn)

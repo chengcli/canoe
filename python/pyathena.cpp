@@ -13,6 +13,8 @@ PYBIND11_MODULE(pyathena, m) {
   m.attr("__name__") = "pyathena";
   m.doc() = "Python bindings for Athena++";
 
+  m.def("nghost", []() { return NGHOST; });
+
   py::enum_<IOWrapper::FileMode>(m, "FileMode")
       .value("read", IOWrapper::FileMode::read)
       .value("write", IOWrapper::FileMode::write)

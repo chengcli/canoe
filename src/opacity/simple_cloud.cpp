@@ -12,7 +12,7 @@
 #include <harp/radiation.hpp>
 
 // opacity
-#include "water_cloud.hpp"
+#include "simple_cloud.hpp"
 
 // For grey cloud
 Real SimpleCloud::getAttenuation1(Real wave, AirParcel const& var) const {

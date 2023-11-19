@@ -5,16 +5,21 @@
 
 // athena
 #include <athena/athena.hpp>
+#include <athena/globals.hpp>
 #include <athena/mesh/mesh.hpp>
 #include <athena/parameter_input.hpp>
 
 // canoe
 #include <air_parcel.hpp>
+#include <configure.hpp>
 #include <index_map.hpp>
 
 // harp
 #include <harp/radiation.hpp>
 #include <harp/radiation_band.hpp>
+
+// snap
+#include <snap/thermodynamics/thermodynamics.hpp>
 
 // opacity
 #include <opacity/absorber.hpp>
@@ -25,11 +30,14 @@ void subscribe_species(std::map<std::string, std::vector<std::string>> smap) {
   IndexMap::InitFromSpeciesMap(smap);
 }
 
+void init_thermo(YAML::Node node) { Thermodynamics::InitFromYAMLInput(node); }
+
 PYBIND11_MODULE(pyharp, m) {
   m.attr("__name__") = "pyharp";
   m.doc() = "Python bindings for harp module";
 
   m.def("subscribe_species", &subscribe_species);
+  m.def("init_thermo", &init_thermo);
 
   // AthenArray
   py::class_<AthenaArray<Real>>(m, "AthenaArray", py::buffer_protocol())

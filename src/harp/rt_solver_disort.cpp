@@ -120,8 +120,12 @@ void RadiationBand::RTSolverDisort::Prepare(MeshBlock const *pmb, int k,
                      0);
   }
 
-  pmy_band_->Regroup(pmb, X1DIR);
-  myrank_in_column_ = pmy_band_->GetRankInGroup();
+  if (pmb != nullptr) {
+    pmy_band_->Regroup(pmb, X1DIR);
+    myrank_in_column_ = pmy_band_->GetRankInGroup();
+  } else {
+    myrank_in_column_ = 0;
+  }
 
   // transfer temperature
   if (ds_.flag.planck) {
@@ -205,6 +209,7 @@ void RadiationBand::RTSolverDisort::Prepare(MeshBlock const *pmb, int k,
 void RadiationBand::RTSolverDisort::CalBandFlux(MeshBlock const *pmb, int k,
                                                 int j, int il, int iu) {
   Real dist_au;
+
   if (pmy_band_->TestFlag(RadiationFlags::StellarBeam)) {
     Real time = pmb->pmy_mesh->time;
     if (pmy_band_->TestFlag(RadiationFlags::TimeDependent)) {

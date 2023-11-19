@@ -11,36 +11,6 @@
 // harp
 #include "absorber.hpp"
 
-class SimpleCloud : public Absorber {
- public:
-  SimpleCloud() : Absorber("H2O(c,p)") {}
-
-  Real GetAttenuation(Real wave1, Real wave2,
-                      AirParcel const& var) const override {
-    Real a = getAttenuation1(wave1, var);
-    Real b = getAttenuation1(wave2, var);
-    return (a + b) / 2.;
-  }
-
-  Real GetSingleScatteringAlbedo(Real wave1, Real wave2,
-                                 AirParcel const& var) const override {
-    Real a = getSingleScatteringAlbedo1(wave1, var);
-    Real b = getSingleScatteringAlbedo1(wave2, var);
-    return (a + b) / 2.;
-  }
-
-  void GetPhaseMomentum(Real* pp, Real wave1, Real wave2, AirParcel const& var,
-                        int np) const override {
-    getPhaseMomentum1(pp, (wave1 + wave2) / 2., var, np);
-  }
-
- protected:
-  Real getAttenuation1(Real wave, AirParcel const& var) const;
-  Real getSingleScatteringAlbedo1(Real wave, AirParcel const& var) const;
-  void getPhaseMomentum1(Real* pp, Real wave, AirParcel const& var,
-                         int np) const;
-};
-
 class FuWaterLiquidCloud : public Absorber {
  public:
   FuWaterLiquidCloud() : Absorber("H2O(l)") {}
