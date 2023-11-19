@@ -25,9 +25,9 @@ void Kessler94::AssembleReactionMatrix(AirParcel const &air, Real time) {
   auto pthermo = Thermodynamics::GetInstance();
 
   // get indices
-  int iv = GetSpeciesIndex(0);
-  int ic = GetSpeciesIndex(1);
-  int ip = GetSpeciesIndex(2);
+  int iv = mySpeciesId(0);
+  int ic = mySpeciesId(1);
+  int ip = mySpeciesId(2);
 
   // get parameters
   Real k1 = GetPar<Real>("autoconversion");
@@ -72,21 +72,21 @@ void Kessler94::EvolveOneStep(AirParcel *air, Real time, Real dt) {
   // auto sol = solver_.solveBDF1<Base::RealVector>(rate_, jacb_, dt);
   // auto sol = solver_.solveTRBDF2<Base::RealVector>(rate_, jacb_, dt);
   auto sol = solver_.solveTRBDF2Blend<Base::RealVector>(
-      rate_, jacb_, dt, air->w, GetSpeciesIndexArray().data());
+      rate_, jacb_, dt, air->w, GetMySpeciesIndices().data());
 
   //! \todo check this
   // 0 is a special buffer place for cloud in equilibrium with vapor at the same
   // temperature
-  int jbuf = pthermo->GetCloudIndex(GetSpeciesIndex(0), 0);
+  int jbuf = pthermo->GetCloudIndex(mySpeciesId(0), 0);
 
   air->c[jbuf] += sol(0);
-  for (int n = 1; n < Size; ++n) air->w[GetSpeciesIndex(n)] += sol(n);
+  for (int n = 1; n < Size; ++n) air->w[mySpeciesId(n)] += sol(n);
 }
 
 void Kessler94::SetVsedFromConserved(AthenaArray<Real> vsed[3],
                                      Hydro const *phydro, int kl, int ku,
                                      int jl, int ju, int il, int iu) {
-  int ip = GetCloudIndex(2);
+  int ip = myCloudId(2);
   Real vel = GetPar<Real>("sedimentation");
 
   for (int k = kl; k <= ku; ++k)

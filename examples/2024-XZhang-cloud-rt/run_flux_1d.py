@@ -1,0 +1,67 @@
+"""
+This is an example of how to run the 1D flux model.
+"""
+from pyharp import radiation_band, subscribe_species
+from utilities import load_file
+from numpy import linspace, ones, exp, array
+
+
+def create_atmosphere(nlyr: int) -> dict:
+    """
+    Create an atmosphere dictionary containing the temperature, pressure, and
+    species profiles.
+
+    :param nlyr: number of layers
+    :return: atmosphere dictionary
+    """
+
+    atm = {}
+    ps_mbar = 1.0e3
+    Ts_K = 300.0
+    grav_ms2 = 9.8
+    mu_kgmol = 29.0e-3
+    Rgas_JKmol = 8.314
+    Rgas_Jkg = Rgas_JKmol / mu_kgmol
+    Hscale_km = Rgas_Jkg * Ts_K / grav_ms2 * 1.0e-3
+
+    # km
+    atm["HGT"] = linspace(0, 20, nlyr, endpoint=False)
+    atm["PRE"] = ps_mbar * exp(-atm["HGT"] / Hscale_km)
+    atm["TEM"] = Ts_K * ones(nlyr)
+    # ppmv
+    atm["H2O"] = 4000.0 * exp(-atm["HGT"] / (Hscale_km / 5.0))
+    # ppmv
+    atm["H2"] = 1.0e6 - atm["H2O"]
+
+    return atm
+
+
+if __name__ == "__main__":
+    # Enroll species internally used by pyharp
+    subscribe_species(
+        {
+            "vapor": ["H2O"],
+            "cloud": ["H2O(c)"],
+        }
+    )
+
+    # number of atmopheric layers
+    num_layers = 100
+
+    # create an atmosphere dictionary
+    atm = create_atmosphere(num_layers)
+
+    info = load_file("hywater.yaml")
+
+    band_names = ["ir", "vis"]
+    bands = [radiation_band(name, info) for name in band_names]
+
+    bflxup, bflxdn = [], []
+
+    for band in bands:
+        band.resize(num_layers)
+        band.set_spectral_properties(atm)
+        band.cal_flux()
+
+        bflxup.append(array(band.bflxup))
+        bflxdn.append(array(band.bflxdn))

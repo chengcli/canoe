@@ -150,7 +150,7 @@ Real O2O2CIA::getAttenuation1(Real wave, AirParcel const& qfrac) const {
 
   Real coor[2] = {temp, wave};
 
-  int iO2 = GetSpeciesIndex(0);
+  int iO2 = mySpeciesId(0);
 
   if (wave >= 1150. && wave <= 1950.) {
     interpnf(&kk, coor, fd_.data(), fd_axis_.data(), fd_len_, 2);

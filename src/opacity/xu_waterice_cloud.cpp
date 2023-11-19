@@ -64,7 +64,7 @@ Real XuWaterIceCloud::getAttenuation1(Real wave, AirParcel const& air) const {
   re = 326.3 + 12.42 * T1 + 0.197 * T1 * T1 + 0.0012 * T1 * T1 * T1;
   Real dens = air.w[IPR] * 29e-3 / (Constants::Rgas * air.w[IDN]);
 
-  result = (0.003448 + 2.431 / re) * dens * air.c[GetCloudIndex(0)] * 1e9;
+  result = (0.003448 + 2.431 / re) * dens * air.c[myCloudId(0)] * 1e9;
 
   return result;
 }

@@ -113,7 +113,7 @@ Real N2N2CIA::getAttenuation1(Real wave, AirParcel const& qfrac) const {
 
   Real coor[2] = {temp, wave};
 
-  int iN2 = GetSpeciesIndex(0);
+  int iN2 = mySpeciesId(0);
 
   if (wave >= 0.02 && wave <= 554.) {
     interpnf(&kk, coor, rt_.data(), rt_axis_.data(), rt_len_, 2);

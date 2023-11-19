@@ -128,43 +128,44 @@ class SpeciesIndexGroup {
     auto pindex = IndexMap::GetInstance();
 
     for (auto const &name : species_names) {
-      species_index_.push_back(pindex->GetSpeciesId(name));
-      cloud_index_.push_back(species_index_.back() - NHYDRO);
-      chemistry_index_.push_back(species_index_.back() - NHYDRO - NCLOUD);
+      my_species_index_.push_back(pindex->GetSpeciesId(name));
+      my_cloud_index_.push_back(my_species_index_.back() - NHYDRO);
+      my_chemistry_index_.push_back(my_species_index_.back() - NHYDRO - NCLOUD);
     }
   }
 
   //! \return Array of species indices
-  std::vector<int> const &GetSpeciesIndexArray() const {
-    return species_index_;
+  std::vector<int> const &GetMySpeciesIndices() const {
+    return my_species_index_;
   }
-
-  //! \return The species index of the n-th species
-  int GetSpeciesIndex(int n) const { return species_index_[n]; }
 
   //! \return Array of cloud indices
-  std::vector<int> const &GetCloudIndexArray() const { return cloud_index_; }
-
-  //! \return The cloud index of the n-th cloud species
-  int GetCloudIndex(int n) const { return cloud_index_[n]; }
+  std::vector<int> const &GetMyCloudIndices() const { return my_cloud_index_; }
 
   //! \return Array of chemistry indices
-  std::vector<int> const &GetChemistryIndexArray() const {
-    return chemistry_index_;
+  std::vector<int> const &GetMyChemistryIndices() const {
+    return my_chemistry_index_;
   }
 
+ protected:
+  //! \return The species index of the n-th species
+  int mySpeciesId(int n) const { return my_species_index_[n]; }
+
+  //! \return The cloud index of the n-th cloud species
+  int myCloudId(int n) const { return my_cloud_index_[n]; }
+
   //! \return The chemistry index of the n-th chemistry species
-  int GetChemistryIndex(int n) const { return chemistry_index_[n]; }
+  int myChemistryId(int n) const { return my_chemistry_index_[n]; }
 
  private:
   //! indices of species
-  std::vector<int> species_index_;
+  std::vector<int> my_species_index_;
 
   //! indices of clouds
-  std::vector<int> cloud_index_;
+  std::vector<int> my_cloud_index_;
 
   //! indices of chemical species
-  std::vector<int> chemistry_index_;
+  std::vector<int> my_chemistry_index_;
 };
 
 class CounterGroup {

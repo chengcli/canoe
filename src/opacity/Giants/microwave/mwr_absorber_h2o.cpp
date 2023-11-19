@@ -29,7 +29,7 @@ Real MwrAbsorberH2O::GetAttenuation(Real wave1, Real wave2,
   for (int i = 1; i <= NVAPOR; ++i) xdry -= var.w[i];
   Real XHe = GetPar<Real>("xHe") * xdry;
   Real XH2 = xdry - XHe;
-  Real XH2O = var.w[GetSpeciesIndex(0)];
+  Real XH2O = var.w[mySpeciesId(0)];
 
   Real abs;
   Real wave = (wave1 + wave2) / 2.;

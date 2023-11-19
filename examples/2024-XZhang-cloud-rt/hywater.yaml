@@ -1,0 +1,54 @@
+opacity-sources:
+  - name: H2O
+    class: Hitran
+    dependent-species: [vapor.H2O]
+
+  - name: H2O(c)
+    class: SimpleCloud
+    dependent-species: [cloud.H2O(c)]
+    parameters: {qext: 1., ssa: 0.01, asymf: 0.01}
+
+  - name: H2-vis
+    class: FreedmanSimple2
+    parameters: {scale: 1.}
+
+  - name: H2-ir
+    class: FreedmanMean
+    parameters: {met: 1.7}
+
+bands: [ir, vis]
+
+ir:
+  units: cm-1
+  grid-type: regular
+  wavenumber-range: [100., 10000.]
+  resolution: 0.01
+  opacity: [H2-ir]
+  rt-solver: Disort
+  flags: [static, planck]
+
+vis:
+  units: cm-1
+  grid-type: regular
+  wavenumber-range: [10000., 50000.]
+  resolution: 0.01
+  opacity: [H2-vis, H2O(c)]
+  rt-solver: Disort
+  flags: [static]
+  parameters: {fbeam_K: 265.}
+
+Disort-flags:
+  ibcnd: false
+  lamber: true
+  onlyfl: true
+  spher: false
+  intensity_correction: true
+  old_intensity_correction: false
+  general_source: false
+  output_uum: false
+  quiet: false
+  print-input: false
+  print-fluxes: false
+  print-intensity: false
+  print-transmissivity: false
+  print-phase-function: false

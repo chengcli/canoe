@@ -24,8 +24,7 @@ Real MwrAbsorberElectron::GetAttenuation(Real wave1, Real wave2,
   } else if (model_name_ == "ChengLi") {
     abs = attenuation_freefree_Chengli(wave, P, T);
   } else {  // AppletonHartree
-    abs = attenuation_appleton_hartree_nomag(wave, P, T,
-                                             var.w[GetSpeciesIndex(0)]);
+    abs = attenuation_appleton_hartree_nomag(wave, P, T, var.w[mySpeciesId(0)]);
   }
 
   return 100. * abs;  // 1/cm -> 1/m

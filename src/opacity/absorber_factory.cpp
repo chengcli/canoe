@@ -91,10 +91,14 @@ AbsorberPtr AbsorberFactory::createAbsorberPartial(std::string name,
     ab = std::make_shared<XizH2HeCIA>();
   } else if (type == "Hitran") {
     ab = std::make_shared<HitranAbsorber>(name);
-  } else if (type == "freedman_simple") {
-    ab = std::make_shared<FreedmanSimple>();
-  } else if (type == "freedman_mean") {
-    ab = std::make_shared<FreedmanSimple>();
+  } else if (type == "FreedmanSimple") {
+    ab = std::make_shared<FreedmanSimple>(name);
+  } else if (type == "FreedmanSimple2") {
+    ab = std::make_shared<FreedmanSimple2>(name);
+  } else if (type == "FreedmanMean") {
+    ab = std::make_shared<FreedmanMean>(name);
+  } else if (type == "FreedmanMean") {
+    ab = std::make_shared<FreedmanMean2>(name);
   } else if (type == "radio-NH3") {
     ab = std::make_shared<gp::MwrAbsorberNH3>();
   } else if (type == "radio-H2O") {
