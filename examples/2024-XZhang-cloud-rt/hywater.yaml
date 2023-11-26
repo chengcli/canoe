@@ -54,5 +54,18 @@ Disort-flags:
   print-phase-function: true
 
 thermodynamics:
-  Rd: 3777.
-  gammad_ref: 1.4
+  non-condensable:
+    Rd: 3777.
+    gammad_ref: 1.4
+
+microphysics:
+  - water-system
+
+water-system:
+  scheme: Kessler94
+  dependent-species: [vapor.H2O, cloud.H2O(c), cloud.H2O(p)]
+  parameters:
+    autoconversion: 1.e-4
+    accretion: 0.0
+    evaporation: 3.e-2
+    sedimentation: -20.

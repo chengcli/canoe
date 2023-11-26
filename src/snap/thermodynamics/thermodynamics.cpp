@@ -39,7 +39,7 @@
 
 static std::mutex thermo_mutex;
 
-const std::string Thermodynamics::input_key = "thermo_file";
+const std::string Thermodynamics::input_key = "thermodynamics_config";
 
 Real __attribute__((weak))
 Thermodynamics::GetGammad(AirParcel const& qfrac) const {
@@ -54,8 +54,21 @@ Thermodynamics::~Thermodynamics() {
 Thermodynamics* Thermodynamics::fromYAMLInput(YAML::Node const& node) {
   mythermo_ = new Thermodynamics();
 
-  mythermo_->Rd_ = node["Rd"].as<Real>(1.);
-  mythermo_->gammad_ref_ = node["gammad_ref"].as<Real>(1.4);
+  // non-condensable
+  mythermo_->Rd_ = node["non-condensable"]["Rd"].as<Real>();
+  mythermo_->gammad_ref_ = node["non-condensable"]["gammad_ref"].as<Real>();
+
+  // saturation adjustment
+  if (node["saturation_adjustment"]) {
+    mythermo_->sa_max_iter_ =
+        node["saturation_adjustment"]["max_iter"].as<int>(10);
+    mythermo_->sa_ftol_ = node["saturation_adjustment"]["ftol"].as<Real>(1e-4);
+    mythermo_->sa_relax_ = node["saturation_adjustment"]["relax"].as<Real>(0.8);
+  } else {
+    mythermo_->sa_max_iter_ = 10;
+    mythermo_->sa_ftol_ = 1e-4;
+    mythermo_->sa_relax_ = 0.8;
+  }
 
   return mythermo_;
 }

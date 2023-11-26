@@ -28,9 +28,6 @@ class RadiationBand::RTSolver : public NamedGroup {
       : NamedGroup(name), pmy_band_(pmy_band) {
     Application::Logger app("harp");
     app->Log("Initialize RTSolver " + GetName());
-
-    farea_.NewAthenaArray(pmy_band_->GetNumLayers() + 2 * NGHOST);
-    vol_.NewAthenaArray(pmy_band_->GetNumLayers() + 2 * NGHOST);
   }
 
   virtual ~RTSolver() {
@@ -43,7 +40,13 @@ class RadiationBand::RTSolver : public NamedGroup {
   virtual void Prepare(MeshBlock const *pmb, int k, int j) {}
 
   //! \brief Allocate memory for radiation solver
-  virtual void Resize(int nlyr, int nstr) {}
+  virtual void Resize(int nlyr, int nstr) {
+    farea_.DeleteAthenaArray();
+    vol_.DeleteAthenaArray();
+
+    farea_.NewAthenaArray(nlyr + 2 * NGHOST);
+    vol_.NewAthenaArray(nlyr + 2 * NGHOST);
+  }
 
  public:  // inbound functions
   virtual void CalBandFlux(MeshBlock const *pmb, int k, int j, int il, int iu) {

@@ -90,7 +90,7 @@ PYBIND11_MODULE(pyharp, m) {
       .def("get_num_bands", &Radiation::GetNumBands)
       .def("get_band", &Radiation::GetBand)
 
-      .def("cal_flux", &Radiation::CalRadiativeFlux)
+      .def("cal_flux", &Radiation::CalFlux)
       .def("cal_radiance", &Radiation::CalRadiance);
 
   // RadiationBand

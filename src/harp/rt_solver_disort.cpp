@@ -60,6 +60,7 @@ RadiationBand::RTSolverDisort::RTSolverDisort(RadiationBand *pmy_band,
 
 //! \todo update based on band outdir
 void RadiationBand::RTSolverDisort::Resize(int nlyr, int nstr) {
+  RadiationBand::RTSolver::Resize(nlyr, nstr);
   Unseal();
 
   auto &rayout = pmy_band_->rayOutput_;
@@ -187,34 +188,20 @@ void RadiationBand::RTSolverDisort::Prepare(MeshBlock const *pmb, int k,
   auto &uphi = uphi_umu.first;
   auto &umu = uphi_umu.second;
 
-  if (umu.size() <= ds_.numu) {
+  if (umu.size() > 0) {
     SetUserCosinePolarAngle(umu);
 
     for (int i = 0; i < umu.size(); ++i) {
       dir_axis_[i] = umu[i];
     }
-
-    for (int i = umu.size(); i < ds_.numu; ++i) {
-      dir_axis_[i] = 1.;
-    }
-  } else {
-    throw RuntimeError("RTSolverDisort::Prepare",
-                       "Number of polar angles in Disort is too small");
   }
 
-  if (uphi.size() <= ds_.nphi) {
+  if (uphi.size() > 0) {
     SetUserAzimuthalAngle(uphi);
 
     for (int i = 0; i < uphi.size(); ++i) {
       dir_axis_[ds_.numu + i] = uphi[i];
     }
-
-    for (int i = uphi.size(); i < ds_.nphi; ++i) {
-      dir_axis_[ds_.numu + i] = 2. * M_PI;
-    }
-  } else {
-    throw RuntimeError("RTSolverDisort::Prepare",
-                       "Number of azimuthal angles in Disort is too small");
   }
 }
 

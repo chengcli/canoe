@@ -50,7 +50,7 @@ void OutputType::loadUserOutputData(MeshBlock *pmb) {
       // tau
       pod = new OutputData;
       pod->type = "SCALARS";
-      pod->name = pband->GetName() + "tau";
+      pod->name = pband->GetName() + "-tau";
       pod->data.InitWithShallowSlice(pband->btau, 4, 0, 1);
       AppendOutputDataNode(pod);
       num_vars_ += 1;

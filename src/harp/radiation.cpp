@@ -126,8 +126,7 @@ size_t Radiation::GetNumOutgoingRays() const {
   return num;
 }
 
-void Radiation::CalRadiativeFlux(MeshBlock const *pmb, int k, int j, int il,
-                                 int iu) {
+void Radiation::CalFlux(MeshBlock const *pmb, int k, int j, int il, int iu) {
   auto pcoord = pmb->pcoord;
 
   AirColumn &&ac = AirParcelHelper::gather_from_primitive(pmb, k, j);
@@ -143,9 +142,6 @@ void Radiation::CalRadiativeFlux(MeshBlock const *pmb, int k, int j, int il,
 }
 
 void Radiation::CalRadiance(MeshBlock const *pmb, int k, int j) {
-  Application::Logger app("harp");
-  app->Log("CalRadiance");
-
   auto pcoord = pmb->pcoord;
 
   AirColumn &&ac = AirParcelHelper::gather_from_primitive(pmb, k, j);

@@ -60,13 +60,16 @@ void RadiationBand::SetSpectralProperties(AirColumn& ac, Real const* x1f,
   }
 
   // set temperature at cell interface
-  int il = 0, iu = ac.size() - 1;
+  int il = NGHOST, iu = ac.size() - 1 - NGHOST;
   temf_[il] = 3. * tem_[il] - 2. * tem_[il + 1];
   temf_[il + 1] = (tem_[il] + tem_[il + 1]) / 2.;
   for (int i = il + 2; i <= iu - 1; ++i)
     temf_[i] = interp_cp4(tem_[i - 2], tem_[i - 1], tem_[i], tem_[i + 1]);
   temf_[iu] = (tem_[iu] + tem_[iu - 1]) / 2.;
   temf_[iu + 1] = 3. * tem_[iu] - 2. * tem_[iu - 1];
+
+  for (int i = 0; i < il; ++i) temf_[i] = tem_[il];
+  for (int i = iu + 2; i < ac.size(); ++i) temf_[i] = tem_[iu + 1];
 
   // absorption coefficients -> optical thickness
   for (int m = 0; m < nspec; ++m) {
