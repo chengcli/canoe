@@ -126,7 +126,7 @@ Real FuWaterIceCloud::getAttenuation1(Real wave, AirParcel const& qfrac) const {
 
   result = ap[iband - 1][0] + ap[iband - 1][1] / fw1 + ap[iband - 1][2] / fw2;
 
-  return 1e3 * dens * qfrac.c[GetCloudIndex(0)] * result;
+  return 1e3 * dens * qfrac.c[myCloudId(0)] * result;
 }
 
 Real FuWaterIceCloud::getSingleScatteringAlbedo1(Real wave,

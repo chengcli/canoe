@@ -23,6 +23,8 @@ LinearExchanger<T>::LinearExchanger() {
 #else
   color_.resize(1);
   brank_.resize(1);
+  color_[0] = 0;
+  brank_[0] = -1;
 #endif  // MPI_PARALLEL
 }
 

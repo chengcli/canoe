@@ -15,7 +15,7 @@ class FreedmanMean : public Absorber {
  public:
   static const Real c1, c2, c3, c4, c5, c6, c7;
 
-  FreedmanMean() : Absorber("FreedmanMean") {}
+  FreedmanMean(std::string name) : Absorber(name) {}
   virtual ~FreedmanMean() {}
   Real GetAttenuation(Real wave1, Real wave2, AirParcel const& var) const;
 };
@@ -24,21 +24,21 @@ class FreedmanMean2 : public Absorber {
  public:
   static const Real c1, c2, c3, c4, c5, c6, c7, c13;
 
-  FreedmanMean2() : Absorber("FreedmanMean") {}
+  FreedmanMean2(std::string name) : Absorber(name) {}
   virtual ~FreedmanMean2() {}
   Real GetAttenuation(Real wave1, Real wave2, AirParcel const& var) const;
 };
 
 class FreedmanSimple : public Absorber {
  public:
-  FreedmanSimple() : Absorber("FreedmanSimple") {}
+  FreedmanSimple(std::string name) : Absorber(name) {}
   virtual ~FreedmanSimple() {}
   Real GetAttenuation(Real wave1, Real wave2, AirParcel const& var) const;
 };
 
 class FreedmanSimple2 : public Absorber {
  public:
-  FreedmanSimple2() : Absorber("FreedmanSimple") {}
+  FreedmanSimple2(std::string name) : Absorber(name) {}
   virtual ~FreedmanSimple2() {}
   Real GetAttenuation(Real wave1, Real wave2, AirParcel const& var) const;
 };

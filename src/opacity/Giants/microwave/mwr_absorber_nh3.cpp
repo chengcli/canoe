@@ -34,8 +34,8 @@ Real MwrAbsorberNH3::GetAttenuation(Real wave1, Real wave2,
 
   Real XHe = GetPar<Real>("xHe") * xdry;
   Real XH2 = xdry - XHe;
-  Real XNH3 = var.w[GetSpeciesIndex(0)];
-  Real XH2O = var.w[GetSpeciesIndex(1)];
+  Real XNH3 = var.w[mySpeciesId(0)];
+  Real XH2O = var.w[mySpeciesId(1)];
 
   Real abs;
   Real wave = (wave1 + wave2) / 2.;

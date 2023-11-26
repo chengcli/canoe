@@ -100,7 +100,7 @@ class MicrophysicalScheme : public MicrophysicalSchemeBase,
   void SetVsedFromConserved(AthenaArray<Real> vsed[3], Hydro const *phydro,
                             int kl, int ku, int jl, int ju, int il,
                             int iu) override {
-    for (auto n : GetCloudIndexArray())
+    for (auto n : GetMyCloudIndices())
       for (int k = kl; k <= ku; ++k)
         for (int j = jl; j <= ju; ++j)
           for (int i = il; i <= iu; ++i) {

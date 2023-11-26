@@ -12,7 +12,7 @@
 #include <harp/radiation.hpp>
 
 // opacity
-#include "water_cloud.hpp"
+#include "simple_cloud.hpp"
 
 // For grey cloud
 Real SimpleCloud::getAttenuation1(Real wave, AirParcel const& var) const {
@@ -22,13 +22,13 @@ Real SimpleCloud::getAttenuation1(Real wave, AirParcel const& var) const {
   //  std::cout<<"var.c[imol_]  "<<imol_<< " " <<var.c[imol_]<<std::endl;
   //  return  var.c[imol_]*qext/(4./3.*csize*crho);     // -> 1/m
   // put clouds 0 and precipitation 1 together
-  Real totpar = var.c[GetCloudIndex(0)] + var.c[GetCloudIndex(1)];
+  Real totpar = var.c[myCloudId(0)] + var.c[myCloudId(1)];
   return totpar * qext / (4. / 3. * csize * crho);  // -> 1/m
 }
 
 Real SimpleCloud::getSingleScatteringAlbedo1(Real wave,
                                              AirParcel const& var) const {
-  return GetPar<Real>("ww");
+  return GetPar<Real>("ssa");
   /*  // ssalb
     Real totpar = var.c[imol_]+var.c[imol_+1];
 
@@ -45,7 +45,7 @@ Real SimpleCloud::getSingleScatteringAlbedo1(Real wave,
 void SimpleCloud::getPhaseMomentum1(Real* pp, Real wave, AirParcel const& var,
                                     int np) const {
   // 0 for HENYEY_GREENSTEIN
-  RadiationHelper::get_phase_momentum(pp, 0, GetPar<Real>("gg"), np);
+  RadiationHelper::get_phase_momentum(pp, 0, GetPar<Real>("asymf"), np);
   /*
     Real totpar = var.c[imol_]+var.c[imol_+1];
 

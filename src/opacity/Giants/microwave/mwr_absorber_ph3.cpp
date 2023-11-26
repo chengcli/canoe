@@ -19,7 +19,7 @@ Real MwrAbsorberPH3::GetAttenuation(Real wave1, Real wave2,
   for (int i = 1; i <= NVAPOR; ++i) xdry -= var.w[i];
 
   Real XHe = GetPar<Real>("xHe") * xdry;
-  Real XPH3 = var.w[GetSpeciesIndex(0)];
+  Real XPH3 = var.w[mySpeciesId(0)];
   Real XH2 = xdry - XHe;
 
   Real abs;

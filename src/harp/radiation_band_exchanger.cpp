@@ -24,8 +24,12 @@ bool RadiationBand::UnpackTemperature(void *arg) {
   int nblocks = 1;
   int nlevels = temf_.size();
   int nlayers = GetNumLayers();
+
 #ifdef MPI_PARALLEL
-  MPI_Comm_size(mpi_comm_, &nblocks);
+  int is_initialized;
+  MPI_Initialized(&is_initialized);
+
+  if (is_initialized) MPI_Comm_size(mpi_comm_, &nblocks);
 #endif  // MPI_PARALLEL
 
 #ifdef RT_DISORT
@@ -66,7 +70,10 @@ bool RadiationBand::UnpackSpectralGrid(void *arg) {
   int npmom = GetNumPhaseMoments();
 
 #ifdef MPI_PARALLEL
-  MPI_Comm_size(mpi_comm_, &nblocks);
+  int is_initialized;
+  MPI_Initialized(&is_initialized);
+
+  if (is_initialized) MPI_Comm_size(mpi_comm_, &nblocks);
 #endif  // MPI_PARALLEL
 
   auto buf = recv_buffer_[1].data();
@@ -113,7 +120,10 @@ void RadiationBand::Transfer(MeshBlock const *pmb, int n) {
   int size = send_buffer_[n].size();
 
 #ifdef MPI_PARALLEL
-  MPI_Comm_size(mpi_comm_, &nblocks);
+  int is_initialized;
+  MPI_Initialized(&is_initialized);
+
+  if (is_initialized) MPI_Comm_size(mpi_comm_, &nblocks);
 #endif  // MPI_PARALLEL
 
   if (n == 0) {
@@ -122,11 +132,13 @@ void RadiationBand::Transfer(MeshBlock const *pmb, int n) {
     recv_buffer_[1].resize(nblocks * nlayers * (npmom + 3));
   }
 
+  if (nblocks > 1) {
 #ifdef MPI_PARALLEL
-  MPI_Allgather(&send_buffer_[n], size, MessageTraits<RadiationBand>::mpi_type,
-                &recv_buffer_[n], size, MessageTraits<RadiationBand>::mpi_type,
-                mpi_comm_);
-#else
-  recv_buffer_[n].swap(send_buffer_[n]);
+    MPI_Allgather(&send_buffer_[n], size,
+                  MessageTraits<RadiationBand>::mpi_type, &recv_buffer_[n],
+                  size, MessageTraits<RadiationBand>::mpi_type, mpi_comm_);
 #endif  // MPI_PARALLEL
+  } else {
+    recv_buffer_[n].swap(send_buffer_[n]);
+  }
 }

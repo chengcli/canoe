@@ -39,6 +39,8 @@
 
 static std::mutex thermo_mutex;
 
+const std::string Thermodynamics::input_key = "thermo_file";
+
 Real __attribute__((weak))
 Thermodynamics::GetGammad(AirParcel const& qfrac) const {
   return gammad_ref_;
@@ -49,8 +51,11 @@ Thermodynamics::~Thermodynamics() {
   app->Log("Destroy Thermodynamics");
 }
 
-Thermodynamics* Thermodynamics::fromYAMLInput(YAML::Node node) {
+Thermodynamics* Thermodynamics::fromYAMLInput(YAML::Node const& node) {
   mythermo_ = new Thermodynamics();
+
+  mythermo_->Rd_ = node["Rd"].as<Real>(1.);
+  mythermo_->gammad_ref_ = node["gammad_ref"].as<Real>(1.4);
 
   return mythermo_;
 }
@@ -108,6 +113,18 @@ Thermodynamics const* Thermodynamics::GetInstance() {
   return mythermo_;
 }
 
+Thermodynamics const* Thermodynamics::InitFromYAMLInput(
+    YAML::Node const& node) {
+  if (mythermo_ != nullptr) {
+    throw RuntimeError("Thermodynamics", "Thermodynamics has been initialized");
+  }
+
+  Application::Logger app("snap");
+  app->Log("Initialize Thermodynamics");
+
+  return fromYAMLInput(node);
+}
+
 Thermodynamics const* Thermodynamics::InitFromAthenaInput(ParameterInput* pin) {
   if (mythermo_ != nullptr) {
     throw RuntimeError("Thermodynamics", "Thermodynamics has been initialized");
@@ -116,8 +133,8 @@ Thermodynamics const* Thermodynamics::InitFromAthenaInput(ParameterInput* pin) {
   Application::Logger app("snap");
   app->Log("Initialize Thermodynamics");
 
-  if (pin->DoesParameterExist("thermodynamics", "thermo_file")) {
-    std::string filename = pin->GetString("thermodynamics", "thermo_file");
+  if (pin->DoesParameterExist("thermodynamics", input_key)) {
+    std::string filename = pin->GetString("thermodynamics", input_key);
     std::ifstream stream(filename);
     if (stream.good() == false) {
       throw RuntimeError("Thermodynamics",

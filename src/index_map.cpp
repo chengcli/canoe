@@ -65,7 +65,7 @@ IndexMap const* IndexMap::InitFromSpeciesMap(
     if (names.size() > NCLOUD)
       throw ValueError("IndexMap", "Number of clouds", NCLOUD, names.size());
     for (size_t i = 0; i < names.size(); ++i)
-      myindex_map_->cloud_index_map_[names[i]] = 1 + i;
+      myindex_map_->cloud_index_map_[names[i]] = i;
   }
 
   // chemistry id
@@ -75,7 +75,7 @@ IndexMap const* IndexMap::InitFromSpeciesMap(
       throw ValueError("IndexMap", "Number of chemistry", NCHEMISTRY,
                        names.size());
     for (size_t i = 0; i < names.size(); ++i)
-      myindex_map_->chemistry_index_map_[names[i]] = 1 + i;
+      myindex_map_->chemistry_index_map_[names[i]] = i;
   }
 
   // tracer id
