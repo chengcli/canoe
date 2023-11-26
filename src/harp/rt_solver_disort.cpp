@@ -96,7 +96,7 @@ void RadiationBand::RTSolverDisort::Prepare(MeshBlock const *pmb, int k,
   auto &wmax = pmy_band_->wrange_.second;
 
   Direction ray;
-  Real dist_au;
+  Real dist_au = 1.;
 
   if (pmy_band_->TestFlag(RadiationFlags::StellarBeam)) {
     if (pmb == nullptr) {
@@ -112,6 +112,18 @@ void RadiationBand::RTSolverDisort::Prepare(MeshBlock const *pmb, int k,
     } else if (pmb != nullptr) {
       ray = pmb->pimpl->prad->GetRayInput(0);
       dist_au = pmb->pimpl->GetDistanceInAu();
+    }
+  } else {
+    if (pmy_band_->HasPar("umu0")) {
+      ray.mu = pmy_band_->GetPar<Real>("umu0");
+    }
+
+    if (pmy_band_->HasPar("phi0")) {
+      ray.phi = pmy_band_->GetPar<Real>("phi0");
+    }
+
+    if (pmy_band_->HasPar("dist_au")) {
+      dist_au = pmy_band_->GetPar<Real>("dist_au");
     }
   }
 
@@ -138,14 +150,13 @@ void RadiationBand::RTSolverDisort::Prepare(MeshBlock const *pmb, int k,
   ds_.bc.phi0 = ray.phi;
   if (ds_.flag.planck) {
     ds_.bc.btemp = ds_.temper[ds_.nlyr];
-    ds_.bc.ttemp = ds_.temper[0];
+    ds_.bc.ttemp = 0.;
   }
 
   if (pmy_band_->TestFlag(RadiationFlags::BroadBand)) {
     // stellar source function overrides fbeam
     if (pmy_band_->TestFlag(RadiationFlags::StellarBeam)) {
-      ds_.bc.fbeam =
-          pmb->pimpl->planet->ParentInsolationFlux(wmin, wmax, dist_au);
+      ds_.bc.fbeam = pmb->pimpl->planet->ParentInsolationFlux(wmin, wmax, 1.);
     } else if (pmy_band_->HasPar("fbeam_K")) {
       Real Ttop = pmy_band_->GetPar<Real>("fbeam_K");
       ds_.bc.fbeam = Constants::stefanBoltzmann * pow(Ttop, 4);
@@ -154,6 +165,7 @@ void RadiationBand::RTSolverDisort::Prepare(MeshBlock const *pmb, int k,
     } else {
       ds_.bc.fbeam = 0.;
     }
+    ds_.bc.fbeam /= dist_au * dist_au;
 
     // planck source function
     ds_.wvnmlo = wmin;

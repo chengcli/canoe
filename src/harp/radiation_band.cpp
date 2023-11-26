@@ -256,7 +256,7 @@ std::string RadiationBand::ToString() const {
   for (auto &ab : absorbers_) {
     ss << ab->GetName() << ", ";
   }
-  ss << std::endl << "RT-Solver: " << psolver_->GetName() << std::endl;
+  ss << std::endl << "RT-Solver: " << psolver_->GetName();
   return ss.str();
 }
 

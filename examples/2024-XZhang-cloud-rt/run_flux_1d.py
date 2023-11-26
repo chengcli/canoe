@@ -32,7 +32,7 @@ def create_atmosphere(nlyr: int) -> dict:
     # ppmv
     atm["H2O"] = 4000.0 * exp(-atm["HGT"] / (Hscale_km / 5.0))
     # ppmv
-    atm["H2O(c)"] = 40.0 * (1.0 - exp(-atm["HGT"] / (Hscale_km / 5.0)))
+    atm["H2O(c)"] = 0.4 * (1.0 - exp(-atm["HGT"] / Hscale_km))
     # ppmv
     atm["H2"] = 1.0e6 - atm["H2O"] - atm["H2O(c)"]
 
@@ -63,14 +63,11 @@ if __name__ == "__main__":
 
     bflxup, bflxdn = [], []
 
-    for band in bands[1:]:
+    for band in bands:
         print(band)
         band.resize(num_layers, nstr=8)
         band.set_spectral_properties(atm)
-        print(array(band.btau))
         band.cal_flux()
-
-        print(array(band.bflxdn))
 
         bflxup.append(array(band.bflxup))
         bflxdn.append(array(band.bflxdn))

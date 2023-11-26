@@ -32,10 +32,9 @@ vis:
   grid-type: regular
   wavenumber-range: [10000., 50000.]
   num-bins: 1
-  opacity: [H2-vis]
+  opacity: [H2-vis, cloud]
   rt-solver: Disort
-  #parameters: {fbeam_K: 1000.}
-  parameters: {fbeam: 1000.}
+  parameters: {fbeam_K: 265., umu0: 1., uph0: 0., dist_au: 1.}
   flags: [broad_band]
 
 Disort-flags:
@@ -48,10 +47,10 @@ Disort-flags:
   general_source: false
   output_uum: false
   quiet: false
-  print-input: true
+  print-input: false
   print-fluxes: true
-  print-intensity: true
-  print-transmissivity: true
+  print-intensity: false
+  print-transmissivity: false
   print-phase-function: true
 
 thermodynamics:
