@@ -32,9 +32,11 @@ vis:
   grid-type: regular
   wavenumber-range: [10000., 50000.]
   num-bins: 1
-  opacity: [H2-vis, cloud]
+  opacity: [H2-vis]
   rt-solver: Disort
-  parameters: {fbeam_K: 265.}
+  #parameters: {fbeam_K: 1000.}
+  parameters: {fbeam: 1000.}
+  flags: [broad_band]
 
 Disort-flags:
   ibcnd: false

@@ -83,7 +83,8 @@ bool RadiationBand::UnpackSpectralGrid(void *arg) {
 
   for (int n = 0; n < nblocks; ++n) {
     for (int i = 0; i < nlayers; ++i) {
-      ds->dtauc[n * nlayers + i] = *(buf++);
+      ds->dtauc[n * nlayers + i] = 0.01e-3;
+      *(buf++);
       ds->ssalb[n * nlayers + i] = *(buf++);
       for (int j = 0; j <= npmom; ++j) {
         ds->pmom[n * nlayers * (ds->nmom_nstr + 1) + i * (ds->nmom_nstr + 1) +

@@ -63,11 +63,14 @@ if __name__ == "__main__":
 
     bflxup, bflxdn = [], []
 
-    for band in bands:
+    for band in bands[1:]:
         print(band)
-        band.resize(num_layers, nstr=4)
+        band.resize(num_layers, nstr=8)
         band.set_spectral_properties(atm)
+        print(array(band.btau))
         band.cal_flux()
+
+        print(array(band.bflxdn))
 
         bflxup.append(array(band.bflxup))
         bflxdn.append(array(band.bflxdn))
