@@ -221,7 +221,7 @@ TaskStatus ImplicitHydroTasks::AddFluxToConserved(MeshBlock *pmb, int stage) {
     if (stage_wghts[stage - 1].main_stage) {
       for (int k = ks; k <= ke; ++k)
         for (int j = js; j <= je; ++j) {
-          // prad->AddRadiativeFlux(pmb->phydro, k, j, is, ie + 1);
+          prad->AddRadiativeFlux(pmb->phydro, k, j, is, ie + 1);
         }
 
       if (stage == nstages) {           // last stage
