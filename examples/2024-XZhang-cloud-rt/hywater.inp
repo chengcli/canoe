@@ -3,7 +3,7 @@ problem   = Cloud radiative dynamics + Hydrogen Atm + Ocean below
 configure = -Dpnetcdf_path=/home3/xzhang11/pnetcdf
 
 <job>
-problem_id  = hywater-2d # problem ID: basename of output filenames
+problem_id  = hywater2d   # problem ID: basename of output filenames
 
 <output0>
 file_type   = rst
@@ -35,8 +35,8 @@ dt          = 1.E5
 
 <time>
 cfl_number  = 0.9           # The Courant, Friedrichs, & Lewy (CFL) Number
-nlim        = 1            # cycle limit
-tlim        = 1.E5         # time limit
+nlim        = -1            # cycle limit
+tlim        = 10.E5         # time limit
 xorder      = 5             # horizontal reconstruction order
 integrator  = rk3           # integration method
 
@@ -49,7 +49,7 @@ ox1_bc      = reflecting    # outer-X1 boundary flag
 
 nx2         = 1            # Number of zones in X2-direction
 x2min       = 0.            # minimum value of X2
-x2max       = 1.E5          # maximum value of X2
+x2max       = 10.E5          # maximum value of X2
 ix2_bc      = periodic      # Inner-X2 boundary condition flag
 ox2_bc      = periodic      # Outer-X2 boundary condition flag
 
@@ -87,8 +87,8 @@ bot_temperature         = -1.
 vapor = H2O
 cloud = H2O(c), H2O(p)
 
-#<chemistry>
-#microphysics_config = hywater.yaml
+<chemistry>
+microphysics_config = hywater.yaml
 
 <thermodynamics>
 Rd          = 3777.
@@ -118,10 +118,10 @@ HJ.equinox    = 0.
 
 #Sun.spec_file = ../src/radiation/spectra/sun.spec
 
-#<radiation>
-#dt            = 40.
-#radiation_config = hywater.yaml
-#nstr          = 4
+<radiation>
+dt            = 40.
+radiation_config = hywater.yaml
+nstr          = 4
 
 <problem>
 P0            = 5.E5

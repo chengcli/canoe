@@ -57,16 +57,16 @@ class Exchanger : public ExchangerBase {
   }
 
   virtual ~Exchanger() {
-    for (int n = 0; n < MessageTraits<T>::num_buffers; ++n) {
 #ifdef MPI_PARALLEL
+    for (int n = 0; n < MessageTraits<T>::num_buffers; ++n) {
       req_mpi_send_[n] = MPI_REQUEST_NULL;
       req_mpi_recv_[n] = MPI_REQUEST_NULL;
-
-      if (mpi_comm_ != MPI_COMM_WORLD) {
-        MPI_Comm_free(&mpi_comm_);
-      }
-#endif  // MPI_PARALLEL
     }
+
+    if (mpi_comm_ != MPI_COMM_WORLD) {
+      MPI_Comm_free(&mpi_comm_);
+    }
+#endif  // MPI_PARALLEL
   }
 
   //! \brief Clear buffer
