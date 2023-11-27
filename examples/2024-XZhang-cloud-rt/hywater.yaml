@@ -48,7 +48,7 @@ Disort-flags:
   output_uum: false
   quiet: false
   print-input: false
-  print-fluxes: true
+  print-fluxes: false
   print-intensity: false
   print-transmissivity: false
   print-phase-function: true
