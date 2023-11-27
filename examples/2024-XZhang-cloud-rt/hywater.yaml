@@ -34,7 +34,7 @@ vis:
   num-bins: 1
   opacity: [H2-vis, cloud]
   rt-solver: Disort
-  parameters: {fbeam_K: 265., umu0: 1., uph0: 0., dist_au: 1.}
+  parameters: {fbeam_K: 265., umu0: 1., uph0: 0., dist_au: 0.1}
   flags: [broad_band]
 
 Disort-flags:
@@ -46,13 +46,26 @@ Disort-flags:
   old_intensity_correction: false
   general_source: false
   output_uum: false
-  quiet: false
+  quiet: true
   print-input: false
-  print-fluxes: true
+  print-fluxes: false
   print-intensity: false
   print-transmissivity: false
   print-phase-function: true
 
 thermodynamics:
-  Rd: 3777.
-  gammad_ref: 1.4
+  non-condensable:
+    Rd: 3777.
+    gammad_ref: 1.4
+
+microphysics:
+  - water-system
+
+water-system:
+  scheme: Kessler94
+  dependent-species: [vapor.H2O, cloud.H2O(c), cloud.H2O(p)]
+  parameters:
+    autoconversion: 1.e-4
+    accretion: 0.0
+    evaporation: 3.e-1
+    sedimentation: -20.

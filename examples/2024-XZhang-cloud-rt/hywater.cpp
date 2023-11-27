@@ -1,251 +1,201 @@
-// C/C++ header
-#include <ctime>
+// athena
+#include <athena/athena.hpp>
+#include <athena/athena_arrays.hpp>
+#include <athena/bvals/bvals.hpp>
+#include <athena/coordinates/coordinates.hpp>
+#include <athena/eos/eos.hpp>
+#include <athena/field/field.hpp>
+#include <athena/hydro/hydro.hpp>
+#include <athena/mesh/mesh.hpp>
+#include <athena/parameter_input.hpp>
 
-// Athena++ headers
-#include "../athena.hpp"
-#include "../athena_arrays.hpp"
-#include "../communicator/communicator.hpp"
-#include "../coordinates/coordinates.hpp"
-#include "../eos/eos.hpp"
-#include "../field/field.hpp"
-#include "../globals.hpp"
-#include "../hydro/hydro.hpp"
-#include "../math/core.h"
-#include "../math/interpolation.h"
-#include "../mesh/mesh.hpp"
-#include "../parameter_input.hpp"
-#include "../particles/particles.hpp"
-#include "../physics/physics.hpp"
-#include "../radiation/correlatedk_absorber.hpp"
-#include "../radiation/freedman_mean.hpp"
-#include "../radiation/freedman_simple.hpp"
-#include "../radiation/hydrogen_cia.hpp"
-#include "../radiation/radiation.hpp"
-#include "../radiation/water_cloud.hpp"
-#include "../reconstruct/interpolation.hpp"
-#include "../thermodynamics/thermodynamic_funcs.hpp"
-#include "../thermodynamics/thermodynamics.hpp"
-#include "../utils/utils.hpp"  // replaceChar
+// application
+#include <application/application.hpp>
+#include <application/exceptions.hpp>
 
-// global parameters
-enum { ic1 = 1 };  // ic1 = 1, ic1c = NHYDRO+ic1-1, ic1p = NHYDRO+NVAPOR+ic1-1;
-Real grav, P0, T0, Z0, Tmin;
-Real qvapor1, qvapor2, qRelaxT;
+// canoe
+#include <impl.hpp>
+#include <index_map.hpp>
+
+// climath
+#include <climath/core.h>
+#include <climath/interpolation.h>
+
+// snap
+#include <snap/thermodynamics/thermodynamics.hpp>
+
+// harp
+#include <harp/radiation.hpp>
+
+// special includes
+#include <special/giants_enroll_vapor_functions_v1.hpp>
+
+Real grav, P0, T0, Tmin;
+int iH2O;
 
 void MeshBlock::InitUserMeshBlockData(ParameterInput *pin) {
-  AllocateUserOutputVariables(2);
+  AllocateUserOutputVariables(4 + NVAPOR);
   SetUserOutputVariableName(0, "temp");
   SetUserOutputVariableName(1, "theta");
+  SetUserOutputVariableName(2, "thetav");
+  SetUserOutputVariableName(3, "mse");
+  for (int n = 1; n <= NVAPOR; ++n) {
+    std::string name = "rh" + std::to_string(n);
+    SetUserOutputVariableName(3 + n, name.c_str());
+  }
 }
 
 void MeshBlock::UserWorkBeforeOutput(ParameterInput *pin) {
-  Real dq[1 + NVAPOR], rh;
+  auto pthermo = Thermodynamics::GetInstance();
 
   for (int k = ks; k <= ke; ++k)
     for (int j = js; j <= je; ++j)
       for (int i = is; i <= ie; ++i) {
-        user_out_var(0, k, j, i) = pthermo->GetTemp(phydro->w.at(k, j, i));
-        user_out_var(1, k, j, i) =
-            PotentialTemp(phydro->w.at(k, j, i), P0, pthermo);
+        user_out_var(0, k, j, i) = pthermo->GetTemp(this, k, j, i);
+        user_out_var(1, k, j, i) = pthermo->PotentialTemp(this, P0, k, j, i);
+        // theta_v
+        user_out_var(2, k, j, i) =
+            user_out_var(1, k, j, i) * pthermo->RovRd(this, k, j, i);
+        // mse
+        user_out_var(3, k, j, i) =
+            pthermo->MoistStaticEnergy(this, grav * pcoord->x1v(i), k, j, i);
+        for (int n = 1; n <= NVAPOR; ++n)
+          user_out_var(3 + n, k, j, i) =
+              pthermo->RelativeHumidity(this, n, k, j, i);
       }
-}
-
-void RadiationBand::addAbsorber(std::string name, std::string file,
-                                ParameterInput *pin) {
-  Real xHe = pin->GetOrAddReal("radiation", "xHe", 0.136);
-  Real xH2 = 1. - xHe;
-
-  std::stringstream msg;
-
-  if (name == "H2O_l") {
-    pabs->addAbsorber(FuWaterLiquidCloud(this, 0));
-  } else if (name == "simplecloud") {
-    pabs->addAbsorber(SimpleCloud(this, 0, pin));
-  } else if (name == "H2-H2") {
-    pabs->addAbsorber(XizH2H2CIA(this, 0, xH2))->loadCoefficient(file);
-  } else if (name == "H2-He") {
-    pabs->addAbsorber(XizH2HeCIA(this, 0, xH2, xHe))->loadCoefficient(file);
-  } else if (name == "freedman_simple") {
-    pabs->addAbsorber(FreedmanSimple(this, pin));
-  } else if (name == "freedman_mean") {
-    pabs->addAbsorber(FreedmanMean(this, pin));
-  } else if (strncmp(name.c_str(), "ck-", 3) == 0) {
-    char str[80], aname[80];
-    int bid;
-    strcpy(str, name.c_str());
-    replaceChar(str, '-', ' ');
-    int err = sscanf(str, "ck %s %d", aname, &bid);
-    if (err != EOF) {
-      pabs->addAbsorber(CorrelatedKAbsorber(this, aname))
-          ->loadCoefficient(file, bid);
-    } else {
-      msg << "### FATAL ERROR in RadiationBand::addAbsorber" << std::endl
-          << "Incorrect format for absorber '" << name << "' ";
-      ATHENA_ERROR(msg);
-    }
-  } else {
-    msg << "### FATAL ERROR in RadiationBand::addAbsorber" << std::endl
-        << "Unknown absorber: '" << name << "' ";
-    ATHENA_ERROR(msg);
-  }
 }
 
 void Forcing(MeshBlock *pmb, Real const time, Real const dt,
-             AthenaArray<Real> const &w, AthenaArray<Real> const &bcc,
-             AthenaArray<Real> &u) {
+             AthenaArray<Real> const &w, AthenaArray<Real> const &r,
+             AthenaArray<Real> const &bcc, AthenaArray<Real> &du,
+             AthenaArray<Real> &s) {
   int is = pmb->is, js = pmb->js, ks = pmb->ks;
   int ie = pmb->ie, je = pmb->je, ke = pmb->ke;
-  for (int k = ks; k <= ke; ++k) {
-    for (int j = js; j <= je; ++j) {
-      NeighborBlock const *pbot = pmb->pcomm->findBotNeighbor();
-      if (pbot == nullptr) {
-        // relax the vapor mixing ratio of the bottom cell to the initial value
-        u(ic1, k, j, is) +=
-            w(IDN, k, j, is) * (qvapor1 - w(ic1, k, j, is)) * dt * qRelaxT;
-        // assuming ocean below, so relax the vapor to the SVP
-      }
+  auto pthermo = Thermodynamics::GetInstance();
 
-      //      for (int i = is; i <= ie; ++i) {
-      // damp kinetic energy
-      //        u(IM1,k,j,i) -= w(IDN,k,j,i)*w(IM1,k,j,i)/5.;
-      //        u(IM2,k,j,i) -= w(IDN,k,j,i)*w(IM2,k,j,i)/5.;
-      //        u(IM3,k,j,i) -= w(IDN,k,j,i)*w(IM3,k,j,i)/5.;
-      //      }
-    }
-  }
+  for (int k = ks; k <= ke; ++k)
+    for (int j = js; j <= je; ++j)
+      for (int i = is; i <= ie; ++i) {
+        auto &&air = AirParcelHelper::gather_from_primitive(pmb, k, j, i);
+
+        Real cv = pthermo->GetCvMass(air, 0);
+
+        // if (w(IPR, k, j, i) < prad) {
+        //   du(IEN, k, j, i) += dt * hrate * w(IDN, k, j, i) * cv *
+        //                       (1. + 1.E-4 * sin(2. * M_PI * rand() /
+        //                       RAND_MAX));
+        // }
+
+        // if (air.w[IDN] < Tmin) {
+        //   u(IEN,k,j,i) += w(IDN,k,j,i)*cv*(Tmin - temp)/sponge_tau*dt;
+        // }
+      }
 }
 
 void Mesh::InitUserMeshData(ParameterInput *pin) {
   grav = -pin->GetReal("hydro", "grav_acc1");
+
   P0 = pin->GetReal("problem", "P0");
   T0 = pin->GetReal("problem", "T0");
-  Z0 = pin->GetOrAddReal("problem", "Z0", 0.);
-  Tmin = pin->GetReal("problem", "min_tem");
-  qRelaxT = pin->GetReal("problem", "qRelaxT");
-  qvapor1 = pin->GetReal("problem", "qvapor1");
 
+  Tmin = pin->GetReal("problem", "Tmin");
+
+  // index
+  auto pindex = IndexMap::GetInstance();
+  iH2O = pindex->GetVaporId("H2O");
   EnrollUserExplicitSourceFunction(Forcing);
 }
 
 void MeshBlock::ProblemGenerator(ParameterInput *pin) {
-  pdebug->Enter("ProblemGenerator: dry_rce");
-  Real gamma = pin->GetReal("hydro", "gamma");
+  srand(Globals::my_rank + time(0));
 
-  // construct a 1D adiabat with given relative humidity
+  Application::Logger app("main");
+  app->Log("ProblemGenerator: jupiter_crm");
+
+  auto pthermo = Thermodynamics::GetInstance();
+
+  // mesh limits
   Real x1min = pmy_mesh->mesh_size.x1min;
   Real x1max = pmy_mesh->mesh_size.x1max;
 
-  Real **w1, *z1, *p1, *t1;
-  Real dz = (x1max - x1min) / pmy_mesh->mesh_size.nx1 / 2.;
-  int nx1 = 2 * pmy_mesh->mesh_size.nx1 + 1;
-  NewCArray(w1, nx1, NHYDRO + 2 * NVAPOR);
-  //  NewCArray(w1, nx1, NHYDRO);
-  z1 = new Real[nx1];
-  p1 = new Real[nx1];
-  t1 = new Real[nx1];
+  // request temperature and pressure
+  app->Log("request T", T0);
+  app->Log("request P", P0);
 
-  // estimate surface temperature and pressure
+  // thermodynamic constants
+  Real gamma = pin->GetReal("hydro", "gamma");
   Real Rd = pthermo->GetRd();
   Real cp = gamma / (gamma - 1.) * Rd;
-  Real Ts = T0 - grav / cp * (x1min - Z0);
+
+  // set up an adiabatic atmosphere
+  int max_iter = 400, iter = 0;
+  Real Ttol = pin->GetOrAddReal("problem", "init_Ttol", 0.01);
+
+  AirParcel air(AirParcel::Type::MoleFrac);
+
+  // estimate surface temperature and pressure
+  Real Ts = T0 - grav / cp * x1min;
   Real Ps = P0 * pow(Ts / T0, cp / Rd);
-  int max_iter = 200, iter = 0;
+  Real xH2O = pin->GetReal("problem", "qH2O.ppmv") / 1.E6;
 
-  for (int n = 1; n <= NVAPOR; ++n) {
-    Real qv = pin->GetReal("problem", "qvapor" + std::to_string(n));
-    w1[0][n] = qv;
-  }
-
-  z1[0] = x1min;
-  for (int i = 1; i < nx1; ++i) z1[i] = z1[i - 1] + dz;
-
-  Real t0, p0;
-  if (Globals::my_rank == 0)
-    std::cout << "- request T = " << T0 << " P = " << P0 << " at Z = " << Z0
-              << std::endl;
   while (iter++ < max_iter) {
-    // pthermo->ConstructAtmosphere(w1, Ts, Ps, grav, dz, nx1, Adiabat::pseudo,
-    // 0.);
-    pthermo->ConstructAtmosphere(w1, Ts, Ps, grav, dz, nx1, Adiabat::pseudo,
-                                 1.E-3);
+    // read in vapors
+    air.w[iH2O] = xH2O;
+    air.w[IPR] = Ps;
+    air.w[IDN] = Ts;
 
-    // 1.2 replace adiabatic atmosphere with isothermal atmosphere if
-    // temperature is too low
-    int ii = 0;
-    for (; ii < nx1 - 1; ++ii)
-      if (pthermo->GetTemp(w1[ii]) < Tmin) break;
-    Real Tv = w1[ii][IPR] / (w1[ii][IDN] * Rd);
-    for (int i = ii; i < nx1; ++i) {
-      w1[i][IPR] = w1[ii][IPR] * exp(-grav * (z1[i] - z1[ii]) / (Rd * Tv));
-      w1[i][IDN] = w1[i][IPR] / (Rd * Tv);
-      for (int n = 1; n <= NVAPOR; ++n) w1[i][n] = w1[ii][n];
+    // stop at just above P0
+    for (int i = is; i <= ie; ++i) {
+      pthermo->Extrapolate(&air, pcoord->dx1f(i),
+                           Thermodynamics::Method::PseudoAdiabat, grav);
+      if (air.w[IPR] < P0) break;
     }
 
-    // 1.3 find TP at z = Z0
-    for (int i = 0; i < nx1; ++i) {
-      p1[i] = w1[i][IPR];
-      t1[i] = pthermo->GetTemp(w1[i]);
-    }
-    p0 = interp1(Z0, p1, z1, nx1);
-    t0 = interp1(Z0, t1, z1, nx1);
+    // make up for the difference
+    Ts += T0 - air.w[IDN];
+    if (std::abs(T0 - air.w[IDN]) < Ttol) break;
 
-    Ts += T0 - t0;
-    Ps *= P0 / p0;
-    if ((fabs(T0 - t0) < 0.01) && (fabs(P0 / p0 - 1.) < 1.E-4)) break;
-    if (Globals::my_rank == 0)
-      std::cout << "- iteration #" << iter << ": "
-                << "T = " << t0 << " P = " << p0 << std::endl;
+    app->Log("Iteration #", iter);
+    app->Log("T", air.w[IDN]);
   }
 
   if (iter > max_iter) {
-    std::stringstream msg;
-    msg << "### FATAL ERROR in problem generator" << std::endl
-        << "maximum iteration reached." << std::endl
-        << "T0 = " << t0 << std::endl
-        << "P0 = " << p0;
-    ATHENA_ERROR(msg);
+    throw RuntimeError("ProblemGenerator", "maximum iteration reached");
   }
 
-  // setup initial condition
-  int kl = block_size.nx3 == 1 ? ks : ks - NGHOST;
-  int ku = block_size.nx3 == 1 ? ke : ke + NGHOST;
-  int jl = block_size.nx2 == 1 ? js : js - NGHOST;
-  int ju = block_size.nx2 == 1 ? je : je + NGHOST;
-  srand(Globals::my_rank + time(0));
-  for (int i = is; i <= ie; ++i) {
-    Real buf[NHYDRO + 2 * NVAPOR];
-    interpn(buf, &pcoord->x1v(i), *w1, z1, &nx1, 1, NHYDRO + 2 * NVAPOR);
-    //    Real buf[NHYDRO];
-    //    interpn(buf, &pcoord->x1v(i), *w1, z1, &nx1, 1, NHYDRO);
-    buf[IVX] = buf[IVY] = buf[IVZ] = 0.;
+  // construct atmosphere from bottom up
+  for (int k = ks; k <= ke; ++k)
+    for (int j = js; j <= je; ++j) {
+      air.SetZero();
+      air.w[iH2O] = xH2O;
+      air.w[IPR] = Ps;
+      air.w[IDN] = Ts;
 
-    // set gas concentration
-    for (int n = 0; n < NHYDRO; ++n)
-      for (int k = ks; k <= ke; ++k)
-        for (int j = js; j <= je; ++j) phydro->w(n, k, j, i) = buf[n];
+      // half a grid to cell center
+      pthermo->Extrapolate(&air, pcoord->dx1f(is) / 2.,
+                           Thermodynamics::Method::ReversibleAdiabat, grav);
 
-    // add noise
-    for (int k = ks; k <= ke; ++k)
-      for (int j = js; j <= je; ++j)
-        phydro->w(IV1, k, j, i) = 0.01 * (1. * rand() / RAND_MAX - 0.5);
-  }
+      int i = is;
+      for (; i <= ie; ++i) {
+        if (air.w[IDN] < Tmin) break;
+        air.w[IVX] = 1. * sin(2. * M_PI * rand() / RAND_MAX);
+        AirParcelHelper::distribute_to_conserved(this, k, j, i, air);
+        pthermo->Extrapolate(&air, pcoord->dx1f(i),
+                             Thermodynamics::Method::PseudoAdiabat, grav,
+                             1.e-5);
+      }
 
-  // set spectral properties
-  RadiationBand *p = prad->pband;
-  while (p != NULL) {
-    for (int k = kl; k <= ku; ++k)
-      for (int j = jl; j <= ju; ++j)
-        p->setSpectralProperties(phydro->w, k, j, is, ie);
-    p = p->next;
-  }
+      // Replace adiabatic atmosphere with isothermal atmosphere if temperature
+      // is too low
+      for (; i <= ie; ++i) {
+        AirParcelHelper::distribute_to_conserved(this, k, j, i, air);
+        pthermo->Extrapolate(&air, pcoord->dx1f(i),
+                             Thermodynamics::Method::Isothermal, grav);
+      }
 
-  // pphy->Initialize(phydro->w);
-  peos->PrimitiveToConserved(phydro->w, pfield->bcc, phydro->u, pcoord, is, ie,
-                             js, je, ks, ke);
+      peos->ConservedToPrimitive(phydro->u, phydro->w, pfield->b, phydro->w,
+                                 pfield->bcc, pcoord, is, ie, j, j, k, k);
 
-  FreeCArray(w1);
-  delete[] z1;
-  delete[] p1;
-  delete[] t1;
-  pdebug->Leave();
+      pimpl->prad->CalFlux(this, k, j, is, ie + 1);
+    }
 }

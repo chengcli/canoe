@@ -230,8 +230,7 @@ TaskStatus ImplicitHydroTasks::AddFluxToConserved(MeshBlock *pmb, int stage) {
         } else {  // update radiative flux
           prad->ResetCounter();
           for (int k = ks; k <= ke; ++k)
-            for (int j = js; j <= je; ++j)
-              prad->CalRadiativeFlux(pmb, k, j, is, ie + 1);
+            for (int j = js; j <= je; ++j) prad->CalFlux(pmb, k, j, is, ie + 1);
         }
       }
     }

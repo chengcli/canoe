@@ -17,16 +17,16 @@ def create_atmosphere(nlyr: int) -> dict:
     """
 
     atm = {}
-    ps_mbar = 1.0e2
+    ps_mbar = 1.0e3
     Ts_K = 300.0
     grav_ms2 = 9.8
-    mu_kgmol = 29.0e-3
+    mu_kgmol = 2.0e-3
     Rgas_JKmol = 8.314
     Rgas_Jkg = Rgas_JKmol / mu_kgmol
     Hscale_km = Rgas_Jkg * Ts_K / grav_ms2 * 1.0e-3
 
     # km
-    atm["HGT"] = linspace(0, 20, nlyr, endpoint=False)
+    atm["HGT"] = linspace(0, 100, nlyr, endpoint=False)
     atm["PRE"] = ps_mbar * exp(-atm["HGT"] / Hscale_km)
     atm["TEM"] = Ts_K * ones(nlyr)
     # ppmv
@@ -56,7 +56,7 @@ if __name__ == "__main__":
 
     info = load_file("hywater.yaml")
 
-    init_thermo(info)
+    init_thermo(info["thermodynamics"])
 
     band_names = ["ir", "vis"]
     bands = [radiation_band(name, info) for name in band_names]
