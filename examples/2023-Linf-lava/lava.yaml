@@ -1,0 +1,152 @@
+opacity-sources:
+  - name: H2O
+    class: Hitran
+    dependent-species: [vapor.H2O]
+
+  - name: cloud
+    class: SimpleCloud
+    dependent-species: [cloud.H2O(c), cloud.H2O(p)]
+    parameters: {qext: 1., ssa: 0.01, asymf: 0.01}
+
+  - name: H2-vis
+    class: FreedmanSimple2
+    parameters: {scale: 1.}
+
+  - name: H2-ir
+    class: FreedmanMean2
+    parameters: {met: 1.7, scale: 1.}
+
+
+
+
+category: infrared
+
+opacity-sources:
+  - name: H2-H2-CIA
+    long-name: "Hydrogen-Hydrogen collisional absorption"
+    model: xiz
+
+  - name: H2-He-CIA
+    long-name: "Hydrogen-Helium collisional absorption"
+    model: xiz
+
+  - name: SiO
+    long-name: "SiO line absorption"
+    dependent-species: [vapor.SiO]
+
+
+bands: [ir, vis]
+
+ir:
+  units: cm-1
+  grid-type: regular
+  wavenumber-range: [100., 10000.]
+  num-bins: 1
+  opacity: [H2-ir]
+  rt-solver: Disort
+  flags: [broad_band, thermal_emission]
+
+vis:
+  units: cm-1
+  grid-type: regular
+  wavenumber-range: [10000., 50000.]
+  num-bins: 1
+  opacity: [H2-vis, cloud]
+  rt-solver: Disort
+  parameters: {fbeam_K: 265., umu0: 1., uph0: 0., dist_au: 0.1}
+  flags: [broad_band]
+
+
+
+bands: [B1, B2, B3, B4, B5, B6, B7, B8]
+
+B1:
+  rt-solver: Disort
+  unit: cm-1
+  wavenumber-range: [100., 250.]
+  resolution: 0.1
+  opacity: [SiO]
+  parameters: {fbeam_K: 265., umu0: 1., uph0: 0., dist_au: 0.01544}
+  
+B2:
+  rt-solver: Disort
+  unit: cm-1
+  wavenumber-range: [810., 1340.]
+  resolution: 0.1
+  opacity: [SiO]
+
+B3:
+  rt-solver: Disort
+  unit: cm-1
+  wavenumber-range: [1860., 2500.]
+  resolution: 0.1
+  opacity: [SiO]
+
+B4:
+  rt-solver: Disort
+  unit: cm-1
+  wavenumber-range: [2865., 3704.]
+  resolution: 0.1
+  opacity: [SiO]
+
+B5:
+  rt-solver: Disort
+  unit: cm-1
+  wavenumber-range: [3861., 4873.]
+  resolution: 0.1
+  opacity: [SiO]
+
+B6:
+  rt-solver: Disort
+  unit: cm-1
+  wavenumber-range: [4873., 6050.]
+  resolution: 0.1
+  opacity: [SiO]
+
+
+B7:
+  rt-solver: Disort
+  unit: cm-1
+  wavenumber-range: [6050., 14285.7]
+  resolution: 0.1
+
+B8:
+  rt-solver: Disort
+  unit: cm-1
+  wavenumber-range: [14285.7, 25000.]
+  resolution: 0.1
+  opacity: [SiO]
+
+
+Disort-flags:
+  ibcnd: false
+  lamber: true
+  onlyfl: true
+  spher: false
+  intensity_correction: true
+  old_intensity_correction: false
+  general_source: false
+  output_uum: false
+  quiet: true
+  print-input: false
+  print-fluxes: false
+  print-intensity: false
+  print-transmissivity: false
+  print-phase-function: true
+
+thermodynamics:
+  non-condensable:
+    Rd: 188.6
+    gammad_ref: 1.4
+
+microphysics:
+  - water-system
+
+water-system:
+  scheme: Kessler94
+  dependent-species: [vapor.H2O, cloud.H2O(c), cloud.H2O(p)]
+  parameters:
+    autoconversion: 1.e-4
+    accretion: 0.0
+    evaporation: 3.e-1
+    sedimentation: -20.
