@@ -1,9 +1,9 @@
 <comment>
 problem   = Cloud radiative dynamics + Hydrogen Atm + Ocean below
-configure = -Dpnetcdf_path=/home3/xzhang11/pnetcdf
+#configure = -Dpnetcdf_path=/home3/xzhang11/pnetcdf
 
 <job>
-problem_id  = hywater2d   # problem ID: basename of output filenames
+problem_id  = lava2d   # problem ID: basename of output filenames
 
 <output0>
 file_type   = rst
@@ -41,7 +41,7 @@ xorder      = 5             # horizontal reconstruction order
 integrator  = rk3           # integration method
 
 <mesh>
-nx1         = 80            # Number of zones in X1-direction
+nx1         = 100            # Number of zones in X1-direction
 x1min       = 0.            # minimum value of X1
 x1max       = 1.E5          # maximum value of X1
 ix1_bc      = reflecting    # inner-X1 boundary flag
@@ -60,7 +60,7 @@ ix3_bc      = periodic    # Inner-X3 boundary condition flag
 ox3_bc      = periodic    # Outer-X3 boundary condition flag
 
 <meshblock>
-nx1         = 80
+nx1         = 100
 nx2         = 8
 nx3         = 1
 
@@ -87,15 +87,16 @@ bot_temperature         = -1.
 vapor = SiO
 cloud = SiO(c), SiO(p)
 
-<chemistry>
-microphysics_config = lava.yaml
+#<chemistry>
+#microphysics_config = lava.yaml
 
 <thermodynamics>
 Rd          = 188.6
-eps1        = 8.18    8.18    8.18
-beta1       = 0.      24.85   24.85   # 17900ln10 / T
+eps1        = 1.    1.    1.
+#eps1        = 8.18    8.18    8.18
+beta1       = 0.      20.87   20.87   # 17900ln10 / T
 rcp1        = 0.15    0.15    0.15
-Ttriple1    = 273.16
+Ttriple1    = 1975
 Ptriple1    = 611.7
 
 sa.relax    = 0.9
@@ -120,7 +121,7 @@ sa.ftol     = 0.1
 
 <radiation>
 dt            = 40.
-radiation_config = lava.yaml
+#radiation_config = lava.yaml
 nstr          = 16
 
 <problem>
@@ -129,5 +130,4 @@ T0            = 4.3E2
 Tmin          = 100.
 qRelaxT       = 1.E-4
 
-qH2O.ppmv     = 1000000.
 diagnostics   = c_avg radflux

@@ -1,25 +1,12 @@
 opacity-sources:
-  - name: H2O
-    class: Hitran
-    dependent-species: [vapor.H2O]
 
-  - name: cloud
-    class: SimpleCloud
-    dependent-species: [cloud.H2O(c), cloud.H2O(p)]
-    parameters: {qext: 1., ssa: 0.01, asymf: 0.01}
-
-  - name: H2-vis
-    class: FreedmanSimple2
-    parameters: {scale: 1.}
-
-  - name: H2-ir
-    class: FreedmanMean2
-    parameters: {met: 1.7, scale: 1.}
-
+#  - name: cloud
+#    class: SimpleCloud
+#    dependent-species: [cloud.SiO(c), cloud.SiO(p)]
+#    parameters: {qext: 1., ssa: 0.01, asymf: 0.01}
 
 #category: infrared
 
-opacity-sources:
   - name: H2-H2-CIA
     long-name: "Hydrogen-Hydrogen collisional absorption"
     model: xiz
@@ -29,6 +16,7 @@ opacity-sources:
     model: xiz
 
   - name: SiO
+    class: Hitran
     long-name: "SiO line absorption"
     dependent-species: [vapor.SiO]
 
@@ -43,7 +31,7 @@ B1:
   wavenumber-range: [100., 250.]
   resolution: 0.1
   opacity: [SiO]
-  parameters: {fbeam_K: 265., umu0: 1., uph0: 0., dist_au: 0.01544}
+  parameters: {fbeam_K: 342.5, umu0: 1., uph0: 0., dist_au: 0.01544}
   flags: [broad_band, thermal_emission]
   
 B2:
@@ -53,7 +41,7 @@ B2:
   wavenumber-range: [810., 1340.]
   resolution: 0.1
   opacity: [SiO]
-  parameters: {fbeam_K: 265., umu0: 1., uph0: 0., dist_au: 0.01544}
+  parameters: {fbeam_K: 342.5, umu0: 1., uph0: 0., dist_au: 0.01544}
   flags: [broad_band, thermal_emission]
 
 B3:
@@ -63,7 +51,7 @@ B3:
   wavenumber-range: [1860., 2500.]
   resolution: 0.1
   opacity: [SiO]
-  parameters: {fbeam_K: 265., umu0: 1., uph0: 0., dist_au: 0.01544}
+  parameters: {fbeam_K: 342.5, umu0: 1., uph0: 0., dist_au: 0.01544}
   flags: [broad_band, thermal_emission]
 
 B4:
@@ -73,7 +61,7 @@ B4:
   wavenumber-range: [2865., 3704.]
   resolution: 0.1
   opacity: [SiO]
-  parameters: {fbeam_K: 265., umu0: 1., uph0: 0., dist_au: 0.01544}
+  parameters: {fbeam_K: 342.5, umu0: 1., uph0: 0., dist_au: 0.01544}
   flags: [broad_band, thermal_emission]
 
 B5:
@@ -83,7 +71,7 @@ B5:
   wavenumber-range: [3861., 4873.]
   resolution: 0.1
   opacity: [SiO]
-  parameters: {fbeam_K: 265., umu0: 1., uph0: 0., dist_au: 0.01544}
+  parameters: {fbeam_K: 342.5, umu0: 1., uph0: 0., dist_au: 0.01544}
   flags: [broad_band, thermal_emission]
 
 B6:
@@ -93,7 +81,7 @@ B6:
   wavenumber-range: [4873., 6050.]
   resolution: 0.1
   opacity: [SiO]
-  parameters: {fbeam_K: 265., umu0: 1., uph0: 0., dist_au: 0.01544}
+  parameters: {fbeam_K: 342.5, umu0: 1., uph0: 0., dist_au: 0.01544}
   flags: [broad_band, thermal_emission]
 
 
@@ -104,7 +92,7 @@ B7:
   wavenumber-range: [6050., 14285.7]
   resolution: 0.1
   opacity: [SiO]
-  parameters: {fbeam_K: 265., umu0: 1., uph0: 0., dist_au: 0.01544}
+  parameters: {fbeam_K: 342.5, umu0: 1., uph0: 0., dist_au: 0.01544}
   flags: [broad_band, thermal_emission]
 
 B8:
@@ -114,7 +102,7 @@ B8:
   wavenumber-range: [14285.7, 25000.]
   resolution: 0.1
   opacity: [SiO]
-  parameters: {fbeam_K: 265., umu0: 1., uph0: 0., dist_au: 0.01544}
+  parameters: {fbeam_K: 342.5, umu0: 1., uph0: 0., dist_au: 0.01544}
   flags: [broad_band, thermal_emission]
 
 
@@ -140,14 +128,14 @@ thermodynamics:
     Rd: 188.6
     gammad_ref: 1.4
 
-microphysics:
-  - water-system
+#microphysics:
+#  - water-system
 
-water-system:
-  scheme: Kessler94
-  dependent-species: [vapor.H2O, cloud.H2O(c), cloud.H2O(p)]
-  parameters:
-    autoconversion: 1.e-4
-    accretion: 0.0
-    evaporation: 3.e-1
-    sedimentation: -20.
+#water-system:
+#  scheme: Kessler94
+#  dependent-species: [vapor.SiO, cloud.SiO(c), cloud.SiO(p)]
+#  parameters:
+#    autoconversion: 1.e-4
+#    accretion: 0.0
+#    evaporation: 3.e-1
+#    sedimentation: -20.

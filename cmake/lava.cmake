@@ -1,4 +1,4 @@
-# configure file for hydrogen-water world
+# configure file for lava world
 
 macro(SET_IF_EMPTY _variable)
   if("${${_variable}}" STREQUAL "")

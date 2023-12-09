@@ -34,7 +34,7 @@
 #include <utils/fileio.hpp>  // read_data_vector
 
 Real grav, P0, T0, Tmin;
-int iH2O, iCO2, iSiO;
+int iSiO;
 
 void MeshBlock::InitUserMeshBlockData(ParameterInput *pin) {
   AllocateUserOutputVariables(4 + NVAPOR);
@@ -98,10 +98,10 @@ void Forcing(MeshBlock *pmb, Real const time, Real const dt,
 void Mesh::InitUserMeshData(ParameterInput *pin) {
   grav = -pin->GetReal("hydro", "grav_acc1");
 
-  P0 = pin->GetReal("problem", "P0");
-  T0 = pin->GetReal("problem", "T0");
+  //P0 = pin->GetReal("problem", "P0");
+  //T0 = pin->GetReal("problem", "T0");
 
-  Tmin = pin->GetReal("problem", "Tmin");
+  //Tmin = pin->GetReal("problem", "Tmin");
 
   // index
   auto pindex = IndexMap::GetInstance();
@@ -122,32 +122,33 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
   Real x1max = pmy_mesh->mesh_size.x1max;
 
   // request temperature and pressure
-  app->Log("request T", T0);
-  app->Log("request P", P0);
+  //app->Log("request T", T0);
+  //app->Log("request P", P0);
 
   // thermodynamic constants
   Real gamma = pin->GetReal("hydro", "gamma");
   Real Rd = pthermo->GetRd();
   Real cp = gamma / (gamma - 1.) * Rd;
 
-  std::string input_atm_path = "balance_atm.txt";
+  std::string input_atm_path = "/home/linfel/canoe_1/examples/2023-Linf-lava/balance_atm.txt";
   DataVector atm = read_data_vector(input_atm_path);
 
   AirParcel air(AirParcel::Type::MoleFrac);
-
   // construct atmosphere from bottom up
   size_t atm_size = 80;
   for (int k = ks; k <= ke; ++k)
     for (int j = js; j <= je; ++j)
       for (int i = is; i <= ie; ++i) {
         // interpolation to coord grid
-        Real buf;
-        air.w[IPR] = interp1(pcoord->x1v(i), atm["PRE"].data(),
+        air.SetZero();
+	air.w[IPR] = interp1(pcoord->x1v(i), atm["PRE"].data(),
                              atm["HGT"].data(), atm_size);
         air.w[IDN] = interp1(pcoord->x1v(i), atm["TEM"].data(),
                              atm["HGT"].data(), atm_size);
         air.w[iSiO] = interp1(pcoord->x1v(i), atm["SiO"].data(),
                               atm["HGT"].data(), atm_size);
         AirParcelHelper::distribute_to_conserved(this, k, j, i, air);
+      
       }
 }
+
