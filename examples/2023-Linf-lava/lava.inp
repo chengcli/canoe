@@ -41,9 +41,9 @@ xorder      = 5             # horizontal reconstruction order
 integrator  = rk3           # integration method
 
 <mesh>
-nx1         = 100           # Number of zones in X1-direction
+nx1         = 80            # Number of zones in X1-direction
 x1min       = 0.            # minimum value of X1
-x1max       = 2.2E5         # maximum value of X1
+x1max       = 1.E5          # maximum value of X1
 ix1_bc      = reflecting    # inner-X1 boundary flag
 ox1_bc      = reflecting    # outer-X1 boundary flag
 
@@ -60,7 +60,7 @@ ix3_bc      = periodic    # Inner-X3 boundary condition flag
 ox3_bc      = periodic    # Outer-X3 boundary condition flag
 
 <meshblock>
-nx1         = 100
+nx1         = 80
 nx2         = 8
 nx3         = 1
 
@@ -84,8 +84,8 @@ bot_temperature         = -1.
 #bot_temperature = -1.
 #
 <species>
-vapor = H2O
-cloud = H2O(c), H2O(p)
+vapor = SiO
+cloud = SiO(c), SiO(p)
 
 <chemistry>
 microphysics_config = lava.yaml
@@ -93,7 +93,7 @@ microphysics_config = lava.yaml
 <thermodynamics>
 Rd          = 188.6
 eps1        = 8.18    8.18    8.18
-beta1       = 0.      24.85   24.85
+beta1       = 0.      24.85   24.85   # 17900ln10 / T
 rcp1        = 0.15    0.15    0.15
 Ttriple1    = 273.16
 Ptriple1    = 611.7
@@ -103,18 +103,18 @@ sa.max_iter = 10
 sa.ftol     = 0.1
 
 <astronomy>
-planet        = Jupiter
-HJ.parent     = Sun
-HJ.re         = 1.E5      # km
-HJ.rp         = 1.E5      # km
-HJ.obliq      = 0.        # deg
-HJ.spinp      = 0.42      # day
-HJ.orbit_a    = 5.2038    # au
-HJ.orbit_e    = 0.
-HJ.orbit_i    = 0.        # deg
-HJ.orbit_p    = 4380.        # day
-HJ.grav_eq    = 25.       # m/s^2
-HJ.equinox    = 0.
+#planet        = Jupiter
+#HJ.parent     = Sun
+#HJ.re         = 1.E5      # km
+#HJ.rp         = 1.E5      # km
+#HJ.obliq      = 0.        # deg
+#HJ.spinp      = 0.42      # day
+#HJ.orbit_a    = 5.2038    # au
+#HJ.orbit_e    = 0.
+#HJ.orbit_i    = 0.        # deg
+#HJ.orbit_p    = 4380.        # day
+#HJ.grav_eq    = 25.       # m/s^2
+#HJ.equinox    = 0.
 
 #Sun.spec_file = ../src/radiation/spectra/sun.spec
 
@@ -129,5 +129,5 @@ T0            = 4.3E2
 Tmin          = 100.
 qRelaxT       = 1.E-4
 
-qH2O.ppmv     = 25000.
+qH2O.ppmv     = 1000000.
 diagnostics   = c_avg radflux

@@ -17,9 +17,7 @@ opacity-sources:
     parameters: {met: 1.7, scale: 1.}
 
 
-
-
-category: infrared
+#category: infrared
 
 opacity-sources:
   - name: H2-H2-CIA
@@ -35,96 +33,99 @@ opacity-sources:
     dependent-species: [vapor.SiO]
 
 
-bands: [ir, vis]
-
-ir:
-  units: cm-1
-  grid-type: regular
-  wavenumber-range: [100., 10000.]
-  num-bins: 1
-  opacity: [H2-ir]
-  rt-solver: Disort
-  flags: [broad_band, thermal_emission]
-
-vis:
-  units: cm-1
-  grid-type: regular
-  wavenumber-range: [10000., 50000.]
-  num-bins: 1
-  opacity: [H2-vis, cloud]
-  rt-solver: Disort
-  parameters: {fbeam_K: 265., umu0: 1., uph0: 0., dist_au: 0.1}
-  flags: [broad_band]
-
-
 
 bands: [B1, B2, B3, B4, B5, B6, B7, B8]
 
 B1:
   rt-solver: Disort
   unit: cm-1
+  grid-type: regular
   wavenumber-range: [100., 250.]
   resolution: 0.1
   opacity: [SiO]
   parameters: {fbeam_K: 265., umu0: 1., uph0: 0., dist_au: 0.01544}
+  flags: [broad_band, thermal_emission]
   
 B2:
   rt-solver: Disort
   unit: cm-1
+  grid-type: regular
   wavenumber-range: [810., 1340.]
   resolution: 0.1
   opacity: [SiO]
+  parameters: {fbeam_K: 265., umu0: 1., uph0: 0., dist_au: 0.01544}
+  flags: [broad_band, thermal_emission]
 
 B3:
   rt-solver: Disort
   unit: cm-1
+  grid-type: regular
   wavenumber-range: [1860., 2500.]
   resolution: 0.1
   opacity: [SiO]
+  parameters: {fbeam_K: 265., umu0: 1., uph0: 0., dist_au: 0.01544}
+  flags: [broad_band, thermal_emission]
 
 B4:
   rt-solver: Disort
   unit: cm-1
+  grid-type: regular
   wavenumber-range: [2865., 3704.]
   resolution: 0.1
   opacity: [SiO]
+  parameters: {fbeam_K: 265., umu0: 1., uph0: 0., dist_au: 0.01544}
+  flags: [broad_band, thermal_emission]
 
 B5:
   rt-solver: Disort
   unit: cm-1
+  grid-type: regular
   wavenumber-range: [3861., 4873.]
   resolution: 0.1
   opacity: [SiO]
+  parameters: {fbeam_K: 265., umu0: 1., uph0: 0., dist_au: 0.01544}
+  flags: [broad_band, thermal_emission]
 
 B6:
   rt-solver: Disort
   unit: cm-1
+  grid-type: regular
   wavenumber-range: [4873., 6050.]
   resolution: 0.1
   opacity: [SiO]
+  parameters: {fbeam_K: 265., umu0: 1., uph0: 0., dist_au: 0.01544}
+  flags: [broad_band, thermal_emission]
 
 
 B7:
   rt-solver: Disort
   unit: cm-1
+  grid-type: regular
   wavenumber-range: [6050., 14285.7]
   resolution: 0.1
+  opacity: [SiO]
+  parameters: {fbeam_K: 265., umu0: 1., uph0: 0., dist_au: 0.01544}
+  flags: [broad_band, thermal_emission]
 
 B8:
   rt-solver: Disort
   unit: cm-1
+  grid-type: regular
   wavenumber-range: [14285.7, 25000.]
   resolution: 0.1
   opacity: [SiO]
+  parameters: {fbeam_K: 265., umu0: 1., uph0: 0., dist_au: 0.01544}
+  flags: [broad_band, thermal_emission]
 
 
 Disort-flags:
   ibcnd: false
   lamber: true
+  planck: true
   onlyfl: true
   spher: false
   intensity_correction: true
-  old_intensity_correction: false
+  old_intensity_correction: true
   general_source: false
   output_uum: false
   quiet: true

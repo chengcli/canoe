@@ -13,6 +13,7 @@
 #include <snap/thermodynamics/vapors/hydrogen_sulfide_vapors.hpp>
 #include <snap/thermodynamics/vapors/methane_vapors.hpp>
 #include <snap/thermodynamics/vapors/water_vapors.hpp>
+#include <snap/thermodynamics/vapors/silicon_monoxide_vapors.hpp>
 
 // water svp
 void enroll_vapor_function_H2O(Thermodynamics::SVPFunc1Container& svp_func1,
@@ -33,6 +34,27 @@ void enroll_vapor_function_H2O(Thermodynamics::SVPFunc1Container& svp_func1,
     svp_func1[iH2O][n] = NullSatVaporPres1;
   }
 }
+
+// silicon monoxide svp
+void enroll_vapor_function_SiO(Thermodynamics::SVPFunc1Container& svp_func1,
+                               std::vector<IndexSet> const& cloud_index_set) {
+  auto pindex = IndexMap::GetInstance();
+  if (!pindex->HasVapor("SiO")) return;
+
+  Application::Logger app("snap");
+  app->Log("Enrolling SiO vapor pressures");
+
+  int iSiO = pindex->GetVaporId("SiO");
+
+  svp_func1[iSiO][0] = [](AirParcel const& qfrac, int, int) {
+    return sat_vapor_p_SiO_Ferguson(qfrac.w[IDN]);
+  };
+
+  for (int n = 1; n < cloud_index_set[iSiO].size(); ++n) {
+    svp_func1[iSiO][n] = NullSatVaporPres1;
+  }
+}
+
 
 // ammonia svp
 void enroll_vapor_function_NH3(Thermodynamics::SVPFunc1Container& svp_func1,
@@ -106,6 +128,7 @@ void Thermodynamics::enrollVaporFunctions() {
   app->Log("Enrolling vapor functions");
 
   enroll_vapor_function_H2O(svp_func1_, cloud_index_set_);
+  enroll_vapor_function_SiO(svp_func1_, cloud_index_set_);
   enroll_vapor_function_NH3(svp_func1_, cloud_index_set_);
   enroll_vapor_function_H2S(svp_func1_, cloud_index_set_);
   enroll_vapor_function_NH4SH(svp_func2_, cloud_reaction_map_);
