@@ -31,14 +31,10 @@
 #include <special/giants_enroll_vapor_functions_v1.hpp>
 
 // utils
-#include <utils/fileio.hpp>
+#include <utils/fileio.hpp>  // read_data_vector
 
 Real grav, P0, T0, Tmin;
-int iSiO = 2;  // assign an VaporID to iSiO  (should have got from pindex) 
-int iH2O;
-
-
-
+int iH2O, iCO2, iSiO;
 
 void MeshBlock::InitUserMeshBlockData(ParameterInput *pin) {
   AllocateUserOutputVariables(4 + NVAPOR);
@@ -109,11 +105,9 @@ void Mesh::InitUserMeshData(ParameterInput *pin) {
 
   // index
   auto pindex = IndexMap::GetInstance();
-  iH2O = pindex->GetVaporId("H2O");
+  iSiO = pindex->GetVaporId("SiO");
   EnrollUserExplicitSourceFunction(Forcing);
 }
-
-
 
 void MeshBlock::ProblemGenerator(ParameterInput *pin) {
   srand(Globals::my_rank + time(0));
@@ -136,132 +130,24 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
   Real Rd = pthermo->GetRd();
   Real cp = gamma / (gamma - 1.) * Rd;
 
-  
-  std::string input_atm_path = "/home/linfel/canoe_1/examples/2023-Linf-lava/balance_atm.txt";
-  DataVector atm_data = read_data_vector(input_atm_path);
-  
-  
-  
-  ///////////////////////////////////////////////////////////////////////////////////////////////
-  // set up an adiabatic atmosphere
-  //int max_iter = 400, iter = 0;
-  //Real Ttol = pin->GetOrAddReal("problem", "init_Ttol", 0.01);
+  std::string input_atm_path = "balance_atm.txt";
+  DataVector atm = read_data_vector(input_atm_path);
 
   AirParcel air(AirParcel::Type::MoleFrac);
 
-  // estimate surface temperature and pressure
-  //Real Ts = T0 - grav / cp * x1min;
-  //Real Ps = P0 * pow(Ts / T0, cp / Rd);
-  //Real xH2O = pin->GetReal("problem", "qH2O.ppmv") / 1.E6;
-
-  //while (iter++ < max_iter) {
-  //  // read in vapors
-  //  air.w[iH2O] = xH2O;
-  //  air.w[IPR] = Ps;
-  // air.w[IDN] = Ts;
-
-  //  // stop at just above P0
-  //  for (int i = is; i <= ie; ++i) {
-  //    pthermo->Extrapolate(&air, pcoord->dx1f(i),
-  //                         Thermodynamics::Method::PseudoAdiabat, grav);
-  //    if (air.w[IPR] < P0) break;
-  //  }
-
-  //  // make up for the difference
-  //  Ts += T0 - air.w[IDN];
-  // if (std::abs(T0 - air.w[IDN]) < Ttol) break;
-
-  //  app->Log("Iteration #", iter);
-  //  app->Log("T", air.w[IDN]);
-  //}
-
-  //if (iter > max_iter) {
-  //  throw RuntimeError("ProblemGenerator", "maximum iteration reached");
-  //}
-//////////////////////////////////////////////////////////////////////////////////////
-  
-
-  Real dz, **w1, *z1;
-  int nx1 = 80;           // int or size_t ?  The function 'interpn' require a size_t type
-  int nfield = 3;            // number of fields (PRE,TEM,SiO)
-  z1 = new Real [nx1];
-  //NewCArray(w1, nx1, nfield);       // which header should be included for 'NewCArray'？
-  w1 = new Real *[nx1];      // Allocate memory for w1
-  for (int i = 0; i < nx1; ++i) {
-    w1[i] = new Real[nfield];
-  }
-  //std::cout << "  IPR  " << IPR << "  IDN  " << IDN << "  iSiO  " << iSiO << std::endl;
-  for (int i = 0; i < nx1; ++i){
-    z1[i] = atm_data["HGT"][i];
-    w1[i][IPR] = atm_data["PRE"][i];
-    w1[i][IDN] = atm_data["TEM"][i];
-    w1[i][iSiO] = atm_data["SiO"][i];
-    //std::cout << "i=" << i << "  HGT  " << z1[i] << "  PRE  " << w1[i][IPR] << "  TEM  " << w1[i][IDN] << "  SIO  " << w1[i][iSiO] << std::endl;
-  }
-  
   // construct atmosphere from bottom up
-  for (int k = ks; k <= ke; ++k){
-    for (int j = js; j <= je; ++j){
-      // half a grid to cell center
-      pthermo->Extrapolate(&air, pcoord->dx1f(is) / 2.,
-                           Thermodynamics::Method::ReversibleAdiabat, grav);
-
-      
+  size_t atm_size = 80;
+  for (int k = ks; k <= ke; ++k)
+    for (int j = js; j <= je; ++j)
       for (int i = is; i <= ie; ++i) {
         // interpolation to coord grid
-	Real buf[nfield];
-	interpn(buf, &pcoord->x1v(i), *w1, z1, &nx1, 1, nfield);
-        //std::cout << "i=" << i << ", j=" << j << ", k=" << k << "  buf0  " << buf[0] << "  buf1  " << buf[1] << "  buf2  " << buf[2] << std::endl;
-        // set physical state for an air parcel 	
-//	air.SetZero();
-//        air.w[IPR] = buf[];
-//        air.w[IDN] = buf[];	
-//        air.w[iSiO] = buf[];
-//        
-//	//std::cout << "i=" << i << ", j=" << j << ", k=" << k << std::endl;
-//        //air.w[IVX] = 1. * sin(2. * M_PI * rand() / RAND_MAX);
-//        AirParcelHelper::distribute_to_conserved(this, k, j, i, air);
-//        pthermo->Extrapolate(&air, pcoord->dx1f(i),
-//                             Thermodynamics::Method::PseudoAdiabat, grav,
-//                             1.e-5);
+        Real buf;
+        air.w[IPR] = interp1(pcoord->x1v(i), atm["PRE"].data(),
+                             atm["HGT"].data(), atm_size);
+        air.w[IDN] = interp1(pcoord->x1v(i), atm["TEM"].data(),
+                             atm["HGT"].data(), atm_size);
+        air.w[iSiO] = interp1(pcoord->x1v(i), atm["SiO"].data(),
+                              atm["HGT"].data(), atm_size);
+        AirParcelHelper::distribute_to_conserved(this, k, j, i, air);
       }
-    }
-  }
-
-
-
-
-
-
-
-
-
-
-
-//
-//	air.w[IVX] = 1. * sin(2. * M_PI * rand() / RAND_MAX);
-//        AirParcelHelper::distribute_to_conserved(this, k, j, i, air);
-//        pthermo->Extrapolate(&air, pcoord->dx1f(i),
-//                             Thermodynamics::Method::PseudoAdiabat, grav,
-//                             1.e-5);
-//      }
-//
-//      // Replace adiabatic atmosphere with isothermal atmosphere if temperature
-//      // is too low
-//      for (; i <= ie; ++i) {
-//        AirParcelHelper::distribute_to_conserved(this, k, j, i, air);
-//        pthermo->Extrapolate(&air, pcoord->dx1f(i),
-//                             Thermodynamics::Method::Isothermal, grav);
-//      }
-//
-//      peos->ConservedToPrimitive(phydro->u, phydro->w, pfield->b, phydro->w,
-//                                 pfield->bcc, pcoord, is, ie, j, j, k, k);
-//
-//      pimpl->prad->CalFlux(this, k, j, is, ie + 1);
-//    }
-  delete[] z1;
-  for (int i = 0; i < nx1; ++i) {
-    delete[] w1[i];
-  }
-  delete[] w1;
 }
