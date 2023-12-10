@@ -130,14 +130,27 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
   Real Rd = pthermo->GetRd();
   Real cp = gamma / (gamma - 1.) * Rd;
 
+  // read initial atmosphere conditions
   std::string input_atm_path = "/home/linfel/canoe_1/examples/2023-Linf-lava/balance_atm.txt";
   DataVector atm = read_data_vector(input_atm_path);
+  size_t atm_size = atm["HGT"].size();
 
   AirParcel air(AirParcel::Type::MoleFrac);
+  
+  // convert km -> m, hPa -> Pa, ppm -> fraction
+  double *hgtptr = atm["HGT"].data(); 
+  double *preptr = atm["PRE"].data(); 
+  double *sioptr = atm["SiO"].data(); 
+  for (int i = 0; i < atm_size; ++i) {
+    hgtptr[i] *= 1000.0;
+    preptr[i] *= 100.0;
+    sioptr[i] /= 1.E6;
+  }
+
+
   // construct atmosphere from bottom up
-  size_t atm_size = 80;
   for (int k = ks; k <= ke; ++k)
-    for (int j = js; j <= je; ++j)
+    for (int j = js; j <= je; ++j) {
       for (int i = is; i <= ie; ++i) {
         // interpolation to coord grid
         air.SetZero();
@@ -147,8 +160,15 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
                              atm["HGT"].data(), atm_size);
         air.w[iSiO] = interp1(pcoord->x1v(i), atm["SiO"].data(),
                               atm["HGT"].data(), atm_size);
-        AirParcelHelper::distribute_to_conserved(this, k, j, i, air);
-      
+  	//std::cout << " i  " << i << " j " << j << " k " << k << "  coord  " << pcoord->x1v(i) << std::endl;
+        //std::cout << "  coord"  << pcoord->x1v(i) << " IPR  " << air.w[IPR] << " IDN  " <<  air.w[IDN] << "  isio  " << air.w[iSiO] << std::endl;
+	
+	AirParcelHelper::distribute_to_conserved(this, k, j, i, air);
       }
+      //std::cout << " =======================================================" << std::endl;
+    
+    
+    
+    }
 }
 

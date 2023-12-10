@@ -41,15 +41,15 @@ xorder      = 5             # horizontal reconstruction order
 integrator  = rk3           # integration method
 
 <mesh>
-nx1         = 100            # Number of zones in X1-direction
+nx1         = 100           # Number of zones in X1-direction
 x1min       = 0.            # minimum value of X1
-x1max       = 1.E5          # maximum value of X1
+x1max       = 70654.6       # maximum value of X1
 ix1_bc      = reflecting    # inner-X1 boundary flag
 ox1_bc      = reflecting    # outer-X1 boundary flag
 
 nx2         = 64            # Number of zones in X2-direction
 x2min       = 0.            # minimum value of X2
-x2max       = 10.E5          # maximum value of X2
+x2max       = 10.E5         # maximum value of X2
 ix2_bc      = periodic      # Inner-X2 boundary condition flag
 ox2_bc      = periodic      # Outer-X2 boundary condition flag
 
