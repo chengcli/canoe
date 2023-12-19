@@ -90,8 +90,6 @@ class MeshBlock::Impl {
 
  private:
   MeshBlock const *pmy_block_;
-  std::vector<char> mbdata_;
-  bool state_valid_flag_;
 };
 
 #endif  // SRC_IMPL_HPP_
