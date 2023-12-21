@@ -29,6 +29,10 @@
 // canoe
 #include <configure.hpp>
 #include <impl.hpp>
+#include <air_parcel.hpp>
+
+// snap
+#include <snap/thermodynamics/thermodynamics.hpp>
 
 #define _sqr(x) ((x) * (x))
 #define _qur(x) ((x) * (x) * (x) * (x))
@@ -203,7 +207,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
 
       // construct isothermal atmosphere
       for (; i <= ie; ++i) {
-        pimpl->DistributeToConserved(air, k, j, i);
+        AirParcelHelper::distribute_to_conserved(this, k, j, i, air);
         pthermo->Extrapolate(&air, pcoord->dx1f(i),
                              Thermodynamics::Method::Isothermal, grav, 0.001);
         // add noise

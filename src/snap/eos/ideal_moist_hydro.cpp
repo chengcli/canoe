@@ -80,7 +80,6 @@ void EquationOfState::ConservedToPrimitive(
     Coordinates* pco, int il, int iu, int jl, int ju, int kl, int ku) {
   auto pthermo = Thermodynamics::GetInstance();
   auto pmb = pmy_block_;
-  pmb->pimpl->SetStateValid();
 
   apply_vapor_limiter(&cons, pmy_block_);
 
@@ -105,7 +104,6 @@ void EquationOfState::ConservedToPrimitive(
         w_d = density;
         Real di = 1. / density;
 
-        if ((w_d < 0.) || std::isnan(w_d)) pmb->pimpl->SetStateInvalid();
 #ifdef ENABLE_GLOG
         LOG_IF(ERROR, std::isnan(w_d) || (w_d < density_floor_))
             << "cycle = " << pmb->pmy_mesh->ncycle << ", "
@@ -157,7 +155,6 @@ void EquationOfState::ConservedToPrimitive(
         KE = 0.5 * (u_m1 * w_vx + u_m2 * w_vy + u_m3 * w_vz);
         w_p = gm1 * (u_e - KE) * feps / fsig;
 
-        if ((w_p < 0.) || std::isnan(w_p)) pmb->pimpl->SetStateInvalid();
 #ifdef ENABLE_GLOG
         LOG_IF(WARNING, (w_p < 0.) || std::isnan(w_p))
             << "cycle = " << pmb->pmy_mesh->ncycle << ", "
