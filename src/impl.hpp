@@ -38,6 +38,7 @@ class MeshOutputGroup;
 class FITSOutputGroup;
 
 class CelestrialBody;
+class CubedSphere;
 
 class ExchangerBase;
 
