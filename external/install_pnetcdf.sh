@@ -16,7 +16,7 @@ tar -xvzf "$TARFILE"
 cd pnetcdf-1.12.3
 
 # Configure, make and install
-./configure --prefix="$DESTDIR"
+FFLAGS="-fPIC -g -O2" FCFLAGS="-fPIC -g -O2" CFLAGS="-fPIC -g -O3" CXXFLAGS="-fPIC -g -O2" ./configure --prefix="$DESTDIR"
 make
 make install
 
