@@ -1,5 +1,4 @@
 tap "homebrew/bundle"
-tap "homebrew/core"
 brew "cfitsio"
 brew "ctags"
 brew "hdf5"
