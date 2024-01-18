@@ -178,7 +178,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
       int i = is;
       for (; i <= ie; ++i) {
         if (air.w[IDN] < Tmin) break;
-        air.w[IVX] = 1. * sin(2. * M_PI * rand() / RAND_MAX);
+        air.w[IVX] = 0.1 * sin(2. * M_PI * rand() / RAND_MAX);
         AirParcelHelper::distribute_to_conserved(this, k, j, i, air);
         pthermo->Extrapolate(&air, pcoord->dx1f(i),
                              Thermodynamics::Method::PseudoAdiabat, grav,

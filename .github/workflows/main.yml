@@ -347,7 +347,7 @@ jobs:
 
       - name: combile outputs
         working-directory: ${{github.workspace}}/build/bin
-        run: ./combine.py -o test
+        run: python3 combine.py -o test
 
       - name: compare result
         run: >
@@ -400,7 +400,7 @@ jobs:
 
       - name: combile outputs
         working-directory: ${{github.workspace}}/build/bin
-        run: ./combine.py -o test
+        run: python3 combine.py -o test
 
       - name: compare result
         run: >
@@ -453,7 +453,7 @@ jobs:
 
       - name: combile outputs
         working-directory: ${{github.workspace}}/build/bin
-        run: ./combine.py -o test
+        run: python3 combine.py -o test
 
       - name: compare result
         run: >
@@ -504,7 +504,7 @@ jobs:
 
       - name: combile outputs
         working-directory: ${{github.workspace}}/build/bin
-        run: ./combine.py -o test
+        run: python3 combine.py -o test
 
       - name: compare result
         run: >
@@ -555,7 +555,7 @@ jobs:
 
       - name: combile outputs
         working-directory: ${{github.workspace}}/build/bin
-        run: ./combine.py -o test
+        run: python3 combine.py -o test
 
       - name: compare result
         run: >
@@ -608,7 +608,7 @@ jobs:
 
       - name: combile outputs
         working-directory: ${{github.workspace}}/build/bin
-        run: ./combine.py -o test
+        run: python3 combine.py -o test
 
       - name: compare result
         run: >
@@ -654,7 +654,7 @@ jobs:
 
       - name: combile outputs
         working-directory: ${{github.workspace}}/build/bin
-        run: ./combine.py -o test
+        run: python3 combine.py -o test
 
       - name: Test
         working-directory: ${{github.workspace}}/examples/2023-jupiter-mwr-eq

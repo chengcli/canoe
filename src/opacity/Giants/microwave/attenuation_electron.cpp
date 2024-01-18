@@ -8,8 +8,8 @@
 #include <harp/radiation.hpp>
 
 // cli, 190801
-inline double SQUARE(double x) { return x * x; }
-inline double CUBE(double x) { return x * x * x; }
+inline double _SQUARE(double x) { return x * x; }
+inline double _CUBE(double x) { return x * x * x; }
 // end
 
 // From F. Oyafuso
@@ -26,7 +26,7 @@ double attenuation_freefree_Reference(double freq, double P, double T)
   double hbar_omega =
       4.13566733e-15 * freq * 1e9;  // eV (.6GHz) -- check that freq is in GHz
 
-  double debroglie_thermal = sqrt(2.0 * M_PI * SQUARE(hbarc) / (mc2 * kT));
+  double debroglie_thermal = sqrt(2.0 * M_PI * _SQUARE(hbarc) / (mc2 * kT));
   double E_ionization = 5.986;  // eV
   double n_Al = 1.6e-6 * (P * 1e5) / (kT * 1.609e-19) * 1e-6;
 
@@ -34,9 +34,9 @@ double attenuation_freefree_Reference(double freq, double P, double T)
       sqrt(2 * n_Al / pow(debroglie_thermal, 3) * exp(-E_ionization / kT));
 
   double kludge = 0.5;
-  double alpha_ff = kludge * sqrt(32 * CUBE(M_PI) / 3.0) *
-                    (SQUARE(Z) * fine_struct) * sqrt(mc2 / kT) *
-                    (ni * CUBE(hbarc / hbar_omega)) * ni * sigma_T *
+  double alpha_ff = kludge * sqrt(32 * _CUBE(M_PI) / 3.0) *
+                    (_SQUARE(Z) * fine_struct) * sqrt(mc2 / kT) *
+                    (ni * _CUBE(hbarc / hbar_omega)) * ni * sigma_T *
                     (1.0 - exp(-hbar_omega / kT));
   return alpha_ff;
 }
