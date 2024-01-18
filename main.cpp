@@ -116,8 +116,6 @@ int main(int argc, char **argv)  {
   }
 
   std::uint64_t mbcnt = 0;
-  bool redo = false;
-  int max_redo = 0;
   int attempts = 0;
 
   while ((pmesh->time < pmesh->tlim) &&
@@ -125,29 +123,11 @@ int main(int argc, char **argv)  {
     if (Globals::my_rank == 0)
       pmesh->OutputCycleDiagnostics();
 
-    if ((!redo) && (max_redo > 0)) {
-      pmesh->SaveAllStates();
-    }
-
     for (int stage=1; stage<=ptlist->nstages; ++stage) {
       ptlist->DoTaskListOneStage(pmesh, stage);
     }
 
     pmesh->UserWorkInLoop();
-
-    if (max_redo > 0) {
-      if (pmesh->CheckAllValid()) {
-        redo = false;
-      } else {
-        pmesh->LoadAllStates();
-        pmesh->DecreaseTimeStep();
-        redo = true;
-        if (attempts++ > max_redo) {
-          throw RuntimeError("main", "Too many attempts to redo the step");
-        }
-        continue;
-      }
-    }
 
     pmesh->ncycle++;
     pmesh->time += pmesh->dt;
