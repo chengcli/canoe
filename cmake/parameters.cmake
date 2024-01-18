@@ -27,8 +27,6 @@ set_if_empty(NINT_PARTICLE_DATA 0)
 
 set_if_empty(NREAL_PARTICLE_DATA 0)
 
-# set_if_empty(TASKLIST ImplicitHydroTasks)
-
 # set_if_empty(RSOLVER lmars)
 
 # set_if_empty(NUMBER_GHOST_CELLS 3)
@@ -49,8 +47,6 @@ else()
   message(FATAL_ERROR "Unknown EquationOfState (EOS) : ${EOS}")
 endif()
 set(EQUATION_OF_STATE ${EOS})
-
-set_if_empty(TASKLIST TimeIntegratorTaskList)
 
 if(NOT AFFINE OR NOT DEFINED AFFINE)
   set(AFFINE_OPTION "NOT_AFFINE")

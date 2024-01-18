@@ -3,6 +3,7 @@
 
 // athena
 #include <athena/globals.hpp>
+#include <athena/task_list/task_list.hpp>
 
 // forward declarations
 class Mesh;

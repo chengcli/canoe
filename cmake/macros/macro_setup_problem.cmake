@@ -6,8 +6,7 @@ string(TOLOWER ${CMAKE_BUILD_TYPE} buildl)
 string(TOUPPER ${CMAKE_BUILD_TYPE} buildu)
 
 macro(setup_problem namel)
-  add_executable(${namel}.${buildl} ${namel}.cpp
-                                    ${CMAKE_BINARY_DIR}/main_${TASK}.cpp)
+  add_executable(${namel}.${buildl} ${namel}.cpp ${CMAKE_SOURCE_DIR}/main.cpp)
 
   set_target_properties(
     ${namel}.${buildl}

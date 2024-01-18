@@ -19,7 +19,7 @@
 #include <athena/task_list/task_list.hpp>
 
 // tasklist
-#include <tasklist/extra_tasks.hpp>
+#include <tasklist/task_list_factory.hpp>
 
 // application
 #include <application/command_line.hpp>
@@ -43,7 +43,6 @@ void mesh_setup(ParameterInput* &pin, Mesh* &mesh);
 void mesh_destroy(ParameterInput* &pin, Mesh* &mesh, int mbcnt);
 
 using OutputsPtr = std::unique_ptr<Outputs>;
-using TaskListPtr = std::unique_ptr<@TASKLIST@>;
 
 int main(int argc, char **argv)  {
   Application::Start(argc, argv);
@@ -83,13 +82,7 @@ int main(int argc, char **argv)  {
   mesh_setup(pinput, pmesh);
 
   // CONSTRUCT AND INITIALIZE TASKlIST
-  TaskListPtr ptlist;
-  try {
-    ptlist = std::make_unique<@TASKLIST@>(pinput, pmesh);
-  }
-  catch(std::bad_alloc& ba) {
-    throw RuntimeError("main", "TaskList memory allocation failed");
-  }
+  auto ptlist = TaskListFactory::CreateFrom(pinput, pmesh);
 
 #ifdef ENABLE_GLOG
   FLAGS_log_dir = log_dir_name;

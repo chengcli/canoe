@@ -5,6 +5,7 @@ configure = --prob=polar_vortex --eos=shallow_water --nghost=3 -mpi -pnetcdf --p
 
 <job>
 problem_id = intruder # problem ID: basename of output filenames
+tasklist   = TimeIntegratorTaskList
 
 <output0>
 file_type  = hst          # History data dump
