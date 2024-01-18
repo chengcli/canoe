@@ -1,0 +1,88 @@
+<comment>
+problem   = Held-Suarez-1994 test of global circulation model
+reference = Held, I.M and Suarez, M.J. (1994)
+configure = --prob=hs94 --patch=drum --coord=spherical_polar --flux=lmars --nghost=3 --pnetcdf_path=../pnetcdf -pnetcdf -mpi
+
+<job>
+problem_id = hs94        # problem ID: basename of output filenames
+
+<output0>
+file_type  = rst
+dt         = 1.0368E8
+
+<output1>
+file_type   = hst         # History data dump
+dt          = 1.456E5      # time increment between outputs
+data_format = %15.12e
+
+<output2>
+file_type  = pnetcdf     # netcdf data dump
+variable   = prim        # variables to be output
+dt         = 8.64E5     # time increment between outputs
+
+<output3>
+file_type  = pnetcdf     # netcdf data dump
+variable   = uov         # variables to be output
+dt         = 8.64E5     # time increment between outputs
+
+#<output4>
+#file_type  = dbg          # netcdf data dump
+#dt         = 3.456E3     # time increment between outputs
+
+<time>
+cfl_number = 0.9          # The Courant, Friedrichs, & Lewy (CFL) Number
+integrator = rk3          # integration method
+xorder     = 5            # horizontal reconstruction order
+nlim       = -1          # cycle limit
+tlim       = 8.64E6    # time limit
+#shock_capture = true
+
+<mesh>
+nx1        = 20          # Number of zones in X1-direction (radial)
+x1min      = 6.371E6     # minimum value of X1, 6371 km
+x1max      = 6.396E6     # maximum value of X1, 6396 km
+ix1_bc     = reflecting  # inner-X1 boundary flag
+ox1_bc     = reflecting  # outer-X1 boundary flag
+
+nx2        = 40          # Number of zones in X2-direction (polar angle)
+x2min      = 0.          # minimum value of X2
+x2max      = 1E3   # maximum value of X2
+ix2_bc     = periodic       # inner-X2 boundary flag
+ox2_bc     = periodic       # outer-X2 boundary flag
+
+nx3        = 60         # Number of zones in X3-direction (azimuthal angle)
+x3min      = 0.          # minimum value of X3
+x3max      = 1E3 # maximum value of X3
+ix3_bc     = periodic    # inner-X3 boundary flag
+ox3_bc     = periodic    # outer-X3 boundary flag
+
+ReferencePressure = 1.E5
+PressureScaleHeight = 10.E3
+
+<meshblock>
+nx1        = 20
+nx2        = 20
+nx3        = 20
+
+<hydro>
+gamma          = 1.4         # gamma = C_p/C_v
+grav_acc1      = -9.81         # gravity accelaration
+implicit_flag  = 9
+
+
+<thermodynamics>
+dT         = 60.       # horizontal temperature difference
+dtheta     = 10.       # vertical potential temperature difference
+Rd         = 287.
+cp         = 1004.
+
+<problem>
+Omega      = 7.292E-5
+Rp         = 6.371E6
+p0         = 1.E5      # surface pressure
+Ts         = 315.      # surface temperature
+Kf         = 1.
+Ka         = 0.025
+Ks         = 0.25
+sigmab     = 0.7
+z_iso      = 2.E4
