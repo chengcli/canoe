@@ -287,6 +287,7 @@ void CubedSphere::LoadLR3DValues(AthenaArray<Real> &L_in,
 }
 
 void CubedSphere::SynchronizeFluxesSend() {
+#ifdef MPI_PARALLEL
   MeshBlock *pmb = pmy_block_;
   for (int i = 0; i < 4; ++i) send_flag_[i] = 0;
 
@@ -297,9 +298,11 @@ void CubedSphere::SynchronizeFluxesSend() {
       sendNeighborBlocks(nb.ni.ox2, nb.ni.ox3, nb.snb.rank, nb.snb.gid);
     }
   }
+#endif
 }
 
 void CubedSphere::SynchronizeFluxesRecv() {
+#ifdef MPI_PARALLEL
   MeshBlock *pmb = pmy_block_;
   for (int i = 0; i < 4; ++i) recv_flag_[i] = 0;
 
@@ -310,6 +313,7 @@ void CubedSphere::SynchronizeFluxesRecv() {
       recvNeighborBlocks(nb.ni.ox2, nb.ni.ox3, nb.snb.rank, nb.snb.gid);
     }
   }
+#endif
 }
 
 void CubedSphere::SynchronizeFluxesWait() {
