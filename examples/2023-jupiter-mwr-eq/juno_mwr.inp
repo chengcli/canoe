@@ -4,7 +4,7 @@ configure = mkdir build-juno && cmake .. -DTASK=Juno
 
 <job>
 problem_id  = juno_mwr    # problem ID: basename of output filenames
-tasklist    = InversionTasks
+tasklist    = TimeIntegratorTaskList
 
 #<output1>
 #file_type   = fits        # Binary data dump

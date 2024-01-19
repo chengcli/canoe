@@ -66,7 +66,7 @@ void RadiationBand::RTSolverDisort::Resize(int nlyr, int nstr) {
   auto &rayout = pmy_band_->rayOutput_;
   auto &&uphi_umu = RadiationHelper::get_direction_grids(rayout);
 
-  SetAtmosphereDimension(nlyr, nstr, nstr, nstr);
+  SetAtmosphereDimension(nlyr, nstr, nstr);
 
   dir_dim_[0] = uphi_umu.second.size();  // umu
   dir_dim_[1] = uphi_umu.first.size();   // uphi
