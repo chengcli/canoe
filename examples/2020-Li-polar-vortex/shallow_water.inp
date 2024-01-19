@@ -5,6 +5,7 @@ configure = --prob=shallow_water --eos=shallow_water --nghost=3 -netcdf -mpi
 
 <job>
 problem_id = sw        # problem ID: basename of output filenames
+tasklist   = TimeIntegratorTaskList
 
 <output1>
 file_type  = hst       # History data dump

@@ -5,6 +5,7 @@ configure = --prob=bryan --flux=lmars --nvapor=1 --nphase=2 --nghost=3 -pnetcdf 
 
 <job>
 problem_id  = bryan         # problem ID: basename of output filenames
+tasklist    = ImplicitHydroTasks
 
 <output1>
 file_type   = hst           # History data dump

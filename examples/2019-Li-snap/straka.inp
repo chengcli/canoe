@@ -5,6 +5,7 @@ configure = --prob=straka --nghost=3 -netcdf
 
 <job>
 problem_id = straka       # problem ID: basename of output filenames
+tasklist   = TimeIntegratorTaskList
 
 <output1>
 file_type  = hst          # History data dump

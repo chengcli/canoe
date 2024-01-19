@@ -5,6 +5,7 @@ configure = --prob=robert --nghost=3 -mpi -pnetcdf --pnetcdf_path=${HOME}/opt/
 
 <job>
 problem_id = robert # problem ID: basename of output filenames
+tasklist   = ImplicitHydroTasks
 
 <output1>
 file_type  = hst         # History data dump

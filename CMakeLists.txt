@@ -65,7 +65,6 @@ include(${CMAKE_SOURCE_DIR}/cmake/pybind11.cmake)
 ## 4. set up project configure file and library ##
 message(STATUS "4. Set up project libraries")
 configure_file(${CMAKE_SOURCE_DIR}/configure.hpp.in configure.hpp @ONLY)
-configure_file(${CMAKE_SOURCE_DIR}/main.cpp.in main_${TASK}.cpp @ONLY)
 add_subdirectory(src)
 add_subdirectory(tools)
 add_subdirectory(data)

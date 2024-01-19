@@ -4,6 +4,7 @@ configure = -Dpnetcdf_path=/home3/xzhang11/pnetcdf
 
 <job>
 problem_id  = hywater2d   # problem ID: basename of output filenames
+tasklist    = ImplicitHydroTasks
 
 <output0>
 file_type   = rst
