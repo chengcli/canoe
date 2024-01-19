@@ -39,6 +39,8 @@ vis:
 
 Disort-flags:
   ibcnd: false
+  usrtau: false
+  usrang: false
   lamber: true
   onlyfl: true
   spher: false

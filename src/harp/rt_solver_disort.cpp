@@ -72,7 +72,8 @@ void RadiationBand::RTSolverDisort::Resize(int nlyr, int nstr) {
   dir_dim_[1] = uphi_umu.first.size();   // uphi
   dir_axis_.resize(dir_dim_[0] + dir_dim_[1]);
 
-  SetIntensityDimension(dir_dim_[1], 1, dir_dim_[0]);
+  SetIntensityDimension(std::max(dir_dim_[1], 1lu), 1,
+                        std::max(dir_dim_[0], 1lu));
   Seal();
 }
 
