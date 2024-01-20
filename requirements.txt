@@ -1,5 +1,6 @@
 astropy
 black
+breathe
 cmakelang
 cpplint
 myst-parser
