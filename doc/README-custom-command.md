@@ -6,7 +6,7 @@ Writing custom git commands are simple as these three steps:
     - Then you can run the command git mycommand in any of the git repo you have.
 
 Let’s write a custom git command to add, commit, and then push the changes to remote with one command.
-Let's call this command `git land`, which writes a useless commit message "wip".
+Let's call this command `git send`, which writes a useless commit message "wip".
 
 1. Creating a file for our command
 It’s good to have a directory to contain all our custom commands. So that it will be organized. Let’s create a directory.
@@ -15,7 +15,7 @@ It’s good to have a directory to contain all our custom commands. So that it w
 mkdir .gitcustom
 ```
 
-Create a file named `git-land` in the above created directory. And add the following code. Refer to the code in the gist here.
+Create a file named `git-send` in the above created directory. And add the following code. Refer to the code in the gist here.
 
 ```bash
 #!/bin/sh
@@ -30,7 +30,7 @@ git push origin $currentBranch
 Last but not least, make that file as executable
 
 ```bash
-chmod +x git-land
+chmod +x git-send
 ```
 
 2. Add custom commands to $PATH
@@ -55,5 +55,5 @@ source ~/.zshrc
 With everything in place, it’s time to run our custom command. Go to any of your local git repo and run the following command
 
 ```bash
-git land
+git send
 ```
