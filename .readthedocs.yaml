@@ -32,4 +32,4 @@ python:
     - requirements: requirements.txt
 
 doxygen:
-  conf_file: doc/doxygen/configure
+  conf_file: doc/doxygen/Doxyfile
