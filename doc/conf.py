@@ -18,7 +18,10 @@ extensions = [
     'sphinx.ext.autosummary',
     'sphinx.ext.intersphinx',
     'myst_parser',
+    'breathe',
 ]
+breathe_projects = {"Canoe": "doxygen/xml"}
+breathe_default_project = "Canoe"
 
 intersphinx_mapping = {
     'python': ('https://docs.python.org/3/', None),
