@@ -27,9 +27,13 @@
 // astro
 #include <astro/celestrial_body.hpp>
 
+// exo3
+#include <exo3/cubed_sphere.hpp>
+
 // harp
 #include "radiation.hpp"
 #include "rt_solvers.hpp"
+
 
 #ifdef RT_DISORT
 

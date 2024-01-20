@@ -129,6 +129,7 @@ P0            = 5.E5
 T0            = 4.3E2
 Tmin          = 100.
 qRelaxT       = 1.E-4
+distance_au   = 0.1
 
 qH2O.ppmv     = 25000.
 diagnostics   = c_avg radflux
