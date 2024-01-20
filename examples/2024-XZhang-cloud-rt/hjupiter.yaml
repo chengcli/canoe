@@ -1,0 +1,47 @@
+opacity-sources:
+  - name: H2-vis
+    class: FreedmanSimple2
+    parameters: {scale: 1.}
+
+  - name: H2-ir
+    class: FreedmanMean2
+    parameters: {met: 1.7, scale: 1.}
+
+bands: [ir, vis]
+
+ir:
+  units: cm-1
+  grid-type: regular
+  wavenumber-range: [100., 10000.]
+  num-bins: 1
+  opacity: [H2-ir]
+  rt-solver: Disort
+  flags: [broad_band, thermal_emission]
+
+vis:
+  units: cm-1
+  grid-type: regular
+  wavenumber-range: [10000., 50000.]
+  num-bins: 1
+  opacity: [H2-vis]
+  rt-solver: Disort
+  parameters: {fbeam_K: 265., umu0: 1., uph0: 0., dist_au: 0.1}
+  flags: [broad_band]
+
+Disort-flags:
+  ibcnd: false
+  usrtau: false
+  usrang: false
+  lamber: true
+  onlyfl: true
+  spher: false
+  intensity_correction: true
+  old_intensity_correction: false
+  general_source: false
+  output_uum: false
+  quiet: true
+  print-input: false
+  print-fluxes: false
+  print-intensity: false
+  print-transmissivity: false
+  print-phase-function: true

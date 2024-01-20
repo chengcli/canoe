@@ -1,0 +1,137 @@
+<comment>
+problem   = Hot Jupiter radiative dynamics test
+reference = 
+configure = --coord=spherical_polar --prob=dry_rce --rt=disort --nghost=3 -pnetcdf -mpi -netcdf --pnetcdf_path=/home3/xzhang11/pnetcdf --include=src/tools/
+
+<job>
+problem_id  = shj # problem ID: basename of output filenames
+
+<output0>
+file_type   = rst
+dt          = 50.E6
+
+<output1>
+file_type   = hst       # History data dump
+dt          = 1.E5      # time increment between outputs
+
+<output2>
+file_type   = pnetcdf    # Binary data dump
+variable    = prim      # variables to be output
+dt          = 5E6      # time increment between outputs
+
+<output3>
+file_type   = pnetcdf
+variable    = uov
+dt          = 5E6
+
+<output4>
+file_type   = pnetcdf
+variable    = rad
+dt          = 5E6
+
+<output5>
+file_type   = pnetcdf
+variable    = diag
+dt          = 5E6
+
+<time>
+cfl_number  = 10.            # The Courant, Friedrichs, & Lewy (CFL) Number
+limit_to_advection = false
+nlim        = -1            # cycle limit
+tlim        = 1.E11          # time limit
+xorder      = 2             # horizontal reconstruction order
+integrator  = rk3           # integration method
+
+<mesh>
+nx1         = 100             # Number of zones in X1-direction
+x1min       = 0.9E8          # minimum value of X1
+x1max       = 1.06E8       # maximum value of X1
+ix1_bc      = reflecting    # inner-X1 boundary flag
+ox1_bc      = reflecting    # outer-X1 boundary flag
+
+nx2         = 64         # Number of zones in X2-direction
+x2min       = 0.                 # minimum value of X2
+x2max       = 3.141592653589793  # maximum value of X2
+ix2_bc      = polar       # Inner-X2 boundary condition flag
+ox2_bc      = polar       # Outer-X2 boundary condition flag
+
+nx3         = 128      # Number of zones in X3-direction
+x3min       = 0.                 # minimum value of X3
+x3max       = 6.283185307179586  # maximum value of X3
+ix3_bc      = periodic    # Inner-X3 boundary condition flag
+ox3_bc      = periodic    # Outer-X3 boundary condition flag
+
+<meshblock>
+nx1         = 100
+nx2         = 4
+nx3         = 8
+
+<hydro>
+grav_acc1     = -10.0
+gamma         = 1.4         # gamma = C_p/C_v
+min_tem    	  = 1600. 
+OmegaZ        = 2.424E-5
+implicit_flag = 15
+
+<thermodynamics>
+Rd            = 3777.       # Gas constant
+
+<physics>
+
+#packages = fix_bot_temperature
+#fix_bot_temperature.tau = 1000.
+#bot_temperature = 1.E4
+
+packages               = fix_bot_temperature,top_sponge, bot_sponge
+top_sponge.tau         = 1.E4
+top_sponge.width       = 6.E5
+bot_sponge.tau         = 1.E4
+bot_sponge.width       = 6.E5
+fix_bot_temperature.tau = 1.E3
+bot_temperature = -1.
+
+<astronomy>
+planet        = HJ 
+HJ.parent     = Sun
+HJ.re         = 1.E5      # km
+HJ.rp         = 1.E5      # km
+HJ.obliq      = 0.        # deg
+HJ.spinp      = 3.        # day
+HJ.orbit_a    = 0.03      # au
+HJ.orbit_e    = 0.
+HJ.orbit_i    = 0.        # deg
+HJ.orbit_p    = 3.        # day
+HJ.grav_eq    = 10.       # m/s^2
+HJ.equinox    = 0.
+
+#Sun.spec_file = ../src/radiation/spectra/sun.spec
+
+<radiation>
+dt            = 100.
+npmom         = 4
+nstr          = 4
+nphase        = 4
+distance_au   = 0.03
+albedo        = 0.
+temis         = 0.
+indir         = (0,)
+
+# [static,dynamic,bin,lbl,ck,planck,star]
+flags          = dynamic
+
+b1            = 100.  10000. 1    # IR band
+b1.flags      = planck
+b1.absorbers  = freedman_mean
+b1.fluor_K    = 0.
+
+b2            = 10000.  50000. 1  # VIS band
+b2.absorbers  = freedman_simple
+b2.freedman_simple.scale = 1.
+b2.fbeam_K    = 1599.12
+
+<problem>
+P0            = 2.E7
+T0            = 9.3E3
+Z0            = 0.9E8
+radius        = 0.9E8
+diagnostics   = rad_conv_flx conv_3d_flx radflux area 
