@@ -7,6 +7,10 @@ configure = --patch=drum --coord=spherical_polar --prob=hjupiter --flux=lmars --
 problem_id = hjupiter   # problem ID: basename of output filenames
 tasklist   = ImplicitHydroTasks
 
+<output0>
+file_type  = rst
+dt         = 1.728E7
+
 <output1>
 file_type  = hst          # History data dump
 dt         = 1.728E4      # time increment between outputs
@@ -22,8 +26,9 @@ variable   = uov
 dt         = 1.728E5
 
 <output4>
-file_type  = rst
-dt         = 1.728E7
+file_type   = pnetcdf
+variable    = rad
+dt          = 1.728E5
 
 <time>
 cfl_number = 0.9          # The Courant, Friedrichs, & Lewy (CFL) Number
@@ -77,12 +82,12 @@ HJ.parent     = Sun
 HJ.re         = 1.E5      # km
 HJ.rp         = 1.E5      # km
 HJ.obliq      = 0.        # deg
-HJ.spinp      = 0.42      # day
-HJ.orbit_a    = 5.2038    # au
+HJ.spinp      = 3.        # day
+HJ.orbit_a    = 0.03      # au
 HJ.orbit_e    = 0.
 HJ.orbit_i    = 0.        # deg
-HJ.orbit_p    = 4380.        # day
-HJ.grav_eq    = 25.       # m/s^2
+HJ.orbit_p    = 3.        # day
+HJ.grav_eq    = 10.       # m/s^2
 HJ.equinox    = 0.
 
 <radiation>
@@ -98,3 +103,4 @@ Rp         = 1.E8             # Planetary Radius, m
 Omega      = 2.1E-5           # Rotational frequency
 sigma_stra = 0.12
 sponge_tau = 1E4.
+distance_au   = 0.1

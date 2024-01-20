@@ -41,6 +41,8 @@ If multi-core parallelization is needed, these extra pacakges should be install
 
 Ubuntu linux:
 ```
+sudo apt install libmpich-dev
+```
 Redhat linux:
 ```
 sudo yum install mpich-devel
