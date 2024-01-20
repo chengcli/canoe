@@ -20,6 +20,7 @@ extensions = [
     'myst_parser',
     'breathe',
 ]
+breathe_projects = {"Canoe": "doxygen/xml"}
 breathe_default_project = "Canoe"
 
 intersphinx_mapping = {
