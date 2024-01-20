@@ -6,4 +6,5 @@ myst-parser
 netcdf4
 numpy
 pre-commit
+sphinx_rtd_theme
 tqdm
