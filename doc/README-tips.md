@@ -1,5 +1,5 @@
 
-## Quick tips
+## Quick Git Tips
 - undo a "git add"
 ```
 git reset <file>
