@@ -1,4 +1,6 @@
-# Writing custom git command
+## Writing custom git command
+
+This article introduces two extremely useful custom commands, `git send` and `git done`.
 
 Writing custom git commands are simple as these three steps:
     - Create a file with a name in the given format git-mycommand. And this file should be given executable access.
@@ -8,7 +10,7 @@ Writing custom git commands are simple as these three steps:
 Let’s write a custom git command to add, commit, and then push the changes to remote with one command.
 Let's call this command `git send`, which writes a useless commit message "wip".
 
-1. Creating a file for our command
+#### Step 1. Creating a file for our command
 It’s good to have a directory to contain all our custom commands. So that it will be organized. Let’s create a directory.
 
 ```
@@ -33,7 +35,7 @@ Last but not least, make that file as executable
 chmod +x git-send
 ```
 
-2. Add custom commands to $PATH
+#### Step 2. Add custom commands to $PATH
 
 This is quite important. This will help Git to recognize the custom commands.
 
@@ -50,10 +52,29 @@ You can now source the file or start a new instance of the terminal
 source ~/.zshrc
 ```
 
-3. Running our custom command
+#### Step 3. Running our custom command
 
 With everything in place, it’s time to run our custom command. Go to any of your local git repo and run the following command
 
 ```bash
 git send
 ```
+
+### The git-done command
+
+After your work has been merged into the main branch, you can safely delete
+your working branch and rebase your local main branch. These steps can be
+accomplished by the custom `git-done` command:
+
+```bash
+#!/bin/sh
+
+currentBranch=$(git symbolic-ref --short -q HEAD) # Getting the current branch
+
+git checkout main
+git fetch
+git rebase origin/main
+git branch -D $currentBranch
+```
+
+Both commands are provided in the ``.gitcustom`` folder in ``Canoe``.

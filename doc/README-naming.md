@@ -19,13 +19,13 @@ suggest fixing your code according to the suggestions exactly. Your code won't b
 to merge into the main branch without passing the lints. Here are a few naming
 conventions to let you pass lints easier and help you write better and readable codes.
 
-### Name your folders and files
+### How to name folders and files
 - use a singular simple noun for folder names
 - avoid compound nouns for folder names
 - you can use compound nouns or phrases for files names
 - individual words in a compound nouns for phrase should be concatenated by underscore
 
-### Name your variables and classes
+### How to name variables and classes
 - use low case letters for variables
 - you can use compound nouns or phrases
 - compound nouns for phrase should be concatenated by underscore. This is called the *snake case*
@@ -34,7 +34,7 @@ conventions to let you pass lints easier and help you write better and readable 
 - if a variable is a private member of a class, append the variable name with an
   underscore
 
-### Name your funcions
+### How to name funcions
 - functions names are usualy verbal phrases
 - standalone functions should use *snake case*
 - public class member functions should use *upper camel case*
