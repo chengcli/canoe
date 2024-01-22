@@ -4,6 +4,7 @@
 
 # 1. Compile straka, robert and bryan
 setup_problem(straka)
+setup_problem(lstraka)
 setup_problem(robert)
 setup_problem(bryan)
 

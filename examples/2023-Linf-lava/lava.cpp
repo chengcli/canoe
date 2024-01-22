@@ -33,7 +33,7 @@
 // utils
 #include <utils/fileio.hpp>  // read_data_vector
 
-Real grav, P0, T0, Tmin;
+Real grav, P0, T0;
 int iSiO;
 
 void MeshBlock::InitUserMeshBlockData(ParameterInput *pin) {
@@ -56,9 +56,9 @@ void MeshBlock::UserWorkBeforeOutput(ParameterInput *pin) {
       for (int i = is; i <= ie; ++i) {
         user_out_var(0, k, j, i) = pthermo->GetTemp(this, k, j, i);
         user_out_var(1, k, j, i) = pthermo->PotentialTemp(this, P0, k, j, i);
-        // theta_v
+        // theta_v (potential virtual temperature)
         user_out_var(2, k, j, i) =
-            user_out_var(1, k, j, i) * pthermo->RovRd(this, k, j, i);
+            user_out_var(1, k, j, i) * pthermo->RovRd(this, k, j, i);    // RovRd: gas constant of humid air over gas constant of dry air
         // mse
         user_out_var(3, k, j, i) =
             pthermo->MoistStaticEnergy(this, grav * pcoord->x1v(i), k, j, i);
@@ -98,10 +98,8 @@ void Forcing(MeshBlock *pmb, Real const time, Real const dt,
 void Mesh::InitUserMeshData(ParameterInput *pin) {
   grav = -pin->GetReal("hydro", "grav_acc1");
 
-  //P0 = pin->GetReal("problem", "P0");
+  P0 = pin->GetReal("problem", "P0");
   //T0 = pin->GetReal("problem", "T0");
-
-  //Tmin = pin->GetReal("problem", "Tmin");
 
   // index
   auto pindex = IndexMap::GetInstance();
@@ -113,7 +111,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
   srand(Globals::my_rank + time(0));
 
   Application::Logger app("main");
-  app->Log("ProblemGenerator: jupiter_crm");
+  app->Log("ProblemGenerator: lava_cir_rt");
 
   auto pthermo = Thermodynamics::GetInstance();
 
@@ -123,13 +121,13 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
 
   // request temperature and pressure
   //app->Log("request T", T0);
-  //app->Log("request P", P0);
+  app->Log("request P", P0);
 
   // thermodynamic constants
   Real gamma = pin->GetReal("hydro", "gamma");
   Real Rd = pthermo->GetRd();
   Real cp = gamma / (gamma - 1.) * Rd;
-
+  
   // read initial atmosphere conditions
   std::string input_atm_path = "/home/linfel/canoe_1/examples/2023-Linf-lava/balance_atm.txt";
   DataVector atm = read_data_vector(input_atm_path);
@@ -151,6 +149,11 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
   // construct atmosphere from bottom up
   for (int k = ks; k <= ke; ++k)
     for (int j = js; j <= je; ++j) {
+      
+      // half a grid to cell center
+      pthermo->Extrapolate(&air, pcoord->dx1f(is) / 2.,
+                           Thermodynamics::Method::ReversibleAdiabat, grav);
+      
       for (int i = is; i <= ie; ++i) {
         // interpolation to coord grid
         air.SetZero();
@@ -160,15 +163,24 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
                              atm["HGT"].data(), atm_size);
         air.w[iSiO] = interp1(pcoord->x1v(i), atm["SiO"].data(),
                               atm["HGT"].data(), atm_size);
-  	//std::cout << " i  " << i << " j " << j << " k " << k << "  coord  " << pcoord->x1v(i) << std::endl;
+        //air.w[IVX] = 1. * sin(2. * M_PI * rand() / RAND_MAX);
+  	
+	
+	//std::cout << " i  " << i << " j " << j << " k " << k << "  coord  " << pcoord->x1v(i) << std::endl;
         //std::cout << "  coord"  << pcoord->x1v(i) << " IPR  " << air.w[IPR] << " IDN  " <<  air.w[IDN] << "  isio  " << air.w[iSiO] << std::endl;
 	
 	AirParcelHelper::distribute_to_conserved(this, k, j, i, air);
+        pthermo->Extrapolate(&air, pcoord->dx1f(i),
+                             Thermodynamics::Method::PseudoAdiabat, grav,
+                             1.e-5);
       }
+
+      peos->ConservedToPrimitive(phydro->u, phydro->w, pfield->b, phydro->w,
+                                 pfield->bcc, pcoord, is, ie, j, j, k, k);
+
+      pimpl->prad->CalFlux(this, k, j, is, ie + 1);
       //std::cout << " =======================================================" << std::endl;
-    
-    
-    
+      
     }
 }
 

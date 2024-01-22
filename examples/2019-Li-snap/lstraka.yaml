@@ -132,7 +132,7 @@ Disort-flags:
 
 thermodynamics:
   non-condensable:
-    Rd: 188.6
+    Rd: 287.
     gammad_ref: 1.4
 
 #microphysics:
