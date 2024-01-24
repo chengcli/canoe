@@ -34,12 +34,22 @@ void init_thermo(YAML::Node node) { Thermodynamics::InitFromYAMLInput(node); }
 
 PYBIND11_MODULE(pyharp, m) {
   m.attr("__name__") = "pyharp";
-  m.doc() = "Python bindings for harp module";
+  m.doc() = R"(
+  Python bindings for harp module
+
+  Summary
+  -------
+  This module provides a python interface to the harp module of the
+  canoe model. It is intended to be used for testing, debugging, and
+  illustration purposes. However, with careful design, it can also be
+  used for production runs since the wrapper is very thin and the
+  performance overhead is negligible.
+  )";
 
   m.def("subscribe_species", &subscribe_species);
   m.def("init_thermo", &init_thermo);
 
-  // AthenArray
+  // AthenaArray
   py::class_<AthenaArray<Real>>(m, "AthenaArray", py::buffer_protocol())
       .def_buffer([](AthenaArray<Real> &m) -> py::buffer_info {
         size_t stride4 = m.GetDim1() * m.GetDim2() * m.GetDim3() * sizeof(Real);
@@ -80,18 +90,37 @@ PYBIND11_MODULE(pyharp, m) {
   py::class_<MeshBlock>(m, "meshblock");
 
   // Radiation
-  py::class_<Radiation>(m, "radiation")
-      .def_readonly("radiance", &Radiation::radiance)
-      .def_readonly("fluxup", &Radiation::flxup)
-      .def_readonly("fluxdn", &Radiation::flxdn)
+  py::class_<Radiation>(m, "radiation",
+                        R"(Wrapper class for the Radiation class in harp.)")
+
+      .def_readonly("radiance", &Radiation::radiance, R"(
+        Multi-dimensional radiance array. The first two dimensions are
+        reserved for the spatial dimensions (horizontal) and the third
+        dimension is for the spectral dimension.)")
+
+      .def_readonly("fluxup", &Radiation::flxup, R"(
+        Multi-dimensional upward flux array. The first two dimensions are
+        reserved for the spatial dimensions (horizontal) and the third
+        dimension is vertical.)")
+
+      .def_readonly("fluxdn", &Radiation::flxdn, R"(
+        Multi-dimensional downward flux array. The first two dimensions are
+        reserved for the spatial dimensions (horizontal) and the third
+        dimension is vertical.)")
 
       .def(py::init<MeshBlock *, ParameterInput *>())
 
-      .def("get_num_bands", &Radiation::GetNumBands)
-      .def("get_band", &Radiation::GetBand)
+      .def("get_num_bands", &Radiation::GetNumBands, R"(
+        Get the number of spectral bands.)")
 
-      .def("cal_flux", &Radiation::CalFlux)
-      .def("cal_radiance", &Radiation::CalRadiance);
+      .def("get_band", &Radiation::GetBand, R"(
+        Get the spectral band with the given index.)")
+
+      .def("cal_flux", &Radiation::CalFlux, R"(
+        Calculate the radiative fluxes.)")
+
+      .def("cal_radiance", &Radiation::CalRadiance, R"(
+        Calculate the radiance.)");
 
   // RadiationBand
   py::class_<RadiationBand, RadiationBandPtr>(m, "radiation_band")

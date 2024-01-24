@@ -1,5 +1,7 @@
 # Configuration file for the Sphinx documentation builder.
 
+import os, sys
+
 # -- Project information
 
 project = 'pycanoe'
@@ -17,6 +19,7 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.autosummary',
     'sphinx.ext.intersphinx',
+    'sphinx.ext.napoleon',
     'myst_parser',
     'breathe',
 ]
@@ -34,6 +37,8 @@ templates_path = ['_templates']
 # -- Options for HTML output
 
 html_theme = 'sphinx_rtd_theme'
+napoleon_google_docstring = False
+napoleon_numpy_docstring = True
 
 # -- Options for EPUB output
 epub_show_urls = 'footnote'
