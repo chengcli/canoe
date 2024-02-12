@@ -55,12 +55,10 @@ RadiationBand::RTSolverDisort::RTSolverDisort(RadiationBand *pmy_band,
   // override disort planck flag
   if (pmy_band->TestFlag(RadiationFlags::ThermalEmission)) {
     ds_.flag.planck = true;
-    app->Log("harp",
-             "Planck function is enabled for band " + pmy_band->GetName());
+    app->Log("Planck function is enabled for band " + pmy_band->GetName());
   } else {
     ds_.flag.planck = false;
-    app->Log("harp",
-             "Planck function is disabled for band " + pmy_band->GetName());
+    app->Log("Planck function is disabled for band " + pmy_band->GetName());
   }
 
   SetHeader("Disort solving band " + pmy_band_->GetName());
@@ -159,8 +157,7 @@ void RadiationBand::RTSolverDisort::Prepare(MeshBlock const *pmb, int k,
     } else if (planet && planet->HasParentFlux()) {
       ds_.bc.fbeam = planet->ParentInsolationFlux(wmin, wmax, 1.);
     } else {
-      throw RuntimeError("RTSolverDisort::Prepare",
-                         "BroadBand radiation requires setting S0 or temp0");
+      ds_.bc.fbeam = 0.;
     }
     ds_.bc.fbeam /= dist_au * dist_au;
   }
