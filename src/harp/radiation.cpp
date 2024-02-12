@@ -102,6 +102,11 @@ Radiation::Radiation(MeshBlock *pmb, ParameterInput *pin) {
 
   // time control
   SetCooldownTime(pin->GetOrAddReal("radiation", "dt", 0.));
+
+  // default distance to parent star
+  stellar_distance_au_ = pin->GetOrAddReal("radiation", "distance_au", 1.);
+  app->Log("Default stellar distance = " +
+           std::to_string(stellar_distance_au_) + " au");
 }
 
 Radiation::~Radiation() {

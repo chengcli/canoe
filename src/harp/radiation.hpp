@@ -81,6 +81,9 @@ class Radiation : public RestartGroup,
 
   //! incomming rays
   std::vector<Direction> rayInput_;
+
+  //! default distance to the star
+  Real stellar_distance_au_;
 };
 
 using RadiationPtr = std::shared_ptr<Radiation>;
