@@ -8,15 +8,16 @@
 // athena
 #include <athena/athena.hpp>
 
+// canoe
+#include <virtual_groups.hpp>
+
 class ParameterInput;
 struct float_triplet;
 struct Direction;
 
-class CelestrialBody {
+class CelestrialBody : public NamedGroup {
  public:
   // data
-  CelestrialBody *parent;
-  std::string name;
   Real re;       // equatorial radius [km -> m]
   Real rp;       // polar radius [km -> m]
   Real obliq;    // obliquity [deg -> rad]
@@ -29,27 +30,44 @@ class CelestrialBody {
   Real grav_eq;  // equatorial gravity at surface [m/s^2]
 
   // functions
-  explicit CelestrialBody(ParameterInput *pin);
-  CelestrialBody(ParameterInput *pin, std::string myname);
+  CelestrialBody(ParameterInput *pin, std::string name);
   ~CelestrialBody();
 
-  void ReadSpectraFile(std::string sfile);
-  Direction ParentZenithAngle(Real time, Real colat, Real lon);
-  Real ParentInsolationFlux(Real wav, Real dist_au);
-  Real ParentInsolationFlux(Real wlo, Real whi, Real dist_au);
-  Real ParentDistanceInAu(Real time);
+  Direction ParentZenithAngle(Real time, Real colat, Real lon) const;
+  Real ParentInsolationFlux(Real wav, Real dist_au) const;
+  Real ParentInsolationFlux(Real wlo, Real whi, Real dist_au) const;
+  Real ParentDistanceInAu(Real time) const;
+
+  bool HasParentFlux() const {
+    if (parent_) {
+      return !parent_->spec_.empty();
+    }
+    return false;
+  }
 
  protected:
-  void readCelestrialData(ParameterInput *pin, std::string myname);
+  void loadOrbitalData(ParameterInput *pin);
+  void loadSpectralData(std::string sfile);
 
-  // emission spectra data
-  float_triplet *spec_;
-  int nspec_;
-  int il_;  // search pointer
+ protected:
+  //! pointer to parent body
+  std::shared_ptr<CelestrialBody> parent_;
+
+  //! emission spectra data
+  std::vector<float_triplet> spec_;
+
+ private:
+  //! temporary search point
+  mutable int il_ = -1;
 };
 
 using CelestrialBodyPtr = std::shared_ptr<CelestrialBody>;
 
 Real GetGravity(char const *name, Real pclat);
+
+class PlanetFactory {
+ public:
+  static CelestrialBodyPtr Create(ParameterInput *pin);
+};
 
 #endif  // SRC_ASTRO_CELESTRIAL_BODY_HPP_

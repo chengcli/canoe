@@ -59,6 +59,9 @@ class Radiation : public RestartGroup,
   //! \brief Get total number of incoming rays
   size_t GetNumOutgoingRays() const;
 
+  //! Get the default distance to the star (AU)
+  Real GetDistanceInAu() const { return stellar_distance_au_; }
+
  public:  // inbound functions
   //! \brief Calculate the radiative flux
   void CalFlux(MeshBlock const *pmb, int k, int j, int il, int iu);
@@ -81,6 +84,9 @@ class Radiation : public RestartGroup,
 
   //! incomming rays
   std::vector<Direction> rayInput_;
+
+  //! default distance to the star
+  Real stellar_distance_au_;
 };
 
 using RadiationPtr = std::shared_ptr<Radiation>;

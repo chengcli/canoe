@@ -74,8 +74,6 @@ class MeshBlock::Impl {
     return exchangers_.at(name);
   }
 
-  Real GetDistanceInAu() const { return stellar_distance_au_; }
-
   auto &GetMeshOutputGroups() const { return mesh_outputs_; }
   auto &GetFITSOutputGroups() const { return fits_outputs_; }
 
@@ -88,8 +86,6 @@ class MeshBlock::Impl {
 
   std::vector<std::weak_ptr<MeshOutputGroup>> mesh_outputs_;
   std::vector<std::weak_ptr<FITSOutputGroup>> fits_outputs_;
-
-  Real stellar_distance_au_;
 
  private:
   MeshBlock const *pmy_block_;
