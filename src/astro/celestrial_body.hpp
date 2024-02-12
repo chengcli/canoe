@@ -36,7 +36,7 @@ class CelestrialBody : public NamedGroup {
   Direction ParentZenithAngle(Real time, Real colat, Real lon) const;
   Real ParentInsolationFlux(Real wav, Real dist_au) const;
   Real ParentInsolationFlux(Real wlo, Real whi, Real dist_au) const;
-  Real ParentDistanceInAu(Real time);
+  Real ParentDistanceInAu(Real time) const;
 
   bool HasParentFlux() const {
     if (parent_) {
@@ -50,12 +50,14 @@ class CelestrialBody : public NamedGroup {
   void loadSpectralData(std::string sfile);
 
  protected:
+  //! pointer to parent body
   std::shared_ptr<CelestrialBody> parent_;
 
-  // emission spectra data
+  //! emission spectra data
   std::vector<float_triplet> spec_;
 
- private:  // temporary search point
+ private:
+  //! temporary search point
   mutable int il_ = -1;
 };
 
