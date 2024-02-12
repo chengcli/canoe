@@ -56,14 +56,14 @@ class CelestrialBody : public NamedGroup {
   std::vector<float_triplet> spec_;
 
  private:  // temporary search point
-  volatile int il_ = -1;
+  mutable int il_ = -1;
 };
 
 using CelestrialBodyPtr = std::shared_ptr<CelestrialBody>;
 
 Real GetGravity(char const *name, Real pclat);
 
-class PlanetaryFactory {
+class PlanetFactory {
  public:
   static CelestrialBodyPtr Create(ParameterInput *pin);
 };

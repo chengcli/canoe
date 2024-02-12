@@ -66,7 +66,7 @@ CelestrialBody::CelestrialBody(ParameterInput *pin, std::string name)
 
   if (pin->DoesParameterExist("astronomy", name + ".parent")) {
     std::string parent_name = pin->GetString("astronomy", name + ".parent");
-    parent = std::make_shared<CelestrialBody>(pin, parent_name);
+    parent_ = std::make_shared<CelestrialBody>(pin, parent_name);
   }
 
   if (pin->DoesParameterExist("astronomy", name + ".spectra")) {
@@ -119,37 +119,37 @@ Direction CelestrialBody::ParentZenithAngle(Real time, Real colat,
 }
 
 Real CelestrialBody::ParentInsolationFlux(Real wav, Real dist_au) const {
-  if (parent == nullptr) {
-    throw RuntimeError("ParentInsolationFlux: no parent body");
+  if (!parent_) {
+    throw RuntimeError("ParentInsolationFlux", "no parent body");
   }
 
   Real dx;
   // assuming ascending in wav
-  if ((il_ >= 0) && (wav < parent->spec_[il_].x)) il_ = -1;
-  il_ = find_place_in_table(parent->spec_.size(), parent->spec_.data(), wav,
+  if ((il_ >= 0) && (wav < parent_->spec_[il_].x)) il_ = -1;
+  il_ = find_place_in_table(parent_->spec_.size(), parent_->spec_.data(), wav,
                             &dx, il_);
-  Real flux = splint(wav, parent->spec_.data() + il_, dx);
+  Real flux = splint(wav, parent_->spec_.data() + il_, dx);
   return flux / (dist_au * dist_au);
 }
 
 Real CelestrialBody::ParentInsolationFlux(Real wlo, Real whi,
                                           Real dist_au) const {
-  if (parent == nullptr) {
-    throw RuntimeError("ParentInsolationFlux: no parent body");
+  if (!parent_) {
+    throw RuntimeError("ParentInsolationFlux", "no parent body");
   }
 
   //! \todo check whether this is correct
   if (wlo == whi) return ParentInsolationFlux(wlo, dist_au);
   // assuming ascending in wav
   Real dx;
-  int il = find_place_in_table(parent->spec_.size(), parent->spec_.data(), wlo,
-                               &dx, -1);
-  int iu = find_place_in_table(parent->spec_.size(), parent->spec_.data(), whi,
-                               &dx, il);
-  Real flux = 0.5 * parent->spec_[il].y;
+  int il = find_place_in_table(parent_->spec_.size(), parent_->spec_.data(),
+                               wlo, &dx, -1);
+  int iu = find_place_in_table(parent_->spec_.size(), parent_->spec_.data(),
+                               whi, &dx, il);
+  Real flux = 0.5 * parent_->spec_[il].y;
   for (int i = il; i < iu; ++i) {
-    flux += 0.5 * (parent->spec_[i].y + parent->spec_[i + 1].y) *
-            (parent->spec_[i + 1].x - parent->spec_[i].x);
+    flux += 0.5 * (parent_->spec_[i].y + parent_->spec_[i + 1].y) *
+            (parent_->spec_[i + 1].x - parent_->spec_[i].x);
   }
   return flux / (dist_au * dist_au);
 }
@@ -161,9 +161,9 @@ Real CelestrialBody::ParentDistanceInAu(Real time) {
                                             equinox - M_PI / 2.)));
 }
 
-CelestrailBodyPtr PlanetFactory::Create(ParameterInput *pin) {
+CelestrialBodyPtr PlanetFactory::Create(ParameterInput *pin) {
   if (pin->DoesParameterExist("astronomy", "planet")) {
-    name = pin->GetString("astronomy", "planet");
+    std::string name = pin->GetString("astronomy", "planet");
     return std::make_shared<CelestrialBody>(pin, name);
   } else {
     return nullptr;

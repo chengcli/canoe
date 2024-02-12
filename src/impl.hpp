@@ -74,8 +74,6 @@ class MeshBlock::Impl {
     return exchangers_.at(name);
   }
 
-  Real GetDistanceInAu() const { return stellar_distance_au_; }
-
   auto &GetMeshOutputGroups() const { return mesh_outputs_; }
   auto &GetFITSOutputGroups() const { return fits_outputs_; }
 
