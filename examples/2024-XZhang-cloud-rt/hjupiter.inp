@@ -71,10 +71,6 @@ implicit_flag = 9
 
 <thermodynamics>
 Rd          = 3779.       # Gas constant
-dT_e2p      = 300.        # Temperature contrast from equator to pole, K
-dT_stra     = 10.         # Temperature contrast, K
-z_stra      = 2.E6        # Stratosphere height, m 
-Gamma_trop  = 2.E-4       # Lapse rate, K/m
 
 <astronomy>
 planet        = HJ
@@ -91,16 +87,12 @@ HJ.grav_eq    = 10.       # m/s^2
 HJ.equinox    = 0.
 
 <radiation>
-dt         = 500.
-radiation_config = hjupiter.yaml
+dt            = 500.
 nstr          = 4
+distance_au   = 0.1
+radiation_config = hjupiter.yaml
 
 <problem>
-Kt         = 1.5E5            # Damping timescale, s
 Ts         = 1600.            # Surface temperature, K
 p0         = 1.E5             # Surface pressure, Pa
-Rp         = 1.E8             # Planetary Radius, m
 Omega      = 2.1E-5           # Rotational frequency
-sigma_stra = 0.12
-sponge_tau = 1E4.
-distance_au   = 0.1

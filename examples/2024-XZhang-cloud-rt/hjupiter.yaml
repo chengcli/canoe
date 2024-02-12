@@ -25,14 +25,13 @@ vis:
   num-bins: 1
   opacity: [H2-vis]
   rt-solver: Disort
-  parameters: {fbeam_K: 265., umu0: 1., uph0: 0.}
-  flags: [broad_band, time_dependent, stellar_beam]
+  parameters: {temp0: 265., umu0: 1., phi0: 0.}
+  flags: [broad_band, time_dependent]
 
 Disort-flags:
   ibcnd: false
   usrtau: false
   usrang: false
-  lamber: true
   onlyfl: true
   spher: false
   intensity_correction: true

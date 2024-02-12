@@ -34,7 +34,7 @@ vis:
   num-bins: 1
   opacity: [H2-vis, cloud]
   rt-solver: Disort
-  parameters: {temp0: 265., umu0: 1., uph0: 0.}
+  parameters: {temp0: 265., umu0: 1., phi0: 0.}
   flags: [broad_band]
 
 Disort-flags:
