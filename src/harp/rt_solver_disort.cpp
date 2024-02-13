@@ -113,8 +113,15 @@ void RadiationBand::RTSolverDisort::Prepare(MeshBlock const *pmb, int k,
 
   if (planet && pmy_band_->TestFlag(RadiationFlags::TimeDependent)) {
     Real time = pmb->pmy_mesh->time;
-    ray = planet->ParentZenithAngle(time, pmb->pcoord->x2v(j),
-                                    pmb->pcoord->x3v(k));
+    Real lat, lon, colat;
+#ifdef CUBED_SPHERE
+    pmb->pimpl->pexo3->GetLatLon(&lat, &lon, k, j, pmb->ie);
+    colat = M_PI / 2. - lat;
+#else // FIXME: add another condition
+    colat = pmb->pcoord->x2v(j);
+    lon = pmb->pcoord->x3v(k);
+#endif  // CUBED_SPHERE
+    ray = planet->ParentZenithAngle(time, colat, lon);
     dist_au = planet->ParentDistanceInAu(time);
   } else {  // constant zenith angle
     if (pmy_band_->HasPar("umu0")) {

@@ -4,8 +4,8 @@ opacity-sources:
     parameters: {scale: 1.}
 
   - name: H2-ir
-    class: FreedmanMean2
-    parameters: {met: 1.7, scale: 1.}
+    class: FreedmanSimple2
+    parameters: {scale: 1.}
 
 bands: [ir, vis]
 
