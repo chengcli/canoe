@@ -59,20 +59,27 @@ void OutputType::loadUserOutputData(MeshBlock *pmb) {
 
   if (output_params.variable.compare("rad") == 0 ||
       output_params.variable.compare("radflux") == 0) {
-    // flux up and down
-    pod = new OutputData;
-    pod->type = "SCALARS";
-    pod->name = "flxup";
-    pod->data.InitWithShallowSlice(prad->flxup, 4, 0, 1);
-    AppendOutputDataNode(pod);
-    num_vars_ += 1;
+    for (int b = 0; b < prad->GetNumBands(); ++b) {
+      auto pband = prad->GetBand(b);
+      // flux up
+      pod = new OutputData;
+      pod->type = "SCALARS";
+      pod->name = pband->GetName() + "-flxup";
+      pod->data.InitWithShallowSlice(pband->bflxup, 4, 0, 1);
+      AppendOutputDataNode(pod);
+      num_vars_ += 1;
+    }
 
-    pod = new OutputData;
-    pod->type = "SCALARS";
-    pod->name = "flxdn";
-    pod->data.InitWithShallowSlice(prad->flxdn, 4, 0, 1);
-    AppendOutputDataNode(pod);
-    num_vars_ += 1;
+    for (int b = 0; b < prad->GetNumBands(); ++b) {
+      auto pband = prad->GetBand(b);
+      // flux down
+      pod = new OutputData;
+      pod->type = "SCALARS";
+      pod->name = pband->GetName() + "-flxdn";
+      pod->data.InitWithShallowSlice(pband->bflxdn, 4, 0, 1);
+      AppendOutputDataNode(pod);
+      num_vars_ += 1;
+    }
   }
 
   if (output_params.variable.compare("rad") == 0 ||
