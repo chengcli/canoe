@@ -25,16 +25,23 @@
 // snap
 #include <snap/thermodynamics/thermodynamics.hpp>
 
+// astro
+#include <astro/celestrial_body.hpp>
+
+// harp
+#include "harp/radiation.hpp"
+
 Real p0, Ts, Omega, grav;
 
 void MeshBlock::InitUserMeshBlockData(ParameterInput *pin) {
-  AllocateUserOutputVariables(6);
+  AllocateUserOutputVariables(7);
   SetUserOutputVariableName(0, "temp");
   SetUserOutputVariableName(1, "theta");
   SetUserOutputVariableName(2, "lat");
   SetUserOutputVariableName(3, "lon");
   SetUserOutputVariableName(4, "vlat");
   SetUserOutputVariableName(5, "vlon");
+  SetUserOutputVariableName(6, "zenith");
 }
 
 void MeshBlock::UserWorkBeforeOutput(ParameterInput *pin) {
@@ -43,6 +50,8 @@ void MeshBlock::UserWorkBeforeOutput(ParameterInput *pin) {
 
   Real lat, lon;
   Real U, V;
+  Direction ray = pimpl->prad->GetRayInput(0);
+  Real zenith;
 
   for (int k = ks; k <= ke; ++k)
     for (int j = js; j <= je; ++j)
@@ -57,6 +66,10 @@ void MeshBlock::UserWorkBeforeOutput(ParameterInput *pin) {
         user_out_var(3, k, j, i) = lon;
         user_out_var(4, k, j, i) = U;
         user_out_var(5, k, j, i) = V;
+
+	ray = pimpl->planet->ParentZenithAngle(pmy_mesh->time, M_PI / 2. - lat, lon);
+	zenith = std::acos(ray.mu) / M_PI * 180.0;
+	user_out_var(6, k, j, i) = zenith;
       }
 }
 
