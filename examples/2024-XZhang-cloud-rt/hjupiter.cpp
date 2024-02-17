@@ -31,7 +31,8 @@
 // harp
 #include "harp/radiation.hpp"
 
-Real p0, Ts, Omega, grav;
+Real p0, Ts, Omega, grav, sponge_tau;
+int sponge_layer;
 
 void MeshBlock::InitUserMeshBlockData(ParameterInput *pin) {
   AllocateUserOutputVariables(7);
@@ -105,6 +106,16 @@ void Forcing(MeshBlock *pmb, Real const time, Real const dt,
         du(IM2, k, j, i) += dt * acc2;
         du(IM3, k, j, i) += dt * acc3;
       }
+
+  // Sponge Layer
+  for (int k = pmb->ks; k <= pmb->ke; ++k)
+    for (int j = pmb->js; j <= pmb->je; ++j)
+      for (int i = pmb->ie - sponge_layer; i <= pmb->ie; ++i) {
+        Real tau = sponge_tau;
+        du(IVX, k, j, i) -= w(IVX, k, j, i) * (dt / tau) * w(IDN, k, j, i);
+        du(IVY, k, j, i) -= w(IVY, k, j, i) * (dt / tau) * w(IDN, k, j, i);
+        du(IVZ, k, j, i) -= w(IVZ, k, j, i) * (dt / tau) * w(IDN, k, j, i);
+      }
 }
 
 //! \fn void Mesh::InitUserMeshData(ParameterInput *pin)
@@ -115,6 +126,8 @@ void Mesh::InitUserMeshData(ParameterInput *pin)
   grav    = - pin->GetReal("hydro", "grav_acc1");
   Ts      = pin->GetReal("problem", "Ts");
   p0      = pin->GetReal("problem", "p0");
+  sponge_tau = pin->GetReal("problem", "sponge_tau");
+  sponge_layer = pin->GetInteger("problem", "sponge_layer");
 
   // forcing function
   EnrollUserExplicitSourceFunction(Forcing);
