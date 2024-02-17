@@ -10,17 +10,16 @@
 // REFERENCE: I.M Held & M.J Suarez, "A Proposal for the Intercomparison of the
 // Dynamical Cores of Atmospheric General Circulation Models"
 // C++ headers
-#include <cmath>
-#include <iostream>
-#include <random>
-#include <sstream>
-#include <stdexcept>
-
 #include <athena/eos/eos.hpp>
 #include <athena/field/field.hpp>
 #include <athena/hydro/hydro.hpp>
 #include <athena/mesh/mesh.hpp>
 #include <athena/parameter_input.hpp>
+#include <cmath>
+#include <iostream>
+#include <random>
+#include <sstream>
+#include <stdexcept>
 
 // application
 #include <application/application.hpp>

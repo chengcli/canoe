@@ -30,8 +30,8 @@
 // #include "forcing_jacobians.hpp"
 
 void ImplicitSolver::FullCorrection(AthenaArray<Real>& du,
-                                    AthenaArray<Real> const& w, Real dt,
-                                    int k, int j, int is, int ie) {
+                                    AthenaArray<Real> const& w, Real dt, int k,
+                                    int j, int is, int ie) {
   int idn = 0, ivx = 1, ivy = 2, ivz = 3, ien = 4;
 
   // eigenvectors, eigenvalues, inverse matrix of eigenvectors.
@@ -134,9 +134,9 @@ void ImplicitSolver::FullCorrection(AthenaArray<Real>& du,
       // memcpy(jacobian_[i][k][j], tmp.data(), tmp.size()*sizeof(Real));
     }
 
-    a[i] = (Am * aleft + Ap * aright + (aright - aleft) * dfdq[i]) /
-               (2. * vol) +
-           Dt - Phi;
+    a[i] =
+        (Am * aleft + Ap * aright + (aright - aleft) * dfdq[i]) / (2. * vol) +
+        Dt - Phi;
     b[i] = -(Am + dfdq[i - 1]) * aleft / (2. * vol);
     c[i] = -(Ap - dfdq[i + 1]) * aright / (2. * vol);
 

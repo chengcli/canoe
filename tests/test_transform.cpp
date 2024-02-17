@@ -21,8 +21,8 @@ TEST(CovariantToContravariant, test1) {
 
   EXPECT_DOUBLE_EQ(w[0], 1.);
   EXPECT_DOUBLE_EQ(w[1], 2.);
-  EXPECT_DOUBLE_EQ(w[2], 4./3.);
-  EXPECT_DOUBLE_EQ(w[3], 10./3.);
+  EXPECT_DOUBLE_EQ(w[2], 4. / 3.);
+  EXPECT_DOUBLE_EQ(w[3], 10. / 3.);
   EXPECT_DOUBLE_EQ(w[4], 5.);
 }
 
@@ -59,7 +59,7 @@ TEST(ContravariantToOrthogonal, test1) {
 }
 
 TEST(ContravariantToCovariant, test1) {
-  Real w[5] = {1., 2., 4./3., 10./3., 5.};
+  Real w[5] = {1., 2., 4. / 3., 10. / 3., 5.};
   Real cth = 0.5;
 
   cs::ContravariantToCovariant(w, cth);

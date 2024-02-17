@@ -11,8 +11,8 @@
 #include <application/exceptions.hpp>
 
 // canoe
-#include <configure.hpp>
 #include <air_parcel.hpp>
+#include <configure.hpp>
 #include <impl.hpp>
 
 // snap
@@ -27,7 +27,6 @@
 
 // tasklist
 #include "extra_tasks.hpp"
-
 
 using TaskFunction = TaskStatus (TaskList::*)(MeshBlock *, int);
 

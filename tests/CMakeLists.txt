@@ -11,7 +11,11 @@ enable_testing()
 setup_test(test_weno)
 setup_test(test_glog)
 setup_test(test_absorber)
-setup_test(test_yaml_read)
+
+setup_test(test_read_stellar_flux)
+setup_test(test_read_cia_ff)
+setup_test(test_read_rayleigh)
+setup_test(test_read_yaml)
 
 if (PVFMM_OPTION STREQUAL "ENABLE_PVFMM")
   setup_test(test_nbody)

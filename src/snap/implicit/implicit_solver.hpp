@@ -61,8 +61,8 @@ class ImplicitSolver {
                     int k, int j, int il, int iu);
 
   template <typename T1, typename T2>
-  void BackwardSubstitution(std::vector<T1> &a, std::vector<T2> &delta,
-                            int k, int j, int il, int iu);
+  void BackwardSubstitution(std::vector<T1> &a, std::vector<T2> &delta, int k,
+                            int j, int il, int iu);
 
   // periodic solver
   template <typename T1, typename T2>

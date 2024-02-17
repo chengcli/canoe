@@ -35,7 +35,7 @@ std::ostream& operator<<(std::ostream& os, Molecule const& mol) {
 
 void Molecule::LoadThermodynamicFile(std::string chemfile) {
   auto app = Application::GetInstance();
-  auto full_path = app->FindInputFile(chemfile);
+  auto full_path = app->FindResource(chemfile);
 
   std::stringstream inp(DecommentFile(full_path));
   double junk;

@@ -568,11 +568,11 @@ void GnomonicEquiangle::Face3Metric(const int k, const int j, const int il,
   return;
 }
 
-void GnomonicEquiangle::PrimToLocal1(
-    const int k, const int j, const int il, const int iu,
-    const AthenaArray<Real> &bb1, AthenaArray<Real> &prim_l, AthenaArray<Real> &prim_r,
-    AthenaArray<Real> &bbx) {
-
+void GnomonicEquiangle::PrimToLocal1(const int k, const int j, const int il,
+                                     const int iu, const AthenaArray<Real> &bb1,
+                                     AthenaArray<Real> &prim_l,
+                                     AthenaArray<Real> &prim_r,
+                                     AthenaArray<Real> &bbx) {
   Real cos_theta = cosine_cell_kj_(k, j);
   Real sin_theta = sine_cell_kj_(k, j);
 
@@ -719,9 +719,8 @@ void GnomonicEquiangle::PrimToLocal3(const int k, const int j, const int il,
 
 void GnomonicEquiangle::FluxToGlobal1(
     const int k, const int j, const int il, const int iu,
-    const AthenaArray<Real> &cons, const AthenaArray<Real> &bbx, AthenaArray<Real> &flux,
-    AthenaArray<Real> &ey, AthenaArray<Real> &ez) {
-
+    const AthenaArray<Real> &cons, const AthenaArray<Real> &bbx,
+    AthenaArray<Real> &flux, AthenaArray<Real> &ey, AthenaArray<Real> &ez) {
   Real cos_theta = cosine_cell_kj_(k, j);
   Real sin_theta = sine_cell_kj_(k, j);
 
