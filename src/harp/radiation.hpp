@@ -59,8 +59,8 @@ class Radiation : public RestartGroup,
   //! \brief Get total number of incoming rays
   size_t GetNumOutgoingRays() const;
 
-  //! Get the default distance to the star (AU)
-  Real GetDistanceInAu() const { return stellar_distance_au_; }
+  //! Get the default surface temperature (K)
+  Real GetSurfaceTemperature() const { return surface_temperature_; }
 
  public:  // inbound functions
   //! \brief Calculate the radiative flux
@@ -85,8 +85,8 @@ class Radiation : public RestartGroup,
   //! incomming rays
   std::vector<Direction> rayInput_;
 
-  //! default distance to the star
-  Real stellar_distance_au_;
+  //! surface temperature
+  Real surface_temperature_;
 };
 
 using RadiationPtr = std::shared_ptr<Radiation>;
