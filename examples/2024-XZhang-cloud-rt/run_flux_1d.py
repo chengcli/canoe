@@ -1,6 +1,7 @@
 """
 This is an example of how to run the 1D flux model.
 """
+
 from pyharp import radiation_band, subscribe_species, init_thermo
 from pyathena import nghost
 from utilities import load_file

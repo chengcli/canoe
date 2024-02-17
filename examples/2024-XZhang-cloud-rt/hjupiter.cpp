@@ -1,9 +1,9 @@
 // C++ headers
-#include <sstream>
 #include <cmath>
-#include <random>
-#include <stdexcept>
 #include <iostream>
+#include <random>
+#include <sstream>
+#include <stdexcept>
 
 // athena
 #include <athena/hydro/hydro.hpp>
@@ -11,8 +11,8 @@
 #include <athena/parameter_input.hpp>
 
 // canoe
-#include <configure.hpp>
 #include <air_parcel.hpp>
+#include <configure.hpp>
 #include <impl.hpp>
 
 // climath
@@ -68,17 +68,17 @@ void MeshBlock::UserWorkBeforeOutput(ParameterInput *pin) {
         user_out_var(4, k, j, i) = U;
         user_out_var(5, k, j, i) = V;
 
-	ray = pimpl->planet->ParentZenithAngle(pmy_mesh->time, M_PI / 2. - lat, lon);
-	zenith = std::acos(ray.mu) / M_PI * 180.0;
-	user_out_var(6, k, j, i) = zenith;
+        ray = pimpl->planet->ParentZenithAngle(pmy_mesh->time, M_PI / 2. - lat,
+                                               lon);
+        zenith = std::acos(ray.mu) / M_PI * 180.0;
+        user_out_var(6, k, j, i) = zenith;
       }
 }
 
 void Forcing(MeshBlock *pmb, Real const time, Real const dt,
              AthenaArray<Real> const &w, const AthenaArray<Real> &prim_scalar,
              AthenaArray<Real> const &bcc, AthenaArray<Real> &du,
-             AthenaArray<Real> &cons_scalar) 
-{
+             AthenaArray<Real> &cons_scalar) {
   auto pexo3 = pmb->pimpl->pexo3;
 
   for (int k = pmb->ks; k <= pmb->ke; ++k)
@@ -119,23 +119,21 @@ void Forcing(MeshBlock *pmb, Real const time, Real const dt,
 }
 
 //! \fn void Mesh::InitUserMeshData(ParameterInput *pin)
-void Mesh::InitUserMeshData(ParameterInput *pin)
-{
+void Mesh::InitUserMeshData(ParameterInput *pin) {
   // forcing parameters
-  Omega   = pin->GetReal("problem", "Omega");
-  grav    = - pin->GetReal("hydro", "grav_acc1");
-  Ts      = pin->GetReal("problem", "Ts");
-  p0      = pin->GetReal("problem", "p0");
+  Omega = pin->GetReal("problem", "Omega");
+  grav = -pin->GetReal("hydro", "grav_acc1");
+  Ts = pin->GetReal("problem", "Ts");
+  p0 = pin->GetReal("problem", "p0");
   sponge_tau = pin->GetReal("problem", "sponge_tau");
   sponge_layer = pin->GetInteger("problem", "sponge_layer");
 
   // forcing function
   EnrollUserExplicitSourceFunction(Forcing);
-}  
+}
 
 //! \fn void MeshBlock::ProblemGenerator(ParameterInput *pin)
-void MeshBlock::ProblemGenerator(ParameterInput *pin)
-{
+void MeshBlock::ProblemGenerator(ParameterInput *pin) {
   auto pexo3 = pimpl->pexo3;
   auto pthermo = Thermodynamics::GetInstance();
 

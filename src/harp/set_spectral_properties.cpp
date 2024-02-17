@@ -66,8 +66,8 @@ void RadiationBand::SetSpectralProperties(AirColumn& ac, Real const* x1f,
   for (int i = il + 2; i <= iu - 1; ++i)
     temf_[i] = interp_cp4(tem_[i - 2], tem_[i - 1], tem_[i], tem_[i + 1]);
   temf_[iu] = (tem_[iu] + tem_[iu - 1]) / 2.;
-  //temf_[iu + 1] = (3. * tem_[iu] - tem_[iu - 1]) / 2.;
-  temf_[iu + 1] = tem_[iu]; // isothermal top boundary
+  // temf_[iu + 1] = (3. * tem_[iu] - tem_[iu - 1]) / 2.;
+  temf_[iu + 1] = tem_[iu];  // isothermal top boundary
 
   for (int i = 0; i < il; ++i) temf_[i] = tem_[il];
   for (int i = iu + 2; i < ac.size(); ++i) temf_[i] = tem_[iu + 1];
@@ -84,7 +84,7 @@ void RadiationBand::SetSpectralProperties(AirColumn& ac, Real const* x1f,
       std::cout << "--- temf[" << i << "] = " << temf_[i] << std::endl;
       std::cout << "tem[" << i << "] = " << tem_[i] << std::endl;
     }
-    std::cout << "--- temf[" << iu+1 << "] = " << temf_[iu+1] << std::endl;
+    std::cout << "--- temf[" << iu + 1 << "] = " << temf_[iu + 1] << std::endl;
     throw std::runtime_error("Negative temperature at cell interface");
   }
 

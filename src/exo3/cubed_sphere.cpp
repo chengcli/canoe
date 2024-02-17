@@ -321,8 +321,7 @@ void CubedSphere::SynchronizeFluxesWait() {
   MPI_Status status;
 
   for (int i = 0; i < 4; ++i) {
-    if (send_flag_[i])
-      MPI_Wait(&send_request_[i], &status);
+    if (send_flag_[i]) MPI_Wait(&send_request_[i], &status);
   }
 #endif
 }

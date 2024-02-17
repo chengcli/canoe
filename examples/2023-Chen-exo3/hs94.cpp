@@ -98,8 +98,8 @@ void Forcing(MeshBlock *pmb, Real const time, Real const dt,
         Real m2 = w(IDN, k, j, i) * U;
         Real m3 = w(IDN, k, j, i) * V;
 
-        //du(IM1, k, j, i) += dt * f * m2;
-        Real ll_acc_U = f * m3; //- f2 * m1;
+        // du(IM1, k, j, i) += dt * f * m2;
+        Real ll_acc_U = f * m3;  //- f2 * m1;
         Real ll_acc_V = -f * m2;
         Real acc1, acc2, acc3;
         pexo3->GetVyVz(&acc2, &acc3, ll_acc_U, ll_acc_V, k, j, i);

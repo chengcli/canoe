@@ -35,7 +35,7 @@ void Absorber::LoadOpacity() {
   if (opacity_filename_.empty()) return;
 
   try {
-    std::string full_path = app->FindInputFile(opacity_filename_);
+    std::string full_path = app->FindResource(opacity_filename_);
     log->Log("Load opacity from " + full_path);
     LoadCoefficient(full_path, 0);
   } catch (NotFoundError const& e) {

@@ -10,8 +10,8 @@
 
 // canoe
 #include <configure.hpp>
-#include <impl.hpp>
 #include <exo3/cubed_sphere.hpp>
+#include <impl.hpp>
 
 #ifdef ENABLE_GLOG
 #include <glog/logging.h>

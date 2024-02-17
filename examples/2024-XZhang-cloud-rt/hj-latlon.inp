@@ -1,6 +1,6 @@
 <comment>
 problem   = Hot Jupiter radiative dynamics test
-reference = 
+reference =
 configure = --coord=spherical_polar --prob=dry_rce --rt=disort --nghost=3 -pnetcdf -mpi -netcdf --pnetcdf_path=/home3/xzhang11/pnetcdf --include=src/tools/
 
 <job>
@@ -69,7 +69,7 @@ nx3         = 8
 <hydro>
 grav_acc1     = -10.0
 gamma         = 1.4         # gamma = C_p/C_v
-min_tem    	  = 1600. 
+min_tem    	  = 1600.
 OmegaZ        = 2.424E-5
 implicit_flag = 15
 
@@ -91,7 +91,7 @@ fix_bot_temperature.tau = 1.E3
 bot_temperature = -1.
 
 <astronomy>
-planet        = HJ 
+planet        = HJ
 HJ.parent     = Sun
 HJ.re         = 1.E5      # km
 HJ.rp         = 1.E5      # km
@@ -134,4 +134,4 @@ P0            = 2.E7
 T0            = 9.3E3
 Z0            = 0.9E8
 radius        = 0.9E8
-diagnostics   = rad_conv_flx conv_3d_flx radflux area 
+diagnostics   = rad_conv_flx conv_3d_flx radflux area

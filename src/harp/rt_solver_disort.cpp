@@ -34,7 +34,6 @@
 #include "radiation.hpp"
 #include "rt_solvers.hpp"
 
-
 #ifdef RT_DISORT
 
 std::map<std::string, bool> to_map_bool(YAML::Node const &node) {
@@ -117,7 +116,7 @@ void RadiationBand::RTSolverDisort::Prepare(MeshBlock const *pmb, int k,
 #ifdef CUBED_SPHERE
     pmb->pimpl->pexo3->GetLatLon(&lat, &lon, k, j, pmb->ie);
     colat = M_PI / 2. - lat;
-#else // FIXME: add another condition
+#else   // FIXME: add another condition
     colat = pmb->pcoord->x2v(j);
     lon = pmb->pcoord->x3v(k);
 #endif  // CUBED_SPHERE

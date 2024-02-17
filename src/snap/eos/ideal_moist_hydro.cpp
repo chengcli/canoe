@@ -1,8 +1,8 @@
 // C/C++
 #include <cmath>  // sqrt()
+#include <iomanip>
 #include <sstream>
 #include <stdexcept>
-#include <iomanip>
 
 // application
 #include <application/exceptions.hpp>
@@ -38,14 +38,17 @@ std::string str_grid_ij(AthenaArray<Real> const& var, int n, int k, int j,
                         int i, int il, int iu, int jl, int ju) {
   std::stringstream msg;
   msg << std::endl << std::setw(8) << " ";
-  for (int jj = std::max(j - NGHOST, jl); jj <= std::min(j + NGHOST, ju); ++jj) {
+  for (int jj = std::max(j - NGHOST, jl); jj <= std::min(j + NGHOST, ju);
+       ++jj) {
     msg << "j = " << jj << ", ";
   }
   msg << std::endl;
 
-  for (int ii = std::max(i - NGHOST, il); ii <= std::min(i + NGHOST, iu); ++ii) {
+  for (int ii = std::max(i - NGHOST, il); ii <= std::min(i + NGHOST, iu);
+       ++ii) {
     msg << "i = " << ii << " |";
-    for (int jj = std::max(j - NGHOST, jl); jj <= std::min(j + NGHOST, ju); ++jj)
+    for (int jj = std::max(j - NGHOST, jl); jj <= std::min(j + NGHOST, ju);
+         ++jj)
       msg << std::setw(8) << var(n, k, jj, ii) << ", ";
     msg << " |" << std::endl;
   }

@@ -175,8 +175,8 @@ void ImplicitSolver::PeriodicForwardSweep(std::vector<T1> &diag,
 template <typename T1, typename T2>
 void ImplicitSolver::PeriodicBackwardSubstitution(std::vector<T1> &ainv,
                                                   std::vector<T1> &diagU,
-                                                  std::vector<T2> &delta,
-                                                  int k, int j, int il, int iu) {
+                                                  std::vector<T2> &delta, int k,
+                                                  int j, int il, int iu) {
   T2 delta_last;
   std::vector<T1> gamma(diagU.size());
   std::vector<T2> zeta(diagU.size());
@@ -191,16 +191,16 @@ void ImplicitSolver::PeriodicBackwardSubstitution(std::vector<T1> &ainv,
     delta_last = delta[iu];
   } else {
     RecvBuffer(delta[iu + 1], delta_last, k, j, tblock);
-    delta[iu] = ainv[iu] * (zeta[iu] - diagU[iu] * delta[iu + 1] -
-                            gamma[iu] * delta_last);
+    delta[iu] = ainv[iu] *
+                (zeta[iu] - diagU[iu] * delta[iu + 1] - gamma[iu] * delta_last);
   }
 
   // backward substitution
   for (int i = iu - 1; i >= il; --i)
     //           -1
     // x[i] = c[i]*(r[i] - a[i]*x[i+1] - v[i]*x[n])
-    delta[i] = ainv[i] *
-               (zeta[i] - diagU[i] * delta[i + 1] - gamma[i] * delta_last);
+    delta[i] =
+        ainv[i] * (zeta[i] - diagU[i] * delta[i + 1] - gamma[i] * delta_last);
 
   // update conserved variables
   for (int i = il; i <= iu; ++i) {

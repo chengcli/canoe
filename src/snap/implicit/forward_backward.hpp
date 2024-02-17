@@ -85,8 +85,8 @@ void ImplicitSolver::ForwardSweep(std::vector<T1> &a, std::vector<T1> &b,
 
 template <typename T1, typename T2>
 void ImplicitSolver::BackwardSubstitution(std::vector<T1> &a,
-                                          std::vector<T2> &delta, int k,
-                                          int j, int il, int iu) {
+                                          std::vector<T2> &delta, int k, int j,
+                                          int il, int iu) {
   LoadCoefficients(a, delta, k, j, il, iu);
   if (!last_block) {
     RecvBuffer(delta[iu + 1], k, j, tblock);
@@ -120,7 +120,7 @@ void ImplicitSolver::BackwardSubstitution(std::vector<T1> &a,
   if (!last_block && (tblock.snb.rank != Globals::my_rank))
     MPI_Wait(&req_send_data2_[k][j], &status);
 
-  if (!first_block && (bblock.snb.rank != Globals::my_rank)) 
+  if (!first_block && (bblock.snb.rank != Globals::my_rank))
     MPI_Wait(&req_send_data1_[k][j], &status);
 #endif
 }

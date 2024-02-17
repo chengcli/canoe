@@ -81,11 +81,11 @@ void ImplicitSolver::PartialCorrection(AthenaArray<Real>& du,
     gamma_m1[i] = (gamma - 1.) * feps / fsig;
     // FluxJacobian(dfdq1[i], dfdq2[i], gamma_m1[i], w, k, j, i);
     FluxJacobian(dfdq, gamma_m1[i], wr, mydir_);
-    dfdq1[i] << dfdq(idn, ivy), dfdq(idn, ivz), dfdq(ivx, ivy),
-        dfdq(ivx, ivz), dfdq(ien, ivy), dfdq(ien, ivz);
-    dfdq2[i] << dfdq(idn, idn), dfdq(idn, ivx), dfdq(idn, ien),
-        dfdq(ivx, idn), dfdq(ivx, ivx), dfdq(ivx, ien), dfdq(ien, idn),
-        dfdq(ien, ivx), dfdq(ien, ien);
+    dfdq1[i] << dfdq(idn, ivy), dfdq(idn, ivz), dfdq(ivx, ivy), dfdq(ivx, ivz),
+        dfdq(ien, ivy), dfdq(ien, ivz);
+    dfdq2[i] << dfdq(idn, idn), dfdq(idn, ivx), dfdq(idn, ien), dfdq(ivx, idn),
+        dfdq(ivx, ivx), dfdq(ivx, ien), dfdq(ien, idn), dfdq(ien, ivx),
+        dfdq(ien, ien);
   }
 
   // set up diffusion matrix and tridiagonal coefficients
@@ -97,10 +97,10 @@ void ImplicitSolver::PartialCorrection(AthenaArray<Real>& du,
   Eigenvalue(Lambda, prim[IVX + mydir_], cs);
   Eigenvector(Rmat, Rimat, prim, cs, gm1, mydir_);
   Am = Rmat * Lambda * Rimat;
-  Am1 << Am(idn, ivy), Am(idn, ivz), Am(ivx, ivy), Am(ivx, ivz),
-      Am(ien, ivy), Am(ien, ivz);
-  Am2 << Am(idn, idn), Am(idn, ivx), Am(idn, ien), Am(ivx, idn),
-      Am(ivx, ivx), Am(ivx, ien), Am(ien, idn), Am(ien, ivx), Am(ien, ien);
+  Am1 << Am(idn, ivy), Am(idn, ivz), Am(ivx, ivy), Am(ivx, ivz), Am(ien, ivy),
+      Am(ien, ivz);
+  Am2 << Am(idn, idn), Am(idn, ivx), Am(idn, ien), Am(ivx, idn), Am(ivx, ivx),
+      Am(ivx, ien), Am(ien, idn), Am(ien, ivx), Am(ien, ien);
 
   for (int i = is - 1; i <= ie; ++i) {
     CopyPrimitives(wl, wr, w, k, j, i + 1, mydir_);
@@ -110,11 +110,10 @@ void ImplicitSolver::PartialCorrection(AthenaArray<Real>& du,
     Eigenvalue(Lambda, prim[IVX + mydir_], cs);
     Eigenvector(Rmat, Rimat, prim, cs, gm1, mydir_);
     Ap = Rmat * Lambda * Rimat;
-    Ap1 << Ap(idn, ivy), Ap(idn, ivz), Ap(ivx, ivy), Ap(ivx, ivz),
-        Ap(ien, ivy), Ap(ien, ivz);
-    Ap2 << Ap(idn, idn), Ap(idn, ivx), Ap(idn, ien), Ap(ivx, idn),
-        Ap(ivx, ivx), Ap(ivx, ien), Ap(ien, idn), Ap(ien, ivx),
-        Ap(ien, ien);
+    Ap1 << Ap(idn, ivy), Ap(idn, ivz), Ap(ivx, ivy), Ap(ivx, ivz), Ap(ien, ivy),
+        Ap(ien, ivz);
+    Ap2 << Ap(idn, idn), Ap(idn, ivx), Ap(idn, ien), Ap(ivx, idn), Ap(ivx, ivx),
+        Ap(ivx, ien), Ap(ien, idn), Ap(ien, ivx), Ap(ien, ien);
 
     // set up diagonals a, b, c.
     Real aleft, aright, vol;

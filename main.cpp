@@ -29,7 +29,7 @@
 
 namespace Globals {
 
-const char* search_paths = "@CMAKE_SOURCE_DIR@/src/snap/thermodynamics/chemdata/";
+const char* search_paths = "@CMAKE_SOURCE_DIR@/src/snap/thermodynamics/chemdata/:@CMAKE_SOURCE_DIR@/data/";
 
 const char* banner =
     "\
