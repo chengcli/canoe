@@ -103,8 +103,8 @@ Radiation::Radiation(MeshBlock *pmb, ParameterInput *pin) {
   // time control
   SetCooldownTime(pin->GetOrAddReal("radiation", "dt", 0.));
 
-  // default distance to parent star
-  stellar_distance_au_ = pin->GetOrAddReal("radiation", "distance_au", 1.);
+  // default surface temperature
+  surface_temperature_ = pin->GetOrAddReal("radiation", "surface_temp_K", -1);
 }
 
 Radiation::~Radiation() {

@@ -107,8 +107,8 @@ void RadiationBand::RTSolverDisort::Prepare(MeshBlock const *pmb, int k,
   auto &wmin = pmy_band_->wrange_.first;
   auto &wmax = pmy_band_->wrange_.second;
 
+  Real dist_au = 1.;
   Direction ray = pmb->pimpl->prad->GetRayInput(0);
-  Real dist_au = pmb->pimpl->prad->GetDistanceInAu();
   auto planet = pmb->pimpl->planet;
 
   if (planet && pmy_band_->TestFlag(RadiationFlags::TimeDependent)) {
@@ -130,6 +130,10 @@ void RadiationBand::RTSolverDisort::Prepare(MeshBlock const *pmb, int k,
 
     if (pmy_band_->HasPar("phi0")) {
       ray.phi = pmy_band_->GetPar<Real>("phi0");
+    }
+
+    if (pmy_band_->HasPar("dist_au")) {
+      dist_au = pmy_band_->GetPar<Real>("dist_au");
     }
   }
 
@@ -207,11 +211,13 @@ void RadiationBand::RTSolverDisort::Prepare(MeshBlock const *pmb, int k,
 
 void RadiationBand::RTSolverDisort::CalBandFlux(MeshBlock const *pmb, int k,
                                                 int j, int il, int iu) {
-  Real dist_au = pmb->pimpl->prad->GetDistanceInAu();
+  Real dist_au = 1.;
   auto planet = pmb->pimpl->planet;
 
   if (planet && pmy_band_->TestFlag(RadiationFlags::TimeDependent)) {
     dist_au = planet->ParentDistanceInAu(pmb->pmy_mesh->time);
+  } else if (pmy_band_->HasPar("dist_au")) {
+    dist_au = pmy_band_->GetPar<Real>("dist_au");
   }
 
   // bflxup and bflxdn has been reset in RadiationBand::CalBandFlux
@@ -325,11 +331,13 @@ void RadiationBand::RTSolverDisort::CalBandRadiance(MeshBlock const *pmb, int k,
 
   // toa has been reset in RadiationBand::CalBandRadiance
 
-  Real dist_au = pmb->pimpl->prad->GetDistanceInAu();
+  Real dist_au = 1.;
   auto planet = pmb->pimpl->planet;
 
   if (planet && pmy_band_->TestFlag(RadiationFlags::TimeDependent)) {
     dist_au = pmb->pimpl->planet->ParentDistanceInAu(pmb->pmy_mesh->time);
+  } else if (pmy_band_->HasPar("dist_au")) {
+    dist_au = pmy_band_->GetPar<Real>("dist_au");
   }
 
   RadiationHelper::get_phase_momentum(ds_.pmom, ISOTROPIC, 0., ds_.nmom);
