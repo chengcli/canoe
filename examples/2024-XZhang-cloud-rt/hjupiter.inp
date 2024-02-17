@@ -95,3 +95,6 @@ radiation_config = hjupiter.yaml
 Ts         = 1600.            # Surface temperature, K
 p0         = 1.E5             # Surface pressure, Pa
 Omega      = 2.1E-5           # Rotational frequency
+
+sponge_tau = 1.E4
+sponge_layer = 5
