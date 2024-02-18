@@ -7,13 +7,6 @@ z.junk/
 # homebrew
 Brewfile.lock.json
 
-# hitran par file
-*.par
-
-# datafile
-data/*.txt
-data/*.hit
-
 # tmp file
 *.tmp
 

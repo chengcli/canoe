@@ -59,9 +59,6 @@ class Radiation : public RestartGroup,
   //! \brief Get total number of incoming rays
   size_t GetNumOutgoingRays() const;
 
-  //! Get the default surface temperature (K)
-  Real GetSurfaceTemperature() const { return surface_temperature_; }
-
  public:  // inbound functions
   //! \brief Calculate the radiative flux
   void CalFlux(MeshBlock const *pmb, int k, int j, int il, int iu);
@@ -84,9 +81,6 @@ class Radiation : public RestartGroup,
 
   //! incomming rays
   std::vector<Direction> rayInput_;
-
-  //! surface temperature
-  Real surface_temperature_;
 };
 
 using RadiationPtr = std::shared_ptr<Radiation>;

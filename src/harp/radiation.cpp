@@ -102,9 +102,6 @@ Radiation::Radiation(MeshBlock *pmb, ParameterInput *pin) {
 
   // time control
   SetCooldownTime(pin->GetOrAddReal("radiation", "dt", 0.));
-
-  // default surface temperature
-  surface_temperature_ = pin->GetOrAddReal("radiation", "surface_temp_K", -1);
 }
 
 Radiation::~Radiation() {
