@@ -8,7 +8,6 @@
 
 // canoe
 #include <air_parcel.hpp>
-#include <configure.hpp>
 #include <constants.hpp>
 
 // netcdf
@@ -22,9 +21,9 @@ extern "C" {
 #include <climath/interpolation.h>
 
 // opacity
-#include "correlatedk_absorber.hpp"
+#include "absorber_ck.hpp"
 
-void CorrelatedKAbsorber::LoadCoefficient(std::string fname, size_t bid) {
+void AbsorberCK::LoadCoefficient(std::string fname, size_t bid) {
 #ifdef NETCDFOUTPUT
   int fileid, dimid, varid, err;
   len_[0] = 22;  // number of pressure
@@ -52,8 +51,8 @@ void CorrelatedKAbsorber::LoadCoefficient(std::string fname, size_t bid) {
 #endif
 }
 
-Real CorrelatedKAbsorber::GetAttenuation(Real g1, Real g2,
-                                         AirParcel const& var) const {
+Real AbsorberCK::GetAttenuation(Real g1, Real g2,
+                                AirParcel const& var) const {
   // first axis is wavenumber, second is pressure, third is temperature anomaly
   Real val, coord[3] = {log(var.q[IPR]), var.q[IDN], g1};
   interpn(&val, coord, kcoeff_.data(), axis_.data(), len_, 3, 1);

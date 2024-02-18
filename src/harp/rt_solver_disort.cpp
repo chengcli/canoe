@@ -50,8 +50,32 @@ RadiationBand::RTSolverDisort::RTSolverDisort(RadiationBand *pmy_band,
                                               YAML::Node const &rad)
     : RTSolver(pmy_band, "Disort") {
   if (rad["Disort-flags"]) {
+    // SetFlags is a member function of DisortWrapper
     SetFlags(to_map_bool(rad["Disort-flags"]));
   }
+
+  if (pmy_band->HasPar("btemp")) {
+    ds_.bc.btemp = pmy_band->GetPar<Real>("btemp");
+  }
+
+  if (pmy_band->HasPar("albedo")) {
+    ds_.bc.albedo = pmy_band->GetPar<Real>("albedo");
+  } else { 
+    ds_.bc.albedo = 1.;
+  }
+
+  if (pmy_band->HasPar("ttemp")) {
+    ds_.bc.ttemp = pmy_band->GetPar<Real>("ttemp");
+  }
+
+  if (pmy_band->HasPar("temis")) {
+    ds_.bc.temis = pmy_band->GetPar<Real>("temis");
+  } else {
+    ds_.bc.temis = 0.;
+  }
+
+  ds_.bc.fluor = 0.;
+  ds_.bc.fisot = 0.;
 
   Application::Logger app("harp");
 
@@ -153,10 +177,6 @@ void RadiationBand::RTSolverDisort::Prepare(MeshBlock const *pmb, int k,
 
   ds_.bc.umu0 = ray.mu > 1.E-3 ? ray.mu : 1.E-3;
   ds_.bc.phi0 = ray.phi;
-  if (ds_.flag.planck) {
-    ds_.bc.btemp = ds_.temper[ds_.nlyr];
-    ds_.bc.ttemp = 0.;
-  }
 
   ds_.wvnmlo = wmin;
   ds_.wvnmhi = wmax;
@@ -181,11 +201,6 @@ void RadiationBand::RTSolverDisort::Prepare(MeshBlock const *pmb, int k,
     pmb->pcoord->CellVolume(k, j, pmb->is, pmb->ie, vol_);
   }
 
-  //! \todo update this
-  ds_.bc.fluor = fluor;
-  ds_.bc.fisot = fisot;
-  ds_.bc.albedo = albedo;
-  ds_.bc.temis = 1.;
 
   auto &&uphi_umu = RadiationHelper::get_direction_grids(pmy_band_->rayOutput_);
   auto &uphi = uphi_umu.first;
