@@ -74,8 +74,17 @@ RadiationBand::RTSolverDisort::RTSolverDisort(RadiationBand *pmy_band,
     ds_.bc.temis = 0.;
   }
 
-  ds_.bc.fluor = 0.;
-  ds_.bc.fisot = 0.;
+  if (pmy_band->HasPar("fluor")) {
+    ds_.bc.fluor = pmy_band->GetPar<Real>("fluor");
+  } else {
+    ds_.bc.fluor = 0.;
+  }
+
+  if (pmy_band->HasPar("fisot")) {
+    ds_.bc.fisot = pmy_band->GetPar<Real>("fisot");
+  } else {
+    ds_.bc.fisot = 0.;
+  }
 
   Application::Logger app("harp");
 
