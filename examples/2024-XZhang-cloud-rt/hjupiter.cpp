@@ -31,7 +31,7 @@
 // harp
 #include "harp/radiation.hpp"
 
-Real p0, Ts, Omega, grav, sponge_tau;
+Real p0, Ts, Omega, grav, sponge_tau, bflux;
 int sponge_layer;
 
 void MeshBlock::InitUserMeshBlockData(ParameterInput *pin) {
@@ -116,6 +116,13 @@ void Forcing(MeshBlock *pmb, Real const time, Real const dt,
         du(IVY, k, j, i) -= w(IVY, k, j, i) * (dt / tau) * w(IDN, k, j, i);
         du(IVZ, k, j, i) -= w(IVZ, k, j, i) * (dt / tau) * w(IDN, k, j, i);
       }
+  
+  // bottom flux
+  for (int k = pmb->ks; k <= pmb->ke; ++k)
+    for (int j = pmb->js; j <= pmb->je; ++j) {
+      int i = pmb->is;
+      du(IEN, k, j ,i) += bflux / pmb->pcoord->dx1f(i) * dt;
+    }
 }
 
 //! \fn void Mesh::InitUserMeshData(ParameterInput *pin)
@@ -125,6 +132,7 @@ void Mesh::InitUserMeshData(ParameterInput *pin) {
   grav = -pin->GetReal("hydro", "grav_acc1");
   Ts = pin->GetReal("problem", "Ts");
   p0 = pin->GetReal("problem", "p0");
+  bflux = pin->GetOrAddReal("problem", "bflux", 0.);
   sponge_tau = pin->GetReal("problem", "sponge_tau");
   sponge_layer = pin->GetInteger("problem", "sponge_layer");
 
