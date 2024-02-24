@@ -180,18 +180,6 @@ class CounterGroup {
   Real cooldown_, current_ = 0.;
 };
 
-class CheckGroup {
- public:
-  virtual ~CheckGroup() {}
-
-  //! This function fails if the check fails
-  virtual void CheckFail() const {}
-
-  //! This function emits a warning if the check fails
-  //! \return true if the check passes, false if it fails
-  virtual bool CheckWarn() const { return true; }
-};
-
 class RestartGroup {
  public:
   virtual ~RestartGroup() {}

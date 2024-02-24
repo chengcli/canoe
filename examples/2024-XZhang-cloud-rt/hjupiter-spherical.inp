@@ -9,55 +9,50 @@ tasklist   = ImplicitHydroTasks
 
 <output0>
 file_type  = rst
-dt         = 1.728E5
+dt         = 1.728E7
 
 <output1>
 file_type  = hst          # History data dump
-dt         = 1.728E5      # time increment between outputs
+dt         = 1.728E6      # time increment between outputs
 
 <output2>
 file_type  = pnetcdf      # Binary data dump
 variable   = prim         # variables to be output
-dt         = 1.728E5      # time increment between outputs
+dt         = 1.728E6      # time increment between outputs
 
 <output3>
 file_type  = pnetcdf
 variable   = uov
-dt         = 1.728E5
+dt         = 1.728E6
 
 <output4>
 file_type  = pnetcdf
 variable   = rad
-dt         = 1.728E5
-
-<output5>
-file_type  = dbg
-dt         = 1
+dt         = 1.728E6
 
 <time>
 cfl_number = 0.9          # The Courant, Friedrichs, & Lewy (CFL) Number
 nlim       = -1           # cycle limit
-tlim       = 1.0368E10     # time limit
-xorder     = 2            # horizontal reconstruction order
+tlim       = 1.0368E10    # time limit
+xorder     = 5            # horizontal reconstruction order
 integrator = rk3          # integration method
-shock_capture = true
 
 <mesh>
 nx1        = 64           # Number of zones in X1-direction
 x1min      = 8.E7         # minimum value of X1
-x1max      = 8.4E7       # maximum value of X1
+x1max      = 8.4E7        # maximum value of X1
 ix1_bc     = reflecting   # inner-X1 boundary flag
 ox1_bc     = reflecting   # outer-X1 boundary flag
 
 nx2        = 64           # Number of zones in X2-direction
-x2min      = 0.     # minimum value of X2
-x2max      = 1.E3      # maximum value of X2
-ix2_bc     = periodic        # inner-X2 boundary flag
-ox2_bc     = periodic        # outer-X2 boundary flag
+x2min      = 0.78         # minimum value of X2
+x2max      = 2.36         # maximum value of X2
+ix2_bc     = periodic     # inner-X2 boundary flag
+ox2_bc     = periodic     # outer-X2 boundary flag
 
-nx3        = 96          # Number of zones in X3-direction
-x3min      = 0.0          # minimum value of X3
-x3max      = 1.E3      # maximum value of X3
+nx3        = 1            # Number of zones in X3-direction
+x3min      = 0.           # minimum value of X3
+x3max      = 1.           # maximum value of X3
 ix3_bc     = periodic     # inner-X3 boundary flag
 ox3_bc     = periodic     # outer-X3 boundary flag
 
@@ -67,7 +62,7 @@ PressureScaleHeight = 0.  # not used
 <meshblock>
 nx1        = 64
 nx2        = 16
-nx3        = 16
+nx3        = 1
 
 <hydro>
 grav_acc1   = -23.1
@@ -92,18 +87,15 @@ HJ.grav_eq    = 23.1       # m/s^2
 HJ.equinox    = 0.
 
 <radiation>
-dt            = 200.
+dt            = 500.
 nstr          = 4
-radiation_config = hjupiter.yaml
-relax_time    = 1.E4
+radiation_config = hjupiter-uniform.yaml
 
 <problem>
-Ts         = 1600.            # Surface temperature, K
-Omega      = 2.1E-5           # Rotational frequency, 1/s
-Ts         = 5000.            # Surface temperature, K
-Ps         = 1.E7             # Surface pressure, Pa
-Tmin       = 1600.            # isothermal temperature, K
-bflux      = 0                # bottom upward flux, w/m^2
+Ts         = 3000.            # Surface temperature, K
+p0         = 2.E7             # Surface pressure, Pa
+Omega      = 3.277869E-5       # Rotational frequency
+radius     = 8.E7
 
-sponge_tau = 1.E5
-sponge_layer = 10
+sponge_tau = 1.E4
+sponge_layer = 5
