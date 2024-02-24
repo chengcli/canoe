@@ -125,12 +125,13 @@ void Forcing(MeshBlock *pmb, Real const time, Real const dt,
         du(IVZ, k, j, i) -=
             w(IVZ, k, j, i) * (dt / sponge_tau) * w(IDN, k, j, i) * scale;
       }
-  
+    }
+
   // bottom flux
   for (int k = pmb->ks; k <= pmb->ke; ++k)
     for (int j = pmb->js; j <= pmb->je; ++j) {
       int i = pmb->is;
-      du(IEN, k, j ,i) += bflux / pmb->pcoord->dx1f(i) * dt;
+      du(IEN, k, j, i) += bflux / pmb->pcoord->dx1f(i) * dt;
     }
 }
 
