@@ -35,7 +35,7 @@ file_type  = dbg
 dt         = 1
 
 <time>
-cfl_number = 0.9          # The Courant, Friedrichs, & Lewy (CFL) Number
+cfl_number = 0.5          # The Courant, Friedrichs, & Lewy (CFL) Number
 nlim       = -1           # cycle limit
 tlim       = 1.0368E10     # time limit
 xorder     = 2            # horizontal reconstruction order
@@ -98,7 +98,6 @@ radiation_config = hjupiter.yaml
 relax_time    = 1.E4
 
 <problem>
-Ts         = 1600.            # Surface temperature, K
 Omega      = 2.1E-5           # Rotational frequency, 1/s
 Ts         = 5000.            # Surface temperature, K
 Ps         = 1.E7             # Surface pressure, Pa
