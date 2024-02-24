@@ -16,10 +16,6 @@
 // snap
 #include "implicit_solver.hpp"
 
-#ifdef ENABLE_GLOG
-#include <glog/logging.h>
-#endif
-
 #ifdef CUBED_SPHERE
 namespace cs = CubedSphereUtility;
 #endif
@@ -96,6 +92,7 @@ void ImplicitSolver::SolveImplicit3D(AthenaArray<Real> &du,
         }
   }
 
+
   // X1DIR
   if (implicit_flag_ & 1) {
     SetDirection(X1DIR);
@@ -131,37 +128,6 @@ void ImplicitSolver::SolveImplicit3D(AthenaArray<Real> &du,
         } else {
           PartialCorrection(du_, w, dt, k, j, is, ie);
         }
-
-#ifdef ENABLE_GLOG
-        // check for negative density and internal energy
-        for (int i = is; i <= ie; i++) {
-          LOG_IF(WARNING, ph->u(IEN, k, j, i) + du_(IEN, k, j, i) < 0.)
-              << "rank = " << Globals::my_rank << ", (k,j,i) = "
-              << "(" << k << "," << j << "," << i << ")" << std::endl
-              << "(before) u[IDN] = " << ph->u(IDN, k, j, i) + du(IDN, k, j, i)
-              << ", u[IVX] = " << ph->u(IVX, k, j, i) + du(IVX, k, j, i)
-              << ", u[IEN] = " << ph->u(IEN, k, j, i) + du(IEN, k, j, i)
-              << std::endl
-
-              << "(after) u[IDN] = " << ph->u(IDN, k, j, i) + du_(IDN, k, j, i)
-              << ", u[IVX] = " << ph->u(IVX, k, j, i) + du_(IVX, k, j, i)
-              << ", u[IEN] = " << ph->u(IEN, k, j, i) + du_(IEN, k, j, i)
-              << std::endl;
-
-          LOG_IF(WARNING, ph->u(IDN, k, j, i) + du_(IDN, k, j, i) < 0.)
-              << "rank = " << Globals::my_rank << ", (k,j,i) = "
-              << "(" << k << "," << j << "," << i << ")"
-              << "(before) u[IDN] = " << ph->u(IDN, k, j, i) + du(IDN, k, j, i)
-              << ", u[IVX] = " << ph->u(IVX, k, j, i) + du(IVX, k, j, i)
-              << ", u[IEN] = " << ph->u(IEN, k, j, i) + du(IEN, k, j, i)
-              << std::endl
-
-              << "(after) u[IDN] = " << ph->u(IDN, k, j, i) + du_(IDN, k, j, i)
-              << ", u[IVX] = " << ph->u(IVX, k, j, i) + du_(IVX, k, j, i)
-              << ", u[IEN] = " << ph->u(IEN, k, j, i) + du_(IEN, k, j, i)
-              << std::endl;
-        }
-#endif  // ENABLE_GLOG
 
         // de-project velocity
 #ifdef CUBED_SPHERE

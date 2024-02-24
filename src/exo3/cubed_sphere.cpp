@@ -16,6 +16,9 @@
 #include "cubed_sphere.hpp"
 #include "cubed_sphere_utility.hpp"
 
+// check
+#include <checks.hpp>
+
 #ifdef MPI_PARALLEL
 #include <mpi.h>
 #endif

@@ -58,6 +58,17 @@ void OutputType::loadUserOutputData(MeshBlock *pmb) {
   }
 
   if (output_params.variable.compare("rad") == 0 ||
+      output_params.variable.compare("radtime") == 0) {
+    // rad time
+    pod = new OutputData;
+    pod->type = "SCALARS";
+    pod->name = "radtime";
+    pod->data.InitWithShallowSlice(prad->rtime, 4, 0, 1);
+    AppendOutputDataNode(pod);
+    num_vars_ += 1;
+  }
+
+  if (output_params.variable.compare("rad") == 0 ||
       output_params.variable.compare("radflux") == 0) {
     for (int b = 0; b < prad->GetNumBands(); ++b) {
       auto pband = prad->GetBand(b);

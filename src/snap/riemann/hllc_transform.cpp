@@ -10,12 +10,13 @@
 
 // canoe
 #include <configure.hpp>
-#include <exo3/cubed_sphere.hpp>
 #include <impl.hpp>
 
-#ifdef ENABLE_GLOG
-#include <glog/logging.h>
-#endif
+// exo3
+#include <exo3/cubed_sphere.hpp>
+
+// checks
+#include <checks.hpp>
 
 //----------------------------------------------------------------------------------------
 //! \fn void Hydro::RiemannSolver
@@ -67,25 +68,6 @@ void Hydro::RiemannSolver(const int k, const int j, const int il, const int iu,
     wri[IVY] = wr(ivy, i);
     wri[IVZ] = wr(ivz, i);
     wri[IPR] = wr(IPR, i);
-
-#ifdef ENABLE_GLOG
-    LOG_IF(ERROR, wli[IDN] < 0.)
-        << "rank = " << Globals::my_rank << ", (k,j,i) = "
-        << "(" << k << "," << j << "," << i << ")"
-        << ", wli[IDN] = " << wli[IDN] << std::endl;
-    LOG_IF(ERROR, wri[IDN] < 0.)
-        << "rank = " << Globals::my_rank << ", (k,j,i) = "
-        << "(" << k << "," << j << "," << i << ")"
-        << ", wri[IDN] = " << wri[IDN] << std::endl;
-    LOG_IF(ERROR, wli[IPR] < 0.)
-        << "rank = " << Globals::my_rank << ", (k,j,i) = "
-        << "(" << k << "," << j << "," << i << ")"
-        << ", wli[IPR] = " << wli[IPR] << std::endl;
-    LOG_IF(ERROR, wri[IPR] < 0.)
-        << "rank = " << Globals::my_rank << ", (k,j,i) = "
-        << "(" << k << "," << j << "," << i << ")"
-        << ", wri[IPR] = " << wri[IPR] << std::endl;
-#endif  // ENABLE_GLOG
 
     //--- Step 2.  Compute middle state estimates with PVRS (Toro 10.5.2)
 
@@ -261,4 +243,6 @@ void Hydro::RiemannSolver(const int k, const int j, const int il, const int iu,
     flx(IVZ, k, j, i) = tz + ty * cth;
   }
 #endif  // CUBED_SPHERE
+  
+  check_hydro_riemann_solver_flux(flx, ivx, k, j, il, iu);
 }

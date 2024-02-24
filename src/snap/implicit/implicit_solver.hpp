@@ -141,7 +141,7 @@ class ImplicitSolver {
 
  private:
   int implicit_flag_;
-  MeshBlock const *pmy_block_;
+  MeshBlock *pmy_block_;
 
   CoordinateDirection mydir_;
   // Real *usend_top_, *urecv_top_;      // MPI data buffer

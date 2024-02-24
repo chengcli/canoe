@@ -4,8 +4,8 @@
 
 // Athena++ headers
 #include <athena/coordinates/coordinates.hpp>
+#include <athena/eos/eos.hpp>
 #include <athena/hydro/hydro.hpp>
-#include <athena/stride_iterator.hpp>
 
 // utils
 #include <utils/ndarrays.hpp>
@@ -95,28 +95,25 @@ void Decomposition::ChangeToPerturbation(AthenaArray<Real> &w, int kl, int ku,
     RecvBuffer(psf_, kl, ku, jl, ju, is - NGHOST, is, bblock);
 
   // decompose pressure and density
-  PopulateBotEntropy(w, kl, ku, jl, ju);
   for (int k = kl; k <= ku; ++k)
     for (int j = jl; j <= ju; ++j) {
       // 1. change density and pressure (including ghost cells)
       for (int i = is - NGHOST; i <= ie + NGHOST; ++i) {
         // save pressure and density
         pres_(k, j, i) = w(IPR, k, j, i);
-        dens_(k, j, i) = w(IDN, k, j, i);
+        // dens_(k, j, i) = w(IDN, k, j, i);
 
         // interpolate hydrostatic pressure, prevent divided by zero
-        Real psv, dsv;
-        if (fabs(psf_(k, j, i) - psf_(k, j, i + 1)) < 1.E-6)
+        Real psv;
+        if (fabs(psf_(k, j, i) - psf_(k, j, i + 1)) < 1.E-6) {
           psv = (psf_(k, j, i) + psf_(k, j, i + 1)) / 2.;
-        else
+        } else {
           psv = (psf_(k, j, i) - psf_(k, j, i + 1)) /
                 log(psf_(k, j, i) / psf_(k, j, i + 1));
-        dsv = pow(psv, 1. / entropy_(0, k, j)) *
-              exp(-entropy_(1, k, j) / entropy_(0, k, j));
+        }
 
         // change pressure/density to pertubation quantities
         w(IPR, k, j, i) -= psv;
-        w(IDN, k, j, i) -= dsv;
       }
     }
 
@@ -162,13 +159,15 @@ void Decomposition::RestoreFromPerturbation(AthenaArray<Real> &w,
                                             int il, int iu) {
   MeshBlock *pmb = pmy_block_;
   Hydro *phydro = pmb->phydro;
-  Real Rd = Thermodynamics::GetInstance()->GetRd();
+  auto pthermo = Thermodynamics::GetInstance();
+  Real Rd = pthermo->GetRd();
+  Real gammad = pmb->peos->GetGamma();
   int is = pmb->is, ie = pmb->ie;
   if (phydro->hsrc.GetG1() == 0.) return;
 
   for (int i = is - NGHOST; i <= ie + NGHOST; ++i) {
     w(IPR, k, j, i) = pres_(k, j, i);
-    w(IDN, k, j, i) = dens_(k, j, i);
+    // w(IDN, k, j, i) = dens_(k, j, i);
   }
 
   for (int i = il; i <= iu; ++i) {
@@ -178,14 +177,10 @@ void Decomposition::RestoreFromPerturbation(AthenaArray<Real> &w,
     wl(IPR, i) += psf_(k, j, i);
     if (wl(IPR, i) < 0.) wl(IPR, i) = psf_(k, j, i);
 
-    Real dsf = pow(psf_(k, j, i), 1. / entropy_(0, k, j)) *
-               exp(-entropy_(1, k, j) / entropy_(0, k, j));
-
-    wr(IDN, i) += dsf;
-    if (wr(IDN, i) < 0.) wr(IDN, i) = dsf;
-
-    wl(IDN, i) += dsf;
-    if (wl(IDN, i) < 0.) wl(IDN, i) = dsf;
+    wr(IDN, i) =
+        w(IDN, k, j, i) * pow(wr(IPR, i) / w(IPR, k, j, i), 1. / gammad);
+    wl(IDN, i) = w(IDN, k, j, i - 1) *
+                 pow(wl(IPR, i) / w(IPR, k, j, i - 1), 1. / gammad);
   }
 
   /* debug

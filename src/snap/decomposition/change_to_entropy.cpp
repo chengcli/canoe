@@ -17,6 +17,9 @@
 #include "../thermodynamics/thermodynamics.hpp"
 #include "decomposition.hpp"
 
+// checks
+#include <checks.hpp>
+
 inline void IntegrateUpwards(AthenaArray<Real> &psf, AthenaArray<Real> const &w,
                              Coordinates *pco, Real grav, int kl, int ku,
                              int jl, int ju, int il, int iu) {
@@ -164,4 +167,6 @@ void Decomposition::RestoreFromEntropy(AthenaArray<Real> &w,
     wl(IDN, i) = exp((log(wl(IPR, i)) - wl(IDN, i)) / gamma_(k, j, i - 1));
     wr(IDN, i) = exp((log(wr(IPR, i)) - wr(IDN, i)) / gamma_(k, j, i));
   }
+
+  check_decomposition(wl, wr, k, j, il, iu);
 }

@@ -31,7 +31,7 @@
 // harp
 #include "harp/radiation.hpp"
 
-Real p0, Ts, Omega, grav, sponge_tau, bflux;
+Real Ps, Ts, Omega, grav, sponge_tau, bflux, gammad, Tmin;
 int sponge_layer;
 
 void MeshBlock::InitUserMeshBlockData(ParameterInput *pin) {
@@ -55,10 +55,10 @@ void MeshBlock::UserWorkBeforeOutput(ParameterInput *pin) {
   Real zenith;
 
   for (int k = ks; k <= ke; ++k)
-    for (int j = js; j <= je; ++j)
+    for (int j = js; j <= je; ++j) {
       for (int i = is; i <= ie; ++i) {
         user_out_var(0, k, j, i) = pthermo->GetTemp(this, k, j, i);
-        user_out_var(1, k, j, i) = pthermo->PotentialTemp(this, p0, k, j, i);
+        user_out_var(1, k, j, i) = pthermo->PotentialTemp(this, Ps, k, j, i);
 
         pexo3->GetLatLon(&lat, &lon, k, j, i);
         pexo3->GetUV(&U, &V, phydro->w(IVY, k, j, i), phydro->w(IVZ, k, j, i),
@@ -73,6 +73,7 @@ void MeshBlock::UserWorkBeforeOutput(ParameterInput *pin) {
         zenith = std::acos(ray.mu) / M_PI * 180.0;
         user_out_var(6, k, j, i) = zenith;
       }
+    }
 }
 
 void Forcing(MeshBlock *pmb, Real const time, Real const dt,
@@ -80,6 +81,8 @@ void Forcing(MeshBlock *pmb, Real const time, Real const dt,
              AthenaArray<Real> const &bcc, AthenaArray<Real> &du,
              AthenaArray<Real> &cons_scalar) {
   auto pexo3 = pmb->pimpl->pexo3;
+  auto pthermo = Thermodynamics::GetInstance();
+  auto prad = pmb->pimpl->prad;
 
   for (int k = pmb->ks; k <= pmb->ke; ++k)
     for (int j = pmb->js; j <= pmb->je; ++j)
@@ -107,14 +110,20 @@ void Forcing(MeshBlock *pmb, Real const time, Real const dt,
         du(IM3, k, j, i) += dt * acc3;
       }
 
+  Real Rd = pthermo->GetRd();
+  Real cv = 1. / (gammad - 1.) * Rd;
+
   // Sponge Layer
   for (int k = pmb->ks; k <= pmb->ke; ++k)
-    for (int j = pmb->js; j <= pmb->je; ++j)
+    for (int j = pmb->js; j <= pmb->je; ++j) {
       for (int i = pmb->ie - sponge_layer; i <= pmb->ie; ++i) {
-        Real tau = sponge_tau;
-        du(IVX, k, j, i) -= w(IVX, k, j, i) * (dt / tau) * w(IDN, k, j, i);
-        du(IVY, k, j, i) -= w(IVY, k, j, i) * (dt / tau) * w(IDN, k, j, i);
-        du(IVZ, k, j, i) -= w(IVZ, k, j, i) * (dt / tau) * w(IDN, k, j, i);
+        Real scale = cos(M_PI / 2. * (pmb->ie - i) / sponge_layer);
+        du(IVX, k, j, i) -=
+            w(IVX, k, j, i) * (dt / sponge_tau) * w(IDN, k, j, i) * scale;
+        du(IVY, k, j, i) -=
+            w(IVY, k, j, i) * (dt / sponge_tau) * w(IDN, k, j, i) * scale;
+        du(IVZ, k, j, i) -=
+            w(IVZ, k, j, i) * (dt / sponge_tau) * w(IDN, k, j, i) * scale;
       }
   
   // bottom flux
@@ -125,39 +134,66 @@ void Forcing(MeshBlock *pmb, Real const time, Real const dt,
     }
 }
 
+Real TimeStep(MeshBlock *pmb) {
+  auto prad = pmb->pimpl->prad;
+  Real time = pmb->pmy_mesh->time;
+
+  for (int k = pmb->ks; k <= pmb->ke; ++k)
+    for (int j = pmb->js; j <= pmb->je; ++j) {
+      prad->CalTimeStep(pmb, k, j, pmb->is, pmb->ie);
+    }
+
+  return prad->GetTimeStep() * (1. + time / prad->GetRelaxTime());
+}
+
 //! \fn void Mesh::InitUserMeshData(ParameterInput *pin)
 void Mesh::InitUserMeshData(ParameterInput *pin) {
   // forcing parameters
   Omega = pin->GetReal("problem", "Omega");
   grav = -pin->GetReal("hydro", "grav_acc1");
   Ts = pin->GetReal("problem", "Ts");
-  p0 = pin->GetReal("problem", "p0");
+  Ps = pin->GetReal("problem", "Ps");
   bflux = pin->GetOrAddReal("problem", "bflux", 0.);
   sponge_tau = pin->GetReal("problem", "sponge_tau");
   sponge_layer = pin->GetInteger("problem", "sponge_layer");
+  gammad = pin->GetReal("hydro", "gamma");
+  Tmin = pin->GetReal("problem", "Tmin");
 
   // forcing function
   EnrollUserExplicitSourceFunction(Forcing);
+  // EnrollUserTimeStepFunction(TimeStep);
 }
 
 //! \fn void MeshBlock::ProblemGenerator(ParameterInput *pin)
 void MeshBlock::ProblemGenerator(ParameterInput *pin) {
+  srand(Globals::my_rank + time(0));
+
   auto pexo3 = pimpl->pexo3;
   auto pthermo = Thermodynamics::GetInstance();
 
-  // construct an isothermal atmosphere
   AirParcel air(AirParcel::Type::MoleFrac);
-
+  // construct atmosphere from bottom up
   for (int k = ks; k <= ke; ++k)
     for (int j = js; j <= je; ++j) {
-      air.w[IPR] = p0;
+      air.SetZero();
+      air.w[IPR] = Ps;
       air.w[IDN] = Ts;
 
       // half a grid to cell center
       pthermo->Extrapolate(&air, pcoord->dx1f(is) / 2.,
-                           Thermodynamics::Method::Isothermal, grav);
+                           Thermodynamics::Method::ReversibleAdiabat, grav);
 
-      for (int i = is; i <= ie; ++i) {
+      int i = is;
+      for (; i <= ie; ++i) {
+        if (air.w[IDN] < Tmin) break;
+        AirParcelHelper::distribute_to_conserved(this, k, j, i, air);
+        pthermo->Extrapolate(&air, pcoord->dx1f(i),
+                             Thermodynamics::Method::PseudoAdiabat, grav);
+      }
+
+      // Replace adiabatic atmosphere with isothermal atmosphere if temperature
+      // is too low
+      for (; i <= ie; ++i) {
         AirParcelHelper::distribute_to_conserved(this, k, j, i, air);
         pthermo->Extrapolate(&air, pcoord->dx1f(i),
                              Thermodynamics::Method::Isothermal, grav);

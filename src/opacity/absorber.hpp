@@ -22,8 +22,7 @@ class AirParcel;
 class Absorber : public NamedGroup,
                  public ParameterGroup,
                  public SpeciesIndexGroup,
-                 public StringReprGroup,
-                 public CheckGroup {
+                 public StringReprGroup {
  public:  // constructor and destructor
   Absorber(std::string name);
   virtual ~Absorber();
@@ -60,6 +59,7 @@ class Absorber : public NamedGroup,
   virtual void GetPhaseMomentum(Real* pp, Real wave1, Real wave2,
                                 AirParcel const& var, int np) const {}
 
+  virtual void CheckFail() const {}
  public:  // StringRepr
   std::string ToString() const override;
 

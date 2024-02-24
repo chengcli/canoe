@@ -30,31 +30,8 @@
 #include "../thermodynamics/thermodynamics.hpp"
 #include "eos_helper.hpp"
 
-#ifdef ENABLE_GLOG
-#include <glog/logging.h>
-#endif
-
-std::string str_grid_ij(AthenaArray<Real> const& var, int n, int k, int j,
-                        int i, int il, int iu, int jl, int ju) {
-  std::stringstream msg;
-  msg << std::endl << std::setw(8) << " ";
-  for (int jj = std::max(j - NGHOST, jl); jj <= std::min(j + NGHOST, ju);
-       ++jj) {
-    msg << "j = " << jj << ", ";
-  }
-  msg << std::endl;
-
-  for (int ii = std::max(i - NGHOST, il); ii <= std::min(i + NGHOST, iu);
-       ++ii) {
-    msg << "i = " << ii << " |";
-    for (int jj = std::max(j - NGHOST, jl); jj <= std::min(j + NGHOST, ju);
-         ++jj)
-      msg << std::setw(8) << var(n, k, jj, ii) << ", ";
-    msg << " |" << std::endl;
-  }
-
-  return msg.str();
-}
+// checks
+#include <checks.hpp>
 
 namespace cs = CubedSphereUtility;
 
@@ -88,7 +65,7 @@ void EquationOfState::ConservedToPrimitive(
 
   Real gm1 = GetGamma() - 1.0;
   for (int k = kl; k <= ku; ++k)
-    for (int j = jl; j <= ju; ++j)
+    for (int j = jl; j <= ju; ++j) {
       for (int i = il; i <= iu; ++i) {
         Real& u_d = cons(IDN, k, j, i);
         Real& u_m1 = cons(IM1, k, j, i);
@@ -107,30 +84,9 @@ void EquationOfState::ConservedToPrimitive(
         w_d = density;
         Real di = 1. / density;
 
-#ifdef ENABLE_GLOG
-        LOG_IF(ERROR, std::isnan(w_d) || (w_d < density_floor_))
-            << "cycle = " << pmb->pmy_mesh->ncycle << ", "
-            << "rank = " << Globals::my_rank << ", (k,j,i) = "
-            << "(" << k << "," << j << "," << i << ")"
-            << ", w_d = " << w_d << std::endl;
-
-        LOG_IF(INFO, std::isnan(w_d) || (w_d < density_floor_))
-            << str_grid_ij(cons, IDN, k, j, i, il, iu, jl, ju);
-#endif
-
         // mass mixing ratio
         for (int n = 1; n <= NVAPOR; ++n)
           prim(n, k, j, i) = cons(n, k, j, i) * di;
-
-#ifdef ENABLE_GLOG
-        LOG_IF(ERROR, std::isnan(w_d) || (w_d < density_floor_))
-            << "rank = " << Globals::my_rank << ", (k,j,i) = "
-            << "(" << k << "," << j << "," << i << ")"
-            << ", w_d = " << w_d << std::endl;
-
-        LOG_IF(INFO, std::isnan(w_d) || (w_d < density_floor_))
-            << str_grid_ij(cons, IDN, k, j, i, il, iu, jl, ju);
-#endif
 
         // internal energy
         Real KE, fsig = 1., feps = 1.;
@@ -157,15 +113,13 @@ void EquationOfState::ConservedToPrimitive(
         // internal energy
         KE = 0.5 * (u_m1 * w_vx + u_m2 * w_vy + u_m3 * w_vz);
         w_p = gm1 * (u_e - KE) * feps / fsig;
-
-#ifdef ENABLE_GLOG
-        LOG_IF(WARNING, (w_p < 0.) || std::isnan(w_p))
-            << "cycle = " << pmb->pmy_mesh->ncycle << ", "
-            << "rank = " << Globals::my_rank << ", (k,j,i) = "
-            << "(" << k << "," << j << "," << i << ")"
-            << ", w_p = " << w_p << std::endl;
-#endif
       }
+
+      fix_eos_cons2prim(pmb, prim, k, j, il, iu);
+      check_eos_cons2prim(prim, k, j, il, iu);
+    }
+
+  PrimitiveToConserved(prim, bcc, cons, pco, il, iu, jl, ju, kl, ku);
 }
 
 //----------------------------------------------------------------------------------------
