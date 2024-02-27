@@ -1,0 +1,85 @@
+<comment>
+problem   = Dense sinking bubble test
+reference = Straka et al., 1993
+configure = --prob=straka --nghost=3 -netcdf
+
+<job>
+problem_id = straka       # problem ID: basename of output filenames
+
+<output1>
+file_type  = hst          # History data dump
+dt         = 300.          # time increment between outputs
+
+<output2>
+file_type  = netcdf      # Binary data dump
+variable   = prim         # variables to be output
+dt         = 300.          # time increment between outputs
+
+<output3>
+file_type  = netcdf
+variable   = uov
+dt         = 300.
+
+<time>
+cfl_number = 0.9          # The Courant, Friedrichs, & Lewy (CFL) Number
+nlim       = -1           # cycle limit
+tlim       = 900          # time limit
+xorder     = 5            # horizontal reconstruction order
+integrator = rk3          # integration method
+ncycle_out = 10           # output frequency
+
+<mesh>
+nx1        = 100           # Number of zones in X1-direction
+x1min      = 0.           # minimum value of X1
+x1max      = 70654.6        # maximum value of X1
+ix1_bc     = reflecting   # inner-X1 boundary flag
+ox1_bc     = reflecting   # outer-X1 boundary flag
+
+nx2        = 64           # Number of zones in X2-direction
+x2min      = 0.           # minimum value of X2
+x2max      = 64.E3       # maximum value of X2
+ix2_bc     = reflecting   # inner-X2 boundary flag
+ox2_bc     = reflecting   # outer-X2 boundary flag
+
+nx3        = 1            # Number of zones in X3-direction
+x3min      = -0.5         # minimum value of X3
+x3max      = 0.5          # maximum value of X3
+ix3_bc     = periodic     # inner-X3 boundary flag
+ox3_bc     = periodic     # outer-X3 boundary flag
+
+<meshblock>
+nx1         = 100
+nx2         = 8
+nx3         = 1
+
+<hydro>
+grav_acc1   = -10.0
+gamma       = 1.4         # gamma = C_p/C_v
+
+#<species>
+#vapor = SiO
+#cloud = SiO(c), SiO(p)
+
+<thermodynamics>
+Rd          = 287.
+eps1        = 1.52   1.52   1.52
+rcp1        = 0.054  0.054  0.054 
+beta1       = 0.     20.87  20.87         # latent heat over RT
+Ttriple1    = 1975.
+Ptriple1    = 611.7
+
+
+#<radiation>
+#dt            = 40.
+#radiation_config = lstraka.yaml
+#nstr          = 16
+
+<problem>
+dT    = -75.
+xc    = 0.
+xr    = 20.E3
+zc    = 50.E3
+zr    = 20.E3
+p0    = 1.E3
+#Ts    = 300.
+K     = 25.

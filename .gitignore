@@ -28,3 +28,9 @@ tests/Testing
 
 # external
 external/*.tar.gz
+
+# swap files
+*.swp
+
+# log files
+*.log

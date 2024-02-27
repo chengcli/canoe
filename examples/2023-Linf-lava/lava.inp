@@ -1,0 +1,132 @@
+<comment>
+problem   = Cloud radiative dynamics + Hydrogen Atm + Ocean below
+#configure = -Dpnetcdf_path=/home3/xzhang11/pnetcdf
+
+<job>
+problem_id  = lava2d   # problem ID: basename of output filenames
+
+<output0>
+file_type   = rst
+dt          = 20.E8
+
+<output1>
+file_type   = hst       # History data dump
+dt          = 1.E6      # time increment between outputs
+
+<output2>
+file_type   = pnetcdf    # Binary data dump
+variable    = prim      # variables to be output
+dt          = 1.E5      # time increment between outputs
+
+<output3>
+file_type   = pnetcdf
+variable    = uov       # user-defined output variables
+dt          = 1.E5
+
+<output4>
+file_type   = pnetcdf
+variable    = rad
+dt          = 1.E5
+
+#<output5>
+#file_type   = pnetcdf
+#variable    = diag
+#dt          = 1.E5
+
+<time>
+cfl_number  = 0.9           # The Courant, Friedrichs, & Lewy (CFL) Number
+nlim        = -1            # cycle limit
+tlim        = 10.E5         # time limit
+xorder      = 5             # horizontal reconstruction order
+integrator  = rk3           # integration method
+
+<mesh>
+nx1         = 100           # Number of zones in X1-direction
+x1min       = 0.            # minimum value of X1
+x1max       = 70654.6       # maximum value of X1
+ix1_bc      = reflecting    # inner-X1 boundary flag
+ox1_bc      = reflecting    # outer-X1 boundary flag
+
+nx2         = 64            # Number of zones in X2-direction
+x2min       = 0.            # minimum value of X2
+x2max       = 10.E5         # maximum value of X2
+ix2_bc      = periodic      # Inner-X2 boundary condition flag
+ox2_bc      = periodic      # Outer-X2 boundary condition flag
+
+nx3         = 1          # Number of zones in X3-direction
+x3min       = -0.5       # minimum value of X3
+x3max       = 0.5         # maximum value of X3
+ix3_bc      = periodic    # Inner-X3 boundary condition flag
+ox3_bc      = periodic    # Outer-X3 boundary condition flag
+
+<meshblock>
+nx1         = 100
+nx2         = 8
+nx3         = 1
+
+<hydro>
+gamma           = 1.4    # gamma = C_p/C_v
+grav_acc1       = -10.
+#OmegaZ        = 2.424E-5
+implicit_flag = 1
+
+<physics>
+packages = fix_bot_temperature
+fix_bot_temperature.tau = 50.
+bot_temperature         = -1.
+
+#packages               = fix_bot_temperature, top_sponge, bot_sponge
+#top_sponge.tau         = 1.E4
+#top_sponge.width       = 5.E5
+#bot_sponge.tau         = 1.E4
+#bot_sponge.width       = 5.E5
+#fix_bot_temperature.tau = 100.
+#bot_temperature = -1.
+#
+<species>
+vapor = SiO
+cloud = SiO(c), SiO(p)
+
+#<chemistry>
+#microphysics_config = lava.yaml
+
+<thermodynamics>
+Rd          = 287.
+eps1        = 1.52   1.52   1.52
+rcp1        = 0.054  0.054  0.054 
+beta1       = 0.     20.87  20.87         # latent heat over RT
+Ttriple1    = 1975.
+Ptriple1    = 611.7
+
+sa.relax    = 0.9
+sa.max_iter = 10
+sa.ftol     = 0.1
+
+<astronomy>
+#planet        = Jupiter
+#HJ.parent     = Sun
+#HJ.re         = 1.E5      # km
+#HJ.rp         = 1.E5      # km
+#HJ.obliq      = 0.        # deg
+#HJ.spinp      = 0.42      # day
+#HJ.orbit_a    = 5.2038    # au
+#HJ.orbit_e    = 0.
+#HJ.orbit_i    = 0.        # deg
+#HJ.orbit_p    = 4380.        # day
+#HJ.grav_eq    = 25.       # m/s^2
+#HJ.equinox    = 0.
+
+#Sun.spec_file = ../src/radiation/spectra/sun.spec
+
+<radiation>
+dt            = 40.
+radiation_config = lava.yaml
+nstr          = 16
+
+<problem>
+P0            = 1.E3
+#T0            = 4.3E2
+#Tmin          = 100.
+qRelaxT       = 1.E-4
+
+diagnostics   = c_avg radflux
