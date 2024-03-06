@@ -16,8 +16,8 @@ std::string print_column_table(std::string name, AthenaArray<Real> const& var,
 void check_eos_cons2prim(AthenaArray<Real> const& prim, int k, int j, int il,
                          int iu);
 
-void fix_eos_cons2prim(MeshBlock* pmb, AthenaArray<Real>& prim, int k, int j,
-                       int il, int iu);
+void fix_eos_cons2prim(MeshBlock* pmb, AthenaArray<Real>& prim,
+                       AthenaArray<Real>& cons, int k, int j, int il, int iu);
 
 void check_reconstruct(AthenaArray<Real> const& wl, AthenaArray<Real> const& wr,
                        int ivx, int k, int j, int il, int iu);

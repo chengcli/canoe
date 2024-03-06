@@ -52,6 +52,7 @@ add_subdirectory(exo3)
 add_subdirectory(exchanger)
 add_subdirectory(nbody)
 add_subdirectory(special)
+add_subdirectory(single_column)
 
 set(CANOE_LIBRARY_${buildu}
   "canoe_${buildl}"
@@ -72,6 +73,7 @@ set(CANOE_LIBRARY_${buildu}
   "exo3_${buildl}"
   "exchanger_${buildl}"
   "nbody_${buildl}"
+  "scm_${buildl}"
   "yaml-cpp"
   #${CDISORT_LIBRARY_${buildu}}
   ${CPPDISORT_LIBRARY_${buildu}}

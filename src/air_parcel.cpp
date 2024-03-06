@@ -502,6 +502,57 @@ void AirParcel::moleConcentrationToMassConcentration() {
   throw NotImplementedError("Variable::moleConcentrationToMassConcentration");
 }
 
+// thermodynamic functions
+Real AirParcel::gammad() const { return 1.4; }
+
+Real AirParcel::chi() const {
+  auto pthermo = Thermodynamics::GetInstance();
+  AirParcel* air;
+
+  if (mytype_ != AirParcel::Type::MoleFrac) {
+    air = new AirParcel(*this);
+    air->ToMoleFraction();
+  } else {
+    air = const_cast<AirParcel*>(this);
+  }
+
+  Real gammad = air->gammad();
+
+  Real qsig = 1., feps = 1.;
+#pragma omp simd reduction(+ : qsig)
+  for (int n = 1; n <= NVAPOR; ++n) {
+    qsig += air->w[n] * (pthermo->GetCpRatioMole(n) - 1.);
+  }
+
+#pragma omp simd reduction(+ : qsig, feps)
+  for (int n = 0; n < NCLOUD; ++n) {
+    feps += -air->c[n];
+    qsig += air->c[n] * (pthermo->GetCpRatioMole(n + 1 + NVAPOR) - 1.);
+  }
+
+  if (mytype_ != AirParcel::Type::MoleFrac) {
+    delete air;
+  }
+
+  return (gammad - 1.) / gammad / qsig;
+}
+
+Real AirParcel::theta(Real p0) const {
+  AirParcel* air;
+
+  if (mytype_ != AirParcel::Type::MoleFrac) {
+    air = new AirParcel(*this);
+    air->ToMoleFraction();
+  } else {
+    air = const_cast<AirParcel*>(this);
+  }
+
+  if (mytype_ != AirParcel::Type::MoleFrac) {
+    delete air;
+  }
+  return air->w[IDN] * pow(p0 / air->w[IPR], air->chi());
+}
+
 namespace AirParcelHelper {
 
 AirParcel gather_from_primitive(MeshBlock const* pmb, int k, int j, int i) {

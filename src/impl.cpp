@@ -37,6 +37,9 @@
 // exo3
 #include "exo3/cubed_sphere.hpp"
 
+// single column
+#include "single_column/single_column.hpp"
+
 // canoe
 #include "impl.hpp"
 #include "index_map.hpp"
@@ -74,6 +77,9 @@ MeshBlock::Impl::Impl(MeshBlock *pmb, ParameterInput *pin) : pmy_block_(pmb) {
 
   // cubed sphere
   pexo3 = std::make_shared<CubedSphere>(pmb);
+
+  // single column model
+  pscm = std::make_shared<SingleColumn>(pmb, pin);
 
   // scheduler
   scheduler = SchedulerFactory::Create(pmb, pin);

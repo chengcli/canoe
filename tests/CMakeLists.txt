@@ -16,6 +16,7 @@ setup_test(test_read_stellar_flux)
 setup_test(test_read_cia_ff)
 setup_test(test_read_rayleigh)
 setup_test(test_read_yaml)
+setup_test(test_convective_adjustment)
 
 if (PVFMM_OPTION STREQUAL "ENABLE_PVFMM")
   setup_test(test_nbody)
