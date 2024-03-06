@@ -1,10 +1,10 @@
 <comment>
-problem   = Hot Jupiter Double Gray Test
-reference = Straka et al., 1993
+problem   = convective adjustment test
+reference =
 configure = --patch=drum --coord=spherical_polar --prob=hjupiter --flux=lmars --nghost=3 --pnetcdf_path=../pnetcdf -pnetcdf -mpi
 
 <job>
-problem_id = shj   # problem ID: basename of output filenames
+problem_id = conv # problem ID: basename of output filenames
 tasklist   = ImplicitHydroTasks
 
 <output0>
@@ -35,12 +35,11 @@ file_type  = dbg
 dt         = 1
 
 <time>
-cfl_number = 0.9          # The Courant, Friedrichs, & Lewy (CFL) Number
+cfl_number = 0.5          # The Courant, Friedrichs, & Lewy (CFL) Number
 nlim       = -1           # cycle limit
 tlim       = 1.0368E10     # time limit
 xorder     = 2            # horizontal reconstruction order
 integrator = rk3          # integration method
-shock_capture = true
 
 <mesh>
 nx1        = 64           # Number of zones in X1-direction
@@ -49,25 +48,18 @@ x1max      = 8.5E7       # maximum value of X1
 ix1_bc     = reflecting   # inner-X1 boundary flag
 ox1_bc     = reflecting   # outer-X1 boundary flag
 
-nx2        = 64           # Number of zones in X2-direction
+nx2        = 1        # Number of zones in X2-direction
 x2min      = 0.     # minimum value of X2
 x2max      = 1.E3      # maximum value of X2
 ix2_bc     = periodic        # inner-X2 boundary flag
 ox2_bc     = periodic        # outer-X2 boundary flag
 
-nx3        = 96          # Number of zones in X3-direction
+nx3        = 1            # Number of zones in X3-direction
 x3min      = 0.0          # minimum value of X3
 x3max      = 1.E3      # maximum value of X3
 ix3_bc     = periodic     # inner-X3 boundary flag
 ox3_bc     = periodic     # outer-X3 boundary flag
 
-ReferencePressure = 0.    # not used
-PressureScaleHeight = 0.  # not used
-
-<meshblock>
-nx1        = 64
-nx2        = 16
-nx3        = 16
 
 <hydro>
 grav_acc1   = -23.1
@@ -77,38 +69,12 @@ implicit_flag = 9
 <thermodynamics>
 Rd          = 3714.       # Gas constant
 
-<astronomy>
-planet        = HJ
-HJ.parent     = Sun
-HJ.re         = 8.E4      # km
-HJ.rp         = 8.E4      # km
-HJ.obliq      = 0.        # deg
-HJ.spinp      = 2.218577        # day
-HJ.orbit_a    = 0.03106      # au
-HJ.orbit_e    = 0.
-HJ.orbit_i    = 0.        # deg
-HJ.orbit_p    = 2.218577        # day
-HJ.grav_eq    = 23.1       # m/s^2
-HJ.equinox    = 0.
-
-<radiation>
-dt            = 200.
-nstr          = 4
-radiation_config = hjupiter.yaml
-relax_time    = 1.E4
-
 <convective_adjustment>
-den_tol = 1.e-5
-rel_tol = 1.e-4
-max_iter = 10
-
+den_tol     = 1.e-6
+rel_tol     = 1.e-6
+max_iter    = 20
 
 <problem>
-Omega      = 2.1E-5           # Rotational frequency, 1/s
 Ts         = 5000.            # Surface temperature, K
 Ps         = 1.E7             # Surface pressure, Pa
 Tmin       = 1600.            # isothermal temperature, K
-bflux      = 0                # bottom upward flux, w/m^2
-
-sponge_tau = 1.E5
-sponge_layer = 10

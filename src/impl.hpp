@@ -39,6 +39,7 @@ class FITSOutputGroup;
 
 class CelestrialBody;
 class CubedSphere;
+class SingleColumn;
 
 class ExchangerBase;
 
@@ -58,6 +59,7 @@ class MeshBlock::Impl {
   std::shared_ptr<TurbulenceModel> pturb;
   std::shared_ptr<CelestrialBody> planet;
   std::shared_ptr<CubedSphere> pexo3;
+  std::shared_ptr<SingleColumn> pscm;
 
   // StaticVariablePtr pstatic;
 

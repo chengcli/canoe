@@ -115,7 +115,7 @@ void EquationOfState::ConservedToPrimitive(
         w_p = gm1 * (u_e - KE) * feps / fsig;
       }
 
-      fix_eos_cons2prim(pmb, prim, k, j, il, iu);
+      fix_eos_cons2prim(pmb, prim, cons, k, j, il, iu);
       check_eos_cons2prim(prim, k, j, il, iu);
     }
 
