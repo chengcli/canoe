@@ -64,8 +64,8 @@ std::array<Real, 2> SingleColumn::findAdiabaticMassEnthalpy(AirParcel air,
       density += air.w[n];
     }
 
-    mass1 += density * vol_(il);
-    enthalpy1 += (air.w[IEN] + density * grav * pcoord->x1v(il)) * vol_(il);
+    mass1 += density * vol_(i);
+    enthalpy1 += (air.w[IEN] + density * grav * pcoord->x1v(i)) * vol_(i);
     pthermo->Extrapolate(&air, pcoord->dx1f(i),
                          Thermodynamics::Method::ReversibleAdiabat, grav);
   }
