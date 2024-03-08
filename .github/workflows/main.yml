@@ -2,10 +2,10 @@ name: Linux-Build
 on:
   push:
     branches:
-      - exocubed_rt
+      - main
   pull_request:
     branches:
-      - exocubed_rt
+      - main
     types: [opened, synchronize, reopened, ready_for_review]
 
 env:

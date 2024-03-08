@@ -82,85 +82,6 @@ void check_eos_cons2prim(AthenaArray<Real> const& prim, int k, int j, int il,
 #endif  // ENABLE_GLOG
 }
 
-// dirty fix for negative pressure and density
-void fix_eos_cons2prim(MeshBlock* pmb, AthenaArray<Real>& prim,
-                       AthenaArray<Real>& cons, int k, int j, int il, int iu) {
-  auto pthermo = Thermodynamics::GetInstance();
-  auto pcoord = pmb->pcoord;
-  auto pscm = pmb->pimpl->pscm;
-
-  Real Rd = pthermo->GetRd();
-  Real grav = pmb->phydro->hsrc.GetG1();
-
-  int ifix = il;
-  for (; ifix <= iu; ++ifix) {
-    if ((prim(IDN, k, j, ifix) < 0.) || std::isnan(prim(IDN, k, j, ifix)) ||
-        (prim(IPR, k, j, ifix) < 0.) || std::isnan(prim(IPR, k, j, ifix))) {
-      break;
-    }
-  }
-
-  AirColumn ac(pmb->ncells1);
-  for (int i = ifix - 1; i <= iu; ++i) {
-    ac[i].SetType(AirParcel::Type::MassFrac);
-    for (int n = 0; n < NHYDRO; ++n) {
-      ac[i].w[n] = prim(n, k, j, i);
-    }
-  }
-
-  pscm->ConvectiveAdjustment(ac, k, j, ifix - 1, iu);
-
-  for (int i = ifix - 1; i <= iu; ++i) {
-    ac[i].ToMassFraction();
-    for (int n = 0; n < NHYDRO; ++n) {
-      prim(n, k, j, i) = ac[i].w[n];
-    }
-
-    ac[i].ToMassConcentration();
-    for (int n = 0; n < NHYDRO; ++n) {
-      cons(n, k, j, i) = ac[i].w[n];
-    }
-  }
-
-  /*Real temp = pthermo->GetTemp(pmb, k, j, ifix - 1);
-  for (int i = ifix; i <= iu; ++i) {
-    Real z = pcoord->x1v(i) - pcoord->x1v(ifix - 1);
-    prim(IDN, k, j, i) =
-        prim(IDN, k, j, ifix - 1) * exp(grav * z / (Rd * temp));
-    prim(IPR, k, j, i) =
-        prim(IPR, k, j, ifix - 1) * exp(grav * z / (Rd * temp));
-    prim(IVX, k, j, i) /= 2.;
-    prim(IVY, k, j, i) /= 2.;
-    prim(IVZ, k, j, i) /= 2.;
-  }*/
-}
-
-void fix_reconstruct_x1(MeshBlock* pmb, AthenaArray<Real>& wl,
-                        AthenaArray<Real>& wr, AthenaArray<Real> const& w,
-                        int k, int j, int il, int iu) {}
-
-void fix_reconstruct_x2(AthenaArray<Real>& wl, AthenaArray<Real>& wr,
-                        AthenaArray<Real> const& w, int k, int j, int il,
-                        int iu) {
-  for (int i = il; i <= iu; ++i) {
-    if (wl(IDN, i) < 0.) wl(IDN, i) = w(IDN, k, j - 1, i);
-    if (wr(IDN, i) < 0.) wr(IDN, i) = w(IDN, k, j, i);
-    if (wl(IPR, i) < 0.) wl(IPR, i) = w(IPR, k, j - 1, i);
-    if (wr(IPR, i) < 0.) wr(IPR, i) = w(IPR, k, j, i);
-  }
-}
-
-void fix_reconstruct_x3(AthenaArray<Real>& wl, AthenaArray<Real>& wr,
-                        AthenaArray<Real> const& w, int k, int j, int il,
-                        int iu) {
-  for (int i = il; i <= iu; ++i) {
-    if (wl(IDN, i) < 0.) wl(IDN, i) = w(IDN, k - 1, j, i);
-    if (wr(IDN, i) < 0.) wr(IDN, i) = w(IDN, k, j, i);
-    if (wl(IPR, i) < 0.) wl(IPR, i) = w(IPR, k - 1, j, i);
-    if (wr(IPR, i) < 0.) wr(IPR, i) = w(IPR, k, j, i);
-  }
-}
-
 void check_reconstruct(AthenaArray<Real> const& wl, AthenaArray<Real> const& wr,
                        int dir, int k, int j, int il, int iu) {
 #ifdef ENABLE_GLOG
@@ -233,8 +154,95 @@ void check_implicit_cons(AthenaArray<Real> const& cons, int il, int iu, int jl,
 #endif  // ENABLE_GLOG
 }
 
+// dirty fix for negative pressure and density
+void fix_eos_cons2prim(MeshBlock* pmb, AthenaArray<Real>& prim,
+                       AthenaArray<Real>& cons, int k, int j, int il, int iu) {
+#ifdef ENABLE_FIX
+  auto pthermo = Thermodynamics::GetInstance();
+  auto pcoord = pmb->pcoord;
+  auto pscm = pmb->pimpl->pscm;
+
+  Real Rd = pthermo->GetRd();
+  Real grav = pmb->phydro->hsrc.GetG1();
+
+  int ifix = il;
+  for (; ifix <= iu; ++ifix) {
+    if ((prim(IDN, k, j, ifix) < 0.) || std::isnan(prim(IDN, k, j, ifix)) ||
+        (prim(IPR, k, j, ifix) < 0.) || std::isnan(prim(IPR, k, j, ifix))) {
+      break;
+    }
+  }
+
+  AirColumn ac(pmb->ncells1);
+  for (int i = ifix - 1; i <= iu; ++i) {
+    ac[i].SetType(AirParcel::Type::MassFrac);
+    for (int n = 0; n < NHYDRO; ++n) {
+      ac[i].w[n] = prim(n, k, j, i);
+    }
+  }
+
+  pscm->ConvectiveAdjustment(ac, k, j, ifix - 1, iu);
+
+  for (int i = ifix - 1; i <= iu; ++i) {
+    ac[i].ToMassFraction();
+    for (int n = 0; n < NHYDRO; ++n) {
+      prim(n, k, j, i) = ac[i].w[n];
+    }
+
+    ac[i].ToMassConcentration();
+    for (int n = 0; n < NHYDRO; ++n) {
+      cons(n, k, j, i) = ac[i].w[n];
+    }
+  }
+
+  /*Real temp = pthermo->GetTemp(pmb, k, j, ifix - 1);
+  for (int i = ifix; i <= iu; ++i) {
+    Real z = pcoord->x1v(i) - pcoord->x1v(ifix - 1);
+    prim(IDN, k, j, i) =
+        prim(IDN, k, j, ifix - 1) * exp(grav * z / (Rd * temp));
+    prim(IPR, k, j, i) =
+        prim(IPR, k, j, ifix - 1) * exp(grav * z / (Rd * temp));
+    prim(IVX, k, j, i) /= 2.;
+    prim(IVY, k, j, i) /= 2.;
+    prim(IVZ, k, j, i) /= 2.;
+  }*/
+
+#endif  // ENABLE_FIX
+}
+
+void fix_reconstruct_x1(MeshBlock* pmb, AthenaArray<Real>& wl,
+                        AthenaArray<Real>& wr, AthenaArray<Real> const& w,
+                        int k, int j, int il, int iu) {}
+
+void fix_reconstruct_x2(AthenaArray<Real>& wl, AthenaArray<Real>& wr,
+                        AthenaArray<Real> const& w, int k, int j, int il,
+                        int iu) {
+#ifdef ENABLE_FIX
+  for (int i = il; i <= iu; ++i) {
+    if (wl(IDN, i) < 0.) wl(IDN, i) = w(IDN, k, j - 1, i);
+    if (wr(IDN, i) < 0.) wr(IDN, i) = w(IDN, k, j, i);
+    if (wl(IPR, i) < 0.) wl(IPR, i) = w(IPR, k, j - 1, i);
+    if (wr(IPR, i) < 0.) wr(IPR, i) = w(IPR, k, j, i);
+  }
+#endif  // ENABLE_FIX
+}
+
+void fix_reconstruct_x3(AthenaArray<Real>& wl, AthenaArray<Real>& wr,
+                        AthenaArray<Real> const& w, int k, int j, int il,
+                        int iu) {
+#ifdef ENABLE_FIX
+  for (int i = il; i <= iu; ++i) {
+    if (wl(IDN, i) < 0.) wl(IDN, i) = w(IDN, k - 1, j, i);
+    if (wr(IDN, i) < 0.) wr(IDN, i) = w(IDN, k, j, i);
+    if (wl(IPR, i) < 0.) wl(IPR, i) = w(IPR, k - 1, j, i);
+    if (wr(IPR, i) < 0.) wr(IPR, i) = w(IPR, k, j, i);
+  }
+#endif  // ENABLE_FIX
+}
+
 void fix_implicit_cons(MeshBlock* pmb, AthenaArray<Real>& cons, int il, int iu,
                        int jl, int ju, int kl, int ku) {
+#ifdef ENABLE_FIX
   auto pthermo = Thermodynamics::GetInstance();
   auto pcoord = pmb->pcoord;
   auto pscm = pmb->pimpl->pscm;
@@ -292,4 +300,5 @@ void fix_implicit_cons(MeshBlock* pmb, AthenaArray<Real>& cons, int il, int iu,
         for (int n = 0; n < NHYDRO; ++n) cons(n, k, j, i) = air.w[n];
       }*/
     }
+#endif  // ENABLE_FIX
 }
