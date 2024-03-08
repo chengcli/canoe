@@ -159,13 +159,24 @@ void Decomposition::RestoreFromEntropy(AthenaArray<Real> &w,
 
   for (int i = il; i <= iu; ++i) {
     wr(IPR, i) += psf_(k, j, i);
-    if (wr(IPR, i) < 0.) wr(IPR, i) = psf_(k, j, i);
+    if (wr(IPR, i) < 0.) {
+      wr(IPR, i) = psf_(k, j, i);
+      Real gamma = gamma_(k, j, i);
+      Real rho = exp((log(w(IPR, k, j, i)) - w(IDN, k, j, i)) / gamma);
+      wr(IDN, i) = rho * pow(wr(IPR, i) / w(IPR, k, j, i), 1. / gamma);
+    } else {
+      wr(IDN, i) = exp((log(wr(IPR, i)) - wr(IDN, i)) / gamma_(k, j, i));
+    }
 
     wl(IPR, i) += psf_(k, j, i);
-    if (wl(IPR, i) < 0.) wl(IPR, i) = psf_(k, j, i);
-
-    wl(IDN, i) = exp((log(wl(IPR, i)) - wl(IDN, i)) / gamma_(k, j, i - 1));
-    wr(IDN, i) = exp((log(wr(IPR, i)) - wr(IDN, i)) / gamma_(k, j, i));
+    if (wl(IPR, i) < 0.) {
+      wl(IPR, i) = psf_(k, j, i);
+      Real gamma = gamma_(k, j, i - 1);
+      Real rho = exp((log(w(IPR, k, j, i - 1)) - w(IDN, k, j, i - 1)) / gamma);
+      wl(IDN, i) = rho * pow(wl(IPR, i) / w(IPR, k, j, i - 1), 1. / gamma);
+    } else {
+      wl(IDN, i) = exp((log(wl(IPR, i)) - wl(IDN, i)) / gamma_(k, j, i - 1));
+    }
   }
 
   check_decomposition(wl, wr, k, j, il, iu);

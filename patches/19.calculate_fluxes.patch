@@ -21,7 +21,7 @@ index eeaf381b..76737a81 100644
    }
  
 +  // decompose pressure to pertubation pressure and hydrostatic pressure
-+  pmb->pimpl->pdec->ChangeToPerturbation(w, kl, ku, jl, ju);
++  pmb->pimpl->pdec->ChangeToEntropy(w, kl, ku, jl, ju);
 +
    for (int k=kl; k<=ku; ++k) {
      for (int j=jl; j<=ju; ++j) {
@@ -39,7 +39,7 @@ index eeaf381b..76737a81 100644
 +#endif
 +
 +      // assemble pressure pertubation
-+      pmb->pimpl->pdec->RestoreFromPerturbation(w, wl_, wr_, k, j, is, ie + 1);
++      pmb->pimpl->pdec->RestoreFromEntropy(w, wl_, wr_, k, j, is, ie + 1);
 +
 +      fix_reconstruct_x1(pmb, wl_, wr_, w, k, j, is, ie + 1);
 +      check_reconstruct(wl_, wr_, X1DIR, k, j, is, ie + 1);
