@@ -11,7 +11,6 @@
 TemperatureAnomaly::TemperatureAnomaly(MeshBlock *pmb)
     : Diagnostics(pmb, "tempa", "Temperature anomaly") {
   type = "SCALARS";
-  units = "K";
   mean_.NewAthenaArray(ncells1_);
   data.NewAthenaArray(ncells3_, ncells2_, ncells1_);
 

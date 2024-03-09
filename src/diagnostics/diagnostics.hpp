@@ -9,6 +9,7 @@
 #include <athena/mesh/mesh.hpp>
 
 // canoe
+#include <configure.hpp>
 #include <virtual_groups.hpp>
 
 // exchanger
@@ -19,7 +20,7 @@ class ParameterInput;
 class Diagnostics : public NamedGroup {
  public:
   // data
-  std::string type, grid, units;
+  std::string type;
   AthenaArray<Real> data;
 
   // functions
@@ -93,19 +94,32 @@ class Curl : public Diagnostics {
   AthenaArray<Real> v3f2_, v2f3_, v1f3_, v3f1_, v2f1_, v1f2_;
 };
 
-/* 3. hydro mean
+// 3. Buoyancy
+class Buoyancy : public Diagnostics {
+ public:
+  Buoyancy(MeshBlock *pmb);
+  virtual ~Buoyancy() {}
+
+  void Finalize(AthenaArray<Real> const &w) override;
+  int GetNumVars() const override { return 1; }
+
+ protected:
+  AthenaArray<Real> pf_;
+  Real grav_;
+};
+
+// 4. hydro mean
 class HydroMean : public Diagnostics {
  public:
   HydroMean(MeshBlock *pmb);
   virtual ~HydroMean();
-  void Progress(AthenaArray<Real> const &w);
-  void Finalize(AthenaArray<Real> const &w);
 
- protected:
-  int last_output_cycle_;
+  void Progress(AthenaArray<Real> const &w) override;
+  void Finalize(AthenaArray<Real> const &w) override;
+  int GetNumVars() const override { return NHYDRO; }
 };
 
-// 4. temperature anomaly
+// 5. temperature anomaly
 class TemperatureAnomaly : public Diagnostics {
  public:
   TemperatureAnomaly(MeshBlock *pmb);
@@ -113,7 +127,7 @@ class TemperatureAnomaly : public Diagnostics {
   void Finalize(AthenaArray<Real> const &w);
 };
 
-// 5. pressure anomaly
+// 6. pressure anomaly
 class PressureAnomaly : public Diagnostics {
  public:
   PressureAnomaly(MeshBlock *pmb);
@@ -124,7 +138,7 @@ class PressureAnomaly : public Diagnostics {
   AthenaArray<Real> pf_;
 };
 
-// 6. eddy flux
+/* 6. eddy flux
 class EddyFlux : public Diagnostics {
  public:
   EddyFlux(MeshBlock *pmb);
@@ -153,17 +167,6 @@ class HorizontalDivergence : public Diagnostics {
   AthenaArray<Real> v2f2_, v3f3_;
 };
 
-// 9. Buoyancy
-class Buoyancy : public Diagnostics {
- public:
-  Buoyancy(MeshBlock *pmb);
-  virtual ~Buoyancy() {}
-  void Finalize(AthenaArray<Real> const &w);
-
- protected:
-  AthenaArray<Real> pf_;
-  Real grav_;
-};
 
 // 10. total radiative flux
 class RadiativeFlux : public Diagnostics {

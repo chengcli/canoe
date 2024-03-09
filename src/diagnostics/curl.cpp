@@ -6,7 +6,6 @@
 #include "diagnostics.hpp"
 
 Curl::Curl(MeshBlock *pmb) : Diagnostics(pmb, "curl") {
-  units = "1/s";
   if (pmb->block_size.nx3 > 1) {
     type = "VECTORS";
     data.NewAthenaArray(3, ncells3_, ncells2_, ncells1_);

@@ -22,9 +22,11 @@ DiagnosticsContainer DiagnosticsFactory::CreateFrom(MeshBlock *pmb,
       diag.push_back(std::make_shared<Divergence>(pmb));
     } else if (name == "curl") {  // 2.
       diag.push_back(std::make_shared<Curl>(pmb));
-      /*} else if (name == "mean") { // 3.
-        diag.push_back(std::make_shared<HydroMean>(pmb));
-      } else if (name == "tempa") { // 4.
+    } else if (name == "b") {  // 3.
+      diag.push_back(std::make_shared<Buoyancy>(pmb));
+    } else if (name == "mean") {  // 4.
+      diag.push_back(std::make_shared<HydroMean>(pmb));
+      /*} else if (name == "tempa") { // 4.
         diag.push_back(std::make_shared<TemperatureAnomaly>(pmb));
       } else if (name == "presa") { // 5.
         diag.push_back(std::make_shared<PressureAnomaly>(pmb));
@@ -34,8 +36,6 @@ DiagnosticsContainer DiagnosticsFactory::CreateFrom(MeshBlock *pmb,
         diag.push_back(std::make_shared<HydroFlux>(pmb));
       } else if (name == "div_h") { // 8.
         diag.push_back(std::make_shared<HorizontalDivergence>(pmb));
-      } else if (name == "b") { // 9.
-        diag.push_back(std::make_shared<Buoyancy>(pmb));
       } else if (name == "radflux") { // 10.
         diag.push_back(std::make_shared<RadiativeFlux>(pmb));
       } else if (name == "am") { // 11.
