@@ -2,9 +2,9 @@
 //  \brief disable hydrodynamic flux
 
 // Athena++
-#include <athena/hydro/hydro.hpp>
 #include <athena/athena.hpp>
 #include <athena/eos/eos.hpp>
+#include <athena/hydro/hydro.hpp>
 
 // canoe
 #include <configure.hpp>
@@ -15,10 +15,9 @@
 #include <microphysics/microphysics.hpp>
 
 void Hydro::RiemannSolver(int const k, int const j, int const il, int const iu,
-                          int const ivx,
-                          AthenaArray<Real> &wl, AthenaArray<Real> &wr,
-                          AthenaArray<Real> &flx, const AthenaArray<Real> &dxw)
-{
+                          int const ivx, AthenaArray<Real> &wl,
+                          AthenaArray<Real> &wr, AthenaArray<Real> &flx,
+                          const AthenaArray<Real> &dxw) {
   int dir = ivx - IVX;
   Real pbar, rhobar, cbar;
   Real wli[NHYDRO], wri[NHYDRO];
@@ -45,13 +44,11 @@ void Hydro::RiemannSolver(int const k, int const j, int const il, int const iu,
     }
 
     rhobar = 0.5 * (wli[IDN] + wri[IDN]);
-    cbar = sqrt(0.5 * gamma *
-                (wli[IPR] + wri[IPR]) / rhobar);
-    pbar = 0.5 * (wli[IPR] + wri[IPR]) + 
+    cbar = sqrt(0.5 * gamma * (wli[IPR] + wri[IPR]) / rhobar);
+    pbar = 0.5 * (wli[IPR] + wri[IPR]) +
            0.5 * (rhobar * cbar) * (wli[ivx] - wri[ivx]);
 
-    for (int n = 0; n < NHYDRO; ++n)
-      flx(n, k, j, i) = 0.;
+    for (int n = 0; n < NHYDRO; ++n) flx(n, k, j, i) = 0.;
     flx(ivx, k, j, i) = pbar;
 
     Real rdl = 1., rdr = 1.;

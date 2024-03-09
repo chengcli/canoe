@@ -60,6 +60,7 @@ class Absorber : public NamedGroup,
                                 AirParcel const& var, int np) const {}
 
   virtual void CheckFail() const {}
+
  public:  // StringRepr
   std::string ToString() const override;
 

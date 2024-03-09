@@ -1,6 +1,6 @@
 // C/C++
-#include <fstream>
 #include <exception>
+#include <fstream>
 
 // athena
 #include <athena/athena.hpp>
@@ -11,7 +11,7 @@
 std::tuple<AthenaArray<double>, std::vector<double>, std::vector<double>>
 read_cia_reform(std::string filename) {
   std::ifstream file{filename};  // open file
-  AthenaArray<double> data;        // create storage array
+  AthenaArray<double> data;      // create storage array
   std::vector<double> temperature_axis;
   std::vector<double> spectral_axis;
   if (file.good()) {

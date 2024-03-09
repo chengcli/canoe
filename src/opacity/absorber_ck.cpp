@@ -51,8 +51,7 @@ void AbsorberCK::LoadCoefficient(std::string fname, size_t bid) {
 #endif
 }
 
-Real AbsorberCK::GetAttenuation(Real g1, Real g2,
-                                AirParcel const& var) const {
+Real AbsorberCK::GetAttenuation(Real g1, Real g2, AirParcel const& var) const {
   // first axis is wavenumber, second is pressure, third is temperature anomaly
   Real val, coord[3] = {log(var.q[IPR]), var.q[IDN], g1};
   interpn(&val, coord, kcoeff_.data(), axis_.data(), len_, 3, 1);

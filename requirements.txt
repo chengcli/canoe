@@ -1,6 +1,7 @@
 astropy
 black
 breathe
+checksumdir
 cmakelang
 cpplint
 myst-parser
@@ -9,4 +10,3 @@ numpy
 pre-commit
 sphinx_rtd_theme
 tqdm
-checksumdir

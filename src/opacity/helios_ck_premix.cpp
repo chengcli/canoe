@@ -1,8 +1,8 @@
 // C/C++
-#include <iostream>
-#include <fstream>
-#include <vector>
 #include <cmath>
+#include <fstream>
+#include <iostream>
+#include <vector>
 
 // canoe
 #include <air_parcel.hpp>
@@ -14,8 +14,7 @@
 // opacity
 #include "absorber_ck.hpp"
 
-void HeliosCKPremix::LoadCoefficient(std::string fname, size_t bid) 
-{
+void HeliosCKPremix::LoadCoefficient(std::string fname, size_t bid) {
   std::ifstream file(fname);
   if (!file.is_open()) {
     throw std::runtime_error("Failed to open file: " + fname);
@@ -88,5 +87,5 @@ Real HeliosCKPremix::GetAttenuation(Real g1, Real g2,
   Real val, coord[3] = {var.q[IDN], log(var.q[IPR]), g1};
   interpn(&val, coord, kcoeff_.data(), axis_.data(), len_, 3, 1);
   Real dens = var.q[IPR] / (Constants::kBoltz * var.q[IDN]);
-  return exp(val) * dens; // ln(cm^2 / molecule) -> 1/m
+  return exp(val) * dens;  // ln(cm^2 / molecule) -> 1/m
 }
