@@ -21,6 +21,11 @@ file_type  = netcdf
 variable   = uov
 dt         = 300.
 
+<output4>
+file_type  = netcdf
+variable   = diag
+dt         = 300.
+
 <time>
 cfl_number = 0.9          # The Courant, Friedrichs, & Lewy (CFL) Number
 nlim       = -1           # cycle limit
@@ -64,3 +69,5 @@ zr    = 2.E3
 p0    = 1.E5
 Ts    = 300.
 K     = 75.
+
+diagnostics = div,curl
