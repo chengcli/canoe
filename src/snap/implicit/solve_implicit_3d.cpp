@@ -92,7 +92,6 @@ void ImplicitSolver::SolveImplicit3D(AthenaArray<Real> &du,
         }
   }
 
-
   // X1DIR
   if (implicit_flag_ & 1) {
     SetDirection(X1DIR);

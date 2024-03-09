@@ -48,10 +48,9 @@ Real FreedmanSimple2::GetAttenuation(Real wave1, Real wave2,
   //   result = 2.28e-6*pow(p, 0.53);
   // else
   // result = 1.e-6 * pow(p, 0.5);  // visible opacity scale in disort
-  
-  
-  //Shami intercomparison 2024 from Guillot
-    result = 1.e-3;
+
+  // Shami intercomparison 2024 from Guillot
+  result = 1.e-3;
 
   Real dens = p * mu / (Constants::Rgas * T);  // kg/m^3
                                                //  if (p > 5e1)

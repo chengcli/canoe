@@ -27,7 +27,7 @@ class AbsorberCK : public Absorber {
   std::vector<Real> kcoeff_;
 };
 
-class HeliosCKPremix: public AbsorberCK {
+class HeliosCKPremix : public AbsorberCK {
  public:
   HeliosCKPremix(std::string name) : AbsorberCK(name) {}
   virtual ~HeliosCKPremix() {}

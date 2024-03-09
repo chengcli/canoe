@@ -243,6 +243,6 @@ void Hydro::RiemannSolver(const int k, const int j, const int il, const int iu,
     flx(IVZ, k, j, i) = tz + ty * cth;
   }
 #endif  // CUBED_SPHERE
-  
+
   check_hydro_riemann_solver_flux(flx, ivx, k, j, il, iu);
 }

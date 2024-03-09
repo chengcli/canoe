@@ -60,7 +60,7 @@ RadiationBand::RTSolverDisort::RTSolverDisort(RadiationBand *pmy_band,
 
   if (pmy_band->HasPar("albedo")) {
     ds_.bc.albedo = pmy_band->GetPar<Real>("albedo");
-  } else { 
+  } else {
     ds_.bc.albedo = 1.;
   }
 
@@ -209,7 +209,6 @@ void RadiationBand::RTSolverDisort::Prepare(MeshBlock const *pmb, int k,
     pmb->pcoord->Face1Area(k, j, pmb->is, pmb->ie + 1, farea_);
     pmb->pcoord->CellVolume(k, j, pmb->is, pmb->ie, vol_);
   }
-
 
   auto &&uphi_umu = RadiationHelper::get_direction_grids(pmy_band_->rayOutput_);
   auto &uphi = uphi_umu.first;

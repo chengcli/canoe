@@ -5,6 +5,7 @@
 
 // external
 #include <gtest/gtest.h>
+
 #include <application/application.hpp>
 
 // opacity

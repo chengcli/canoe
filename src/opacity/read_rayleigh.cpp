@@ -1,7 +1,7 @@
 // C/C++
+#include <exception>
 #include <fstream>
 #include <utility>
-#include <exception>
 
 // opacity
 #include "read_rayleigh.hpp"
