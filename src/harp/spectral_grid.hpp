@@ -7,6 +7,14 @@
 #include <utility>
 #include <vector>
 
+// external
+#include <yaml-cpp/yaml.h>
+
+//! radiation direction
+struct Direction {
+  Real mu, phi;
+};
+
 //! \brief Smallest unit of a spectral grid
 struct SpectralBin {
   Real rad, wav1, wav2, wght;

@@ -1,9 +1,12 @@
-#include "../coordinates/coordinates.hpp"
+// athena
+#include <athena/coordinates/coordinates.hpp>
+
+// canoe
 #include "diagnostics.hpp"
 
-PressureAnomaly::PressureAnomaly(MeshBlock *pmb) : Diagnostics(pmb, "presa") {
+PressureAnomaly::PressureAnomaly(MeshBlock *pmb)
+    : Diagnostics(pmb, "presa", "Pressure anomaly") {
   type = "SCALARS";
-  long_name = "Pressure anomaly";
   units = "pa";
   mean_.NewAthenaArray(ncells1_);
   data.NewAthenaArray(ncells3_, ncells2_, ncells1_);

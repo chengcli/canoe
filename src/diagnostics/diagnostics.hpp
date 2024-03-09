@@ -1,66 +1,69 @@
-#ifndef DIAGNOSTICS_HPP_
-#define DIAGNOSTICS_HPP_
+#ifndef SRC_DIAGNOSTICS_HPP_
+#define SRC_DIAGNOSTICS_HPP_
 
-// C++ header
+// C/C++
 #include <string>
 
-// Athena++ headers
-#include "../athena_arrays.hpp"
-#include "../mesh/mesh.hpp"
+// Athena++
+#include <athena/athena_arrays.hpp>
+#include <athena/mesh/mesh.hpp>
+
+// canoe
+#include <virtual_groups.hpp>
+
+// exchanger
+#include <exchanger/exchanger.hpp>
 
 class ParameterInput;
 
-class Diagnostics {
+class Diagnostics : public NamedGroup {
  public:
   // data
-  std::string myname, type, grid;
-  std::string varname, long_name, units;
-  Diagnostics *prev, *next;
+  std::string type, grid, units;
   AthenaArray<Real> data;
-  int ncycle;
 
   // functions
-  Diagnostics(MeshBlock *pmb, ParameterInput *pin);
   Diagnostics(MeshBlock *pmb, std::string name);
   virtual ~Diagnostics();
 
-  Diagnostics *operator[](std::string name);
-
-  template <typename Dg>
-  Diagnostics *AddDiagnostics(Dg const &d) {
-    Dg *pd = new Dg(d);
-    Diagnostics *p = this;
-    while (p->next != nullptr) p = p->next;
-    p->next = pd;
-    p->next->prev = p;
-    p->next->next = nullptr;
-    return p->next;
-  }
-
+  virtual int GetNumVars() const = 0;
   virtual void Progress(AthenaArray<Real> const &w) {}
   virtual void Finalize(AthenaArray<Real> const &w) {}
 
  protected:
   MeshBlock *pmy_block_;
+
   int ncells1_, ncells2_, ncells3_;
+
+  int ncycle_;
 
   //! mean and eddy component
   AthenaArray<Real> mean_, eddy_;
 
   //! MPI color of each rank
   std::vector<int> color_;
+
   //! rank of the bottom block
   std::vector<int> brank_;
 
   //! scratch geometric arrays
-  AthenaArray<Real> x1area_, x2area_, x2area_p1_, x3area_, x3area_p1_, vol_,
-      total_vol_;
   AthenaArray<Real> x1edge_, x1edge_p1_, x2edge_, x2edge_p1_, x3edge_,
       x3edge_p1_;
 
-  void setColor_(int *color, CoordinateDirection dir);
-  void gatherAllData23_(AthenaArray<Real> &total_vol,
+  AthenaArray<Real> x1area_, x2area_, x2area_p1_, x3area_, x3area_p1_;
+
+  AthenaArray<Real> vol_, total_vol_;
+
+  void GatherVolumnData(AthenaArray<Real> &total_vol,
                         AthenaArray<Real> &total_data);
+};
+
+using DiagnosticsPtr = std::shared_ptr<Diagnostics>;
+using DiagnosticsContainer = std::vector<DiagnosticsPtr>;
+
+class DiagnosticsFactory {
+ public:
+  static DiagnosticsContainer CreateFrom(MeshBlock *pmb, ParameterInput *pin);
 };
 
 // register all diagnostics
@@ -69,7 +72,9 @@ class Divergence : public Diagnostics {
  public:
   Divergence(MeshBlock *pmb);
   virtual ~Divergence() {}
-  void Finalize(AthenaArray<Real> const &w);
+
+  void Finalize(AthenaArray<Real> const &w) override;
+  int GetNumVars() const override { return 1; }
 
  protected:
   AthenaArray<Real> v1f1_, v2f2_, v3f3_;
@@ -80,13 +85,15 @@ class Curl : public Diagnostics {
  public:
   Curl(MeshBlock *pmb);
   virtual ~Curl() {}
-  void Finalize(AthenaArray<Real> const &w);
+
+  void Finalize(AthenaArray<Real> const &w) override;
+  int GetNumVars() const override { return 1; }
 
  protected:
   AthenaArray<Real> v3f2_, v2f3_, v1f3_, v3f1_, v2f1_, v1f2_;
 };
 
-// 3. hydro mean
+/* 3. hydro mean
 class HydroMean : public Diagnostics {
  public:
   HydroMean(MeshBlock *pmb);
@@ -112,6 +119,9 @@ class PressureAnomaly : public Diagnostics {
   PressureAnomaly(MeshBlock *pmb);
   virtual ~PressureAnomaly() {}
   void Finalize(AthenaArray<Real> const &w);
+
+ protected:
+  AthenaArray<Real> pf_;
 };
 
 // 6. eddy flux
@@ -165,10 +175,10 @@ class RadiativeFlux : public Diagnostics {
 };
 
 // 11. total angular momentum
-class AngularMomentum : public Diagnostics {
+class SphericalAngularMomentum : public Diagnostics {
  public:
-  AngularMomentum(MeshBlock *pmb);
-  virtual ~AngularMomentum() {}
+  SphericalAngularMomentum(MeshBlock *pmb);
+  virtual ~SphericalAngularMomentum() {}
   void Finalize(AthenaArray<Real> const &w);
 };
 
@@ -192,4 +202,12 @@ class Tendency : public Diagnostics {
   AthenaArray<Real> wh_, up_;
 };
 
-#endif
+class ConvectiveHeatFlux : public Diagnostics {
+ public:
+  ConvectiveHeatFlux(MeshBlock *pmb);
+  virtual ~ConvectiveHeatFlux() {}
+  void Progress(AthenaArray<Real> const &w);
+  void Finalize(AthenaArray<Real> const &w);
+};*/
+
+#endif  // SRC_DIAGNOSTICS_HPP_

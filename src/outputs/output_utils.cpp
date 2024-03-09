@@ -46,7 +46,9 @@ __attribute__((weak)) MetadataTable::MetadataTable() {
             {"eps", "turbulent dissipation", "w/kg", "CCC"},
             {"tke", "turbulent kinetic energy", "J/kg", "CCC"},
             {"mut", "dynamic turbulent viscosity", "kg/(m.s)", "CCC"},
-            {"radiance", "top-of-atmosphere radiance", "K", "RCC"}};
+            {"radiance", "top-of-atmosphere radiance", "K", "RCC"},
+            {"curl", "curl", "1/s", "CCC"},
+            {"div", "divergence", "1/s", "CCC"}};
 }
 
 MetadataTable::~MetadataTable() {

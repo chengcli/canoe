@@ -8,17 +8,18 @@
 
 // athena
 #include <athena/athena.hpp>
+#include <athena/mesh/mesh.hpp>
 #include <athena/parameter_input.hpp>
 
 // climath
 #include <climath/core.h>
 #include <climath/interpolation.h>
 
+// harp
+#include <harp/spectral_grid.hpp>
+
 // utils
 #include <utils/fileio.hpp>
-
-// canoe
-#include <common.hpp>
 
 // astro
 #include "celestrial_body.hpp"
@@ -161,7 +162,8 @@ Real CelestrialBody::ParentDistanceInAu(Real time) const {
                                             equinox - M_PI / 2.)));
 }
 
-CelestrialBodyPtr PlanetFactory::Create(ParameterInput *pin) {
+CelestrialBodyPtr PlanetFactory::CreateFrom(MeshBlock *pmb,
+                                            ParameterInput *pin) {
   if (pin->DoesParameterExist("astronomy", "planet")) {
     std::string name = pin->GetString("astronomy", "planet");
     return std::make_shared<CelestrialBody>(pin, name);

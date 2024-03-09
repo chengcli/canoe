@@ -4,30 +4,31 @@
 #include <mpi.h>
 #endif
 
-#include "../coordinates/coordinates.hpp"
-#include "../reconstruct/interpolation.hpp"
-#include "../thermodynamics/thermodynamics.hpp"
+// athena
+#include <athena/coordinates/coordinates.hpp>
+#include <athena/reconstruct/interpolation.hpp>
+#include <athena/thermodynamics/thermodynamics.hpp>
+
+// canoe
 #include "diagnostics.hpp"
 
-ConvectiveHeatFlx::ConvectiveHeatFlx(MeshBlock *pmb)
-    : Diagnostics(pmb, "conv_heat_flx") {
+EddyFlux::EddyFlux(MeshBlock *pmb)
+    : Diagnostics(pmb, "eddyflux", "Z-coordinate eddy flux");
+{
   type = "VECTORS";
   grid = "--C";
-  long_name = "Z-coordinate convective heat flux (eddy and mean)";
-  units = "W/(m^2)";
   eddy_.NewAthenaArray(NHYDRO, ncells3_, ncells2_, ncells1_);
   mean_.NewAthenaArray(NHYDRO, ncells3_, ncells2_, ncells1_);
-  // eddy heating rate and mean heating rate
-  data.NewAthenaArray(4, 1, 1, ncells1_);
+  data.NewAthenaArray(2 * NHYDRO, 1, 1, ncells1_);
 }
 
-ConvectiveHeatFlx::~ConvectiveHeatFlx() {
+EddyFlux::~EddyFlux() {
   eddy_.DeleteAthenaArray();
   mean_.DeleteAthenaArray();
   data.DeleteAthenaArray();
 }
 
-void ConvectiveHeatFlx::Progress(AthenaArray<Real> const &w) {
+void EddyFlux::Progress(AthenaArray<Real> const &w) {
   MeshBlock *pmb = pmy_block_;
   Coordinates *pcoord = pmb->pcoord;
   Thermodynamics *pthermo = pmb->pthermo;
@@ -74,25 +75,22 @@ void ConvectiveHeatFlx::Progress(AthenaArray<Real> const &w) {
   // take horizontal average
   if (ncycle == 0) std::fill(data.data(), data.data() + data.GetSize(), 0.);
 
-  for (int k = ks; k <= ke; ++k)
-    for (int j = js; j <= je; ++j) {
-      pcoord->CellVolume(k, j, is, ie, vol_);
-      for (int i = is; i <= ie; ++i) {
-        Real Cp = pthermo->GetMeanCp(w.at(k, j, i));
-        data(0, i) += Cp * mean_(IDN, k, j, i) * eddy_(IPR, k, j, i) *
-                      eddy_(IVX, k, j, i) * vol_(i);
-        data(1, i) += Cp * mean_(IDN, k, j, i) * mean_(IPR, k, j, i) *
-                      mean_(IVX, k, j, i) * vol_(i);
-        data(2, i) += -mean_(IDN, k, j, i) * mean_(IVX, k, j, i) * 24.79;
-        data(3, i) += -eddy_(IDN, k, j, i) * eddy_(IVX, k, j, i) * 24.79;
+  for (int n = 0; n < NHYDRO; ++n)
+    for (int k = ks; k <= ke; ++k)
+      for (int j = js; j <= je; ++j) {
+        pcoord->CellVolume(k, j, is, ie, vol_);
+        for (int i = is; i <= ie; ++i) {
+          data(n, i) += eddy_(n, k, j, i) * eddy_(IVX, k, j, i) * vol_(i);
+          data(n + NHYDRO, i) +=
+              mean_(n, k, j, i) * mean_(IVX, k, j, i) * vol_(i);
+        }
       }
-    }
 
   ncycle++;
   delete[] data_sum;
 }
 
-void ConvectiveHeatFlx::Finalize(AthenaArray<Real> const &w) {
+void EddyFlux::Finalize(AthenaArray<Real> const &w) {
   MeshBlock *pmb = pmy_block_;
 
   int is = pmb->is, js = pmb->js, ks = pmb->ks;
@@ -117,7 +115,7 @@ void ConvectiveHeatFlx::Finalize(AthenaArray<Real> const &w) {
     MPI_Allreduce(MPI_IN_PLACE, total_vol, ncells1_, MPI_ATHENA_REAL, MPI_SUM,
                   MPI_COMM_WORLD);
 #endif
-    for (int n = 0; n < 4; ++n)
+    for (int n = 0; n < 2 * NHYDRO; ++n)
       for (int i = is; i <= ie; ++i) data(n, i) /= ncycle * total_vol[i];
   }
 

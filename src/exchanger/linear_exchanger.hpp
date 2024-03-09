@@ -5,9 +5,6 @@
 #include <athena/globals.hpp>
 #include <athena/mesh/mesh.hpp>
 
-// canoe
-#include "common.hpp"
-
 // exchanger
 #include "exchanger.hpp"
 

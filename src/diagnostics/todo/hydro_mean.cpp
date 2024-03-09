@@ -1,6 +1,11 @@
-#include "../coordinates/coordinates.hpp"
-#include "../reconstruct/interpolation.hpp"
-#include "../thermodynamics/thermodynamics.hpp"
+// athena
+#include <athena/coordinates/coordinates.hpp>
+#include <athena/reconstruct/interpolation.hpp>
+
+// snap
+#include <snap/thermodynamics/thermodynamics.hpp>
+
+// canoe
 #include "diagnostics.hpp"
 
 HydroMean::HydroMean(MeshBlock *pmb) : Diagnostics(pmb, "mean") {
@@ -22,6 +27,8 @@ HydroMean::HydroMean(MeshBlock *pmb) : Diagnostics(pmb, "mean") {
   units += "K";
   varname += "T_bar";
   long_name += "mean temperature";
+
+  SetLongName(long_name);
 
   data.NewAthenaArray(NHYDRO, ncells3_, ncells2_, ncells1_);
 }

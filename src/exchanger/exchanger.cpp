@@ -2,9 +2,6 @@
 #include <athena/bvals/bvals.hpp>
 #include <athena/mesh/mesh.hpp>
 
-// canoe
-#include <common.hpp>
-
 namespace ExchangerHelper {
 
 NeighborBlock const *find_bot_neighbor(MeshBlock const *pmb) {

@@ -14,6 +14,7 @@
 class ParameterInput;
 struct float_triplet;
 struct Direction;
+class Meshblock;
 
 class CelestrialBody : public NamedGroup {
  public:
@@ -67,7 +68,7 @@ Real GetGravity(char const *name, Real pclat);
 
 class PlanetFactory {
  public:
-  static CelestrialBodyPtr Create(ParameterInput *pin);
+  static CelestrialBodyPtr CreateFrom(MeshBlock *pmb, ParameterInput *pin);
 };
 
 #endif  // SRC_ASTRO_CELESTRIAL_BODY_HPP_

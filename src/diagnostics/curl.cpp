@@ -1,9 +1,11 @@
-#include "../coordinates/coordinates.hpp"
-#include "../reconstruct/interpolation.hpp"
+// athena
+#include <athena/coordinates/coordinates.hpp>
+#include <athena/reconstruct/interpolation.hpp>
+
+// canoe
 #include "diagnostics.hpp"
 
 Curl::Curl(MeshBlock *pmb) : Diagnostics(pmb, "curl") {
-  long_name = "curl";
   units = "1/s";
   if (pmb->block_size.nx3 > 1) {
     type = "VECTORS";

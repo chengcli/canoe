@@ -1,13 +1,18 @@
-#include "../coordinates/coordinates.hpp"
-#include "../hydro/hydro.hpp"
-#include "../hydro/srcterms/hydro_srcterms.hpp"
-#include "../thermodynamics/thermodynamics.hpp"
+// athena
+#include <athena/coordinates/coordinates.hpp>
+#include <athena/hydro/hydro.hpp>
+#include <athena/hydro/srcterms/hydro_srcterms.hpp>
+
+// snap
+#include <snap/thermodynamics/thermodynamics.hpp>
+
+// canoe
 #include "diagnostics.hpp"
 
-LatentHeating::LatentHeating(MeshBlock *pmb) : Diagnostics(pmb, "Lvheating") {
+LatentHeating::LatentHeating(MeshBlock *pmb)
+    : Diagnostics(pmb, "Lvheating", "Latent Heating") {
   type = "SCALARS";
   grid = "--C";
-  long_name = "Latent Heating";
   units = "W/m^3";
   data.NewAthenaArray(1, 1, 1, ncells1_);
 }

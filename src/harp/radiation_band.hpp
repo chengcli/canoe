@@ -15,7 +15,6 @@
 
 // canoe
 #include <air_parcel.hpp>
-#include <common.hpp>
 #include <virtual_groups.hpp>
 
 // exchanger

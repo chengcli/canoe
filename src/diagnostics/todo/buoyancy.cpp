@@ -1,12 +1,14 @@
-#include "../coordinates/coordinates.hpp"
-#include "../hydro/hydro.hpp"
-#include "../hydro/srcterms/hydro_srcterms.hpp"
-#include "../reconstruct/interpolation.hpp"
+// athena
+#include <athena/coordinates/coordinates.hpp>
+#include <athena/hydro/hydro.hpp>
+#include <athena/hydro/srcterms/hydro_srcterms.hpp>
+#include <athena/reconstruct/interpolation.hpp>
+
+// diagnostics
 #include "diagnostics.hpp"
 
-Buoyancy::Buoyancy(MeshBlock* pmb) : Diagnostics(pmb, "b") {
+Buoyancy::Buoyancy(MeshBlock* pmb) : Diagnostics(pmb, "b", "buoyancy") {
   type = "SCALARS";
-  long_name = "buoyancy";
   units = "m/s^2";
   data.NewAthenaArray(ncells3_, ncells2_, ncells1_);
   pf_.NewAthenaArray(ncells3_, ncells2_, ncells1_ + 1);
