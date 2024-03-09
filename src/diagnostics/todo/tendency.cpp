@@ -1,6 +1,11 @@
-#include "../coordinates/coordinates.hpp"
-#include "../globals.hpp"
-#include "../particles/particles.hpp"
+// athena
+#include <athena/coordinates/coordinates.hpp>
+#include <athena/globals.hpp>
+
+// nbody
+#include <nbody/particles/particles.hpp>
+
+// canoe
 #include "diagnostics.hpp"
 
 Tendency::Tendency(MeshBlock *pmb) : Diagnostics(pmb, "tendency") {
@@ -27,6 +32,7 @@ Tendency::Tendency(MeshBlock *pmb) : Diagnostics(pmb, "tendency") {
 
   int npart = 0;
   Particles *pp = pmb->ppart;
+
   while (pp != nullptr) {
     npart += pp->u.GetDim4();
     for (int n = 0; n < pp->u.GetDim4(); ++n) {
@@ -38,6 +44,9 @@ Tendency::Tendency(MeshBlock *pmb) : Diagnostics(pmb, "tendency") {
     }
     pp = pp->next;
   }
+
+  SetLongName(long_name);
+
   up_.NewAthenaArray(npart, ncells3_, ncells2_, ncells1_);
   data.NewAthenaArray(NHYDRO + npart, 1, 1, ncells1_);
   last_time_ = 0.;

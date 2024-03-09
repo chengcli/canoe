@@ -26,27 +26,42 @@ __attribute__((weak)) MetadataTable::MetadataTable() {
   Application::Logger app("outputs");
   app->Log("Initialize MetadataTable");
 
-  table_ = {// short name, long name, units, grid location
-            {"x1", "height at cell center", "m", "--C"},
-            {"x1f", "height at cell boundary", "m", "--F"},
-            {"x2", "distance at cell center", "m", "-C-"},
-            {"x2f", "distance at cell boundary", "m", "-F-"},
-            {"x3", "distance at cell center", "m", "C--"},
-            {"x3f", "distance at cell boundary", "m", "F--"},
-            {"rho", "density", "kg/m^3", "CCC"},
-            {"press", "pressure", "pa", "CCC"},
-            {"vel", "velocity", "m/s", "CCC"},
-            {"vapor", "mass mixing ratio of vapor", "kg/kg", "CCC"},
-            {"temp", "temperature", "K", "CCC"},
-            {"theta", "potential temperature", "K", "CCC"},
-            {"thetav", "virtual potential temperature", "K", "CCC"},
-            {"mse", "moist static energy", "J/kg", "CCC"},
-            {"rh1", "relative humidity 1", "1", "CCC"},
-            {"rh2", "relative humidity 2", "1", "CCC"},
-            {"eps", "turbulent dissipation", "w/kg", "CCC"},
-            {"tke", "turbulent kinetic energy", "J/kg", "CCC"},
-            {"mut", "dynamic turbulent viscosity", "kg/(m.s)", "CCC"},
-            {"radiance", "top-of-atmosphere radiance", "K", "RCC"}};
+  table_ = {
+      // short name, long name, units, grid location
+      {"x1", "height at cell center", "m", "--C"},
+      {"x1f", "height at cell boundary", "m", "--F"},
+      {"x2", "distance at cell center", "m", "-C-"},
+      {"x2f", "distance at cell boundary", "m", "-F-"},
+      {"x3", "distance at cell center", "m", "C--"},
+      {"x3f", "distance at cell boundary", "m", "F--"},
+      {"rho", "density", "kg/m^3", "CCC"},
+      {"press", "pressure", "pa", "CCC"},
+      {"vel", "velocity", "m/s", "CCC"},
+      {"vapor", "mass mixing ratio of vapor", "kg/kg", "CCC"},
+      {"temp", "temperature", "K", "CCC"},
+      {"theta", "potential temperature", "K", "CCC"},
+      {"thetav", "virtual potential temperature", "K", "CCC"},
+      {"mse", "moist static energy", "J/kg", "CCC"},
+      {"rh1", "relative humidity 1", "1", "CCC"},
+      {"rh2", "relative humidity 2", "1", "CCC"},
+      {"eps", "turbulent dissipation", "w/kg", "CCC"},
+      {"tke", "turbulent kinetic energy", "J/kg", "CCC"},
+      {"mut", "dynamic turbulent viscosity", "kg/(m.s)", "CCC"},
+      {"radiance", "top-of-atmosphere radiance", "K", "RCC"},
+      {"curl", "curl", "1/s", "CCC"},
+      {"div", "divergence", "1/s", "CCC"},
+      {"b", "buoyancy", "m/s^2", "CCC"},
+      {"rho_bar", "mean density", "kg/m^3", "CCC"},
+      {"q1_bar", "mean vapor 1 mixing ratio", "kg/kg", "CCC"},
+      {"q2_bar", "mean vapor 2 mixing ratio", "kg/kg", "CCC"},
+      {"q3_bar", "mean vapor 3 mixing ratio", "kg/kg", "CCC"},
+      {"vel1_bar", "mean velocity 1", "m/s", "CCC"},
+      {"vel2_bar", "mean velocity 2", "m/s", "CCC"},
+      {"vel3_bar", "mean velocity 3", "m/s", "CCC"},
+      {"T_bar", "mean temperature", "K", "CCC"},
+      {"tempa", "horizontal temperature anomaly", "K", "CCC"},
+      {"presa", "horizontal pressure anomaly", "pa", "CCC"},
+  };
 }
 
 MetadataTable::~MetadataTable() {

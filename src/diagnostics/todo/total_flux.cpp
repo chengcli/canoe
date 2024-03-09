@@ -1,6 +1,11 @@
-#include "../coordinates/coordinates.hpp"
-#include "../globals.hpp"
-#include "../thermodynamics/thermodynamics.hpp"
+// athena
+#include <athena/coordinates/coordinates.hpp>
+#include <athena/globals.hpp>
+
+// snap
+#include <snap/thermodynamics/thermodynamics.hpp>
+
+// canoe
 #include "diagnostics.hpp"
 
 HydroFlux::HydroFlux(MeshBlock *pmb) : Diagnostics(pmb, "hydroflux") {
@@ -23,6 +28,8 @@ HydroFlux::HydroFlux(MeshBlock *pmb) : Diagnostics(pmb, "hydroflux") {
   units += "m.K/s";
   varname += "v1T";
   long_name += "horizontally averaged heat flux";
+
+  SetLongName(long_name);
 
   data.NewAthenaArray(NHYDRO, 1, 1, ncells1_);
 }

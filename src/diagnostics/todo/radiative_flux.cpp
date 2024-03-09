@@ -4,14 +4,20 @@
 #include <mpi.h>
 #endif
 
-#include "../coordinates/coordinates.hpp"
-#include "../radiation/radiation.hpp"
+// athena
+#include <athena/coordinates/coordinates.hpp>
+
+// harp
+#include <harp/radiation.hpp>
+
+// canoe
 #include "diagnostics.hpp"
 
-RadiativeFlux::RadiativeFlux(MeshBlock *pmb) : Diagnostics(pmb, "radflux") {
+RadiativeFlux::RadiativeFlux(MeshBlock *pmb)
+    : Diagnostics(pmb, "radflux",
+                  "total upward radiative flux,total downward radiative flux") {
   type = "VECTORS";
   grid = "--F";
-  long_name = "total upward radiative flux,total downward radiative flux";
   units = "w/m^2";
   // 0: upward flux
   // 1: downward flux

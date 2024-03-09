@@ -12,6 +12,9 @@
 #include <harp/radiation.hpp>
 #include <harp/radiation_band.hpp>
 
+// diagnostics
+#include <diagnostics/diagnostics.hpp>
+
 // outputs
 #include "output_utils.hpp"
 
@@ -19,6 +22,20 @@ void OutputType::loadUserOutputData(MeshBlock *pmb) {
   OutputData *pod;
   auto phyd = pmb->phydro;
   auto prad = pmb->pimpl->prad;
+  auto all_diags = pmb->pimpl->all_diags;
+
+  // diagnostic
+  if (output_params.variable.compare("diag") == 0) {
+    for (auto &diag : all_diags) {
+      diag->Finalize(phyd->w);
+      pod = new OutputData;
+      pod->type = diag->type;
+      pod->name = diag->GetName();
+      pod->data.InitWithShallowSlice(diag->data, 4, 0, diag->data.GetDim4());
+      AppendOutputDataNode(pod);
+      num_vars_ += diag->GetNumVars();
+    }
+  }
 
   // vapor
   if (NVAPOR > 0) {

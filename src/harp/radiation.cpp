@@ -25,7 +25,6 @@
 #include <utils/vectorize.hpp>
 
 // canoe
-#include <common.hpp>
 #include <impl.hpp>
 
 // harp
@@ -162,7 +161,7 @@ void Radiation::CalRadiance(MeshBlock const *pmb, int k, int j) {
   }
 }
 
-void Radiation::CalTimeStep(MeshBlock const* pmb, int k, int j, int il,
+void Radiation::CalTimeStep(MeshBlock const *pmb, int k, int j, int il,
                             int iu) {
   Real total_flux1 = 0., total_flux2 = 0.;
   auto pcoord = pmb->pcoord;
@@ -178,8 +177,8 @@ void Radiation::CalTimeStep(MeshBlock const* pmb, int k, int j, int il,
     for (size_t b = 0; b < bands_.size(); ++b) {
       total_flux2 += flxup(b, k, j, i + 1) - flxdn(b, k, j, i + 1);
     }
-    rtime(k, j, i) = pcoord->dx1f(i) * phydro->u(IEN, k, j, i) 
-      / (total_flux2 - total_flux1);
+    rtime(k, j, i) =
+        pcoord->dx1f(i) * phydro->u(IEN, k, j, i) / (total_flux2 - total_flux1);
     total_flux1 = total_flux2;
     if (rtime(k, j, i) > 0.) {
       time_step_ = std::min(time_step_, rtime(k, j, i));

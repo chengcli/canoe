@@ -24,11 +24,19 @@ class OutputParameters;
 class NamedGroup {
  public:
   explicit NamedGroup(std::string name) : myname_(name) {}
+  NamedGroup(std::string name, std::string long_name)
+      : myname_(name), long_name_(long_name) {}
+
   virtual ~NamedGroup() {}
+
   std::string GetName() const { return myname_; }
+  std::string GetLongName() const { return long_name_; }
+  void SetName(std::string name) { myname_ = name; }
+  void SetLongName(std::string long_name) { long_name_ = long_name; }
 
  private:
   std::string myname_;
+  std::string long_name_;
 };
 
 class FlagGroup {

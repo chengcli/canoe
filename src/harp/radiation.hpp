@@ -10,9 +10,6 @@
 // athena
 #include <athena/athena.hpp>
 
-// canoe
-#include <common.hpp>  // Direction
-
 // harp
 #include "radiation_band.hpp"
 

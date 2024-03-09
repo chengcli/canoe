@@ -40,6 +40,9 @@
 // single column
 #include "single_column/single_column.hpp"
 
+// diagnostics
+#include "diagnostics/diagnostics.hpp"
+
 // canoe
 #include "impl.hpp"
 #include "index_map.hpp"
@@ -75,6 +78,9 @@ MeshBlock::Impl::Impl(MeshBlock *pmb, ParameterInput *pin) : pmy_block_(pmb) {
   // particle queue
   all_particles = ParticlesFactory::Create(pmb, pin);
 
+  // diagnostics
+  all_diags = DiagnosticsFactory::CreateFrom(pmb, pin);
+
   // cubed sphere
   pexo3 = std::make_shared<CubedSphere>(pmb);
 
@@ -85,7 +91,7 @@ MeshBlock::Impl::Impl(MeshBlock *pmb, ParameterInput *pin) : pmy_block_(pmb) {
   scheduler = SchedulerFactory::Create(pmb, pin);
 
   // planet
-  planet = PlanetFactory::Create(pin);
+  planet = PlanetFactory::CreateFrom(pmb, pin);
 }
 
 MeshBlock::Impl::~Impl() {}

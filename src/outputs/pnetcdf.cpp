@@ -25,6 +25,9 @@
 #include <harp/radiation.hpp>
 #include <harp/radiation_band.hpp>
 
+// utils
+#include <utils/vectorize.hpp>
+
 // outputs
 #include "output_utils.hpp"
 
@@ -258,34 +261,42 @@ void PnetcdfOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) {
 
   pdata = pfirst_data_;
   while (pdata != nullptr) {
-    std::string grid = pmeta->GetGridType(pdata->name);
-    std::string name, attr;
-    std::vector<std::string> varnames;
+    auto names = Vectorize<std::string>(pdata->name.c_str(), ",");
+
+    std::string grid = pmeta->GetGridType(names[0]);
     int nvar = get_num_variables(grid, pdata->data);
 
-    for (int n = 0; n < nvar; ++n) {
-      size_t pos = pdata->name.find('?');
-      if (nvar == 1) {                     // SCALARS
-        if (pos < pdata->name.length()) {  // find '?'
-          varnames.push_back(pdata->name.substr(0, pos) +
-                             pdata->name.substr(pos + 1));
-        } else {
-          varnames.push_back(pdata->name);
-        }
-      } else {  // VECTORS
-        char c[16];
-        snprintf(c, sizeof(c), "%d", n + 1);
-        if (pos < pdata->name.length()) {  // find '?'
-          varnames.push_back(pdata->name.substr(0, pos) + c +
-                             pdata->name.substr(pos + 1));
-        } else {
-          varnames.push_back(pdata->name + c);
+    std::vector<std::string> varnames;
+    if (names.size() >= nvar) {
+      for (int n = 0; n < nvar; ++n) {
+        varnames.push_back(names[n]);
+      }
+    } else {
+      for (int n = 0; n < nvar; ++n) {
+        size_t pos = pdata->name.find('?');
+        if (nvar == 1) {                     // SCALARS
+          if (pos < pdata->name.length()) {  // find '?'
+            varnames.push_back(pdata->name.substr(0, pos) +
+                               pdata->name.substr(pos + 1));
+          } else {
+            varnames.push_back(pdata->name);
+          }
+        } else {  // VECTORS
+          char c[16];
+          snprintf(c, sizeof(c), "%d", n + 1);
+          if (pos < pdata->name.length()) {  // find '?'
+            varnames.push_back(pdata->name.substr(0, pos) + c +
+                               pdata->name.substr(pos + 1));
+          } else {
+            varnames.push_back(pdata->name + c);
+          }
         }
       }
     }
 
     for (int n = 0; n < nvar; ++n) {
-      name = varnames[n];
+      auto name = varnames[n];
+
       if (grid == "RCC")  // radiation rays
         ncmpi_def_var(ifile, name.c_str(), NC_FLOAT, 4, iaxisr, ivar);
       else if (grid == "CCF")
@@ -304,7 +315,7 @@ void PnetcdfOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) {
         ncmpi_def_var(ifile, name.c_str(), NC_FLOAT, 4, iaxis, ivar);
 
       // set units
-      attr = pmeta->GetUnits(pdata->name);
+      auto attr = pmeta->GetUnits(pdata->name);
       if (attr != "") {
         ncmpi_put_att_text(ifile, *ivar, "units", attr.length(), attr.c_str());
       }

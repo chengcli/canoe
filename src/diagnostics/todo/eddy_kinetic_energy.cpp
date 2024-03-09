@@ -7,9 +7,11 @@
  */
 
 // Athena++ headers
-#include "../coordinates/coordinates.hpp"
-#include "../globals.hpp"
-#include "../utils/utils.hpp"
+#include <athena/coordinates/coordinates.hpp>
+#include <athena/globals.hpp>
+#include <athena/utils/utils.hpp>
+
+// canoe
 #include "diagnostics.hpp"
 
 // MPI headers
@@ -17,10 +19,10 @@
 #include <mpi.h>
 #endif
 
-EddyKineticEnergy::EddyKineticEnergy(MeshBlock *pmb) : Diagnostics(pmb, "eke") {
+EddyKineticEnergy::EddyKineticEnergy(MeshBlock *pmb)
+    : Diagnostics(pmb, "eke", "eddy kinetic energy, mean kinetic energy") {
   type = "VECTORS";
   grid = "--C";
-  long_name = "eddy kinetic energy,mean kinetic energy";
   units = "J/m^3,J/m^3";
   data.NewAthenaArray(2, 1, 1, ncells1_);
 }
