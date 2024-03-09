@@ -43,7 +43,7 @@ jobs:
       - name: install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y lcov libeigen3-dev
+          sudo apt-get install -y lcov libnetcdf-dev libeigen3-dev
 
       - uses: actions/checkout@v3
         with:
@@ -67,7 +67,7 @@ jobs:
       - name: install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y lcov libeigen3-dev
+          sudo apt-get install -y lcov libnetcdf-dev libeigen3-dev
 
       - uses: actions/checkout@v3
         with:
