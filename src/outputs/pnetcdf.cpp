@@ -25,6 +25,9 @@
 #include <harp/radiation.hpp>
 #include <harp/radiation_band.hpp>
 
+// utils
+#include <utils/vectorize.hpp>
+
 // outputs
 #include "output_utils.hpp"
 
