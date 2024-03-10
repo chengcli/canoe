@@ -5,7 +5,7 @@
 #include <configure.hpp>
 
 // exchanger
-#include <exchanger/linear_exchanger.hpp>
+#include <exchanger/exchanger.hpp>
 
 // harp
 #include "radiation_band.hpp"
@@ -134,9 +134,8 @@ void RadiationBand::Transfer(MeshBlock const *pmb, int n) {
 
   if (nblocks > 1) {
 #ifdef MPI_PARALLEL
-    MPI_Allgather(&send_buffer_[n], size,
-                  MessageTraits<RadiationBand>::mpi_type, &recv_buffer_[n],
-                  size, MessageTraits<RadiationBand>::mpi_type, mpi_comm_);
+    MPI_Allgather(&send_buffer_[n], size, MPI_ATHENA_REAL, &recv_buffer_[n],
+                  size, MPI_ATHENA_REAL, mpi_comm_);
 #endif  // MPI_PARALLEL
   } else {
     recv_buffer_[n].swap(send_buffer_[n]);

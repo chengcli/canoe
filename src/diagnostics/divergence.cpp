@@ -1,5 +1,6 @@
 // athena
 #include <athena/coordinates/coordinates.hpp>
+#include <athena/hydro/hydro.hpp>
 #include <athena/reconstruct/interpolation.hpp>
 
 // canoe
@@ -20,9 +21,9 @@ Divergence::Divergence(MeshBlock *pmb) : Diagnostics(pmb, "div") {
   }
 }
 
-void Divergence::Finalize(AthenaArray<Real> const &w) {
-  MeshBlock *pmb = pmy_block_;
+void Divergence::Finalize(MeshBlock *pmb) {
   Coordinates *pcoord = pmb->pcoord;
+  auto const &w = pmb->phydro->w;
 
   int is = pmb->is, js = pmb->js, ks = pmb->ks;
   int ie = pmb->ie, je = pmb->je, ke = pmb->ke;

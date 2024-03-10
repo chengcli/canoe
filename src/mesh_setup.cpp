@@ -65,7 +65,7 @@ void mesh_setup(ParameterInput*& pinput, Mesh*& pmesh) {
   Thermodynamics::InitFromAthenaInput(pinput);
 
   // n-body
-  ParticlesHelper::commit_mpi_particle_data();
+  ParticleHelper::commit_mpi_particle_data();
 
   try {
     if (cli->res_flag == 0) {

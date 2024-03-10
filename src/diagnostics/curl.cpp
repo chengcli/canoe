@@ -1,5 +1,6 @@
 // athena
 #include <athena/coordinates/coordinates.hpp>
+#include <athena/hydro/hydro.hpp>
 #include <athena/reconstruct/interpolation.hpp>
 
 // canoe
@@ -23,9 +24,10 @@ Curl::Curl(MeshBlock *pmb) : Diagnostics(pmb, "curl") {
   }
 }
 
-void Curl::Finalize(AthenaArray<Real> const &w) {
-  MeshBlock *pmb = pmy_block_;
+void Curl::Finalize(MeshBlock *pmb) {
   Coordinates *pcoord = pmb->pcoord;
+  auto const &w = pmb->phydro->w;
+
   int is = pmb->is, js = pmb->js, ks = pmb->ks;
   int ie = pmb->ie, je = pmb->je, ke = pmb->ke;
 

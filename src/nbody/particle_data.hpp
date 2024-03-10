@@ -47,12 +47,16 @@ struct ParticleData {
 std::ostream& operator<<(std::ostream& os, ParticleData const& mp);
 
 // helper functions
-namespace ParticlesHelper {
+namespace ParticleHelper {
 
 bool check_in_meshblock(ParticleData const& pd, MeshBlock const* pmb);
 void commit_mpi_particle_data();
 void free_mpi_particle_data();
 
-}  // namespace ParticlesHelper
+#ifdef MPI_PARALLEL
+extern MPI_Datatype MPI_PARTICLE_DATA;
+#endif
+
+}  // namespace ParticleHelper
 
 #endif  // SRC_NBODY_PARTICLE_DATA_HPP_

@@ -13,7 +13,7 @@
 #include <virtual_groups.hpp>
 
 // exchanger
-#include <exchanger/neighbor_exchanger.hpp>
+#include <exchanger/exchanger.hpp>
 
 // integrator
 #include <integrator/integrators.hpp>
@@ -32,7 +32,7 @@ class ParticleBase : public NamedGroup,
                      // BinaryOutputGroup,
                      public MeshOutputGroup,
                      public MultiStageIntegrator,
-                     public NeighborExchanger<ParticleBase> {
+                     public Exchanger<ParticleData, 56> {
  public:
   /// public data
   //! particle data container. pc1 is reserved for multi-stage integration
@@ -65,9 +65,11 @@ class ParticleBase : public NamedGroup,
   void TimeIntegrate(Real time, Real dt) override;
   void WeightedAverage(Real ave_wghts[]) override;
 
- public:  // NeighborExchanger functions
+ public:  // Exchanger functions
   void PackData(MeshBlock const *pmb) override;
   bool UnpackData(MeshBlock const *pmb) override;
+  void Transfer(MeshBlock const *pmb, int n = -1) override;
+  void ClearBuffer(MeshBlock const *pmb) override;
 
  protected:
   /// protected data

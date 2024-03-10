@@ -123,7 +123,7 @@ index 2bfc5178..e0fca29d 100644
 +  auto all_diags = pmb->pimpl->all_diags;
 +
 +  for (auto& diag : all_diags) {
-+    diag->Progress(pmb->phydro->w);
++    diag->Progress(pmb);
 +  }
 +
    pmb->UserWorkInLoop();

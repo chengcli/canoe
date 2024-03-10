@@ -10,9 +10,6 @@
 // canoe
 #include <configure.hpp>
 
-// exchanger
-#include <exchanger/message_traits.hpp>
-
 // nbody
 #include "particle_data.hpp"
 #include "particles.hpp"
@@ -35,7 +32,7 @@ std::ostream& operator<<(std::ostream& os, ParticleData const& pt) {
   return os;
 }
 
-namespace ParticlesHelper {
+namespace ParticleHelper {
 
 bool check_in_meshblock(ParticleData const& pd, MeshBlock const* pmb) {
   auto pm = pmb->pmy_mesh;
@@ -53,6 +50,8 @@ bool check_in_meshblock(ParticleData const& pd, MeshBlock const* pmb) {
 #ifdef MPI_PARALLEL
 #include <mpi.h>
 
+MPI_Datatype MPI_PARTICLE_DATA;
+
 void commit_mpi_particle_data() {
   int counts[3] = {1, 2 + NINT_PARTICLE_DATA, 8 + NREAL_PARTICLE_DATA};
   MPI_Datatype types[3] = {MPI_AINT, MPI_INT, MPI_ATHENA_REAL};
@@ -60,14 +59,11 @@ void commit_mpi_particle_data() {
                        offsetof(ParticleData, pid),
                        offsetof(ParticleData, time)};
 
-  MPI_Type_create_struct(3, counts, disps, types,
-                         &MessageTraits<ParticleBase>::mpi_type);
-  MPI_Type_commit(&MessageTraits<ParticleBase>::mpi_type);
+  MPI_Type_create_struct(3, counts, disps, types, &MPI_PARTICLE_DATA);
+  MPI_Type_commit(&MPI_PARTICLE_DATA);
 }
 
-void free_mpi_particle_data() {
-  MPI_Type_free(&MessageTraits<ParticleBase>::mpi_type);
-}
+void free_mpi_particle_data() { MPI_Type_free(&MPI_PARTICLE_DATA); }
 
 #else  // NOT_MPI_PARALLEL
 
@@ -76,4 +72,4 @@ void free_mpi_particle_data() {}
 
 #endif  // MPI_PARALLEL
 
-}  // namespace ParticlesHelper
+}  // namespace ParticleHelper
