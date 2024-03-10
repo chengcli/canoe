@@ -3,6 +3,9 @@
 #include <athena/hydro/hydro.hpp>
 
 // canoe
+#include <configure.hpp>
+
+// diagnostics
 #include "diagnostics.hpp"
 
 PressureAnomaly::PressureAnomaly(MeshBlock *pmb) : Diagnostics(pmb, "presa") {

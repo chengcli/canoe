@@ -43,6 +43,7 @@ Diagnostics::Diagnostics(MeshBlock *pmb, std::string name) : NamedGroup(name) {
 
   vol_.NewAthenaArray(ncells1_);
   total_vol_.NewAthenaArray(ncells1_);
+  total_area_.NewAthenaArray(ncells1_);
 }
 
 Diagnostics::~Diagnostics() {

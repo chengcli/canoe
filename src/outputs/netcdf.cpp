@@ -232,8 +232,10 @@ void NetcdfOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) {
     // count total variables (vector variables are expanded into flat scalars)
     int total_vars = 0;
     while (pdata != nullptr) {
-      std::string grid = pmeta->GetGridType(pdata->name);
+      auto names = Vectorize<std::string>(pdata->name.c_str(), ",");
+      std::string grid = pmeta->GetGridType(names[0]);
       int nvar = get_num_variables(grid, pdata->data);
+
       total_vars += nvar;
       pdata = pdata->pnext;
     }
@@ -249,7 +251,6 @@ void NetcdfOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) {
     pdata = pfirst_data_;
     while (pdata != nullptr) {
       auto names = Vectorize<std::string>(pdata->name.c_str(), ",");
-
       std::string grid = pmeta->GetGridType(names[0]);
       int nvar = get_num_variables(grid, pdata->data);
 
@@ -384,7 +385,8 @@ void NetcdfOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) {
     ivar = var_ids;
     pdata = pfirst_data_;
     while (pdata != nullptr) {
-      std::string grid = pmeta->GetGridType(pdata->name);
+      auto names = Vectorize<std::string>(pdata->name.c_str(), ",");
+      std::string grid = pmeta->GetGridType(names[0]);
       int nvar = get_num_variables(grid, pdata->data);
 
       if (grid == "RCC") {  // radiation rays

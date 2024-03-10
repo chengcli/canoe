@@ -1,7 +1,6 @@
 // athena
 #include <athena/coordinates/coordinates.hpp>
 #include <athena/reconstruct/interpolation.hpp>
-#include <athena/stride_iterator.hpp>
 
 // snap
 #include <snap/thermodynamics/thermodynamics.hpp>
@@ -20,11 +19,8 @@ HydroMean::HydroMean(MeshBlock *pmb) : Diagnostics(pmb, "mean"), ncycle_(0) {
   varname += "T_bar";
 
   SetName(varname);
-
   data.NewAthenaArray(NHYDRO, ncells3_, ncells2_, ncells1_);
 }
-
-HydroMean::~HydroMean() { data.DeleteAthenaArray(); }
 
 void HydroMean::Progress(MeshBlock *pmb) {
   Coordinates *pcoord = pmb->pcoord;

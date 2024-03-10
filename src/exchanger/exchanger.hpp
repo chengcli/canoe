@@ -19,7 +19,7 @@ class MeshBlock;
 class ExchangerBase {
  public:  // constructor and destructor
   ExchangerBase();
-  virtual ~ExchangerBase() {}
+  virtual ~ExchangerBase();
 
   //! \brief Pack data to send buffer
   virtual void PackData(MeshBlock const *pmb) {}
@@ -71,10 +71,6 @@ class Exchanger : public ExchangerBase {
     for (int n = 0; n < N; ++n) {
       req_mpi_send_[n] = MPI_REQUEST_NULL;
       req_mpi_recv_[n] = MPI_REQUEST_NULL;
-    }
-
-    if (mpi_comm_ != MPI_COMM_WORLD) {
-      MPI_Comm_free(&mpi_comm_);
     }
 #endif  // MPI_PARALLEL
   }

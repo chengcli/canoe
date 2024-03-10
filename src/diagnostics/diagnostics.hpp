@@ -47,10 +47,7 @@ class Diagnostics : public NamedGroup {
 
   AthenaArray<Real> x1area_, x2area_, x2area_p1_, x3area_, x3area_p1_;
 
-  AthenaArray<Real> vol_, total_vol_;
-
-  void GatherVolumnData(AthenaArray<Real> &total_vol,
-                        AthenaArray<Real> &total_data);
+  AthenaArray<Real> vol_, total_vol_, total_area_;
 };
 
 using DiagnosticsPtr = std::shared_ptr<Diagnostics>;
@@ -106,7 +103,7 @@ class Buoyancy : public Diagnostics {
 class HydroMean : public Diagnostics {
  public:
   HydroMean(MeshBlock *pmb);
-  virtual ~HydroMean();
+  virtual ~HydroMean() {}
 
   void Progress(MeshBlock *pmb) override;
   void Finalize(MeshBlock *pmb) override;
@@ -116,7 +113,20 @@ class HydroMean : public Diagnostics {
   int ncycle_;
 };
 
-// 5. temperature anomaly
+// 5. horizontal divergence
+class HorizontalDivergence : public Diagnostics {
+ public:
+  HorizontalDivergence(MeshBlock *pmb);
+  virtual ~HorizontalDivergence() {}
+
+  void Finalize(MeshBlock *pmb) override;
+  int GetNumVars() const override { return 1; }
+
+ protected:
+  AthenaArray<Real> v2f2_, v3f3_;
+};
+
+// 6. temperature anomaly
 class TemperatureAnomaly : public Diagnostics, public PlanarExchanger<Real, 0> {
  public:
   TemperatureAnomaly(MeshBlock *pmb);
@@ -130,7 +140,7 @@ class TemperatureAnomaly : public Diagnostics, public PlanarExchanger<Real, 0> {
   AthenaArray<Real> mean_;
 };
 
-// 6. pressure anomaly
+// 7. pressure anomaly
 class PressureAnomaly : public Diagnostics, public PlanarExchanger<Real, 0> {
  public:
   PressureAnomaly(MeshBlock *pmb);
@@ -142,6 +152,34 @@ class PressureAnomaly : public Diagnostics, public PlanarExchanger<Real, 0> {
  protected:
   //! mean component
   AthenaArray<Real> mean_;
+};
+
+// 8. total radiative flux
+class RadiativeFlux : public Diagnostics, public PlanarExchanger<Real, 0> {
+ public:
+  RadiativeFlux(MeshBlock *pmb);
+  virtual ~RadiativeFlux() {}
+
+  void Progress(MeshBlock *pmb) override;
+  void Finalize(MeshBlock *pmb) override;
+  int GetNumVars() const override { return 2; }
+
+ protected:
+  int ncycle_;
+};
+
+// 9. hydro flux
+class HydroFlux : public Diagnostics, public PlanarExchanger<Real, 0> {
+ public:
+  HydroFlux(MeshBlock *pmb);
+  virtual ~HydroFlux() {}
+
+  void Progress(MeshBlock *pmb) override;
+  void Finalize(MeshBlock *pmb) override;
+  int GetNumVars() const override { return NHYDRO; }
+
+ protected:
+  int ncycle_;
 };
 
 /* 6. eddy flux
@@ -157,35 +195,6 @@ class EddyFlux : public Diagnostics {
   AthenaArray<Real> mean_, eddy_;
 };
 
-// 7. hydro flux
-class HydroFlux : public Diagnostics {
- public:
-  HydroFlux(MeshBlock *pmb);
-  virtual ~HydroFlux() {}
-  void Progress(AthenaArray<Real> const &w);
-  void Finalize(AthenaArray<Real> const &w);
-};
-
-// 8. horizontal divergence
-class HorizontalDivergence : public Diagnostics {
- public:
-  HorizontalDivergence(MeshBlock *pmb);
-  virtual ~HorizontalDivergence();
-  void Finalize(AthenaArray<Real> const &w);
-
- protected:
-  AthenaArray<Real> v2f2_, v3f3_;
-};
-
-
-// 10. total radiative flux
-class RadiativeFlux : public Diagnostics {
- public:
-  RadiativeFlux(MeshBlock *pmb);
-  virtual ~RadiativeFlux() {}
-  void Progress(AthenaArray<Real> const &w);
-  void Finalize(AthenaArray<Real> const &w);
-};
 
 // 11. total angular momentum
 class SphericalAngularMomentum : public Diagnostics {

@@ -24,6 +24,14 @@ ExchangerBase::ExchangerBase() {
 #endif  // MPI_PARALLEL
 }
 
+ExchangerBase::~ExchangerBase() {
+#ifdef MPI_PARALLEL
+  if (mpi_comm_ != MPI_COMM_WORLD) {
+    MPI_Comm_free(&mpi_comm_);
+  }
+#endif  // MPI_PARALLEL
+}
+
 void ExchangerBase::setColor(MeshBlock const *pmb, CoordinateDirection dir) {
 #ifdef MPI_PARALLEL
   NeighborBlock bblock, tblock;

@@ -2,10 +2,13 @@
 #include <athena/coordinates/coordinates.hpp>
 #include <athena/hydro/hydro.hpp>
 
+// canoe
+#include <configure.hpp>
+
 // snap
 #include <snap/thermodynamics/thermodynamics.hpp>
 
-// canoe
+// diagnostics
 #include "diagnostics.hpp"
 
 TemperatureAnomaly::TemperatureAnomaly(MeshBlock *pmb)
