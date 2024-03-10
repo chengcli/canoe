@@ -41,6 +41,7 @@ class CelestrialBody;
 class CubedSphere;
 class SingleColumn;
 class Diagnostics;
+class Forcing;
 
 class ExchangerBase;
 
@@ -67,6 +68,7 @@ class MeshBlock::Impl {
   std::vector<std::shared_ptr<Inversion>> all_fits;
   std::vector<std::shared_ptr<ParticleBase>> all_particles;
   std::vector<std::shared_ptr<Diagnostics>> all_diags;
+  std::vector<std::shared_ptr<Forcing>> all_forcings;
 
   // scheduler
   std::shared_ptr<Scheduler> scheduler;

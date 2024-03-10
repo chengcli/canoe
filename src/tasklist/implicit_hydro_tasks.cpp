@@ -25,6 +25,9 @@
 // microphysics
 #include <microphysics/microphysics.hpp>
 
+// forcing
+#include <forcing/forcing.hpp>
+
 // scm
 #include <single_column/single_column.hpp>
 
@@ -210,6 +213,9 @@ TaskStatus ImplicitHydroTasks::AddSourceTerms(MeshBlock *pmb, int stage) {
       // Evaluate the source terms at the time at the beginning of the stage
       ph->hsrc.AddSourceTerms(t_start_stage, dt, ph->flux, ph->w, ps->r,
                               pf->bcc, pmb->pimpl->du, ps->s);
+      for (auto &f : pmb->pimpl->all_forcings) {
+        f->Apply(pmb->pimpl->du, pmb, t_start_stage, dt);
+      }
       // pmb->pphy->ApplyPhysicsPackages(phevi->du, ph->w, pmb->pmy_mesh->time,
       // pmb->pmy_mesh->dt);
     }
@@ -293,16 +299,15 @@ TaskStatus ImplicitHydroTasks::UpdateAllConserved(MeshBlock *pmb, int stage) {
 
   for (int k = ks; k <= ke; k++)
     for (int j = js; j <= je; j++) {
-      // pscm->ConvectiveAdjustment(pmb, k, j, pmb->is, pmb->ie);
-      //  auto &&ac = AirParcelHelper::gather_from_conserved(pmb, k, j, is, ie);
+      auto &&ac = AirParcelHelper::gather_from_conserved(pmb, k, j, is, ie);
 
       // pmicro->AddFrictionalHeating(air_column);
 
-      // pmicro->EvolveSystems(ac, pmb->pmy_mesh->time, pmb->pmy_mesh->dt);
+      pmicro->EvolveSystems(ac, pmb->pmy_mesh->time, pmb->pmy_mesh->dt);
 
-      // pthermo->SaturationAdjustment(ac);
+      pthermo->SaturationAdjustment(ac);
 
-      // AirParcelHelper::distribute_to_conserved(pmb, k, j, is, ie, ac);
+      AirParcelHelper::distribute_to_conserved(pmb, k, j, is, ie, ac);
     }
 
   return TaskStatus::success;
