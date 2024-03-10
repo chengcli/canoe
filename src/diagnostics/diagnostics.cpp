@@ -12,16 +12,21 @@
 // diagnostics
 #include "diagnostics.hpp"
 
-Diagnostics::Diagnostics(MeshBlock *pmb, std::string name)
-    : NamedGroup(name), pmy_block_(pmb), ncycle_(0) {
+Diagnostics::Diagnostics(MeshBlock *pmb, std::string name) : NamedGroup(name) {
   Application::Logger app("main");
   app->Log("Initialize Diagnostics");
 
   ncells1_ = pmb->block_size.nx1 + 2 * (NGHOST);
   ncells2_ = 1;
   ncells3_ = 1;
-  if (pmb->pmy_mesh->f2) ncells2_ = pmb->block_size.nx2 + 2 * (NGHOST);
-  if (pmb->pmy_mesh->f3) ncells3_ = pmb->block_size.nx3 + 2 * (NGHOST);
+
+  if (pmb->pmy_mesh->f2) {
+    ncells2_ = pmb->block_size.nx2 + 2 * (NGHOST);
+  }
+
+  if (pmb->pmy_mesh->f3) {
+    ncells3_ = pmb->block_size.nx3 + 2 * (NGHOST);
+  }
 
   x1edge_.NewAthenaArray(ncells1_ + 1);
   x1edge_p1_.NewAthenaArray(ncells1_);
@@ -38,6 +43,7 @@ Diagnostics::Diagnostics(MeshBlock *pmb, std::string name)
 
   vol_.NewAthenaArray(ncells1_);
   total_vol_.NewAthenaArray(ncells1_);
+  total_area_.NewAthenaArray(ncells1_);
 }
 
 Diagnostics::~Diagnostics() {

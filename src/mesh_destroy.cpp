@@ -72,5 +72,5 @@ void mesh_destroy(ParameterInput *&pinput, Mesh *&pmesh, int mbcnt) {
   Thermodynamics::Destroy();
   IndexMap::Destroy();
   MetadataTable::Destroy();
-  ParticlesHelper::free_mpi_particle_data();
+  ParticleHelper::free_mpi_particle_data();
 }

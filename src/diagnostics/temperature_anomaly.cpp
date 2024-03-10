@@ -1,20 +1,23 @@
 // athena
 #include <athena/coordinates/coordinates.hpp>
-#include <athena/globals.hpp>
+#include <athena/hydro/hydro.hpp>
+
+// canoe
+#include <configure.hpp>
 
 // snap
 #include <snap/thermodynamics/thermodynamics.hpp>
 
-// canoe
+// diagnostics
 #include "diagnostics.hpp"
 
 TemperatureAnomaly::TemperatureAnomaly(MeshBlock *pmb)
-    : Diagnostics(pmb, "tempa", "Temperature anomaly") {
+    : Diagnostics(pmb, "tempa") {
   type = "SCALARS";
   mean_.NewAthenaArray(ncells1_);
   data.NewAthenaArray(ncells3_, ncells2_, ncells1_);
 
-  Regroup(X1DIR);
+  Regroup(pmb, X1DIR);
 
   // calculate total volume
   total_vol_.ZeroClear();
@@ -33,9 +36,9 @@ TemperatureAnomaly::TemperatureAnomaly(MeshBlock *pmb)
 #endif
 }
 
-void TemperatureAnomaly::Finalize(AthenaArray<Real> const &w) {
-  MeshBlock *pmb = pmy_block_;
+void TemperatureAnomaly::Finalize(MeshBlock *pmb) {
   Coordinates *pcoord = pmb->pcoord;
+  auto const &w = pmb->phydro->w;
 
   auto pthermo = Thermodynamics::GetInstance();
 
@@ -50,7 +53,7 @@ void TemperatureAnomaly::Finalize(AthenaArray<Real> const &w) {
       pcoord->CellVolume(k, j, is, ie, vol_);
 
       for (int i = is; i <= ie; ++i)
-        mean_(i) += vol_(i) * pthermo->GetTemp(w.at(k, j, i));
+        mean_(i) += vol_(i) * pthermo->GetTemp(pmb, k, j, i);
     }
 
 #ifdef MPI_PARALLEL
@@ -63,6 +66,6 @@ void TemperatureAnomaly::Finalize(AthenaArray<Real> const &w) {
     for (int j = js; j <= je; ++j)
       for (int i = is; i <= ie; ++i) {
         data(k, j, i) =
-            pthermo->GetTemp(w.at(k, j, i)) - mean_(i) / total_vol_(i);
+            pthermo->GetTemp(pmb, k, j, i) - mean_(i) / total_vol_(i);
       }
 }

@@ -14,8 +14,10 @@ Buoyancy::Buoyancy(MeshBlock* pmb) : Diagnostics(pmb, "b") {
   grav_ = pmb->phydro->hsrc.GetG1();
 }
 
-void Buoyancy::Finalize(AthenaArray<Real> const& w) {
-  MeshBlock* pmb = pmy_block_;
+void Buoyancy::Finalize(MeshBlock* pmb) {
+  Coordinates* pcoord = pmb->pcoord;
+  auto const& w = pmb->phydro->w;
+
   int is = pmb->is, js = pmb->js, ks = pmb->ks;
   int ie = pmb->ie, je = pmb->je, ke = pmb->ke;
 

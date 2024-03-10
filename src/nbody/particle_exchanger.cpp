@@ -13,9 +13,16 @@
 #include <athena/bvals/bvals.hpp>
 #include <athena/mesh/mesh.hpp>
 
+// canoe
+#include <configure.hpp>
+
 // n-body
 #include "particle_data.hpp"
 #include "particles.hpp"
+
+#ifdef MPI_PARALLEL
+#include <mpi.h>
+#endif
 
 bool ParticleBase::UnpackData(MeshBlock const *pmb) {
   bool success = true;
@@ -68,7 +75,7 @@ bool ParticleBase::UnpackData(MeshBlock const *pmb) {
             it->x3 += pm->mesh_size.x3max - pm->mesh_size.x3min;
         }
 
-        bool in_meshblock = ParticlesHelper::check_in_meshblock(*it, pmb);
+        bool in_meshblock = ParticleHelper::check_in_meshblock(*it, pmb);
         if (!in_meshblock) {
           throw RuntimeError("ParticleBase::AttachParticles",
                              "Particle moved out of MeshBlock limits");
@@ -174,4 +181,54 @@ void ParticleBase::PackData(MeshBlock const *pmb) {
 
   // particles beyond qi are inactive particles. Remove them from the list
   pc.resize(qi - pc.begin());
+}
+
+void ParticleBase::Transfer(MeshBlock const *pmb, int n) {
+  for (auto &nb : pmb->pbval->neighbor) {
+    if (nb.snb.rank == Globals::my_rank) {  // on the same process
+      MeshBlock *neighbor = pmb->pmy_mesh->FindMeshBlock(nb.snb.gid);
+      auto exchanger = static_cast<ParticleBase *>(
+          neighbor->pimpl->GetExchanger("Particle"));
+      exchanger->recv_buffer_[nb.targetid].swap(send_buffer_[nb.bufid]);
+      exchanger->SetBoundaryStatus(nb.targetid, BoundaryStatus::arrived);
+    }
+#ifdef MPI_PARALLEL
+    else {  // MPI
+      int tag =
+          ExchangerHelper::create_mpi_tag(nb.snb.lid, nb.targetid, "Particle");
+      int ssize = send_buffer_[nb.bufid].size();
+      MPI_Isend(send_buffer_[nb.bufid].data(), ssize,
+                ParticleHelper::MPI_PARTICLE_DATA, nb.snb.rank, tag, mpi_comm_,
+                &req_mpi_send_[nb.bufid]);
+    }
+#endif
+  }
+
+  int rsize, tag;
+
+#ifdef MPI_PARALLEL
+  MPI_Status status;
+  for (auto &nb : pmb->pbval->neighbor) {
+    if (nb.snb.rank == Globals::my_rank) continue;  // local boundary received
+
+    int tag = ExchangerHelper::create_mpi_tag(pmb->lid, nb.bufid, "Particle");
+
+    MPI_Probe(nb.snb.rank, tag, MPI_COMM_WORLD, &status);
+    MPI_Get_count(&status, ParticleHelper::MPI_PARTICLE_DATA, &rsize);
+
+    recv_buffer_[nb.bufid].resize(rsize);
+    MPI_Irecv(recv_buffer_[nb.bufid].data(), rsize,
+              ParticleHelper::MPI_PARTICLE_DATA, nb.snb.rank, tag, mpi_comm_,
+              &req_mpi_recv_[nb.bufid]);
+  }
+#endif
+}
+
+void ParticleBase::ClearBuffer(MeshBlock const *pmb) {
+  for (auto &nb : pmb->pbval->neighbor) {
+#ifdef MPI_PARALLEL
+    if (nb.snb.rank != Globals::my_rank)
+      MPI_Wait(&req_mpi_send_[nb.bufid], MPI_STATUS_IGNORE);
+#endif
+  }
 }

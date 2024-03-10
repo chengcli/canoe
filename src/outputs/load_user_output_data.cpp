@@ -27,7 +27,7 @@ void OutputType::loadUserOutputData(MeshBlock *pmb) {
   // diagnostic
   if (output_params.variable.compare("diag") == 0) {
     for (auto &diag : all_diags) {
-      diag->Finalize(phyd->w);
+      diag->Finalize(pmb);
       pod = new OutputData;
       pod->type = diag->type;
       pod->name = diag->GetName();

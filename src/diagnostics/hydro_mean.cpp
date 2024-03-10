@@ -1,7 +1,6 @@
 // athena
 #include <athena/coordinates/coordinates.hpp>
 #include <athena/reconstruct/interpolation.hpp>
-#include <athena/stride_iterator.hpp>
 
 // snap
 #include <snap/thermodynamics/thermodynamics.hpp>
@@ -9,7 +8,7 @@
 // canoe
 #include "diagnostics.hpp"
 
-HydroMean::HydroMean(MeshBlock *pmb) : Diagnostics(pmb, "mean") {
+HydroMean::HydroMean(MeshBlock *pmb) : Diagnostics(pmb, "mean"), ncycle_(0) {
   type = "VECTORS";
   std::string varname = "rho_bar,";
 
@@ -20,14 +19,12 @@ HydroMean::HydroMean(MeshBlock *pmb) : Diagnostics(pmb, "mean") {
   varname += "T_bar";
 
   SetName(varname);
-
   data.NewAthenaArray(NHYDRO, ncells3_, ncells2_, ncells1_);
 }
 
-HydroMean::~HydroMean() { data.DeleteAthenaArray(); }
-
-void HydroMean::Progress(AthenaArray<Real> const &w) {
-  MeshBlock *pmb = pmy_block_;
+void HydroMean::Progress(MeshBlock *pmb) {
+  Coordinates *pcoord = pmb->pcoord;
+  auto const &w = pmb->phydro->w;
 
   int is = pmb->is, js = pmb->js, ks = pmb->ks;
   int ie = pmb->ie, je = pmb->je, ke = pmb->ke;
@@ -41,19 +38,23 @@ void HydroMean::Progress(AthenaArray<Real> const &w) {
   for (int n = 0; n < IPR; ++n)
     for (int k = ks; k <= ke; ++k)
       for (int j = js; j <= je; ++j)
-        for (int i = is; i <= ie; ++i) data(n, k, j, i) += w(n, k, j, i);
+        for (int i = is; i <= ie; ++i) {
+          data(n, k, j, i) += w(n, k, j, i);
+        }
 
   // Temperature field is save in IPR
   for (int k = ks; k <= ke; ++k)
     for (int j = js; j <= je; ++j)
-      for (int i = is; i <= ie; ++i)
+      for (int i = is; i <= ie; ++i) {
         data(IPR, k, j, i) += pthermo->GetTemp(pmb, k, j, i);
+      }
 
   ncycle_++;
 }
 
-void HydroMean::Finalize(AthenaArray<Real> const &w) {
-  MeshBlock *pmb = pmy_block_;
+void HydroMean::Finalize(MeshBlock *pmb) {
+  Coordinates *pcoord = pmb->pcoord;
+  auto const &w = pmb->phydro->w;
 
   int is = pmb->is, js = pmb->js, ks = pmb->ks;
   int ie = pmb->ie, je = pmb->je, ke = pmb->ke;
@@ -72,12 +73,15 @@ void HydroMean::Finalize(AthenaArray<Real> const &w) {
     for (int n = 0; n < IPR; ++n)
       for (int k = ks; k <= ke; ++k)
         for (int j = js; j <= je; ++j)
-          for (int i = is; i <= ie; ++i) data(n, k, j, i) = w(n, k, j, i);
+          for (int i = is; i <= ie; ++i) {
+            data(n, k, j, i) = w(n, k, j, i);
+          }
 
     for (int k = ks; k <= ke; ++k)
       for (int j = js; j <= je; ++j)
-        for (int i = is; i <= ie; ++i)
+        for (int i = is; i <= ie; ++i) {
           data(IPR, k, j, i) = pthermo->GetTemp(pmb, k, j, i);
+        }
   }
 
   // clear cycle
