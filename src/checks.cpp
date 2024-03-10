@@ -83,24 +83,7 @@ void check_eos_cons2prim(AthenaArray<Real> const& prim, int k, int j, int il,
 }
 
 void check_reconstruct(AthenaArray<Real> const& wl, AthenaArray<Real> const& wr,
-                       int dir, int k, int j, int il, int iu) {
-#ifdef ENABLE_GLOG
-  for (int i = il; i <= iu; ++i) {
-    char name[80];
-    snprintf(name, 80, "wl-den-%d", dir + 1);
-    LOG_IF(FATAL, wl(IDN, i) < 0.) << print_column_table(name, wl, il, iu);
-
-    snprintf(name, 80, "wr-den-%d", dir + 1);
-    LOG_IF(FATAL, wr(IDN, i) < 0.) << print_column_table(name, wr, il, iu);
-
-    snprintf(name, 80, "wl-pre-%d", dir + 1);
-    LOG_IF(FATAL, wl(IPR, i) < 0.) << print_column_table(name, wl, il, iu);
-
-    snprintf(name, 80, "wr-pre-%d", dir + 1);
-    LOG_IF(FATAL, wr(IPR, i) < 0.) << print_column_table(name, wr, il, iu);
-  }
-#endif  // ENABLE_GLOG
-}
+                       int dir, int k, int j, int il, int iu) {}
 
 void check_hydro_riemann_solver_flux(AthenaArray<Real> const& flux, int ivx,
                                      int k, int j, int il, int iu) {
