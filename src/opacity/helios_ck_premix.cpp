@@ -20,6 +20,10 @@ void HeliosCKPremix::LoadCoefficient(std::string fname, size_t bid) {
     throw std::runtime_error("Failed to open file: " + fname);
   }
 
+  // skip the first line
+  std::string junk_line;
+  std::getline(file, junk_line);
+
   size_t num_bands;
 
   // temperature, pressure, band, g-points
@@ -56,8 +60,13 @@ void HeliosCKPremix::LoadCoefficient(std::string fname, size_t bid) {
     }
   }
 
-  // g-points and weights
+  // skip unimportant wavelengths
   Real dummy;
+  for (int i = 0; i < num_bands - bid; ++i) {
+    file >> dummy;
+  }
+
+  // g-points and weights
   for (int g = 0; g < len_[2]; ++g) {
     Real gpoint;
     file >> gpoint >> dummy;
@@ -74,7 +83,9 @@ void HeliosCKPremix::LoadCoefficient(std::string fname, size_t bid) {
             kcoeff_[n] = log(std::max(kcoeff_[n], 1.0e-99));
           }
         } else {
-          file >> dummy;
+          for (int g = 0; g < len_[2]; ++g, ++n) {
+            file >> dummy;
+          }
         }
       }
 

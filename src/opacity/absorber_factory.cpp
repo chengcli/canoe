@@ -59,7 +59,7 @@ AbsorberPtr AbsorberFactory::CreateFrom(YAML::Node const& my,
   if (my["data"]) {
     ab->SetOpacityFile(my["data"].as<std::string>());
   } else {
-    ab->SetOpacityFile("kcoeff-" + band_name + ".nc");
+    ab->SetOpacityFile("");
   }
 
   if (my["dependent-species"]) {
@@ -74,8 +74,6 @@ AbsorberPtr AbsorberFactory::CreateFrom(YAML::Node const& my,
   if (my["parameters"]) {
     ab->SetRealsFrom(my["parameters"]);
   }
-
-  ab->CheckFail();
 
   return ab;
 }

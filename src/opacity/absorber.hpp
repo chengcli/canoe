@@ -38,7 +38,7 @@ class Absorber : public NamedGroup,
   void SetOpacityFile(std::string filename);
 
   //! Load opacity from internal variable
-  void LoadOpacity();
+  void LoadOpacity(int bid);
 
   //! Load absorption coefficient from file
   virtual void LoadCoefficient(std::string fname, size_t bid) {}
