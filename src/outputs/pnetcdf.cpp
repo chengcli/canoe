@@ -106,11 +106,9 @@ void PnetcdfOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) {
   if (nx2 > 1) nx2f++;
   size_t nx3f = nx3;
   if (nx3 > 1) nx3f++;
-    //! \todo This applies to the first block. Does it work for all blocks?
+  //! \todo This applies to the first block. Does it work for all blocks?
 
-#if ENABLE_HARP
-  size_t nrays = pm->my_blocks(0)->pimpl->prad->radiance.GetDim3();
-#endif
+  size_t nrays = pm->my_blocks(0)->pimpl->prad->GetNumOutgoingRays();
 
   // 2. define coordinate
   int idt, idx1, idx2, idx3, idx1f, idx2f, idx3f, iray;
@@ -139,12 +137,10 @@ void PnetcdfOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) {
     ndims++;
   }
 
-#if ENABLE_HARP
   if (nrays > 0) {
     ncmpi_def_dim(ifile, "ray", nrays, &iray);
     ndims += 2;
   }
-#endif
 
   // 3. define variables
   int ivt, ivx1, ivx2, ivx3, ivx1f, ivx2f, ivx3f, imu, iphi;
@@ -227,7 +223,6 @@ void PnetcdfOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) {
     }
   }
 
-#if ENABLE_HARP
   if (nrays > 0) {
     ncmpi_def_var(ifile, "mu_out", NC_FLOAT, 1, &iray, &imu);
     ncmpi_put_att_text(ifile, imu, "units", 1, "1");
@@ -236,7 +231,6 @@ void PnetcdfOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) {
     ncmpi_put_att_text(ifile, iphi, "units", 3, "rad");
     ncmpi_put_att_text(ifile, iphi, "long_name", 15, "azimuthal angle");
   }
-#endif
 
   MeshBlock *pmb = pm->my_blocks(0);
   LoadOutputData(pmb);
@@ -419,9 +413,7 @@ void PnetcdfOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) {
     MPI_Offset startr[4] = {0, 0, ncells2 * pmb->loc.lx2,
                             ncells3 * pmb->loc.lx3};
 
-#if ENABLE_HARP
     MPI_Offset countr[4] = {1, (MPI_Offset)nrays, ncells2, ncells3};
-#endif
 
     // MPI_Offset start_ax1[2] = {0, ncells1*pmb->loc.lx1};
     // MPI_Offset count_ax1[2] = {1, ncells1};
@@ -496,25 +488,26 @@ void PnetcdfOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) {
       ERR;
     }
 
-#if ENABLE_HARP
     if (nrays > 0) {
+      auto prad = pmb->pimpl->prad;
       int m = 0;
-      for (auto p : pmb->pimpl->prad->bands) {
-        for (int n = 0; n < p->getNumOutgoingRays(); ++n)
-          (*ib)[m++] = (float)(p->getCosinePolarAngle(n));
+      for (int b = 0; b < prad->GetNumBands(); ++b) {
+        auto p = prad->GetBand(b);
+        for (int n = 0; n < p->GetNumOutgoingRays(); ++n)
+          (*ib)[m++] = (float)(p->GetCosinePolarAngle(n));
       }
       err = ncmpi_iput_var_float(ifile, imu, *ib++, ir++);
       ERR;
 
       m = 0;
-      for (auto p : pmb->pimpl->prad->bands) {
-        for (int n = 0; n < p->getNumOutgoingRays(); ++n)
-          (*ib)[m++] = (float)(p->getAzimuthalAngle(n));
+      for (int b = 0; b < prad->GetNumBands(); ++b) {
+        auto p = prad->GetBand(b);
+        for (int n = 0; n < p->GetNumOutgoingRays(); ++n)
+          (*ib)[m++] = (float)(p->GetAzimuthalAngle(n));
       }
       err = ncmpi_iput_var_float(ifile, iphi, *ib++, ir++);
       ERR;
     }
-#endif
 
     ivar = var_ids;
     pdata = pfirst_data_;
@@ -524,7 +517,6 @@ void PnetcdfOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) {
       int nvar = get_num_variables(grid, pdata->data);
 
       if (grid == "RCC") {  // radiation rays
-#if ENABLE_HARP
         for (int n = 0; n < nvar; n++) {
           float *it = *ib;
           for (int m = 0; m < nrays; ++m)
@@ -535,7 +527,6 @@ void PnetcdfOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) {
                                       ir++);
           ERR;
         }
-#endif
       } else if (grid == "CCF") {
         for (int n = 0; n < nvar; n++) {
           float *it = *ib;
