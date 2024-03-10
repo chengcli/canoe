@@ -5,7 +5,7 @@
 // forcing
 #include "forcing.hpp"
 
-void BotForcing::BotForcing(MeshBlock *pmb, int nvar) {
+BotForcing::BotForcing(MeshBlock *pmb, int nvar) {
   bot_data_.NewAthenaArray(nvar, pmb->ncells3, pmb->ncells2);
 }
 

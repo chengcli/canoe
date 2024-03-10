@@ -43,6 +43,9 @@
 // diagnostics
 #include "diagnostics/diagnostics.hpp"
 
+// forcing
+#include "forcing/forcing.hpp"
+
 // canoe
 #include "impl.hpp"
 #include "index_map.hpp"
@@ -80,6 +83,9 @@ MeshBlock::Impl::Impl(MeshBlock *pmb, ParameterInput *pin) : pmy_block_(pmb) {
 
   // diagnostics
   all_diags = DiagnosticsFactory::CreateFrom(pmb, pin);
+
+  // forcings
+  all_forcings = ForcingFactory::CreateFrom(pmb, pin);
 
   // cubed sphere
   pexo3 = std::make_shared<CubedSphere>(pmb);

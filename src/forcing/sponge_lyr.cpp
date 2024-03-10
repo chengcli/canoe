@@ -3,6 +3,7 @@
 
 // Athena++ headers
 #include <athena/coordinates/coordinates.hpp>
+#include <athena/hydro/hydro.hpp>
 #include <athena/mesh/mesh.hpp>
 
 // climath
@@ -11,7 +12,7 @@
 // forcing
 #include "forcing.hpp"
 
-void TopSpongeLyr::TopSpongeLyr(MeshBlock *pmb, ParameterInput *pin) {
+TopSpongeLyr::TopSpongeLyr(MeshBlock *pmb, ParameterInput *pin) {
   Application::Logger app("forcing");
   app->Log("Initialize Forcing: TopSpongeLyr");
 
@@ -19,7 +20,7 @@ void TopSpongeLyr::TopSpongeLyr(MeshBlock *pmb, ParameterInput *pin) {
   SetPar("tau", pin->GetReal("forcing", "top_sponge_lyr.tau"));
 }
 
-void BotSpongeLyr::BotSpongeLyr(MeshBlock *pmb, ParameterInput *pin) {
+BotSpongeLyr::BotSpongeLyr(MeshBlock *pmb, ParameterInput *pin) {
   Application::Logger app("forcing");
   app->Log("Initialize Forcing: BotSpongeLyr");
 
@@ -27,7 +28,7 @@ void BotSpongeLyr::BotSpongeLyr(MeshBlock *pmb, ParameterInput *pin) {
   SetPar("tau", pin->GetReal("forcing", "bot_sponge_lyr.tau"));
 }
 
-void LeftSpongeLyr::LeftSpongeLyr(MeshBlock *pmb, ParameterInput *pin) {
+LeftSpongeLyr::LeftSpongeLyr(MeshBlock *pmb, ParameterInput *pin) {
   Application::Logger app("forcing");
   app->Log("Initialize Forcing: LeftSpongeLyr");
 
@@ -35,7 +36,7 @@ void LeftSpongeLyr::LeftSpongeLyr(MeshBlock *pmb, ParameterInput *pin) {
   SetPar("tau", pin->GetReal("forcing", "left_sponge_lyr.tau"));
 }
 
-void RightSpongeLyr::RightSpongeLyr(MeshBlock *pmb, ParameterInput *pin) {
+RightSpongeLyr::RightSpongeLyr(MeshBlock *pmb, ParameterInput *pin) {
   Application::Logger app("forcing");
   app->Log("Initialize Forcing: TopSpongeLyr");
 
@@ -68,8 +69,8 @@ void TopSpongeLyr::Apply(AthenaArray<Real> &du, MeshBlock *pmb, Real time,
       }
 }
 
-void BotSpongeLyr::BotSpongeLyr(AthenaArray<Real> &du, MeshBlock *pmb,
-                                Real time, Real dt) {
+void BotSpongeLyr::Apply(AthenaArray<Real> &du, MeshBlock *pmb, Real time,
+                         Real dt) {
   Coordinates *pcoord = pmb->pcoord;
   auto const &w = pmb->phydro->w;
 

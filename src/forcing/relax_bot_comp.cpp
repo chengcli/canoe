@@ -1,19 +1,18 @@
-// application
+// external
 #include <application/application.hpp>
-#include <application/exceptions.hpp>
 
 // athena
 #include <athena/hydro/hydro.hpp>
 #include <athena/mesh/mesh.hpp>
 
 // snap
-#include <athena/thermodynamics/thermodynamics.hpp>
+#include <snap/thermodynamics/thermodynamics.hpp>
 
 // forcing
 #include "forcing.hpp"
 
-void RelaxBotComp::RelaxBotComp(MeshBlock *pmb, ParameterInput *pin)
-    : HydroForcing(pmb, NVAPOR) {
+RelaxBotComp::RelaxBotComp(MeshBlock *pmb, ParameterInput *pin)
+    : BotForcing(pmb, NVAPOR) {
   Application::Logger app("forcing");
   app->Log("Initialize Forcing: RelaxBotComp");
 
@@ -52,7 +51,8 @@ void RelaxBotComp::Apply(AthenaArray<Real> &du, MeshBlock *pmb, Real time,
   Real cvd = pthermo->GetRd() / (gammad - 1.);
 
   for (int n = 0; n < NVAPOR; ++n) {
-    Real bcom = GetPar<Real>("bcom" + std::to_string(n));
+    Real bcom = GetPar<Real>("bcom" + std::to_string(1 + n));
+    Real btau = GetPar<Real>("btau" + std::to_string(1 + n));
     Real cv_ratio = pthermo->GetCvRatioMass(n);
 
     for (int k = ks; k <= ke; ++k)
@@ -61,25 +61,23 @@ void RelaxBotComp::Apply(AthenaArray<Real> &du, MeshBlock *pmb, Real time,
         Real v1 = w(IVX, k, j, is);
         Real v2 = w(IVY, k, j, is);
         Real v3 = w(IVZ, k, j, is);
-        Real cv0 = pthermo
+        Real rho = w(IDN, k, j, is);
+        Real dq = 0;
 
-            if (bcom < 0.) {  // negative means use the initial condition
-          Real dq = bot_data_(n, k, j) - w(1 + n, k, j, is);
-        }
-        else {
-          Real dq = bcom - w(1 + n, k, j, is);
+        if (bcom < 0.) {  // negative means use the initial condition
+          dq = bot_data_(1 + n, k, j) - w(1 + n, k, j, is);
+        } else {
+          dq = bcom - w(1 + n, k, j, is);
         }
 
         du(IDN, k, j, is) -= dt / btau * dq * rho;
         du(1 + n, k, j, is) += dt / btau * dq * rho;
 
-        du(IVX, k, j, is) += dt / btau * v1 * rho * dq du(IVY, k, j, is) +=
-            dt / btau * v2 * rho * dq du(IVZ, k, j, is) +=
-            dt / btau * v3 * rho *
-            dq
+        du(IVX, k, j, is) += dt / btau * v1 * rho * dq;
+        du(IVY, k, j, is) += dt / btau * v2 * rho * dq;
+        du(IVZ, k, j, is) += dt / btau * v3 * rho * dq;
 
-                du(IEN, k, j, is) +=
-            dt / btau * dq * (1. - cv_ratio) * rho * tem * cvd;
+        du(IEN, k, j, is) += dt / btau * dq * (1. - cv_ratio) * rho * tem * cvd;
       }
   }
 }

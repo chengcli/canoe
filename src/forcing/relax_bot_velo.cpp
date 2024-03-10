@@ -8,7 +8,7 @@
 // forcing
 #include "forcing.hpp"
 
-void RelaxBotVelo::RelaxBotVelo(MeshBlock *pmb, ParameterInput *pin)
+RelaxBotVelo::RelaxBotVelo(MeshBlock *pmb, ParameterInput *pin)
     : BotForcing(pmb, 3) {
   Application::Logger app("forcing");
   app->Log("Initialize Forcing: RelaxBotVelo");
@@ -34,9 +34,12 @@ void RelaxBotVelo::RelaxBotVelo(MeshBlock *pmb, ParameterInput *pin)
 void RelaxBotVelo::Initialize(MeshBlock *pmb) {
   auto const &w = pmb->phydro->w;
 
-  bot_data_(0, k, j) = w(IVX, k, j, pmb->is);
-  bot_data_(1, k, j) = w(IVY, k, j, pmb->is);
-  bot_data_(2, k, j) = w(IVZ, k, j, pmb->is);
+  for (int k = pmb->ks; k <= pmb->ke; ++k)
+    for (int j = pmb->js; j <= pmb->je; ++j) {
+      bot_data_(0, k, j) = w(IVX, k, j, pmb->is);
+      bot_data_(1, k, j) = w(IVY, k, j, pmb->is);
+      bot_data_(2, k, j) = w(IVZ, k, j, pmb->is);
+    }
 }
 
 void RelaxBotVelo::Apply(AthenaArray<Real> &du, MeshBlock *pmb, Real time,
@@ -63,24 +66,23 @@ void RelaxBotVelo::Apply(AthenaArray<Real> &du, MeshBlock *pmb, Real time,
       Real rho = w(IDN, k, j, is);
       Real v1 = w(IVX, k, j, is);
       if (use_v1_init) {
-        du(IVX, k, j, is) += dt / btau * (bot_data_(0, k, j) - v1) * rho;
+        du(IVX, k, j, is) += dt / btau1 * (bot_data_(0, k, j) - v1) * rho;
       } else {
-        du(IVX, k, j, is) += dt / btau * (bv1 - tem) * rho;
+        du(IVX, k, j, is) += dt / btau1 * (bv1 - v1) * rho;
       }
 
       Real v2 = w(IVY, k, j, is);
       if (use_v2_init) {
-        du(IVY, k, j, is) += dt / btau * (bot_data_(1, k, j) - v2) * rho;
+        du(IVY, k, j, is) += dt / btau2 * (bot_data_(1, k, j) - v2) * rho;
       } else {
-        du(IVY, k, j, is) += dt / btau * (bv2 - tem) * rho;
+        du(IVY, k, j, is) += dt / btau2 * (bv2 - v2) * rho;
       }
 
       Real v3 = w(IVZ, k, j, is);
       if (use_v3_init) {
-        du(IVZ, k, j, is) += dt / btau * (bot_data_(2, k, j) - v3) * rho;
+        du(IVZ, k, j, is) += dt / btau3 * (bot_data_(2, k, j) - v3) * rho;
       } else {
-        du(IVZ, k, j, is) += dt / btau * (bv3 - tem) * rho;
+        du(IVZ, k, j, is) += dt / btau3 * (bv3 - v3) * rho;
       }
     }
-}
 }

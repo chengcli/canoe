@@ -1,3 +1,6 @@
+// external
+#include <application/application.hpp>
+
 // Athena++ headers
 #include <athena/coordinates/coordinates.hpp>
 #include <athena/hydro/hydro.hpp>
@@ -7,7 +10,30 @@
 #include <snap/thermodynamics/thermodynamics.hpp>
 
 // forcing
-#include "forcingt.hpp"
+#include "forcing.hpp"
+
+TopCooling::TopCooling(MeshBlock *pmb, ParameterInput *pin) {
+  Application::Logger app("forcing");
+  app->Log("Initialize Forcing: TopCooling");
+
+  SetPar("flux", pin->GetReal("forcing", "top_cooling.flux"));
+}
+
+BotHeating::BotHeating(MeshBlock *pmb, ParameterInput *pin) {
+  Application::Logger app("forcing");
+  app->Log("Initialize Forcing: BotHeating");
+
+  SetPar("flux", pin->GetReal("forcing", "bot_heating.flux"));
+}
+
+BodyHeating::BodyHeating(MeshBlock *pmb, ParameterInput *pin) {
+  Application::Logger app("forcing");
+  app->Log("Initialize Forcing: BodyHeating");
+
+  SetPar("dTdt", pin->GetReal("forcing", "body_heating.dTdt.Kday") / 86400.);
+  SetPar("pmin", pin->GetReal("forcing", "body_heating.pmin"));
+  SetPar("pmax", pin->GetReal("forcing", "body_heating.pmax"));
+}
 
 void TopCooling::Apply(AthenaArray<Real> &du, MeshBlock *pmb, Real time,
                        Real dt) {
@@ -20,8 +46,6 @@ void TopCooling::Apply(AthenaArray<Real> &du, MeshBlock *pmb, Real time,
 
   for (int k = ks; k <= ke; ++k)
     for (int j = js; j <= je; ++j) {
-      // Real cv = pthermo->GetMeanCv(w.at(k,j,ie));
-      // du(IEN,k,j,ie) -= dt*dTdt_*w(IDN,k,j,ie)*cv;
       du(IEN, k, j, ie) += dt * flux * pcoord->GetFace1Area(k, j, ie + 1) /
                            pcoord->GetCellVolume(k, j, ie);
     }
@@ -52,12 +76,15 @@ void BodyHeating::Apply(AthenaArray<Real> &du, MeshBlock *pmb, Real time,
   int is = pmb->is, js = pmb->js, ks = pmb->ks;
   int ie = pmb->ie, je = pmb->je, ke = pmb->ke;
 
-  Real flux = GetPar<Real>("dTdt");
+  Real dTdt = GetPar<Real>("dTdt");
+  Real pmin = GetPar<Real>("pmin");
+  Real pmax = GetPar<Real>("pmax");
 
   for (int k = ks; k <= ke; ++k)
     for (int j = js; j <= je; ++j)
       for (int i = is; i <= ie; ++i) {
-        Real cv = pthermo->GetMeanCv(w.at(k, j, ie));
-        du(IEN, k, j, ie) += dt * dTdt * w(IDN, k, j, ie) * cv;
+        if (w(IDN, k, j, i) < pmin || w(IDN, k, j, i) > pmax) continue;
+        Real cv = pthermo->GetCvMass(pmb, k, j, i);
+        du(IEN, k, j, ie) += dt * dTdt * w(IDN, k, j, i) * cv;
       }
 }

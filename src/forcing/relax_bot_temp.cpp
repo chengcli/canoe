@@ -8,13 +8,13 @@
 #include <athena/mesh/mesh.hpp>
 
 // snap
-#include <athena/thermodynamics/thermodynamics.hpp>
+#include <snap/thermodynamics/thermodynamics.hpp>
 
 // forcing
 #include "forcing.hpp"
 
-void RelaxBotTemp::RelaxBotTemp(MeshBlock *pmb, ParameterInput *pin)
-    : HydroForcing(pmb, 1) {
+RelaxBotTemp::RelaxBotTemp(MeshBlock *pmb, ParameterInput *pin)
+    : BotForcing(pmb, 1) {
   Application::Logger app("forcing");
   app->Log("Initialize Forcing: RelaxBotTemp");
 
