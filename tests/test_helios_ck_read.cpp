@@ -1,3 +1,12 @@
+// C/C++
+#include <iostream>
+#include <algorithm>
+#include <cmath>
+#include <vector>
+#include <string>
+#include <fstream>
+#include <sstream>
+
 // external
 #include <gtest/gtest.h>
 
@@ -5,6 +14,8 @@
 
 // opacity
 #include <opacity/absorber_ck.hpp>
+
+std::string data_folder = "ck_data_01242024/ck/";
 
 class TestHelioCK : public testing::Test {
  protected:
@@ -41,7 +52,14 @@ class TestHelioCK : public testing::Test {
   }
 };
 
-TEST(read_helios_ck, test_case1) {}
+TEST(LoadCoefficient, bid_is_0) {
+  auto app = Application::GetInstance();
+  std::string fname = "PM_ck_HELIOSK_cond_11_nOPT_wcia.txt";
+  auto file = app->FindResource(data_folder + fname);
+  HeliosCKPremix PM_ck_HELIOSK_cond_11_nOPT_wcia("PM_ck_HELIOSK_cond_11_nOPT_wcia");
+  PM_ck_HELIOSK_cond_11_nOPT_wcia.LoadCoefficient(file, 0, std::cout);
+  EXPECT_EQ(1,1);
+}
 
 int main(int argc, char** argv) {
   testing::InitGoogleTest(&argc, argv);
