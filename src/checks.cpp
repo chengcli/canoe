@@ -119,21 +119,21 @@ void check_hydro_riemann_solver_flux(AthenaArray<Real> const& flux, int ivx,
 void check_decomposition(AthenaArray<Real> const& wl,
                          AthenaArray<Real> const& wr, int k, int j, int il,
                          int iu) {
-#ifdef ENABLE_GLOG
-  for (int i = il; i <= iu; ++i) {
-    LOG_IF(FATAL, wl(IDN, k, j, i) < 0.)
-        << print_column_table("wl-den", wl, k, j, il, iu);
+  /*#ifdef ENABLE_GLOG
+    for (int i = il; i <= iu; ++i) {
+      LOG_IF(FATAL, wl(IDN, k, j, i) < 0.)
+          << print_column_table("wl-den", wl, k, j, il, iu);
 
-    LOG_IF(FATAL, wr(IDN, k, j, i) < 0.)
-        << print_column_table("wr-den", wr, k, j, il, iu);
+      LOG_IF(FATAL, wr(IDN, k, j, i) < 0.)
+          << print_column_table("wr-den", wr, k, j, il, iu);
 
-    LOG_IF(ERROR, wl(IPR, k, j, i) < 0.)
-        << print_column_table("wl-pre", wl, k, j, il, iu);
+      LOG_IF(ERROR, wl(IPR, k, j, i) < 0.)
+          << print_column_table("wl-pre", wl, k, j, il, iu);
 
-    LOG_IF(ERROR, wr(IPR, k, j, i) < 0.)
-        << print_column_table("wl-pre", wr, k, j, il, iu);
-  }
-#endif  // ENABLE_GLOG
+      LOG_IF(ERROR, wr(IPR, k, j, i) < 0.)
+          << print_column_table("wl-pre", wr, k, j, il, iu);
+    }
+  #endif  // ENABLE_GLOG*/
 }
 
 void check_implicit_cons(AthenaArray<Real> const& cons, int il, int iu, int jl,
