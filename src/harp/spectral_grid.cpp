@@ -14,17 +14,17 @@ std::pair<Real, Real> SpectralGridBase::ReadRangeFrom(YAML::Node const& my) {
   std::string units = my["units"] ? my["units"].as<std::string>() : "cm-1";
 
   if (units == "cm-1") {
-    unit_type = "wavenumber";
-  } else if (units == "um") {
-    unit_type = "wavelength";
+    unit_ = "wavenumber";
+  } else if (units == "um" || units == "nm" || units == "A") {
+    unit_ = "wavelength";
   } else if (units == "GHz") {
-    unit_type = "frequency";
+    unit_ = "frequency";
   } else {
     throw RuntimeError("SpectralGridBase", "unknown spectral unit type");
   }
 
   char str[80];
-  snprintf(str, sizeof(str), "%s-%s", unit_type.c_str(), "range");
+  snprintf(str, sizeof(str), "%s-%s", unit_.c_str(), "range");
 
   if (!my[str]) {
     throw NotFoundError("SpectralGridBase", str);
@@ -79,7 +79,7 @@ CustomSpacingSpectralGrid::CustomSpacingSpectralGrid(YAML::Node const& my) {
   auto&& wpair = ReadRangeFrom(my);
 
   char str[80];
-  snprintf(str, sizeof(str), "%s-points", unit_type.c_str());
+  snprintf(str, sizeof(str), "%s-points", unit_.c_str());
 
   if (!my[str]) {
     throw NotFoundError("CustomSpacingSpectralGrid", str);
@@ -104,8 +104,7 @@ CustomSpacingSpectralGrid::CustomSpacingSpectralGrid(YAML::Node const& my) {
   }
 }
 
-CorrelatedKTableSpectralGrid::CorrelatedKTableSpectralGrid(
-    YAML::Node const& my) {
+CKTableSpectralGrid::CKTableSpectralGrid(YAML::Node const& my) {
   auto&& wpair = ReadRangeFrom(my);
   Real wmin = wpair.first;
   Real wmax = wpair.second;
@@ -119,8 +118,7 @@ CorrelatedKTableSpectralGrid::CorrelatedKTableSpectralGrid(
       spec[i].wght = my["g-points"][i].as<Real>();
     }
   } else {
-    throw NotFoundError("CorrelatedKTableSpectralGrid",
-                        "'g-points' must be defined");
+    throw NotFoundError("CKTableSpectralGrid", "'g-points' must be defined");
   }
 }
 
@@ -137,8 +135,8 @@ SpectralGridPtr SpectralGridFactory::CreateFrom(YAML::Node const& my) {
     pgrid = std::make_shared<RegularSpacingSpectralGrid>(my);
   } else if (grid_type == "custom") {
     pgrid = std::make_shared<CustomSpacingSpectralGrid>(my);
-  } else if (grid_type == "correlated-k-table") {
-    pgrid = std::make_shared<CorrelatedKTableSpectralGrid>(my);
+  } else if (grid_type == "cktable") {
+    pgrid = std::make_shared<CKTableSpectralGrid>(my);
   } else {
     throw RuntimeError("SpectralGridFactory", "unknown grid type");
   }

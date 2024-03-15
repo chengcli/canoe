@@ -14,7 +14,7 @@
 // opacity
 #include "absorber_ck.hpp"
 
-void HeliosCKPremix::LoadCoefficient(std::string fname, size_t bid) {
+void HeliosCK::LoadCoefficient(std::string fname, size_t bid) {
   std::ifstream file(fname);
   if (!file.is_open()) {
     throw std::runtime_error("Failed to open file: " + fname);
@@ -67,9 +67,10 @@ void HeliosCKPremix::LoadCoefficient(std::string fname, size_t bid) {
   }
 
   // g-points and weights
+  weights_.resize(len_[2]);
   for (int g = 0; g < len_[2]; ++g) {
     Real gpoint;
-    file >> gpoint >> dummy;
+    file >> gpoint >> weights_[g];
     axis_[len_[0] + len_[1] + g] = wmin + (wmax - wmin) * gpoint;
   }
 
@@ -92,8 +93,7 @@ void HeliosCKPremix::LoadCoefficient(std::string fname, size_t bid) {
   file.close();
 }
 
-Real HeliosCKPremix::GetAttenuation(Real g1, Real g2,
-                                    AirParcel const& var) const {
+Real HeliosCK::GetAttenuation(Real g1, Real g2, AirParcel const& var) const {
   // temperature, log-pressure, wave-scaled g-point
   Real val, coord[3] = {var.q[IDN], log(var.q[IPR]), g1};
   interpn(&val, coord, kcoeff_.data(), axis_.data(), len_, 3, 1);

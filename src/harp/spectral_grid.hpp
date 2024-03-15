@@ -26,32 +26,51 @@ class SpectralGridBase {
   //! spectral grids
   std::vector<SpectralBin> spec;
 
-  //! \brief defines the unit of the spectral grid
-  //!
-  //! Choose from [wavenumber, wavelength, frequency]
-  std::string unit_type;
-
   //! \brief Read the spectral range from a YAML node
   //! \return [wave min, wave max]
   std::pair<Real, Real> ReadRangeFrom(YAML::Node const& my);
+
+  virtual void SetWaveFrom(Absorber const* ab) {}
+  virtual void SetWeightFrom(Absorber const* ab) {}
+
+  void GetUnit() { return unit_; }
+
+  std::string Type() const = 0;
+
+ protected:
+  SpectralGridBase(YAML::Node const& my);
+
+  //! \brief defines the unit of the spectral grid
+  //!
+  //! Choose from [wavenumber, wavelength, frequency]
+  std::string unit_;
 };
 
 //! Policy class for creating a regular spacing spectral grid
 class RegularSpacingSpectralGrid : public SpectralGridBase {
  public:
   RegularSpacingSpectralGrid(YAML::Node const& my);
+
+  std::string Type() const override { return "regular"; }
 };
 
 //! Policy class for creating a custom spacing spectral grid
 class CustomSpacingSpectralGrid : public SpectralGridBase {
  public:
   CustomSpacingSpectralGrid(YAML::Node const& my);
+
+  std::string Type() const override { return "custom"; }
 };
 
 //! \brief Policy class for creating a correlated k-table spectral grid
-class CorrelatedKTableSpectralGrid : public SpectralGridBase {
+class CKTableSpectralGrid : public SpectralGridBase {
  public:
-  CorrelatedKTableSpectralGrid(YAML::Node const& my);
+  CKTableSpectralGrid(YAML::Node const& my);
+
+  std::string Type() const override { return "cktable"; }
+
+  void SetWaveFrom(Absorber const* ab) override;
+  void SetWeightFrom(Absorber const* ab) override;
 };
 
 using SpectralGridPtr = std::shared_ptr<SpectralGridBase>;

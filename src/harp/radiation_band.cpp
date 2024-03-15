@@ -74,6 +74,10 @@ RadiationBand::RadiationBand(std::string myname, YAML::Node const &rad)
 
     for (auto &ab : absorbers_) {
       ab->LoadOpacity(RadiationBandsFactory::GetBandId(myname));
+
+      if (pgrid_->GetType() == "cktable") {
+        pgrid_->SetFrom(ab.get());
+      }
     }
   }
 

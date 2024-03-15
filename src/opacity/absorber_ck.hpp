@@ -17,7 +17,7 @@ class AbsorberCK : public Absorber {
   Real GetAttenuation(Real g1, Real g2, AirParcel const& var) const override;
 
  protected:
-  //! shape of interpolation axes, nwave, npres, ntemp
+  //! shape of interpolation axes, ntemp, npres, ngpoints
   size_t len_[3];
 
   //! interpolation axes
@@ -25,12 +25,15 @@ class AbsorberCK : public Absorber {
 
   //! absorption coefficients
   std::vector<Real> kcoeff_;
+
+  //! g-point weights
+  std::vector<Real> weights_;
 };
 
-class HeliosCKPremix : public AbsorberCK {
+class HeliosCK : public AbsorberCK {
  public:
-  HeliosCKPremix(std::string name) : AbsorberCK(name) {}
-  virtual ~HeliosCKPremix() {}
+  HeliosCK(std::string name) : AbsorberCK(name) {}
+  virtual ~HeliosCK() {}
 
   void LoadCoefficient(std::string fname, size_t bid) override;
   Real GetAttenuation(Real g1, Real g2, AirParcel const& var) const override;
