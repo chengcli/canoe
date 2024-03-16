@@ -33,10 +33,12 @@ endif()
 # Setup for ICC compiler (version >= 10):
 #
 if(CMAKE_CXX_COMPILER_ID MATCHES "Intel")
+  add_link_options("-fuse-ld=lld")
+  set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
   set(CMAKE_CXX_FLAGS_RELEASE
-      "-O3 -inline-forceinline -fopenmp -qopenmp-simd -qoverride-limits")
+      "-O3 -qopenmp-simd")
   set(CMAKE_C_FLAGS_RELEASE
-      "-O3 -inline-forceinline -fopenmp -qopenmp-simd -qoverride-limits")
+      "-O3 -qopenmp-simd")
 
   set(CMAKE_CXX_FLAGS_DEBUG "-g3")
   set(CMAKE_C_FLAGS_DEBUG "-g3")

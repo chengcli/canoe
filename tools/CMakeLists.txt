@@ -31,6 +31,7 @@ set_target_properties(hitbin.release
   PROPERTIES
   RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
   COMPILE_FLAGS ${CMAKE_Fortran_FLAGS_RELEASE}
+  LINK_OPTIONS "-O3"
   )
 
 file(GLOB pyfiles *.py)
