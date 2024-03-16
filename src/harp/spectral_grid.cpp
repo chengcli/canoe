@@ -10,21 +10,25 @@
 // harp
 #include "spectral_grid.hpp"
 
-std::pair<Real, Real> SpectralGridBase::ReadRangeFrom(YAML::Node const& my) {
+std::string parse_unit_with_default(YAML::Node const& my) {
   std::string units = my["units"] ? my["units"].as<std::string>() : "cm-1";
 
   if (units == "cm-1") {
-    unit_ = "wavenumber";
+    return "wavenumber";
   } else if (units == "um" || units == "nm" || units == "A") {
-    unit_ = "wavelength";
+    return "wavelength";
   } else if (units == "GHz") {
-    unit_ = "frequency";
+    return "frequency";
   } else {
     throw RuntimeError("SpectralGridBase", "unknown spectral unit type");
   }
+}
+
+std::pair<Real, Real> parse_range(YAML::Node const& my) {
+  auto unit = parse_unit_with_default(my);
 
   char str[80];
-  snprintf(str, sizeof(str), "%s-%s", unit_.c_str(), "range");
+  snprintf(str, sizeof(str), "%s-%s", unit.c_str(), "range");
 
   if (!my[str]) {
     throw NotFoundError("SpectralGridBase", str);
@@ -40,11 +44,15 @@ std::pair<Real, Real> SpectralGridBase::ReadRangeFrom(YAML::Node const& my) {
   return std::make_pair(wmin, wmax);
 }
 
-RegularSpacingSpectralGrid::RegularSpacingSpectralGrid(YAML::Node const& my) {
-  auto&& wpair = ReadRangeFrom(my);
+SpectralGridBase::SpectralGridBase(YAML::Node const& my)
+    : unit_(parse_unit_with_default(my)) {}
+
+RegularSpacingSpectralGrid::RegularSpacingSpectralGrid(YAML::Node const& my)
+    : SpectralGridBase(my) {
+  auto wpair = parse_range(my);
+
   Real wmin = wpair.first;
   Real wmax = wpair.second;
-
   int num_bins;
 
   if (wmin == wmax) {
@@ -75,9 +83,8 @@ RegularSpacingSpectralGrid::RegularSpacingSpectralGrid(YAML::Node const& my) {
   }
 }
 
-CustomSpacingSpectralGrid::CustomSpacingSpectralGrid(YAML::Node const& my) {
-  auto&& wpair = ReadRangeFrom(my);
-
+CustomSpacingSpectralGrid::CustomSpacingSpectralGrid(YAML::Node const& my)
+    : SpectralGridBase(my) {
   char str[80];
   snprintf(str, sizeof(str), "%s-points", unit_.c_str());
 
@@ -104,42 +111,5 @@ CustomSpacingSpectralGrid::CustomSpacingSpectralGrid(YAML::Node const& my) {
   }
 }
 
-CKTableSpectralGrid::CKTableSpectralGrid(YAML::Node const& my) {
-  auto&& wpair = ReadRangeFrom(my);
-  Real wmin = wpair.first;
-  Real wmax = wpair.second;
-
-  if (my["g-points"]) {
-    int num_bins = my["g-points"].size();
-    spec.resize(num_bins);
-    for (int i = 0; i < num_bins; ++i) {
-      spec[i].wav1 = wmin;
-      spec[i].wav2 = wmax;
-      spec[i].wght = my["g-points"][i].as<Real>();
-    }
-  } else {
-    throw NotFoundError("CKTableSpectralGrid", "'g-points' must be defined");
-  }
-}
-
-SpectralGridPtr SpectralGridFactory::CreateFrom(YAML::Node const& my) {
-  if (!my["grid-type"]) {
-    throw NotFoundError("SpectralGridFactory", "grid-type");
-  }
-
-  std::string grid_type = my["grid-type"].as<std::string>();
-
-  SpectralGridPtr pgrid;
-
-  if (grid_type == "regular") {
-    pgrid = std::make_shared<RegularSpacingSpectralGrid>(my);
-  } else if (grid_type == "custom") {
-    pgrid = std::make_shared<CustomSpacingSpectralGrid>(my);
-  } else if (grid_type == "cktable") {
-    pgrid = std::make_shared<CKTableSpectralGrid>(my);
-  } else {
-    throw RuntimeError("SpectralGridFactory", "unknown grid type");
-  }
-
-  return pgrid;
-}
+CKTableSpectralGrid::CKTableSpectralGrid(YAML::Node const& my)
+    : SpectralGridBase(my) {}

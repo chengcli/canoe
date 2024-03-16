@@ -50,7 +50,7 @@ RadiationBand::RadiationBand(std::string myname, YAML::Node const &rad)
 
   pgrid_ = SpectralGridFactory::CreateFrom(my);
 
-  wrange_ = pgrid_->ReadRangeFrom(my);
+  wrange_ = parse_range(my);
 
   if (my["outdir"]) {
     if (!my["outdir"].IsSequence()) {
@@ -74,10 +74,7 @@ RadiationBand::RadiationBand(std::string myname, YAML::Node const &rad)
 
     for (auto &ab : absorbers_) {
       ab->LoadOpacity(RadiationBandsFactory::GetBandId(myname));
-
-      if (pgrid_->GetType() == "cktable") {
-        pgrid_->SetFrom(ab.get());
-      }
+      ab->ModifySpectralGrid(pgrid_->spec);
     }
   }
 

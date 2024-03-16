@@ -37,6 +37,7 @@ class HeliosCK : public AbsorberCK {
 
   void LoadCoefficient(std::string fname, size_t bid) override;
   Real GetAttenuation(Real g1, Real g2, AirParcel const& var) const override;
+  void ModifySpectralGrid(std::vector<SpectralBin>& spec) const override;
 };
 
 #endif  // SRC_OPACITY_ABSORBER_CK_HPP_

@@ -17,6 +17,7 @@
 #include <virtual_groups.hpp>
 
 class AirParcel;
+class SpectralBin;
 
 //! \brief base class of all absorbers
 class Absorber : public NamedGroup,
@@ -60,6 +61,8 @@ class Absorber : public NamedGroup,
                                 AirParcel const& var, int np) const {}
 
   virtual void CheckFail() const {}
+
+  virtual void ModifySpectralGrid(std::vector<SpectralBin>& spec) const {}
 
  public:  // StringRepr
   std::string ToString() const override;
