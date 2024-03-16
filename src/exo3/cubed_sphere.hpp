@@ -16,12 +16,8 @@ class CubedSphere {
   CubedSphere(MeshBlock *pmb);
   ~CubedSphere() {}
 
-  static int FindBlockID(LogicalLocation const &loc);
   static void TransformOX(int *ox2, int *ox3, int *tox2, int *tox3,
                           LogicalLocation const &loc);
-
-  static Real GenerateMeshX2(Real x, LogicalLocation const &loc);
-  static Real GenerateMeshX3(Real x, LogicalLocation const &loc);
 
   void GetLatLon(Real *lat, Real *lon, int k, int j, int i) const;
   void GetLatLonFace2(Real *lat, Real *lon, int k, int j, int i) const;
@@ -58,6 +54,7 @@ class CubedSphere {
   void recvNeighborBlocks(int ox2, int ox3, int tg_rank, int tg_gid);
 
   AthenaArray<Real> L3DValues[3], R3DValues[3];
+  std::unordered_map<Connection, Connection> LRDataBuffer[4];
 
 #ifdef MPI_PARALLEL
   int send_flag_[4], recv_flag_[4];

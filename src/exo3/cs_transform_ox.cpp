@@ -11,14 +11,11 @@
 void CubedSphere::TransformOX(int *ox2, int *ox3, int *tox2, int *tox3,
                               LogicalLocation const &loc) {
   // Find the block ID
-  int block_id = FindBlockID(loc);
+  int block_id = FindPanelID(loc);
 
   // Find relative location within block
-  int lv2_lx2 = loc.lx2 >> (loc.level - 2);
-  int lv2_lx3 = loc.lx3 >> (loc.level - 2);
-  int local_lx2 = loc.lx2 - (lv2_lx2 << (loc.level - 2));
-  int local_lx3 = loc.lx3 - (lv2_lx3 << (loc.level - 2));
-  int bound_lim = (1 << (loc.level - 2)) - 1;
+  int local_lx2, local_lx3, bound_lim;
+  FindPanelPosition(&local_lx2, &local_lx3, &bound_lim, loc);
 
   // Hard code the cases...
   // No need to consider the corner cases, abandon in reading buffers.

@@ -80,11 +80,8 @@ Real CubedSphere::GenerateMeshX3(Real x, LogicalLocation const &loc) {
 // Find the block number
 void CubedSphere::GetLatLon(Real *lat, Real *lon, int k, int j, int i) const {
   auto pcoord = pmy_block_->pcoord;
-  auto &loc = pmy_block_->loc;
+  int blockID = FindPanelID(pmy_block_->loc);
 
-  int lv2_lx2 = loc.lx2 >> (loc.level - 2);
-  int lv2_lx3 = loc.lx3 >> (loc.level - 2);
-  int blockID = lv2_lx2 + lv2_lx3 * 2 + 1;
   // Calculate the needed parameters
   Real dX = tan(pcoord->x2v(j));
   Real dY = tan(pcoord->x3v(k));
@@ -98,11 +95,7 @@ void CubedSphere::GetLatLon(Real *lat, Real *lon, int k, int j, int i) const {
 void CubedSphere::GetLatLonFace2(Real *lat, Real *lon, int k, int j,
                                  int i) const {
   auto pcoord = pmy_block_->pcoord;
-  auto &loc = pmy_block_->loc;
-
-  int lv2_lx2 = loc.lx2 >> (loc.level - 2);
-  int lv2_lx3 = loc.lx3 >> (loc.level - 2);
-  int blockID = lv2_lx2 + lv2_lx3 * 2 + 1;
+  int blockID = FindPanelID(pmy_block_->loc);
 
   // Calculate the needed parameters
   Real dX = tan(pcoord->x2f(j));
@@ -117,11 +110,7 @@ void CubedSphere::GetLatLonFace2(Real *lat, Real *lon, int k, int j,
 void CubedSphere::GetLatLonFace3(Real *lat, Real *lon, int k, int j,
                                  int i) const {
   auto pcoord = pmy_block_->pcoord;
-  auto &loc = pcoord->pmy_block->loc;
-
-  int lv2_lx2 = loc.lx2 >> (loc.level - 2);
-  int lv2_lx3 = loc.lx3 >> (loc.level - 2);
-  int blockID = lv2_lx2 + lv2_lx3 * 2 + 1;
+  int blockID = FindPanelID(pmy_block_->loc);
 
   // Calculate the needed parameters
   Real dX = tan(pcoord->x2v(j));
@@ -135,11 +124,7 @@ void CubedSphere::GetLatLonFace3(Real *lat, Real *lon, int k, int j,
 void CubedSphere::GetUV(Real *U, Real *V, Real V2, Real V3, int k, int j,
                         int i) const {
   auto pcoord = pmy_block_->pcoord;
-  auto &loc = pmy_block_->loc;
-
-  int lv2_lx2 = loc.lx2 >> (loc.level - 2);
-  int lv2_lx3 = loc.lx3 >> (loc.level - 2);
-  int blockID = lv2_lx2 + lv2_lx3 * 2 + 1;
+  int blockID = FindPanelID(pmy_block_->loc);
 
   Real X = tan(pcoord->x2v(j));
   Real Y = tan(pcoord->x3v(k));
@@ -152,11 +137,7 @@ void CubedSphere::GetUV(Real *U, Real *V, Real V2, Real V3, int k, int j,
 void CubedSphere::GetVyVz(Real *V2, Real *V3, Real U, Real V, int k, int j,
                           int i) const {
   auto pcoord = pmy_block_->pcoord;
-  auto &loc = pmy_block_->loc;
-
-  int lv2_lx2 = loc.lx2 >> (loc.level - 2);
-  int lv2_lx3 = loc.lx3 >> (loc.level - 2);
-  int blockID = lv2_lx2 + lv2_lx3 * 2 + 1;
+  int blockID = FindPanelID(pmy_block_->loc);
 
   // Calculate the needed parameters
   Real X = tan(pcoord->x2v(j));
@@ -168,11 +149,7 @@ void CubedSphere::CalculateCoriolisForce2(int i2, int i3, Real v2, Real v3,
                                           Real Omega, Real den, Real *cF2,
                                           Real *cF3) const {
   auto pcoord = pmy_block_->pcoord;
-  auto &loc = pmy_block_->loc;
-
-  int lv2_lx2 = loc.lx2 >> (loc.level - 2);
-  int lv2_lx3 = loc.lx3 >> (loc.level - 2);
-  int blockID = lv2_lx2 + lv2_lx3 * 2 + 1;
+  int blockID = FindPanelID(pmy_block_->loc);
 
   Real x = tan(pcoord->x2v(i2));
   Real y = tan(pcoord->x3v(i3));
@@ -202,11 +179,7 @@ void CubedSphere::CalculateCoriolisForce3(int i2, int i3, Real v1, Real v2,
                                           Real *cF1, Real *cF2,
                                           Real *cF3) const {
   auto pcoord = pmy_block_->pcoord;
-  auto &loc = pmy_block_->loc;
-
-  int lv2_lx2 = loc.lx2 >> (loc.level - 2);
-  int lv2_lx3 = loc.lx3 >> (loc.level - 2);
-  int blockID = lv2_lx2 + lv2_lx3 * 2 + 1;
+  int blockID = FindPanelID(pmy_block_->loc);
 
   Real x = tan(pcoord->x2v(i2));
   Real y = tan(pcoord->x3v(i3));
@@ -332,11 +305,8 @@ void CubedSphere::SynchronizeFluxesWait() {
 void CubedSphere::sendNeighborBlocks(int ox2, int ox3, int tg_rank,
                                      int tg_gid) {
   MeshBlock *pmb = pmy_block_;
-  auto &loc = pmb->loc;
+  int blockID = FindPanelID(pmy_block_->loc);
 
-  int lv2_lx2 = loc.lx2 >> (loc.level - 2);
-  int lv2_lx3 = loc.lx3 >> (loc.level - 2);
-  int blockID = lv2_lx2 + lv2_lx3 * 2 + 1;
   // Calculate local ID
   int local_lx2 = loc.lx2 - (lv2_lx2 << (loc.level - 2));
   int local_lx3 = loc.lx3 - (lv2_lx3 << (loc.level - 2));
@@ -584,11 +554,8 @@ void CubedSphere::sendNeighborBlocks(int ox2, int ox3, int tg_rank,
 void CubedSphere::recvNeighborBlocks(int ox2, int ox3, int tg_rank,
                                      int tg_gid) {
   MeshBlock *pmb = pmy_block_;
-  auto &loc = pmb->loc;
+  int blockID = FindPanelID(pmy_block_->loc);
 
-  int lv2_lx2 = loc.lx2 >> (loc.level - 2);
-  int lv2_lx3 = loc.lx3 >> (loc.level - 2);
-  int blockID = FindBlockID(loc);
   // Calculate local ID
   int local_lx2 = loc.lx2 - (lv2_lx2 << (loc.level - 2));
   int local_lx3 = loc.lx3 - (lv2_lx3 << (loc.level - 2));
