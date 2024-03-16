@@ -189,6 +189,7 @@ void EquationOfState::PrimitiveToConserved(const AthenaArray<Real>& prim,
 //----------------------------------------------------------------------------------------
 // \!fn Real EquationOfState::SoundSpeed(Real prim[NHYDRO])
 // \brief returns adiabatic sound speed given vector of primitive variables
+#pragma omp declare simd simdlen(SIMD_WIDTH) uniform(this)
 Real EquationOfState::SoundSpeed(const Real prim[NHYDRO]) {
   auto pthermo = Thermodynamics::GetInstance();
 
