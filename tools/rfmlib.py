@@ -119,7 +119,7 @@ def create_netcdf_input(
         if (i + 1) % 10 != 0:
             file.write("\n")
     print(f"# {fname}.inp written.")
-    return fname
+    return f"{fname}.inp"
 
 
 # write kcoeff table to netcdf file

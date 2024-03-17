@@ -33,7 +33,8 @@
 #include "radiation_band.hpp"
 #include "rt_solvers.hpp"
 
-RadiationBand::RadiationBand(std::string myname, YAML::Node const &rad)
+RadiationBand::RadiationBand(std::string myname, YAML::Node const &rad,
+                             bool load_opacity)
     : NamedGroup(myname) {
   Application::Logger app("harp");
   app->Log("Initialize RadiationBand " + myname);
@@ -72,9 +73,11 @@ RadiationBand::RadiationBand(std::string myname, YAML::Node const &rad)
     auto names = my["opacity"].as<std::vector<std::string>>();
     absorbers_ = AbsorberFactory::CreateFrom(names, GetName(), rad);
 
-    for (auto &ab : absorbers_) {
-      ab->LoadOpacity(RadiationBandsFactory::GetBandId(myname));
-      ab->ModifySpectralGrid(pgrid_->spec);
+    if (load_opacity) {
+      for (auto &ab : absorbers_) {
+        ab->LoadOpacity(RadiationBandsFactory::GetBandId(myname));
+        ab->ModifySpectralGrid(pgrid_->spec);
+      }
     }
   }
 

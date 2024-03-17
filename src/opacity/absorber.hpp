@@ -38,6 +38,9 @@ class Absorber : public NamedGroup,
   //! Set opacity filename to internal variable, does not load opacity
   void SetOpacityFile(std::string filename);
 
+  //! Get opacity filename
+  std::string GetOpacityFile() const { return opacity_filename_; }
+
   //! Load opacity from internal variable
   void LoadOpacity(int bid);
 

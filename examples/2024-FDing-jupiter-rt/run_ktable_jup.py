@@ -1,5 +1,5 @@
 #! /usr/bin/env python3
-import sys
+import sys, os
 
 sys.path.append("../python")
 
@@ -34,7 +34,6 @@ def create_ref_atmosphere(nlyr: int) -> dict:
 
 
 if __name__ == "__main__":
-    # hitran_file = f"/home/chengcli/Model/canoe/data/HITRAN2020.par"
     hitran_file = find_resource("HITRAN2020.par")
     subscribe_species(
         {
@@ -42,7 +41,7 @@ if __name__ == "__main__":
         }
     )
 
-    config = load_configure("example_jupiter_rt.yaml")
+    config = load_configure("jupiter_rt.yaml")
     band = radiation_band("H2O-rotational", config)
 
     nspec = band.get_num_spec_grids()
@@ -65,4 +64,8 @@ if __name__ == "__main__":
 
     # run rfm and write kcoeff file
     run_rfm()
+
+    fname = band.get_absorber_by_name("H2O").get_opacity_file()
+    base_name = os.path.basename(fname)
+    fname, _ = os.path.splitext(base_name)
     write_ktable(fname, absorbers, atm, wav_grid, tem_grid)

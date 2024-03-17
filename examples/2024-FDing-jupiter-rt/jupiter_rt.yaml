@@ -1,18 +1,22 @@
 opacity-sources:
   - name: H2-H2-CIA
     class: XIZ-H2-H2-CIA
+    data: H2-H2-eq.xiz.txt
     dependent-species: [vapor.dry]
 
   - name: H2-He-CIA
     class: XIZ-H2-He-CIA
+    data: H2-He-eq.xiz.txt
     dependent-species: [vapor.dry]
 
   - name: H2O
     class: Hitran
+    data: jup-kcoeff.nc
     dependent-species: [vapor.H2O]
 
   - name: NH3
     class: Hitran
+    data: jup-kcoeff.nc
     dependent-species: [vapor.NH3]
 
 bands: [H2O-rotational]

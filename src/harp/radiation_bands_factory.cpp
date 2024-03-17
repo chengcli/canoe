@@ -8,7 +8,7 @@
 #include "radiation_band.hpp"
 
 std::map<std::string, int> RadiationBandsFactory::band_id_ = {};
-int RadiationBandsFactory::last_band_id_ = 0;
+int RadiationBandsFactory::next_band_id_ = 0;
 
 RadiationBandContainer RadiationBandsFactory::CreateFrom(std::string filename) {
   Application::Logger app("harp");
@@ -23,9 +23,10 @@ RadiationBandContainer RadiationBandsFactory::CreateFrom(std::string filename) {
   YAML::Node rad = YAML::Load(stream);
 
   for (auto bname : rad["bands"]) {
-    band_id_[bname.as<std::string>()] = last_band_id_++;
+    band_id_[bname.as<std::string>()] = next_band_id_++;
 
-    auto p = std::make_shared<RadiationBand>(bname.as<std::string>(), rad);
+    auto p =
+        std::make_shared<RadiationBand>(bname.as<std::string>(), rad, true);
     bands.push_back(p);
   }
 
