@@ -24,7 +24,6 @@
 #include <utils/extract_substring.hpp>
 #include <utils/fileio.hpp>
 #include <utils/ndarrays.hpp>
-#include <utils/vectorize.hpp>
 
 // opacity
 #include <opacity/absorber.hpp>
@@ -51,7 +50,7 @@ RadiationBand::RadiationBand(std::string myname, YAML::Node const &rad)
 
   pgrid_ = SpectralGridFactory::CreateFrom(my);
 
-  wrange_ = pgrid_->ReadRangeFrom(my);
+  wrange_ = RadiationHelper::parse_wave_range(my);
 
   if (my["outdir"]) {
     if (!my["outdir"].IsSequence()) {
@@ -72,6 +71,11 @@ RadiationBand::RadiationBand(std::string myname, YAML::Node const &rad)
 
     auto names = my["opacity"].as<std::vector<std::string>>();
     absorbers_ = AbsorberFactory::CreateFrom(names, GetName(), rad);
+
+    for (auto &ab : absorbers_) {
+      ab->LoadOpacity(RadiationBandsFactory::GetBandId(myname));
+      ab->ModifySpectralGrid(pgrid_->spec);
+    }
   }
 
   // set flags
@@ -275,39 +279,4 @@ std::shared_ptr<RadiationBand::RTSolver> RadiationBand::CreateRTSolverFrom(
   }
 
   return psolver;
-}
-
-RadiationBandContainer RadiationBandsFactory::CreateFrom(std::string filename) {
-  Application::Logger app("harp");
-  app->Log("Load Radiation bands from " + filename);
-
-  std::vector<RadiationBandPtr> bands;
-
-  std::ifstream stream(filename);
-  if (stream.good() == false) {
-    app->Error("Cannot open radiation bands file: " + filename);
-  }
-  YAML::Node rad = YAML::Load(stream);
-
-  for (auto bname : rad["bands"]) {
-    auto p = std::make_shared<RadiationBand>(bname.as<std::string>(), rad);
-    bands.push_back(p);
-  }
-
-  return bands;
-}
-
-RadiationBandContainer RadiationBandsFactory::CreateFrom(ParameterInput *pin,
-                                                         std::string key) {
-  std::vector<RadiationBandPtr> bands;
-
-  auto rt_band_files =
-      Vectorize<std::string>(pin->GetOrAddString("radiation", key, "").c_str());
-
-  for (auto &filename : rt_band_files) {
-    auto &&tmp = CreateFrom(filename);
-    bands.insert(bands.end(), tmp.begin(), tmp.end());
-  }
-
-  return bands;
 }

@@ -14,6 +14,7 @@
 #include "Giants/freedman.hpp"
 #include "Giants/hydrogen_cia.hpp"
 #include "Giants/microwave/mwr_absorbers.hpp"
+#include "absorber_ck.hpp"
 #include "hitran_absorber.hpp"
 #include "nitrogen_cia.hpp"
 #include "oxygen_cia.hpp"
@@ -59,7 +60,7 @@ AbsorberPtr AbsorberFactory::CreateFrom(YAML::Node const& my,
   if (my["data"]) {
     ab->SetOpacityFile(my["data"].as<std::string>());
   } else {
-    ab->SetOpacityFile("kcoeff-" + band_name + ".nc");
+    ab->SetOpacityFile("");
   }
 
   if (my["dependent-species"]) {
@@ -74,8 +75,6 @@ AbsorberPtr AbsorberFactory::CreateFrom(YAML::Node const& my,
   if (my["parameters"]) {
     ab->SetRealsFrom(my["parameters"]);
   }
-
-  ab->CheckFail();
 
   return ab;
 }
@@ -100,6 +99,8 @@ AbsorberPtr AbsorberFactory::createAbsorberPartial(std::string name,
     ab = std::make_shared<FreedmanMean>(name);
   } else if (type == "FreedmanMean2") {
     ab = std::make_shared<FreedmanMean2>(name);
+  } else if (type == "HeliosCK") {
+    ab = std::make_shared<HeliosCK>(name);
   } else if (type == "SimpleCloud") {
     ab = std::make_shared<SimpleCloud>(name);
   } else if (type == "radio-NH3") {

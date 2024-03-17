@@ -233,6 +233,12 @@ class RadiationBandsFactory {
   static RadiationBandContainer CreateFrom(ParameterInput *pin,
                                            std::string key);
   static RadiationBandContainer CreateFrom(std::string filename);
+
+  static int GetBandId(std::string const &bname) { return band_id_.at(bname); }
+
+ protected:
+  static std::map<std::string, int> band_id_;
+  static int last_band_id_;
 };
 
 #endif  // SRC_HARP_RADIATION_BAND_HPP_
