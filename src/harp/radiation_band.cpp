@@ -50,7 +50,7 @@ RadiationBand::RadiationBand(std::string myname, YAML::Node const &rad)
 
   pgrid_ = SpectralGridFactory::CreateFrom(my);
 
-  wrange_ = parse_range(my);
+  wrange_ = RadiationHelper::parse_wave_range(my);
 
   if (my["outdir"]) {
     if (!my["outdir"].IsSequence()) {

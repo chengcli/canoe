@@ -23,14 +23,6 @@ struct SpectralBin {
   Real rad, wav1, wav2, wght;
 };
 
-//! \brief Parse the unit of the spectral grid
-//! \return [wavenumber, wavelength, frequency]
-std::string parse_unit_with_default(YAML::Node const& my);
-
-//! \brief Read the spectral range from a YAML node
-//! \return [wave min, wave max]
-std::pair<Real, Real> parse_range(YAML::Node const& my);
-
 //! Base class for a collection of spectral grids
 class SpectralGridBase {
  public:
