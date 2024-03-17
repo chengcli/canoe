@@ -80,32 +80,42 @@ Real HitranAbsorber::getRefTemp(Real pres) const {
   return result;
 }
 
-void HitranAbsorber::LoadCoefficient(std::string fname, size_t bid) {
+void HitranAbsorber::LoadCoefficient(std::string fname, int) {
 #ifdef NETCDFOUTPUT
   int fileid, dimid, varid, err;
-  char tname[80];
   nc_open(fname.c_str(), NC_NETCDF4, &fileid);
 
   nc_inq_dimid(fileid, "Wavenumber", &dimid);
   nc_inq_dimlen(fileid, dimid, len_);
   nc_inq_dimid(fileid, "Pressure", &dimid);
   nc_inq_dimlen(fileid, dimid, len_ + 1);
-  snprintf(tname, sizeof(tname), "T_%s", GetName().c_str());
-  nc_inq_dimid(fileid, tname, &dimid);
+  nc_inq_dimid(fileid, "TempGrid", &dimid);
   nc_inq_dimlen(fileid, dimid, len_ + 2);
 
   axis_.resize(len_[0] + len_[1] + len_[2]);
 
   nc_inq_varid(fileid, "Wavenumber", &varid);
   nc_get_var_double(fileid, varid, axis_.data());
+
   err = nc_inq_varid(fileid, "Pressure", &varid);
-  if (err != NC_NOERR) throw std::runtime_error(nc_strerror(err));
+  if (err != NC_NOERR) {
+    throw std::runtime_error(nc_strerror(err));
+  }
+
   err = nc_get_var_double(fileid, varid, axis_.data() + len_[0]);
-  if (err != NC_NOERR) throw std::runtime_error(nc_strerror(err));
-  err = nc_inq_varid(fileid, tname, &varid);
-  if (err != NC_NOERR) throw std::runtime_error(nc_strerror(err));
+  if (err != NC_NOERR) {
+    throw std::runtime_error(nc_strerror(err));
+  }
+
+  err = nc_inq_varid(fileid, "TempGrid", &varid);
+  if (err != NC_NOERR) {
+    throw std::runtime_error(nc_strerror(err));
+  }
+
   err = nc_get_var_double(fileid, varid, axis_.data() + len_[0] + len_[1]);
-  if (err != NC_NOERR) throw std::runtime_error(nc_strerror(err));
+  if (err != NC_NOERR) {
+    throw std::runtime_error(nc_strerror(err));
+  }
 
   Real *temp = new Real[len_[1]];
   nc_inq_varid(fileid, "Temperature", &varid);

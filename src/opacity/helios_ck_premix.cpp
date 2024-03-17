@@ -14,7 +14,7 @@
 // opacity
 #include "absorber_ck.hpp"
 
-void HeliosCK::LoadCoefficient(std::string fname, size_t bid) {
+void HeliosCK::LoadCoefficient(std::string fname, int bid) {
   std::ifstream file(fname);
   if (!file.is_open()) {
     throw std::runtime_error("Failed to open file: " + fname);

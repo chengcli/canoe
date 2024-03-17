@@ -30,6 +30,8 @@ def create_atmosphere(nlyr: int) -> dict:
     # atm["TEM"] = Ts_K * ones(nlyr)
     # ppmv
     atm["H2O"] = 4000.0 * exp(-atm["HGT"] / (Hscale_km / 5.0))
+    # ppmv
+    atm["NH3"] = 400.0 * ones(nlyr)
 
     return atm
 
@@ -49,29 +51,28 @@ if __name__ == "__main__":
     aH2H2CIA = band.get_absorber_by_name("H2-H2-CIA")
     aH2HeCIA = band.get_absorber_by_name("H2-H2-CIA")
 
-    exit()
+    temp = 600.0
+    qH2O = 0.01
+    qNH3 = 0.001
+    v1 = 0.0
+    v2 = 0.0
+    v3 = 0.0
+    pres = 10.0e5
 
-    atm = [300.0, 0.01, 0.0, 0.0, 0.0, 1.0e5]
-    k = ab.get_attenuation(130.0, 130.0, atm)
-    print(k)
+    atm = [temp, qH2O, qNH3, v1, v2, v3, pres]
+    print(aH2O.get_attenuation(130.0, 130.0, atm))
+    print(aNH3.get_attenuation(130.0, 130.0, atm))
+    print(aH2H2CIA.get_attenuation(130.0, 130.0, atm))
+    print(aH2HeCIA.get_attenuation(130.0, 130.0, atm))
 
     num_layers = 100
     band.resize(num_layers)
-
-    print("a1")
 
     atm = create_atmosphere(num_layers)
     band.set_spectral_properties(atm)
 
     print("a2")
 
-    toa = band.cal_radiance().get_toa()
+    # toa = band.cal_radiance().get_toa()
     tau = band.get_tau()
-
-    print("a3")
-
-    wavenumber = linspace(130, 260, int((260 - 130) / 0.01) + 1)
-
-    print(wavenumber)
-    print(len(wavenumber))
-    print(toa.shape)
+    print(tau.shape)

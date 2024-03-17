@@ -88,8 +88,8 @@ def create_netcdf_input(
     tmin: float,
     tmax: float,
 ) -> str:
-    print(f"# Creating {fname}.inp ...")
-    with open(f"{fname}.inp", "w") as file:
+    print(f"# Creating {fname}.in ...")
+    with open(f"{fname}.in", "w") as file:
         file.write("# Molecular absorber\n")
         file.write("%d\n" % len(absorbers))
         file.write(" ".join(absorbers) + "\n")
@@ -118,8 +118,8 @@ def create_netcdf_input(
                 file.write("\n")
         if (i + 1) % 10 != 0:
             file.write("\n")
-    print(f"# {fname}.inp written.")
-    return f"{fname}.inp"
+    print(f"# {fname}.in written.")
+    return f"{fname}.in"
 
 
 # write kcoeff table to netcdf file

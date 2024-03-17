@@ -26,7 +26,7 @@ extern "C" {
 // opacity
 #include "absorber_ck.hpp"
 
-void AbsorberCK::LoadCoefficient(std::string fname, size_t bid) {
+void AbsorberCK::LoadCoefficient(std::string fname, int bid) {
 #ifdef NETCDFOUTPUT
   int fileid, dimid, varid, err;
   len_[0] = 22;  // number of pressure

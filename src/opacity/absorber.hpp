@@ -45,7 +45,7 @@ class Absorber : public NamedGroup,
   void LoadOpacity(int bid);
 
   //! Load absorption coefficient from file
-  virtual void LoadCoefficient(std::string fname, size_t bid) {}
+  virtual void LoadCoefficient(std::string fname, int bid) {}
 
   //! Get attenuation coefficient [1/m]
   virtual Real GetAttenuation(Real wave1, Real wave2,

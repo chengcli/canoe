@@ -24,7 +24,7 @@
 // opacity
 #include "water_cloud.hpp"
 
-void XuWaterIceCloud::LoadCoefficient(std::string fname, size_t bid) {
+void XuWaterIceCloud::LoadCoefficient(std::string fname, int) {
   std::string line;
   std::ifstream file(fname.c_str(), std::ios::in);
 

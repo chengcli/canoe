@@ -13,7 +13,7 @@ class AbsorberCK : public Absorber {
   AbsorberCK(std::string name) : Absorber(name) {}
   virtual ~AbsorberCK() {}
 
-  void LoadCoefficient(std::string fname, size_t bid) override;
+  void LoadCoefficient(std::string fname, int bid) override;
   Real GetAttenuation(Real g1, Real g2, AirParcel const& var) const override;
 
  protected:
@@ -35,7 +35,7 @@ class HeliosCK : public AbsorberCK {
   HeliosCK(std::string name) : AbsorberCK(name) {}
   virtual ~HeliosCK() {}
 
-  void LoadCoefficient(std::string fname, size_t bid) override;
+  void LoadCoefficient(std::string fname, int bid) override;
   Real GetAttenuation(Real g1, Real g2, AirParcel const& var) const override;
   void ModifySpectralGrid(std::vector<SpectralBin>& spec) const override;
 };
