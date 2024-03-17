@@ -155,7 +155,7 @@ def create_atmosphere(nlyr: int) -> dict:
 if __name__ == "__main__":
     subscribe_species(
         {
-            "vapor": ["H2O"],
+            "vapor": ["H2O", "NH3"],
         }
     )
 
