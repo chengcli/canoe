@@ -1,13 +1,11 @@
 #! /usr/bin/env python3
 import os, subprocess
-from canoe import *
+from pycanoe import *
 from numpy import *
 
 from pyharp import radiation_band, subscribe_species
 from utilities import load_file
 from collections import OrderedDict
-
-hitran_file = f"{cmake_source_dir}/data/HITRAN2020.par"
 
 
 def check_file_exist(filename: str) -> bool:
@@ -142,17 +140,15 @@ def create_atmosphere(nlyr: int) -> dict:
     atm["PRE"] = ps_mbar * exp(-atm["HGT"] / Hscale_km)
     atm["TEM"] = Ts_K * ones(nlyr)
     # ppmv
-    atm["CO2"] = 400.0 * ones(nlyr)
+    atm["NH3"] = 400.0 * ones(nlyr)
     # ppmv
     atm["H2O"] = 4000.0 * exp(-atm["HGT"] / (Hscale_km / 5.0))
-    atm["O2"] = (1e6 - atm["CO2"] - atm["H2O"]) * 0.21
-    atm["N2"] = (1e6 - atm["CO2"] - atm["H2O"]) * 0.78
-    atm["Ar"] = (1e6 - atm["CO2"] - atm["H2O"]) * 0.01
 
     return atm
 
 
 if __name__ == "__main__":
+    hitran_file = f"/home/chengcli/Model/canoe/data/HITRAN2020.par"
     subscribe_species(
         {
             "vapor": ["H2O", "NH3"],
@@ -173,7 +169,7 @@ if __name__ == "__main__":
     absorbers = []
     for i in range(num_absorbers):
         name = band.get_absorber(i).get_name()
-        if name in ["H2O"]:
+        if name in ["H2O", "NH3"]:
             absorbers.append(name)
 
     # create atmosphere dictionary

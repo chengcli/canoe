@@ -167,44 +167,50 @@ int main(int argc, char* argv[]) {
   int ncid, dimid, varid;
   nc_create(outfile.c_str(), NC_NETCDF4, &ncid);
 
-  int wave_dimid, pres_dimid, *temp_dimid;
-  int wave_varid, pres_varid, *temp_varid;
-  temp_dimid = new int[nmols];
-  temp_varid = new int[nmols];
+  int wave_dimid, pres_dimid, temp_dimid;
+  int wave_varid, pres_varid, temp_varid;
+
   nc_def_dim(ncid, "Wavenumber", wave_axis.size(), &wave_dimid);
   nc_def_var(ncid, "Wavenumber", NC_DOUBLE, 1, &wave_dimid, &wave_varid);
+  nc_put_att_text(ncid, wave_varid, "units", 4, "1/cm");
+  nc_put_att_text(ncid, wave_varid, "long_name", 15, "wavenumber grid");
+
   nc_def_dim(ncid, "Pressure", pres.size(), &pres_dimid);
   nc_def_var(ncid, "Pressure", NC_DOUBLE, 1, &pres_dimid, &pres_varid);
-  for (int i = 0; i < nmols; ++i) {
-    nc_def_dim(ncid, ("T_" + mols[i]).c_str(), temp_axis.size(),
-               temp_dimid + i);
-    nc_def_var(ncid, ("T_" + mols[i]).c_str(), NC_DOUBLE, 1, temp_dimid + i,
-               temp_varid + i);
-  }
+  nc_put_att_text(ncid, pres_varid, "units", 2, "pa");
+  nc_put_att_text(ncid, pres_varid, "long_name", 18, "reference pressure");
+
+  nc_def_dim(ncid, "TempGrid", temp_axis.size(), &temp_dimid);
+  nc_def_var(ncid, "TempGrid", NC_DOUBLE, 1, &temp_dimid, &temp_varid);
+  nc_put_att_text(ncid, temp_varid, "units", 1, "K");
+  nc_put_att_text(ncid, temp_varid, "long_name", 24,
+                  "temperature anomaly grid");
 
   int tp_varid, *mol_varid;
   mol_varid = new int[nmols];
   nc_def_var(ncid, "Temperature", NC_DOUBLE, 1, &pres_dimid, &tp_varid);
+  nc_put_att_text(ncid, tp_varid, "long_name", 21, "reference temperature");
+  nc_put_att_text(ncid, tp_varid, "units", 1, "K");
+
+  int dims[3] = {wave_dimid, pres_dimid, temp_dimid};
   for (int i = 0; i < nmols; i++) {
-    int dims[3] = {wave_dimid, pres_dimid, temp_dimid[i]};
     nc_def_var(ncid, mols[i].c_str(), NC_DOUBLE, 3, dims, mol_varid + i);
     nc_put_att_text(ncid, mol_varid[i], "units", 12, "ln(m^2/kmol)");
+    nc_put_att_text(ncid, mol_varid[i], "long_name", 24,
+                    "absorption cross section");
   }
-
-  nc_put_att_text(ncid, wave_varid, "units", 4, "1/cm");
-  nc_put_att_text(ncid, pres_varid, "units", 2, "pa");
-  nc_put_att_text(ncid, tp_varid, "units", 1, "K");
 
   nc_enddef(ncid);
 
   nc_put_var_double(ncid, wave_varid, wave_axis.data());
   nc_put_var_double(ncid, pres_varid, pres.data());
   nc_put_var_double(ncid, tp_varid, temp.data());
+  nc_put_var_double(ncid, temp_varid, temp_axis.data());
 
   std::ifstream infile;
+
   // molecule absorption
   kcoeff_mol.resize(nwaves, nlevels, ntemps);
-  // kcoeff_mol.NewAthenaArray(nwaves, nlevels, ntemps);
   for (int m = 0; m < nmols; m++) {
     std::cout << "making absorption file for " << mols[m] << " ..."
               << std::endl;
@@ -222,15 +228,11 @@ int main(int argc, char* argv[]) {
       std::cerr << "cannot open file: " << mfiles[m] << std::endl;
       exit(1);
     }
-    nc_put_var_double(ncid, temp_varid[m], temp_axis.data());
     nc_put_var_double(ncid, mol_varid[m], kcoeff_mol.data());
   }
-  // kcoeff_mol.DeleteAthenaArray();
 
   nc_close(ncid);
 
-  delete[] temp_dimid;
-  delete[] temp_varid;
   delete[] mol_varid;
 
 #else   // NO_NETCDFOUTPUT

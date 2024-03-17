@@ -11,6 +11,10 @@ opacity-sources:
     class: Hitran
     dependent-species: [vapor.H2O]
 
+  - name: NH3
+    class: Hitran
+    dependent-species: [vapor.NH3]
+
 bands: [H2O-rotational]
 
 H2O-rotational:
@@ -18,7 +22,7 @@ H2O-rotational:
   grid-type: regular
   wavenumber-range: [130., 260.]
   resolution: 0.01
-  opacity: [H2O, H2-H2-CIA, H2-He-CIA]
+  opacity: [H2O, NH3, H2-H2-CIA, H2-He-CIA]
   rt-solver: Disort
   outdir: ["(0,)","(45,)"]
   flags: [thermal_emission]
