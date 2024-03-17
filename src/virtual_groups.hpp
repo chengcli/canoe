@@ -136,9 +136,14 @@ class SpeciesIndexGroup {
     auto pindex = IndexMap::GetInstance();
 
     for (auto const &name : species_names) {
-      my_species_index_.push_back(pindex->GetSpeciesId(name));
-      my_cloud_index_.push_back(my_species_index_.back() - NHYDRO);
-      my_chemistry_index_.push_back(my_species_index_.back() - NHYDRO - NCLOUD);
+      if (name == "vapor.dry") {
+        my_species_index_.push_back(IDN);
+      } else {
+        my_species_index_.push_back(pindex->GetSpeciesId(name));
+        my_cloud_index_.push_back(my_species_index_.back() - NHYDRO);
+        my_chemistry_index_.push_back(my_species_index_.back() - NHYDRO -
+                                      NCLOUD);
+      }
     }
   }
 
