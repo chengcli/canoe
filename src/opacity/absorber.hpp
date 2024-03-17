@@ -77,10 +77,6 @@ using AbsorberContainer = std::vector<AbsorberPtr>;
 
 class AbsorberFactory {
  public:
-  //! \todo make it a static member of Absorber
-  //! search path for radiation input file
-  std::string search_path;
-
   //! \brief Create an absorber from YAML node
   //!
   //! \param[in] my YAML node containing the current absorber

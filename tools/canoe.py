@@ -1,1 +1,0 @@
-../build-ktable/bin/canoe.py
