@@ -2,6 +2,7 @@
 import sys, os
 
 sys.path.append("../python")
+sys.path.append(".")
 
 from pyharp import radiation_band, subscribe_species
 from utilities import load_configure, find_resource
