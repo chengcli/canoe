@@ -41,20 +41,317 @@
 namespace CubedSphereUtility {
 
 //! Transform cubed sphere velocity to local cartesian velocity
-inline void vel_zab_to_zxy(Real *v1, Real *v2, Real *v3, Real a, Real b) {}
+inline void vel_zab_to_zxy(Real *v1, Real *v2, Real *v3, Real a, Real b) {
+
+}
 
 //! Transform local cartesian velocity to cubed sphere velocity
-inline void vel_zxy_to_zab(Real *v1, Real *v2, Real *v3, Real a, Real b) {}
+inline void vel_zxy_to_zab(Real *v1, Real *v2, Real *v3, Real a, Real b) {
+
+}
 
 //! Transform cubed sphere velocity from panel 1 to panel 2
-//! \param a $x = \tan(\xi)$ coordinate
+//! \param a $x = \tan(\xi)$ coordinates
 //! \param b $y = \tan(\eta)$ coordinate
+
+inline void vel_zab_p1_to_p3(Real *v1, Real *v2, Real *v3, Real a, Real b) {
+  vel_zab_to_zxy(v1, v2, v3, a, b);//translate the cubed sphere coordinate into cartesian coordinate
+  M[3][3]={{0,0,1}, {0,1,0}, {-1,0,0}};//define the transformation matrix
+  //multiply the velocity vector on the right of the transformation
+  v1 = M[0][0]*v1+M[1][0]*v2+M[2][0]*v3;
+  v2 = M[0][1]*v1+M[1][1]*v2+M[2][1]*v3;
+  v2 = M[0][2]*v1+M[1][2]*v2+M[2][2]*v3;
+  vel_zxy_to_zab(v1, v2, v3, a, b);//translate the cubed sphere coordinate into cartesian coordinate
+}
+
+inline void vel_zab_p2_to_p4(Real *v1, Real *v2, Real *v3, Real a, Real b) {
+  vel_zab_to_zxy(v1, v2, v3, a, b);//translate the cubed sphere coordinate into cartesian coordinate
+  M[3][3]={{0,0,1}, {0,1,0}, {-1,0,0}};//define the transformation matrix
+  //multiply the velocity vector on the right of the transformation
+  v1 = M[0][0]*v1+M[1][0]*v2+M[2][0]*v3;
+  v2 = M[0][1]*v1+M[1][1]*v2+M[2][1]*v3;
+  v2 = M[0][2]*v1+M[1][2]*v2+M[2][2]*v3;
+  vel_zxy_to_zab(v1, v2, v3, a, b);//translate the cubed sphere coordinate into cartesian coordinate
+}
+
+inline void vel_zab_p3_to_p5(Real *v1, Real *v2, Real *v3, Real a, Real b) {
+  vel_zab_to_zxy(v1, v2, v3, a, b);//translate the cubed sphere coordinate into cartesian coordinate
+  M[3][3]={{0,0,1}, {0,1,0}, {-1,0,0}};//define the transformation matrix
+  //multiply the velocity vector on the right of the transformation
+  v1 = M[0][0]*v1+M[1][0]*v2+M[2][0]*v3;
+  v2 = M[0][1]*v1+M[1][1]*v2+M[2][1]*v3;
+  v2 = M[0][2]*v1+M[1][2]*v2+M[2][2]*v3;
+  vel_zxy_to_zab(v1, v2, v3, a, b);//translate the cubed sphere coordinate into cartesian coordinate
+}
+
+inline void vel_zab_p4_to_p6(Real *v1, Real *v2, Real *v3, Real a, Real b) {
+  vel_zab_to_zxy(v1, v2, v3, a, b);//translate the cubed sphere coordinate into cartesian coordinate
+  M[3][3]={{0,0,1}, {0,1,0}, {-1,0,0}};//define the transformation matrix
+  //multiply the velocity vector on the right of the transformation
+  v1 = M[0][0]*v1+M[1][0]*v2+M[2][0]*v3;
+  v2 = M[0][1]*v1+M[1][1]*v2+M[2][1]*v3;
+  v2 = M[0][2]*v1+M[1][2]*v2+M[2][2]*v3;
+  vel_zxy_to_zab(v1, v2, v3, a, b);//translate the cubed sphere coordinate into cartesian coordinate
+}
+
+inline void vel_zab_p3_to_p1(Real *v1, Real *v2, Real *v3, Real a, Real b) {
+  vel_zab_to_zxy(v1, v2, v3, a, b);//translate the cubed sphere coordinate into cartesian coordinate
+  M[3][3]={{0,0,-1}, {0,1,0}, {1,0,0}};//define the transformation matrix
+  //multiply the velocity vector on the right of the transformation
+  v1 = M[0][0]*v1+M[1][0]*v2+M[2][0]*v3;
+  v2 = M[0][1]*v1+M[1][1]*v2+M[2][1]*v3;
+  v2 = M[0][2]*v1+M[1][2]*v2+M[2][2]*v3;
+  vel_zxy_to_zab(v1, v2, v3, a, b);//translate the cubed sphere coordinate into cartesian coordinate
+}
+
+inline void vel_zab_p5_to_p3(Real *v1, Real *v2, Real *v3, Real a, Real b) {
+  vel_zab_to_zxy(v1, v2, v3, a, b);//translate the cubed sphere coordinate into cartesian coordinate
+  M[3][3]={{0,0,-1}, {0,1,0}, {1,0,0}};//define the transformation matrix
+  //multiply the velocity vector on the right of the transformation
+  v1 = M[0][0]*v1+M[1][0]*v2+M[2][0]*v3;
+  v2 = M[0][1]*v1+M[1][1]*v2+M[2][1]*v3;
+  v2 = M[0][2]*v1+M[1][2]*v2+M[2][2]*v3;
+  vel_zxy_to_zab(v1, v2, v3, a, b);//translate the cubed sphere coordinate into cartesian coordinate
+}
+
+inline void vel_zab_p4_to_p2(Real *v1, Real *v2, Real *v3, Real a, Real b) {
+  vel_zab_to_zxy(v1, v2, v3, a, b);//translate the cubed sphere coordinate into cartesian coordinate
+  M[3][3]={{0,0,-1}, {0,1,0}, {1,0,0}};//define the transformation matrix
+  //multiply the velocity vector on the right of the transformation
+  v1 = M[0][0]*v1+M[1][0]*v2+M[2][0]*v3;
+  v2 = M[0][1]*v1+M[1][1]*v2+M[2][1]*v3;
+  v2 = M[0][2]*v1+M[1][2]*v2+M[2][2]*v3;
+  vel_zxy_to_zab(v1, v2, v3, a, b);//translate the cubed sphere coordinate into cartesian coordinate
+}
+
+inline void vel_zab_p6_to_p4(Real *v1, Real *v2, Real *v3, Real a, Real b) {
+  vel_zab_to_zxy(v1, v2, v3, a, b);//translate the cubed sphere coordinate into cartesian coordinate
+  M[3][3]={{0,0,-1}, {0,1,0}, {1,0,0}};//define the transformation matrix
+  //multiply the velocity vector on the right of the transformation
+  v1 = M[0][0]*v1+M[1][0]*v2+M[2][0]*v3;
+  v2 = M[0][1]*v1+M[1][1]*v2+M[2][1]*v3;
+  v2 = M[0][2]*v1+M[1][2]*v2+M[2][2]*v3;
+  vel_zxy_to_zab(v1, v2, v3, a, b);//translate the cubed sphere coordinate into cartesian coordinate
+}
+
+inline void vel_zab_p1_to_p5(Real *v1, Real *v2, Real *v3, Real a, Real b) {
+  vel_zab_to_zxy(v1, v2, v3, a, b);//translate the cubed sphere coordinate into cartesian coordinate
+  M[3][3]={{-1,0,0}, {0,1,0}, {0,0,-1}};//define the transformation matrix
+  //multiply the velocity vector on the right of the transformation
+  v1 = M[0][0]*v1+M[1][0]*v2+M[2][0]*v3;
+  v2 = M[0][1]*v1+M[1][1]*v2+M[2][1]*v3;
+  v2 = M[0][2]*v1+M[1][2]*v2+M[2][2]*v3;
+  vel_zxy_to_zab(v1, v2, v3, a, b);//translate the cubed sphere coordinate into cartesian coordinate
+}
+
+inline void vel_zab_p2_to_p6(Real *v1, Real *v2, Real *v3, Real a, Real b) {
+  vel_zab_to_zxy(v1, v2, v3, a, b);//translate the cubed sphere coordinate into cartesian coordinate
+  M[3][3]={{-1,0,0}, {0,1,0}, {0,0,-1}};//define the transformation matrix
+  //multiply the velocity vector on the right of the transformation
+  v1 = M[0][0]*v1+M[1][0]*v2+M[2][0]*v3;
+  v2 = M[0][1]*v1+M[1][1]*v2+M[2][1]*v3;
+  v2 = M[0][2]*v1+M[1][2]*v2+M[2][2]*v3;
+  vel_zxy_to_zab(v1, v2, v3, a, b);//translate the cubed sphere coordinate into cartesian coordinate
+}
+
+inline void vel_zab_p6_to_p2(Real *v1, Real *v2, Real *v3, Real a, Real b) {
+  vel_zab_to_zxy(v1, v2, v3, a, b);//translate the cubed sphere coordinate into cartesian coordinate
+  M[3][3]={{-1,0,0}, {0,1,0}, {0,0,-1}};//define the transformation matrix
+  //multiply the velocity vector on the right of the transformation
+  v1 = M[0][0]*v1+M[1][0]*v2+M[2][0]*v3;
+  v2 = M[0][1]*v1+M[1][1]*v2+M[2][1]*v3;
+  v2 = M[0][2]*v1+M[1][2]*v2+M[2][2]*v3;
+  vel_zxy_to_zab(v1, v2, v3, a, b);//translate the cubed sphere coordinate into cartesian coordinate
+}
+
+inline void vel_zab_p5_to_p1(Real *v1, Real *v2, Real *v3, Real a, Real b) {
+  vel_zab_to_zxy(v1, v2, v3, a, b);//translate the cubed sphere coordinate into cartesian coordinate
+  M[3][3]={{-1,0,0}, {0,1,0}, {0,0,-1}};//define the transformation matrix
+  //multiply the velocity vector on the right of the transformation
+  v1 = M[0][0]*v1+M[1][0]*v2+M[2][0]*v3;
+  v2 = M[0][1]*v1+M[1][1]*v2+M[2][1]*v3;
+  v2 = M[0][2]*v1+M[1][2]*v2+M[2][2]*v3;
+  vel_zxy_to_zab(v1, v2, v3, a, b);//translate the cubed sphere coordinate into cartesian coordinate
+}
+
+inline void vel_zab_p5_to_p2(Real *v1, Real *v2, Real *v3, Real a, Real b) {
+  vel_zab_to_zxy(v1, v2, v3, a, b);//translate the cubed sphere coordinate into cartesian coordinate
+  M[3][3]={{-1,0,0}, {0,0,-1}, {0,-1,0}};//define the transformation matrix
+  //multiply the velocity vector on the right of the transformation
+  v1 = M[0][0]*v1+M[1][0]*v2+M[2][0]*v3;
+  v2 = M[0][1]*v1+M[1][1]*v2+M[2][1]*v3;
+  v2 = M[0][2]*v1+M[1][2]*v2+M[2][2]*v3;
+  vel_zxy_to_zab(v1, v2, v3, a, b);//translate the cubed sphere coordinate into cartesian coordinate
+}
+
+inline void vel_zab_p2_to_p5(Real *v1, Real *v2, Real *v3, Real a, Real b) {
+  vel_zab_to_zxy(v1, v2, v3, a, b);//translate the cubed sphere coordinate into cartesian coordinate
+  M[3][3]={{-1,0,0}, {0,-1,0}, {0,0,-1}};//define the transformation matrix
+  //multiply the velocity vector on the right of the transformation
+  v1 = M[0][0]*v1+M[1][0]*v2+M[2][0]*v3;
+  v2 = M[0][1]*v1+M[1][1]*v2+M[2][1]*v3;
+  v2 = M[0][2]*v1+M[1][2]*v2+M[2][2]*v3;
+  vel_zxy_to_zab(v1, v2, v3, a, b);//translate the cubed sphere coordinate into cartesian coordinate
+}
+
+inline void vel_zab_p5_to_p4(Real *v1, Real *v2, Real *v3, Real a, Real b) {
+  vel_zab_to_zxy(v1, v2, v3, a, b);//translate the cubed sphere coordinate into cartesian coordinate
+  M[3][3]={{0,-1,0}, {0,0,-1}, {1,0,0}};//define the transformation matrix
+  //multiply the velocity vector on the right of the transformation
+  v1 = M[0][0]*v1+M[1][0]*v2+M[2][0]*v3;
+  v2 = M[0][1]*v1+M[1][1]*v2+M[2][1]*v3;
+  v2 = M[0][2]*v1+M[1][2]*v2+M[2][2]*v3;
+  vel_zxy_to_zab(v1, v2, v3, a, b);//translate the cubed sphere coordinate into cartesian coordinate
+}
+
+inline void vel_zab_p4_to_p5(Real *v1, Real *v2, Real *v3, Real a, Real b) {
+  vel_zab_to_zxy(v1, v2, v3, a, b);//translate the cubed sphere coordinate into cartesian coordinate
+  M[3][3]={{0,0,1}, {-1,0,0}, {0,-1,0}};//define the transformation matrix
+  //multiply the velocity vector on the right of the transformation
+  v1 = M[0][0]*v1+M[1][0]*v2+M[2][0]*v3;
+  v2 = M[0][1]*v1+M[1][1]*v2+M[2][1]*v3;
+  v2 = M[0][2]*v1+M[1][2]*v2+M[2][2]*v3;
+  vel_zxy_to_zab(v1, v2, v3, a, b);//translate the cubed sphere coordinate into cartesian coordinate
+}
+
+inline void vel_zab_p5_to_p6(Real *v1, Real *v2, Real *v3, Real a, Real b) {
+  vel_zab_to_zxy(v1, v2, v3, a, b);//translate the cubed sphere coordinate into cartesian coordinate
+  M[3][3]={{1,0,0}, {0,0,-1}, {0,1,0}};//define the transformation matrix
+  //multiply the velocity vector on the right of the transformation
+  v1 = M[0][0]*v1+M[1][0]*v2+M[2][0]*v3;
+  v2 = M[0][1]*v1+M[1][1]*v2+M[2][1]*v3;
+  v2 = M[0][2]*v1+M[1][2]*v2+M[2][2]*v3;
+  vel_zxy_to_zab(v1, v2, v3, a, b);//translate the cubed sphere coordinate into cartesian coordinate
+}
+
+inline void vel_zab_p6_to_p5(Real *v1, Real *v2, Real *v3, Real a, Real b) {
+  vel_zab_to_zxy(v1, v2, v3, a, b);//translate the cubed sphere coordinate into cartesian coordinate
+  M[3][3]={{1,0,0}, {0,0,1}, {0,-1,0}};//define the transformation matrix
+  //multiply the velocity vector on the right of the transformation
+  v1 = M[0][0]*v1+M[1][0]*v2+M[2][0]*v3;
+  v2 = M[0][1]*v1+M[1][1]*v2+M[2][1]*v3;
+  v2 = M[0][2]*v1+M[1][2]*v2+M[2][2]*v3;
+  vel_zxy_to_zab(v1, v2, v3, a, b);//translate the cubed sphere coordinate into cartesian coordinate
+}
+
+inline void vel_zab_p3_to_p2(Real *v1, Real *v2, Real *v3, Real a, Real b) {
+  vel_zab_to_zxy(v1, v2, v3, a, b);//translate the cubed sphere coordinate into cartesian coordinate
+  M[3][3]={{0,0,-1}, {1,0,0}, {0,-1,0}};//define the transformation matrix
+  //multiply the velocity vector on the right of the transformation
+  v1 = M[0][0]*v1+M[1][0]*v2+M[2][0]*v3;
+  v2 = M[0][1]*v1+M[1][1]*v2+M[2][1]*v3;
+  v2 = M[0][2]*v1+M[1][2]*v2+M[2][2]*v3;
+  vel_zxy_to_zab(v1, v2, v3, a, b);//translate the cubed sphere coordinate into cartesian coordinate
+}
+
+inline void vel_zab_p2_to_p3(Real *v1, Real *v2, Real *v3, Real a, Real b) {
+  vel_zab_to_zxy(v1, v2, v3, a, b);//translate the cubed sphere coordinate into cartesian coordinate
+  M[3][3]={{0,1,0}, {0,0,-1}, {-1,0,0}};//define the transformation matrix
+  //multiply the velocity vector on the right of the transformation
+  v1 = M[0][0]*v1+M[1][0]*v2+M[2][0]*v3;
+  v2 = M[0][1]*v1+M[1][1]*v2+M[2][1]*v3;
+  v2 = M[0][2]*v1+M[1][2]*v2+M[2][2]*v3;
+  vel_zxy_to_zab(v1, v2, v3, a, b);//translate the cubed sphere coordinate into cartesian coordinate
+}
+
+inline void vel_zab_p3_to_p4(Real *v1, Real *v2, Real *v3, Real a, Real b) {
+  vel_zab_to_zxy(v1, v2, v3, a, b);//translate the cubed sphere coordinate into cartesian coordinate
+  M[3][3]={{0,-1,0}, {1,0,0}, {0,0,1}};//define the transformation matrix
+  //multiply the velocity vector on the right of the transformation
+  v1 = M[0][0]*v1+M[1][0]*v2+M[2][0]*v3;
+  v2 = M[0][1]*v1+M[1][1]*v2+M[2][1]*v3;
+  v2 = M[0][2]*v1+M[1][2]*v2+M[2][2]*v3;
+  vel_zxy_to_zab(v1, v2, v3, a, b);//translate the cubed sphere coordinate into cartesian coordinate
+}
+
+inline void vel_zab_p4_to_p3(Real *v1, Real *v2, Real *v3, Real a, Real b) {
+  vel_zab_to_zxy(v1, v2, v3, a, b);//translate the cubed sphere coordinate into cartesian coordinate
+  M[3][3]={{0,1,0}, {-1,0,0}, {0,0,1}};//define the transformation matrix
+  //multiply the velocity vector on the right of the transformation
+  v1 = M[0][0]*v1+M[1][0]*v2+M[2][0]*v3;
+  v2 = M[0][1]*v1+M[1][1]*v2+M[2][1]*v3;
+  v2 = M[0][2]*v1+M[1][2]*v2+M[2][2]*v3;
+  vel_zxy_to_zab(v1, v2, v3, a, b);//translate the cubed sphere coordinate into cartesian coordinate
+}
+
+inline void vel_zab_p3_to_p6(Real *v1, Real *v2, Real *v3, Real a, Real b) {
+  vel_zab_to_zxy(v1, v2, v3, a, b);//translate the cubed sphere coordinate into cartesian coordinate
+  M[3][3]={{0,0,1}, {1,0,0}, {0,1,0}};//define the transformation matrix
+  //multiply the velocity vector on the right of the transformation
+  v1 = M[0][0]*v1+M[1][0]*v2+M[2][0]*v3;
+  v2 = M[0][1]*v1+M[1][1]*v2+M[2][1]*v3;
+  v2 = M[0][2]*v1+M[1][2]*v2+M[2][2]*v3;
+  vel_zxy_to_zab(v1, v2, v3, a, b);//translate the cubed sphere coordinate into cartesian coordinate
+}
+
+inline void vel_zab_p6_to_p3(Real *v1, Real *v2, Real *v3, Real a, Real b) {
+  vel_zab_to_zxy(v1, v2, v3, a, b);//translate the cubed sphere coordinate into cartesian coordinate
+  M[3][3]={{0,1,0}, {0,0,1}, {1,0,0}};//define the transformation matrix
+  //multiply the velocity vector on the right of the transformation
+  v1 = M[0][0]*v1+M[1][0]*v2+M[2][0]*v3;
+  v2 = M[0][1]*v1+M[1][1]*v2+M[2][1]*v3;
+  v2 = M[0][2]*v1+M[1][2]*v2+M[2][2]*v3;
+  vel_zxy_to_zab(v1, v2, v3, a, b);//translate the cubed sphere coordinate into cartesian coordinate
+}
+
 inline void vel_zab_p1_to_p2(Real *v1, Real *v2, Real *v3, Real a, Real b) {
-  vel_zab_to_zxy(v1, v2, v3, a, b);
+  vel_zab_to_zxy(v1, v2, v3, a, b);//translate the cubed sphere coordinate into cartesian coordinate
+  M[3][3]={{0,0,1}, {1,0,0}, {0,1,0}};//define the transformation matrix
+  //multiply the velocity vector on the right of the transformation
+  v1 = M[0][0]*v1+M[1][0]*v2+M[2][0]*v3;
+  v2 = M[0][1]*v1+M[1][1]*v2+M[2][1]*v3;
+  v2 = M[0][2]*v1+M[1][2]*v2+M[2][2]*v3;
+  vel_zxy_to_zab(v1, v2, v3, a, b);//translate the cubed sphere coordinate into cartesian coordinate
+}
 
-  // fill in code here
+inline void vel_zab_p2_to_p1(Real *v1, Real *v2, Real *v3, Real a, Real b) {
+  vel_zab_to_zxy(v1, v2, v3, a, b);//translate the cubed sphere coordinate into cartesian coordinate
+  M[3][3]={{0,1,0}, {0,0,1}, {1,0,0}};//define the transformation matrix
+  //multiply the velocity vector on the right of the transformation
+  v1 = M[0][0]*v1+M[1][0]*v2+M[2][0]*v3;
+  v2 = M[0][1]*v1+M[1][1]*v2+M[2][1]*v3;
+  v2 = M[0][2]*v1+M[1][2]*v2+M[2][2]*v3;
+  vel_zxy_to_zab(v1, v2, v3, a, b);//translate the cubed sphere coordinate into cartesian coordinate
+}
 
-  vel_zxy_to_zab(v1, v2, v3, a, b);
+inline void vel_zab_p1_to_p4(Real *v1, Real *v2, Real *v3, Real a, Real b) {
+  vel_zab_to_zxy(v1, v2, v3, a, b);//translate the cubed sphere coordinate into cartesian coordinate
+  M[3][3]={{0,-1,0}, {0,0,1}, {-1,0,0}};//define the transformation matrix
+  //multiply the velocity vector on the right of the transformation
+  v1 = M[0][0]*v1+M[1][0]*v2+M[2][0]*v3;
+  v2 = M[0][1]*v1+M[1][1]*v2+M[2][1]*v3;
+  v2 = M[0][2]*v1+M[1][2]*v2+M[2][2]*v3;
+  vel_zxy_to_zab(v1, v2, v3, a, b);//translate the cubed sphere coordinate into cartesian coordinate
+}
+
+inline void vel_zab_p4_to_p1(Real *v1, Real *v2, Real *v3, Real a, Real b) {
+  vel_zab_to_zxy(v1, v2, v3, a, b);//translate the cubed sphere coordinate into cartesian coordinate
+  M[3][3]={{0,0,-1}, {-1,0,0}, {0,1,0}};//define the transformation matrix
+  //multiply the velocity vector on the right of the transformation
+  v1 = M[0][0]*v1+M[1][0]*v2+M[2][0]*v3;
+  v2 = M[0][1]*v1+M[1][1]*v2+M[2][1]*v3;
+  v2 = M[0][2]*v1+M[1][2]*v2+M[2][2]*v3;
+  vel_zxy_to_zab(v1, v2, v3, a, b);//translate the cubed sphere coordinate into cartesian coordinate
+}
+
+inline void vel_zab_p1_to_p6(Real *v1, Real *v2, Real *v3, Real a, Real b) {
+  vel_zab_to_zxy(v1, v2, v3, a, b);//translate the cubed sphere coordinate into cartesian coordinate
+  M[3][3]={{-1,0,0}, {0,0,1}, {0,1,0}};//define the transformation matrix
+  //multiply the velocity vector on the right of the transformation
+  v1 = M[0][0]*v1+M[1][0]*v2+M[2][0]*v3;
+  v2 = M[0][1]*v1+M[1][1]*v2+M[2][1]*v3;
+  v2 = M[0][2]*v1+M[1][2]*v2+M[2][2]*v3;
+  vel_zxy_to_zab(v1, v2, v3, a, b);//translate the cubed sphere coordinate into cartesian coordinate
+}
+
+inline void vel_zab_p6_to_p1(Real *v1, Real *v2, Real *v3, Real a, Real b) {
+  vel_zab_to_zxy(v1, v2, v3, a, b);//translate the cubed sphere coordinate into cartesian coordinate
+  M[3][3]={{-1,0,0}, {0,0,1}, {0,1,0}};//define the transformation matrix
+  //multiply the velocity vector on the right of the transformation
+  v1 = M[0][0]*v1+M[1][0]*v2+M[2][0]*v3;
+  v2 = M[0][1]*v1+M[1][1]*v2+M[2][1]*v3;
+  v2 = M[0][2]*v1+M[1][2]*v2+M[2][2]*v3;
+  vel_zxy_to_zab(v1, v2, v3, a, b);//translate the cubed sphere coordinate into cartesian coordinate
 }
 
 }  // namespace CubedSphereUtility
