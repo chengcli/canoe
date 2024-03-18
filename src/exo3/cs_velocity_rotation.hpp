@@ -65,8 +65,15 @@ inline void vel_zab_from_p1(Real *vz, Real *vx, Real *vy, Real a, Real b,
       vel_zxy_to_zab(vx, vz, vy, a, b);
       break;
     case 4:
+      // z->-x, x->-y, y->z
+      (*vz) *= -1;
+      (*vx) *= -1;
+      vel_zxy_to_zab(vy, vz, vx, a, b);
       break;
     case 6:
+      // z->-y, x->x, y->z
+      (*vz) *= -1;
+      vel_zxy_to_zab(vx, vz, vy, a, b);
       break;
   }
 }
