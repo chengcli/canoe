@@ -38,11 +38,11 @@ macro(add_python_module namel)
     PREFIX "${PYTHON_MODULE_PREFIX}"
     SUFFIX "${PYTHON_MODULE_EXTENSION}")
 
-  # Install configuration
-  install(
-    TARGETS ${namel}
-    COMPONENT python
-    DESTINATION ${PYTHON_SITE_PACKAGES})
+  # softlink library
+  execute_process(
+    COMMAND ln -sf ${CMAKE_BINARY_DIR}/python/${namel}${PYTHON_MODULE_EXTENSION}
+    ${CMAKE_BINARY_DIR}/lib/${namel}${PYTHON_MODULE_EXTENSION}
+    )
 endmacro()
 
 # add python modules

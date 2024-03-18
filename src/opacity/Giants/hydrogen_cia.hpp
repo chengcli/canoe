@@ -10,11 +10,19 @@
 
 class XizH2H2CIA : public Absorber {
  public:
-  XizH2H2CIA() : Absorber("H2-H2-CIA") {}
+  XizH2H2CIA();
 
   virtual ~XizH2H2CIA() {}
-  void LoadCoefficient(std::string fname, int bid = -1);
-  Real GetAttenuation(Real wave1, Real wave2, AirParcel const& var) const;
+  void LoadCoefficient(std::string fname, int bid) override;
+  Real GetAttenuation(Real wave1, Real wave2,
+                      AirParcel const& var) const override {
+    Real k1 = getAttenuation1(wave1, var);
+    Real k2 = getAttenuation1(wave2, var);
+    return (k1 + k2) / 2.;
+  }
+
+ protected:
+  Real getAttenuation1(Real wave, AirParcel const& var) const;
 
  protected:
   size_t len_[2];
@@ -24,11 +32,19 @@ class XizH2H2CIA : public Absorber {
 
 class XizH2HeCIA : public Absorber {
  public:
-  XizH2HeCIA() : Absorber("H2-He-CIA") {}
+  XizH2HeCIA();
 
   virtual ~XizH2HeCIA() {}
-  void LoadCoefficient(std::string fname, int bid = -1);
-  Real GetAttenuation(Real wave1, Real wave2, AirParcel const& var) const;
+  void LoadCoefficient(std::string fname, int bid) override;
+  Real GetAttenuation(Real wave1, Real wave2,
+                      AirParcel const& var) const override {
+    Real k1 = getAttenuation1(wave1, var);
+    Real k2 = getAttenuation1(wave2, var);
+    return (k1 + k2) / 2.;
+  }
+
+ protected:
+  Real getAttenuation1(Real wave, AirParcel const& var) const;
 
  protected:
   Real mixr2_;
@@ -42,8 +58,9 @@ class OrtonCIA : public Absorber {
   OrtonCIA() : Absorber("Orthon-CIA") {}
 
   virtual ~OrtonCIA() {}
-  void LoadCoefficient(std::string fname, int bid = -1);
-  Real GetAttenuation(Real wave1, Real wave2, AirParcel const& var) const;
+  void LoadCoefficient(std::string fname, int bid) override;
+  Real GetAttenuation(Real wave1, Real wave2,
+                      AirParcel const& var) const override;
 
  protected:
   size_t len_[2];

@@ -21,7 +21,9 @@
 // opacity
 #include "hydrogen_cia.hpp"
 
-void XizH2HeCIA::LoadCoefficient(std::string fname, int bid) {
+XizH2HeCIA::XizH2HeCIA() : Absorber("H2-He-CIA") { SetPar("xHe", 0.); }
+
+void XizH2HeCIA::LoadCoefficient(std::string fname, int) {
   if (!FileExists(fname)) {
     throw NotFoundError("XizH2H2CIA", fname);
   }
@@ -48,13 +50,11 @@ void XizH2HeCIA::LoadCoefficient(std::string fname, int bid) {
   }
 }
 
-Real XizH2HeCIA::GetAttenuation(Real wave1, Real wave2,
-                                AirParcel const& var) const {
+Real XizH2HeCIA::getAttenuation1(Real wave, AirParcel const& var) const {
   // first axis is wavenumber, second is temperature
-  Real val, coord[2] = {wave1, var.w[IDN]};
+  Real val, coord[2] = {wave, var.w[IDN]};
   interpn(&val, coord, kcoeff_.data(), axis_.data(), len_, 2, 1);
 
-  Real amagat = var.w[IPR] / (Constants::kBoltz * var.w[IDN] * Constants::Lo);
   Real x0 = 1.;
   if (mySpeciesId(0) == 0) {
     for (int n = 1; n <= NVAPOR; ++n) x0 -= var.w[n];
@@ -62,6 +62,11 @@ Real XizH2HeCIA::GetAttenuation(Real wave1, Real wave2,
     x0 = var.w[mySpeciesId(0)];
   }
 
-  return 100. * exp(-val) *
-         sqr(x0 * amagat * GetPar<Real>("mixr"));  // 1/cm -> 1/m
+  Real xHe = GetPar<Real>("xHe");
+  Real amagat =
+      x0 * var.w[IPR] / (Constants::kBoltz * var.w[IDN] * Constants::Lo);
+  Real amagat_H2 = amagat * (1. - xHe);
+  Real amagat_He = amagat * xHe;
+
+  return 100. * exp(-val) * amagat_H2 * amagat_He;  // 1/cm -> 1/m
 }

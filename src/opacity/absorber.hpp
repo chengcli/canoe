@@ -17,6 +17,7 @@
 #include <virtual_groups.hpp>
 
 class AirParcel;
+class SpectralBin;
 
 //! \brief base class of all absorbers
 class Absorber : public NamedGroup,
@@ -37,11 +38,14 @@ class Absorber : public NamedGroup,
   //! Set opacity filename to internal variable, does not load opacity
   void SetOpacityFile(std::string filename);
 
+  //! Get opacity filename
+  std::string GetOpacityFile() const { return opacity_filename_; }
+
   //! Load opacity from internal variable
-  void LoadOpacity();
+  void LoadOpacity(int bid);
 
   //! Load absorption coefficient from file
-  virtual void LoadCoefficient(std::string fname, size_t bid) {}
+  virtual void LoadCoefficient(std::string fname, int bid) {}
 
   //! Get attenuation coefficient [1/m]
   virtual Real GetAttenuation(Real wave1, Real wave2,
@@ -61,6 +65,8 @@ class Absorber : public NamedGroup,
 
   virtual void CheckFail() const {}
 
+  virtual void ModifySpectralGrid(std::vector<SpectralBin>& spec) const {}
+
  public:  // StringRepr
   std::string ToString() const override;
 
@@ -77,10 +83,6 @@ using AbsorberContainer = std::vector<AbsorberPtr>;
 
 class AbsorberFactory {
  public:
-  //! \todo make it a static member of Absorber
-  //! search path for radiation input file
-  std::string search_path;
-
   //! \brief Create an absorber from YAML node
   //!
   //! \param[in] my YAML node containing the current absorber

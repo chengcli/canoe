@@ -101,7 +101,8 @@ PYBIND11_MODULE(pyharp, m) {
       .def_readonly("bflxup", &RadiationBand::bflxup)
       .def_readonly("bflxdn", &RadiationBand::bflxdn)
 
-      .def(py::init<std::string, YAML::Node>())
+      .def(py::init<std::string, YAML::Node, bool>(), py::arg("name"),
+           py::arg("config"), py::arg("load_opacity") = false)
       .def("__str__", &RadiationBand::ToString)
 
       .def("resize", &RadiationBand::Resize, py::arg("nc1"), py::arg("nc2") = 1,
@@ -197,9 +198,14 @@ PYBIND11_MODULE(pyharp, m) {
   // Absorber
   py::class_<Absorber, AbsorberPtr>(m, "absorber")
       .def("__str__", &Absorber::ToString)
+
       .def("load_opacity_from_file", &Absorber::LoadOpacityFromFile)
 
+      .def("load_opacity", &Absorber::LoadOpacity, py::arg("bid") = -1)
+
       .def("get_name", &Absorber::GetName)
+
+      .def("get_opacity_file", &Absorber::GetOpacityFile)
 
       .def("get_attenuation",
            [](Absorber &ab, double wave1, double wave2, py::list lst) {

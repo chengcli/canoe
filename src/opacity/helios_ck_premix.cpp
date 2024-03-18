@@ -14,11 +14,15 @@
 // opacity
 #include "absorber_ck.hpp"
 
-void HeliosCKPremix::LoadCoefficient(std::string fname, size_t bid) {
+void HeliosCK::LoadCoefficient(std::string fname, int bid) {
   std::ifstream file(fname);
   if (!file.is_open()) {
     throw std::runtime_error("Failed to open file: " + fname);
   }
+
+  // skip the first line
+  std::string junk_line;
+  std::getline(file, junk_line);
 
   size_t num_bands;
 
@@ -56,11 +60,17 @@ void HeliosCKPremix::LoadCoefficient(std::string fname, size_t bid) {
     }
   }
 
-  // g-points and weights
+  // skip unimportant wavelengths
   Real dummy;
+  for (int i = 0; i < num_bands - bid; ++i) {
+    file >> dummy;
+  }
+
+  // g-points and weights
+  weights_.resize(len_[2]);
   for (int g = 0; g < len_[2]; ++g) {
     Real gpoint;
-    file >> gpoint >> dummy;
+    file >> gpoint >> weights_[g];
     axis_[len_[0] + len_[1] + g] = wmin + (wmax - wmin) * gpoint;
   }
 
@@ -74,15 +84,16 @@ void HeliosCKPremix::LoadCoefficient(std::string fname, size_t bid) {
             kcoeff_[n] = log(std::max(kcoeff_[n], 1.0e-99));
           }
         } else {
-          file >> dummy;
+          for (int g = 0; g < len_[2]; ++g, ++n) {
+            file >> dummy;
+          }
         }
       }
 
   file.close();
 }
 
-Real HeliosCKPremix::GetAttenuation(Real g1, Real g2,
-                                    AirParcel const& var) const {
+Real HeliosCK::GetAttenuation(Real g1, Real g2, AirParcel const& var) const {
   // temperature, log-pressure, wave-scaled g-point
   Real val, coord[3] = {var.q[IDN], log(var.q[IPR]), g1};
   interpn(&val, coord, kcoeff_.data(), axis_.data(), len_, 3, 1);

@@ -1,4 +1,0 @@
-import sys
-sys.path.append("@CMAKE_BINARY_DIR@/python")
-cmake_source_dir = "@CMAKE_SOURCE_DIR@"
-cmake_binary_dir = "@CMAKE_BINARY_DIR@"

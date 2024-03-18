@@ -29,7 +29,7 @@ static int const n_rt_sets = 10;
 static int const n_fd1_sets = 5;
 static int const n_fd2_sets = 5;
 
-void N2N2CIA::LoadCoefficient(std::string fname, size_t bid) {
+void N2N2CIA::LoadCoefficient(std::string fname, int) {
   std::string line;
   std::ifstream file(fname);
   double value;

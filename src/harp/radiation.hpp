@@ -131,6 +131,16 @@ Direction parse_radiation_direction(std::string_view str);
 std::vector<Direction> parse_radiation_directions(std::string str);
 uint64_t parse_radiation_flags(std::string str);
 void get_phase_momentum(Real *pmom, int iphas, Real gg, int npmom);
+
+//! \brief Parse the unit of the spectral grid
+//!
+//! \return [wavenumber, wavelength, frequency]
+std::string parse_unit_with_default(YAML::Node const &my);
+
+//! \brief Parse the spectral range from a YAML node
+//!
+//! \return [wave min, wave max]
+std::pair<Real, Real> parse_wave_range(YAML::Node const &my);
 };  // namespace RadiationHelper
 
 #endif  //  SRC_HARP_RADIATION_HPP_

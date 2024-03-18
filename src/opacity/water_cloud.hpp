@@ -73,7 +73,7 @@ class XuWaterIceCloud : public Absorber {
  public:
   XuWaterIceCloud() : Absorber("H2O(s)") {}
 
-  void LoadCoefficient(std::string fname, size_t bid) override;
+  void LoadCoefficient(std::string fname, int bid) override;
 
   Real GetAttenuation(Real wave1, Real wave2,
                       AirParcel const& var) const override {

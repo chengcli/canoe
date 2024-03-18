@@ -30,7 +30,7 @@ static int const n_a1dg_x3sg10_sets = 1;
 static int const n_ab_sets = 1;
 static int const n_other_sets = 1;
 
-void O2O2CIA::LoadCoefficient(std::string fname, size_t bid) {
+void O2O2CIA::LoadCoefficient(std::string fname, int) {
   std::string line;
   std::ifstream file(fname);
   double value;

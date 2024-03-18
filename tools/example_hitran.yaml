@@ -1,0 +1,25 @@
+opacity-sources:
+  - name: CO2
+    class: Hitran
+
+  - name: H2O
+    class: Hitran
+
+  - name: O3
+    class: Hitran
+
+bands: [B1, B2]
+
+B1:
+  units: cm-1
+  grid-type: regular
+  wavenumber-range: [600., 700.]
+  resolution: 0.01
+  opacity: [H2O, CO2]
+
+B2:
+  units: cm-1
+  grid-type: regular
+  wavenumber-range: [200., 600.]
+  resolution: 0.01
+  opacity: [H2O, CO2]

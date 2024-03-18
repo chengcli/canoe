@@ -59,7 +59,7 @@ class RadiationBand : public NamedGroup,
   AthenaArray<Real> btoa;
 
  public:  // constructor and destructor
-  RadiationBand(std::string name, YAML::Node const &rad);
+  RadiationBand(std::string name, YAML::Node const &rad, bool load_opacity);
   virtual ~RadiationBand();
 
  public:  // member functions
@@ -233,6 +233,17 @@ class RadiationBandsFactory {
   static RadiationBandContainer CreateFrom(ParameterInput *pin,
                                            std::string key);
   static RadiationBandContainer CreateFrom(std::string filename);
+
+  static int GetBandId(std::string const &bname) {
+    if (band_id_.find(bname) == band_id_.end()) {
+      return -1;
+    }
+    return band_id_.at(bname);
+  }
+
+ protected:
+  static std::map<std::string, int> band_id_;
+  static int next_band_id_;
 };
 
 #endif  // SRC_HARP_RADIATION_BAND_HPP_

@@ -4,7 +4,7 @@ opacity-sources:
     long-name: "Hydrogen-Hydrogen collisional absorption"
 
   - name: H2-He-CIA
-    class: XIZ-H2-H2-CIA
+    class: XIZ-H2-He-CIA
     long-name: "Hydrogen-Helium collisional absorption"
 
   - name: CH4

@@ -13,11 +13,13 @@ class O2O2CIA : public Absorber {
 
   virtual ~O2O2CIA() {}
 
-  void LoadCoefficient(std::string fname, size_t bid) override;
+  void LoadCoefficient(std::string fname, int bid) override;
 
   Real GetAttenuation(Real wave1, Real wave2,
                       AirParcel const& var) const override {
-    return getAttenuation1((wave1 + wave2) / 2., var);
+    Real k1 = getAttenuation1(wave1, var);
+    Real k2 = getAttenuation1(wave2, var);
+    return (k1 + k2) / 2.;
   }
 
  protected:

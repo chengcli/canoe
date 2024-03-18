@@ -21,28 +21,22 @@ Absorber::~Absorber() {
 
 void Absorber::LoadOpacityFromFile(std::string filename) {
   SetOpacityFile(filename);
-  LoadOpacity();
+  LoadOpacity(-1);
 }
 
 void Absorber::SetOpacityFile(std::string filename) {
   opacity_filename_ = filename;
 }
 
-void Absorber::LoadOpacity() {
+void Absorber::LoadOpacity(int bid) {
   auto app = Application::GetInstance();
   auto log = app->GetMonitor("opacity");
 
   if (opacity_filename_.empty()) return;
 
-  try {
-    std::string full_path = app->FindResource(opacity_filename_);
-    log->Log("Load opacity from " + full_path);
-    LoadCoefficient(full_path, 0);
-  } catch (NotFoundError const& e) {
-    std::stringstream ss;
-    ss << e.what() << std::endl;
-    log->Warn(ss.str());
-  }
+  std::string full_path = app->FindResource(opacity_filename_);
+  log->Log("Load opacity from " + full_path);
+  LoadCoefficient(full_path, bid);
 }
 
 std::string Absorber::ToString() const {

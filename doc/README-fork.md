@@ -79,7 +79,7 @@ If `upstream` has updates without lfs object, you can simply pull changes
 from `upstream` by:
 ```bash
 git fetch upstream
-git rebase upstream/master
+git rebase upstream/main
 ```
 When `upstream` has new lfs object, do these extra steps before fetch:
 

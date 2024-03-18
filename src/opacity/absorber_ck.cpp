@@ -20,10 +20,13 @@ extern "C" {
 // climath
 #include <climath/interpolation.h>
 
+// harp
+#include <harp/spectral_grid.hpp>
+
 // opacity
 #include "absorber_ck.hpp"
 
-void AbsorberCK::LoadCoefficient(std::string fname, size_t bid) {
+void AbsorberCK::LoadCoefficient(std::string fname, int bid) {
 #ifdef NETCDFOUTPUT
   int fileid, dimid, varid, err;
   len_[0] = 22;  // number of pressure
@@ -44,7 +47,7 @@ void AbsorberCK::LoadCoefficient(std::string fname, size_t bid) {
 
   kcoeff_.resize(len_[0] * len_[1] * len_[2]);
   nc_inq_varid(fileid, GetName().c_str(), &varid);
-  size_t start[4] = {0, 0, bid, 0};
+  size_t start[4] = {0, 0, (size_t)bid, 0};
   size_t count[4] = {len_[0], len_[1], 1, len_[2]};
   nc_get_vara_double(fileid, varid, start, count, kcoeff_.data());
   nc_close(fileid);
@@ -57,4 +60,14 @@ Real AbsorberCK::GetAttenuation(Real g1, Real g2, AirParcel const& var) const {
   interpn(&val, coord, kcoeff_.data(), axis_.data(), len_, 3, 1);
   Real dens = var.q[IPR] / (Constants::kBoltz * var.q[IDN]);
   return exp(val) * dens;  // ln(m*2/kmol) -> 1/m
+}
+
+void HeliosCK::ModifySpectralGrid(std::vector<SpectralBin>& spec) const {
+  spec.resize(weights_.size());
+
+  for (size_t i = 0; i < weights_.size(); ++i) {
+    spec[i].wav1 = axis_[len_[0] + len_[1] + i];
+    spec[i].wav2 = axis_[len_[0] + len_[1] + i];
+    spec[i].wght = weights_[i];
+  }
 }

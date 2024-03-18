@@ -1,0 +1,51 @@
+opacity-sources:
+  - name: H2-H2-CIA
+    class: XIZ-H2-H2-CIA
+    data: H2-H2-eq.xiz.txt
+    dependent-species: [vapor.dry]
+    parameters: {xHe: 0.15}
+
+  - name: H2-He-CIA
+    class: XIZ-H2-He-CIA
+    data: H2-He-eq.xiz.txt
+    dependent-species: [vapor.dry]
+    parameters: {xHe: 0.15}
+
+  - name: H2O
+    class: Hitran
+    data: jup-kcoeff.nc
+    dependent-species: [vapor.H2O]
+
+  - name: NH3
+    class: Hitran
+    data: jup-kcoeff.nc
+    dependent-species: [vapor.NH3]
+
+bands: [B1]
+
+B1:
+  units: cm-1
+  grid-type: regular
+  wavenumber-range: [700., 2100.]
+  resolution: 0.1
+  opacity: [H2O, NH3, H2-H2-CIA, H2-He-CIA]
+  rt-solver: Disort
+  outdir: ["(0,)","(45,)"]
+  flags: [thermal_emission]
+
+Disort-flags:
+  ibcnd: false
+  usrtau: true
+  usrang: true
+  onlyfl: false
+  spher: false
+  intensity_correction: true
+  old_intensity_correction: false
+  general_source: false
+  output_uum: false
+  quiet: false
+  print-input: false
+  print-fluxes: false
+  print-intensity: false
+  print-transmissivity: false
+  print-phase-function: false
