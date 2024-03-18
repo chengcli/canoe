@@ -47,7 +47,7 @@ void AbsorberCK::LoadCoefficient(std::string fname, int bid) {
 
   kcoeff_.resize(len_[0] * len_[1] * len_[2]);
   nc_inq_varid(fileid, GetName().c_str(), &varid);
-  size_t start[4] = {0, 0, bid, 0};
+  size_t start[4] = {0, 0, (size_t)bid, 0};
   size_t count[4] = {len_[0], len_[1], 1, len_[2]};
   nc_get_vara_double(fileid, varid, start, count, kcoeff_.data());
   nc_close(fileid);
