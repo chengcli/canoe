@@ -1,0 +1,75 @@
+<comment>
+problem     = Generatel 1D Jupiter Profile
+
+<job>
+problem_id  = jupiter1d     # problem ID: basename of output filenames
+
+<output1>
+file_type   = hst           # History data dump
+dt          = 2.E4          # time increment between outputs
+
+<output2>
+file_type   = netcdf        # Netcdf format output
+variable    = prim          # variables to be output
+dt          = 1.E4          # time increment between outputs
+
+<output3>
+file_type   = netcdf        # Netcdf format output
+variable    = uov           # diagnostic variables
+dt          = 1.E4          # time increment
+
+<time>
+cfl_number  = 0.9
+nlim        = 0            # cycle limit
+tlim        = 2.E5
+xorder      = 5             # horizontal reconstruction order
+integrator  = rk3           # integration method
+
+<mesh>
+nx1         = 100           # Number of zones in X1-direction
+x1min       = -400.E3       # minimum value of X1
+x1max       = 100.E3        # maximum value of X1
+ix1_bc      = reflecting    # Inner-X1 boundary condition flag
+ox1_bc      = reflecting    # Outer-X1 boundary condition flag
+
+nx2         = 1             # Number of zones in X2-direction
+x2min       = -0.5          # minimum value of X2
+x2max       = 0.5           # maximum value of X2
+ix2_bc      = periodic      # Inner-X2 boundary condition flag
+ox2_bc      = periodic      # Outer-X2 boundary condition flag
+
+nx3         = 1             # Number of zones in X3-direction
+x3min       = -0.5          # minimum value of X3
+x3max       = 0.5           # maximum value of X3
+ix3_bc      = periodic      # Inner-X3 boundary condition flag
+ox3_bc      = periodic      # Outer-X3 boundary condition flag
+
+<hydro>
+gamma       = 1.42
+grav_acc1   = -24.79
+
+<species>
+vapor = H2O, NH3
+cloud = H2O(c), NH3(c), H2O(p), NH3(p)
+
+<thermodynamics>
+Rd          = 3777.   # mu = 2.3175 g/mol
+eps1        = 8.18    8.18    8.18
+beta1       = 0.      24.845  24.845
+rcp1        = 0.15    0.33    0.33
+Ttriple1    = 273.16
+Ptriple1    = 611.7
+
+eps2        = 7.72    7.72    7.72
+rcp2        = 0.078   0.16    0.16
+beta2       = 0.      23.67   23.67
+Ttriple2    = 195.4
+Ptriple2    = 6060.
+
+<problem>
+qH2O.ppmv   = 2500.
+qNH3.ppmv   = 320.
+
+P0          = 1.E5
+T0          = 169.
+Tmin        = 110.

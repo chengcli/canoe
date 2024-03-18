@@ -6,30 +6,34 @@ sys.path.append(".")
 
 from pyharp import radiation_band, subscribe_species
 from utilities import load_configure, find_resource
+from netCDF4 import Dataset
 from numpy import *
 from rfmlib import *
 
 
 # create reference atmosphere dictionary
 # Edit this function to create your own atmosphere
-def create_ref_atmosphere(nlyr: int) -> dict:
+def create_rfm_atmosphere(nlyr: int) -> dict:
     atm = {}
-    ps_mbar = 1.0e3
-    Ts_K = 300.0
-    grav_ms2 = 9.8
-    mu_kgmol = 29.0e-3
-    Rgas_JKmol = 8.314
-    Rgas_Jkg = Rgas_JKmol / mu_kgmol
-    Hscale_km = Rgas_Jkg * Ts_K / grav_ms2 * 1.0e-3
 
+    data = Dataset("jupiter1d-main.nc", "r")
     # km
-    atm["HGT"] = linspace(0, 20, nlyr, endpoint=False)
-    atm["PRE"] = ps_mbar * exp(-atm["HGT"] / Hscale_km)
-    atm["TEM"] = Ts_K * ones(nlyr)
+    atm["HGT"] = (data["x1f"][:-1] + data["x1f"][1:]) / (2.0 * 1.0e3)
+
+    # mbar
+    atm["PRE"] = data["press"][0, :, 0, 0] / 100.0
+
+    # K
+    atm["TEM"] = data["temp"][0, :, 0, 0]
+
     # ppmv
-    atm["NH3"] = 400.0 * ones(nlyr)
+    atm["H2O"] = data["vapor1"][0, :, 0, 0] / 18.0 * 2.2 * 1.0e6
+
     # ppmv
-    atm["H2O"] = 4000.0 * exp(-atm["HGT"] / (Hscale_km / 5.0))
+    atm["NH3"] = data["vapor2"][0, :, 0, 0] / 17.0 * 2.2 * 1.0e6
+
+    # ppmv
+    atm["H2"] = 1.0e6 - atm["H2O"] - atm["NH3"]
 
     return atm
 
@@ -43,7 +47,7 @@ if __name__ == "__main__":
     )
 
     config = load_configure("jupiter_rt.yaml")
-    band = radiation_band("H2O-rotational", config)
+    band = radiation_band("B1", config)
 
     nspec = band.get_num_spec_grids()
     wmin, wmax = band.get_range()
@@ -56,7 +60,7 @@ if __name__ == "__main__":
     wav_grid = (wmin, wmax, wres)
     tem_grid = (5, -20, 20)
 
-    atm = create_ref_atmosphere(num_layers)
+    atm = create_rfm_atmosphere(num_layers)
     driver = create_rfm_driver(wav_grid, tem_grid, absorbers, hitran_file)
 
     # write rfm atmosphere file to file
