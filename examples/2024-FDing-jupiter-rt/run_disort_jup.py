@@ -16,20 +16,20 @@ def create_atmosphere(nlyr: int) -> dict:
     atm = {}
 
     data = Dataset("jupiter1d-main.nc", "r")
-    # km
-    atm["HGT"] = (data["x1f"][:-1] + data["x1f"][1:]) / (2.0 * 1.0e3)
+    # m
+    atm["HGT"] = (data["x1f"][:-1] + data["x1f"][1:]) / 2.0
 
-    # mbar
-    atm["PRE"] = data["press"][0, :, 0, 0] / 100.0
+    # pa
+    atm["PRE"] = data["press"][0, :, 0, 0]
 
     # K
     atm["TEM"] = data["temp"][0, :, 0, 0]
 
-    # ppmv
-    atm["H2O"] = data["vapor1"][0, :, 0, 0] / 18.0 * 2.2 * 1.0e6
+    # mole fraction
+    atm["H2O"] = data["vapor1"][0, :, 0, 0] / 18.0 * 2.2
 
-    # ppmv
-    atm["NH3"] = data["vapor2"][0, :, 0, 0] / 17.0 * 2.2 * 1.0e6
+    # mole fraction
+    atm["NH3"] = data["vapor2"][0, :, 0, 0] / 17.0 * 2.2
 
     return atm
 
@@ -66,8 +66,9 @@ if __name__ == "__main__":
     num_layers = 100
     band.resize(num_layers)
 
-    # atm = create_atmosphere(num_layers)
-    # band.set_spectral_properties(atm)
+    atm = create_atmosphere(num_layers)
+    band.set_spectral_properties(atm)
 
-    tau = band.get_tau()
-    print(tau.shape)
+    dtau = band.get_dtau()
+    print(dtau.shape)
+    print(dtau)
