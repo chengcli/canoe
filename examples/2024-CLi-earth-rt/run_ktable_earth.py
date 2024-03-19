@@ -13,25 +13,24 @@ from rfmlib import *
 # create atmosphere dictionary
 def create_rfm_atmosphere(nlyr: int) -> dict:
     atm = {}
-    ps_mbar = 1.0e3
-    Ts_K = 300.0
-    grav_ms2 = 9.8
-    mu_kgmol = 29.0e-3
-    Rgas_JKmol = 8.314
-    Rgas_Jkg = Rgas_JKmol / mu_kgmol
-    Hscale_km = Rgas_Jkg * Ts_K / grav_ms2 * 1.0e-3
+    Ps = 1.0e5
+    Ts = 300.0
+    grav = 9.8
+    mu = 29.0e-3
+    Rgas = 8.314 / mu
+    Hscale = Rgas * Ts / grav
 
     # km
     atm["HGT"] = linspace(0, 20, nlyr, endpoint=False)
-    atm["PRE"] = ps_mbar * exp(-atm["HGT"] / Hscale_km)
-    atm["TEM"] = Ts_K * ones(nlyr)
+    atm["PRE"] = Ps * exp(-atm["HGT"] / Hscale)
+    atm["TEM"] = Ts * ones(nlyr)
     # ppmv
-    atm["CO2"] = 400.0 * ones(nlyr)
+    atm["CO2"] = 4.0e-4 * ones(nlyr)
     # ppmv
-    atm["H2O"] = 4000.0 * exp(-atm["HGT"] / (Hscale_km / 5.0))
-    atm["O2"] = (1e6 - atm["CO2"] - atm["H2O"]) * 0.21
-    atm["N2"] = (1e6 - atm["CO2"] - atm["H2O"]) * 0.78
-    atm["Ar"] = (1e6 - atm["CO2"] - atm["H2O"]) * 0.01
+    atm["H2O"] = 4.0e-3 * exp(-atm["HGT"] / (Hscale / 5.0))
+    atm["O2"] = (1.0 - atm["CO2"] - atm["H2O"]) * 0.21
+    atm["N2"] = (1.0 - atm["CO2"] - atm["H2O"]) * 0.78
+    atm["Ar"] = (1.0 - atm["CO2"] - atm["H2O"]) * 0.01
 
     return atm
 
