@@ -21,7 +21,7 @@
 //!  y  x                                 (2) |___x
 //!                                          /
 //!                                        z/
-
+ 
 //! Panel number assiangments
 //! (4) Right
 //! (5) Bottom
@@ -78,6 +78,36 @@ inline void vel_zab_from_p1(Real *vz, Real *vx, Real *vy, Real a, Real b,
   }
 }
 
+inline void vel_zab_from_p1_test(std::vector<Real> &v, int panel) {
+    Real vz = v[0];
+    Real vx = v[1];
+    Real vy = v[2];
+    switch (panel) {
+    case 2:
+      // z->y, x->-x, y->z
+      //(*vx) *= -1;
+      v = {vy, -vx, vz};
+      break;
+    case 3:
+      // z->-x, x->z, y->y
+      //(*vz) *= -1;
+      v = {vx, -vz, vy};
+      break;
+    case 4:
+      // z->-x, x->-y, y->z
+      //(*vx) *= -1;
+      //(*vy) *= -1;
+      v = {-vx, -vy, vz};
+      break;
+    case 6:
+      // z->-y, x->x, y->z
+      //(*vy) *= -1;
+      v = {-vy, vx, vz};
+      break;
+  }
+
+}
+/*
 inline void vel_zab_p2_to_p4(Real *v1, Real *v2, Real *v3, Real a, Real b) {
   vel_zab_to_zxy(
       v1, v2, v3, a,
@@ -512,7 +542,7 @@ inline void vel_zab_p6_to_p1(Real *v1, Real *v2, Real *v3, Real a, Real b) {
       v1, v2, v3, a,
       b);  // translate the cubed sphere coordinate into cartesian coordinate
 }
-
+*/
 }  // namespace CubedSphereUtility
 
 #endif  // SRC_EXO3_VELOCITY_ROTATION_HPP_
