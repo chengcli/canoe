@@ -7,7 +7,17 @@ opacity-sources:
     class: FreedmanSimple2
     parameters: {scale: 1.}
 
-bands: [ir, vis]
+  - name: premix
+    class: HeliosCK
+    data: ck_data_01242024/ck/PM_ck_HELIOSK_cond_11_nOPT_wcia.txt
+    parameters: {band_id: 1}
+
+bands: [ir, vis, ck]
+
+ck:
+  units: cm-1
+  grid-type: cktable
+  opacity: [premix]
 
 ir:
   units: cm-1
@@ -45,3 +55,8 @@ Disort-flags:
   print-intensity: false
   print-transmissivity: false
   print-phase-function: true
+
+thermodynamics:
+  dry:
+    Rd: 3777.
+    gammad: 1.4

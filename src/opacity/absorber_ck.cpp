@@ -61,13 +61,3 @@ Real AbsorberCK::GetAttenuation(Real g1, Real g2, AirParcel const& var) const {
   Real dens = var.q[IPR] / (Constants::kBoltz * var.q[IDN]);
   return exp(val) * dens;  // ln(m*2/kmol) -> 1/m
 }
-
-void HeliosCK::ModifySpectralGrid(std::vector<SpectralBin>& spec) const {
-  spec.resize(weights_.size());
-
-  for (size_t i = 0; i < weights_.size(); ++i) {
-    spec[i].wav1 = axis_[len_[0] + len_[1] + i];
-    spec[i].wav2 = axis_[len_[0] + len_[1] + i];
-    spec[i].wght = weights_[i];
-  }
-}

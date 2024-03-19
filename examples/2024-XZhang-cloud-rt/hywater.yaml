@@ -56,9 +56,9 @@ Disort-flags:
   print-phase-function: true
 
 thermodynamics:
-  non-condensable:
+  dry:
     Rd: 3777.
-    gammad_ref: 1.4
+    gammad: 1.4
 
 microphysics:
   - water-system

@@ -55,8 +55,8 @@ Thermodynamics* Thermodynamics::fromYAMLInput(YAML::Node const& node) {
   mythermo_ = new Thermodynamics();
 
   // non-condensable
-  mythermo_->Rd_ = node["non-condensable"]["Rd"].as<Real>();
-  mythermo_->gammad_ref_ = node["non-condensable"]["gammad_ref"].as<Real>();
+  mythermo_->Rd_ = node["dry"]["Rd"].as<Real>();
+  mythermo_->gammad_ref_ = node["dry"]["gammad"].as<Real>();
 
   // saturation adjustment
   if (node["saturation_adjustment"]) {
