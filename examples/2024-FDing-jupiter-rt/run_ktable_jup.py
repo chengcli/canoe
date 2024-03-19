@@ -17,23 +17,23 @@ def create_rfm_atmosphere(nlyr: int) -> dict:
     atm = {}
 
     data = Dataset("jupiter1d-main.nc", "r")
-    # km
-    atm["HGT"] = (data["x1f"][:-1] + data["x1f"][1:]) / (2.0 * 1.0e3)
+    # m
+    atm["HGT"] = (data["x1f"][:-1] + data["x1f"][1:]) / 2.0
 
-    # mbar
-    atm["PRE"] = data["press"][0, :, 0, 0] / 100.0
+    # pa
+    atm["PRE"] = data["press"][0, :, 0, 0]
 
     # K
     atm["TEM"] = data["temp"][0, :, 0, 0]
 
-    # ppmv
-    atm["H2O"] = data["vapor1"][0, :, 0, 0] / 18.0 * 2.2 * 1.0e6
+    # mole fraction
+    atm["H2O"] = data["vapor1"][0, :, 0, 0] / 18.0 * 2.2
 
-    # ppmv
-    atm["NH3"] = data["vapor2"][0, :, 0, 0] / 17.0 * 2.2 * 1.0e6
+    # mole fraction
+    atm["NH3"] = data["vapor2"][0, :, 0, 0] / 17.0 * 2.2
 
-    # ppmv
-    atm["H2"] = 1.0e6 - atm["H2O"] - atm["NH3"]
+    # mole fraction
+    atm["H2"] = 1.0 - atm["H2O"] - atm["NH3"]
 
     return atm
 

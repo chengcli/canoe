@@ -128,12 +128,14 @@ PYBIND11_MODULE(pyharp, m) {
              return ndarray;
            })
 
-      .def("get_tau",
+      .def("get_dtau",
            [](RadiationBand &band) {
-             py::array_t<Real> ndarray(
+             py::capsule tau_capsule(band._GetTauPtr(), [](void *) {});
+             py::array_t<double> tau(
                  {band.GetNumSpecGrids(), band.GetNumLayers()},
-                 band._GetTauPtr());
-             return ndarray;
+                 band._GetTauPtr(), tau_capsule);
+
+             return tau;
            })
 
       .def("set_spectral_properties",
@@ -148,9 +150,9 @@ PYBIND11_MODULE(pyharp, m) {
 
              for (int i = 0; i < nlayer; ++i) {
                ac[i].SetType(AirParcel::Type::MoleFrac);
-               x1v[i] = atm["HGT"][i] * 1e3;  // km -> m
+               x1v[i] = atm["HGT"][i];
                ac[i].w[IDN] = atm["TEM"][i];
-               ac[i].w[IPR] = atm["PRE"][i] * 100.;  // mbar -> Pa
+               ac[i].w[IPR] = atm["PRE"][i];
              }
 
              for (int i = 1; i < nlayer; ++i) {
@@ -169,26 +171,22 @@ PYBIND11_MODULE(pyharp, m) {
 
                if (pindex->HasVapor(pair.first))
                  for (int i = 0; i < nlayer; ++i) {
-                   ac[i].w[pindex->GetVaporId(pair.first)] =
-                       pair.second[i] * 1e-6;
+                   ac[i].w[pindex->GetVaporId(pair.first)] = pair.second[i];
                  }
 
                if (pindex->HasCloud(pair.first))
                  for (int i = 0; i < nlayer; ++i) {
-                   ac[i].c[pindex->GetCloudId(pair.first)] =
-                       pair.second[i] * 1e-6;
+                   ac[i].c[pindex->GetCloudId(pair.first)] = pair.second[i];
                  }
 
                if (pindex->HasChemistry(pair.first))
                  for (int i = 0; i < nlayer; ++i) {
-                   ac[i].q[pindex->GetChemistryId(pair.first)] =
-                       pair.second[i] * 1e-6;
+                   ac[i].q[pindex->GetChemistryId(pair.first)] = pair.second[i];
                  }
 
                if (pindex->HasTracer(pair.first))
                  for (int i = 0; i < nlayer; ++i) {
-                   ac[i].x[pindex->GetTracerId(pair.first)] =
-                       pair.second[i] * 1e-6;
+                   ac[i].x[pindex->GetTracerId(pair.first)] = pair.second[i];
                  }
              }
 

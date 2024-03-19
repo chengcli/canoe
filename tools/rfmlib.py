@@ -34,11 +34,11 @@ def write_rfm_atm(atm: dict) -> None:
     with open("rfm.atm", "w") as file:
         file.write("%d\n" % num_layers)
         file.write("*HGT [km]\n")
-        for i in range(num_layers):
-            file.write("%.8g " % atm["HGT"][i])
+        for i in range(num_layers):  # m -> km
+            file.write("%.8g " % (atm["HGT"][i] / 1.0e3,))
         file.write("\n*PRE [mb]\n")
-        for i in range(num_layers):
-            file.write("%.8g " % atm["PRE"][i])
+        for i in range(num_layers):  # pa -> mb
+            file.write("%.8g " % (atm["PRE"][i] / 100.0,))
         file.write("\n*TEM [K]\n")
         for i in range(num_layers):
             file.write("%.8g " % atm["TEM"][i])
@@ -46,8 +46,8 @@ def write_rfm_atm(atm: dict) -> None:
             if name in ["HGT", "PRE", "TEM"]:
                 continue
             file.write("\n*" + name + " [ppmv]\n")
-            for j in range(num_layers):
-                file.write("%.8g " % val[j])
+            for j in range(num_layers):  # mol/mol -> ppmv
+                file.write("%.8g " % (val[j] * 1.0e6,))
         file.write("\n*END")
     print("# rfm.atm written.")
 
