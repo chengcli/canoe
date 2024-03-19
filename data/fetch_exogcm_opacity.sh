@@ -5,7 +5,8 @@ FILE="ck_data_01242024"
 DATA_DIR=$1/
 
 # Dropbox link
-DROPBOX_LINK="https://www.dropbox.com/scl/fi/tt2vez9jadfcq3j0wdw8x/ck_data_01242024.tar.gz?rlkey=dv7tmqpfy2uvs0u5lt2wz3c4k&dl=0"
+#DROPBOX_LINK="https://www.dropbox.com/scl/fi/tt2vez9jadfcq3j0wdw8x/ck_data_01242024.tar.gz?rlkey=dv7tmqpfy2uvs0u5lt2wz3c4k&dl=0"
+DROPBOX_LINK="https://www.dropbox.com/scl/fi/6nohk2uv89pupe8tjj9ib/ck_data_01242024.tar.gz?rlkey=58gjv5re6fusz1s9jk9fgpx95&dl=0"
 
 # Read expected SHA256 from the file
 EXPECTED_SHA256=$(grep "$FILE" ${DATA_DIR}checksums.txt | awk '{print $1}')
