@@ -32,6 +32,10 @@ if (${TASK} STREQUAL "ktable_jup")
   add_subdirectory(2024-FDing-jupiter-rt)
 endif()
 
+if (${TASK} STREQUAL "ktable_earth")
+  add_subdirectory(2024-CLi-earth-rt)
+endif()
+
 if (${TASK} STREQUAL "exo2" OR
     ${TASK} STREQUAL "exo3")
   add_subdirectory(2023-Chen-exo3)

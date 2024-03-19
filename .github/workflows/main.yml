@@ -351,7 +351,7 @@ jobs:
         working-directory: ${{github.workspace}}/build-netcdf/bin
         # Execute tests defined by the CMake configuration.
         # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
-        run: python ./run_ktable_simple.py
+        run: python ./run_ktable_earth.py
 
   straka-2d:
     if: github.event.pull_request.draft == false
