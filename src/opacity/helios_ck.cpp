@@ -8,11 +8,29 @@
 #include <air_parcel.hpp>
 #include <constants.hpp>
 
+// application
+#include <application/exceptions.hpp>
+
 // climath
 #include <climath/interpolation.h>
 
+// harp
+#include <harp/spectral_grid.hpp>
+
 // opacity
 #include "absorber_ck.hpp"
+
+HeliosCK::HeliosCK(std::string name) : AbsorberCK(name) {}
+
+void HeliosCK::ModifySpectralGrid(std::vector<SpectralBin>& spec) const {
+  spec.resize(weights_.size());
+
+  for (size_t i = 0; i < weights_.size(); ++i) {
+    spec[i].wav1 = axis_[len_[0] + len_[1] + i];
+    spec[i].wav2 = axis_[len_[0] + len_[1] + i];
+    spec[i].wght = weights_[i];
+  }
+}
 
 void HeliosCK::LoadCoefficient(std::string fname, int bid) {
   std::ifstream file(fname);
@@ -20,17 +38,23 @@ void HeliosCK::LoadCoefficient(std::string fname, int bid) {
     throw std::runtime_error("Failed to open file: " + fname);
   }
 
+  // over ride band id if it is set
+  if (HasPar("band_id")) {
+    bid = static_cast<int>(GetPar<Real>("band_id"));
+  }
+
   // skip the first line
   std::string junk_line;
   std::getline(file, junk_line);
 
-  size_t num_bands;
+  int num_bands;
 
   // temperature, pressure, band, g-points
   file >> len_[0] >> len_[1] >> num_bands >> len_[2];
 
-  if (bid >= num_bands) {
-    throw std::runtime_error("Band index out of range: " + std::to_string(bid));
+  if (bid >= num_bands || bid < 0) {
+    throw RuntimeError("HeliosCK::LoadCoefficient",
+                       "Band index out of range: " + std::to_string(bid));
   }
 
   axis_.resize(len_[0] + len_[1] + len_[2]);
@@ -62,7 +86,7 @@ void HeliosCK::LoadCoefficient(std::string fname, int bid) {
 
   // skip unimportant wavelengths
   Real dummy;
-  for (int i = 0; i < num_bands - bid; ++i) {
+  for (int i = 1; i < num_bands - bid; ++i) {
     file >> dummy;
   }
 
@@ -70,8 +94,12 @@ void HeliosCK::LoadCoefficient(std::string fname, int bid) {
   weights_.resize(len_[2]);
   for (int g = 0; g < len_[2]; ++g) {
     Real gpoint;
-    file >> gpoint >> weights_[g];
+    file >> gpoint;
     axis_[len_[0] + len_[1] + g] = wmin + (wmax - wmin) * gpoint;
+  }
+
+  for (int g = 0; g < len_[2]; ++g) {
+    file >> weights_[g];
   }
 
   int n = 0;
@@ -84,7 +112,7 @@ void HeliosCK::LoadCoefficient(std::string fname, int bid) {
             kcoeff_[n] = log(std::max(kcoeff_[n], 1.0e-99));
           }
         } else {
-          for (int g = 0; g < len_[2]; ++g, ++n) {
+          for (int g = 0; g < len_[2]; ++g) {
             file >> dummy;
           }
         }

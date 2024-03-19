@@ -32,7 +32,7 @@ class AbsorberCK : public Absorber {
 
 class HeliosCK : public AbsorberCK {
  public:
-  HeliosCK(std::string name) : AbsorberCK(name) {}
+  HeliosCK(std::string name);
   virtual ~HeliosCK() {}
 
   void LoadCoefficient(std::string fname, int bid) override;

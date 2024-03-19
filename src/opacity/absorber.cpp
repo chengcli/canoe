@@ -41,7 +41,7 @@ void Absorber::LoadOpacity(int bid) {
 
 std::string Absorber::ToString() const {
   std::stringstream ss;
-  ss << "Absorber: " << GetName();
+  ss << "Absorber: " << GetName() << std::endl;
   ss << "Opacity file: " << opacity_filename_;
 
   return ss.str();

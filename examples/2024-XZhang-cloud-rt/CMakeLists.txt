@@ -8,7 +8,7 @@ endif()
 setup_problem(hjupiter)
 
 # 2. Copy input files to run directory
-file(GLOB inputs *.inp *.yaml)
+file(GLOB inputs *.py *.inp *.yaml)
 foreach(input ${inputs})
-    file(COPY ${input} DESTINATION ${CMAKE_BINARY_DIR}/bin)
+  execute_process(COMMAND ln -sf ${input} ${CMAKE_BINARY_DIR}/bin/${inp})
 endforeach()
