@@ -16,6 +16,7 @@ bands: [ir, vis, ck]
 
 ck:
   units: cm-1
+  wavenumber-range: [0.2, 0.4]
   grid-type: cktable
   opacity: [premix]
 

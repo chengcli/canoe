@@ -23,15 +23,12 @@
 HeliosCK::HeliosCK(std::string name) : AbsorberCK(name) {}
 
 void HeliosCK::ModifySpectralGrid(std::vector<SpectralBin>& spec) const {
-  std::cout << "I'm modifying the spectral grid" << std::endl;
   spec.resize(weights_.size());
 
   for (size_t i = 0; i < weights_.size(); ++i) {
     spec[i].wav1 = axis_[len_[0] + len_[1] + i];
     spec[i].wav2 = axis_[len_[0] + len_[1] + i];
     spec[i].wght = weights_[i];
-    std::cout << spec[i].wav1 << " " << spec[i].wav2 << " " << spec[i].wght
-              << std::endl;
   }
 }
 
