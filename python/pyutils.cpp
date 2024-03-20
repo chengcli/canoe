@@ -22,9 +22,8 @@ std::string find_resource(const std::string& filename) {
   }
 }
 
-PYBIND11_MODULE(utilities, m) {
-  m.attr("__name__") = "utilities";
-  m.doc() = "External utilities";
+void init_utils(py::module& parent) {
+  auto m = parent.def_submodule("utils", "External utilities");
 
   m.def("find_resource", &find_resource);
 

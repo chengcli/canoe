@@ -4,8 +4,9 @@ import sys, os
 sys.path.append("../python")
 sys.path.append(".")
 
-from pyharp import radiation_band, subscribe_species
-from utilities import load_configure
+from canoe import index_map
+from canoe.harp import radiation_band
+from canoe.utilities import load_configure
 from numpy import linspace, ones, exp
 from netCDF4 import Dataset
 from pylab import *
@@ -35,7 +36,7 @@ def create_atmosphere(nlyr: int) -> dict:
 
 
 if __name__ == "__main__":
-    subscribe_species(
+    index_map.from_dict(
         {
             "vapor": ["H2O", "NH3"],
         }

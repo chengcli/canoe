@@ -4,7 +4,6 @@
 #include <pybind11/stl.h>
 
 // athena
-#include <athena/athena.hpp>
 #include <athena/parameter_input.hpp>
 
 // canoe
@@ -15,11 +14,21 @@
 
 namespace py = pybind11;
 
-PYBIND11_MODULE(pycanoe, m) {
-  m.attr("__name__") = "pycanoe";
+void init_athena(py::module &);
+void init_harp(py::module &);
+void init_snap(py::module &);
+void init_utilities(py::module &);
+
+PYBIND11_MODULE(canoe, m) {
+  m.attr("__name__") = "canoe";
   m.doc() = "Python bindings for canoe";
 
-  // Constants
+  init_athena(m);
+  init_harp(m);
+  init_utilities(m);
+  // init_snap(m);
+  //
+  //  Constants
   py::module m_constants = m.def_submodule("constants");
   m_constants.attr("Rgas") = Constants::Rgas;
   m_constants.attr("Rgas_cgs") = Constants::Rgas_cgs;
@@ -34,8 +43,9 @@ PYBIND11_MODULE(pycanoe, m) {
 
   // IndexMap
   py::class_<IndexMap>(m, "index_map")
-      .def_static("get_instance", &IndexMap::GetInstance)
-      .def_static("init_from_athena_input", &IndexMap::InitFromAthenaInput)
+      .def_static("get", &IndexMap::GetInstance)
+      .def_static("from_file", &IndexMap::InitFromAthenaInput)
+      .def_static("from_dict", &IndexMap::InitFromSpeciesMap)
 
       .def("get_vapor_id", &IndexMap::GetVaporId)
       .def("get_cloud_id", &IndexMap::GetCloudId)
@@ -55,19 +65,19 @@ PYBIND11_MODULE(pycanoe, m) {
       .def(py::init<>())
 
       .def("hydro",
-           [](const AirParcel& var) {
+           [](const AirParcel &var) {
              py::array_t<double> result(NCLOUD, var.c);
              return result;
            })
 
       .def("cloud",
-           [](const AirParcel& var) {
+           [](const AirParcel &var) {
              py::array_t<double> result(NCLOUD, var.c);
              return result;
            })
 
       .def("tracer",
-           [](const AirParcel& var) {
+           [](const AirParcel &var) {
              py::array_t<double> result(NCLOUD, var.x);
              return result;
            })
