@@ -7,20 +7,24 @@
 // athenapp
 #include <athena/athena.hpp>
 
+// cantera
+#include <cantera/OneDim.h>
+
 class MeshBlock;
 class ParameterInput;
 
-class Chemistry {
+class AtmChemistry : public Cantera::OneDim {
  public:
   AthenaArray<Real> w, u;
 
-  Chemistry(MeshBlock *pmb, ParameterInput *pin);
-  ~Chemistry();
+  AtmChemistry(MeshBlock *pmb, ParameterInput *pin);
+  ~AtmChemistry();
 
  protected:
+  void fromMeshBlock(MeshBlock *pmb);
   MeshBlock *pmy_block_;
 };
 
-using ChemistryPtr = std::shared_ptr<Chemistry>;
+using AtmChemistryPtr = std::shared_ptr<AtmChemistry>;
 
 #endif  // SRC_C3M_CHEMISTRY_HPP_
