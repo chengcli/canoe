@@ -19,8 +19,9 @@ class IndexMap {
 
   static IndexMap const* InitFromAthenaInput(ParameterInput* pin);
 
-  static IndexMap const* InitFromSpeciesMap(
-      std::map<std::string, std::vector<std::string>> const&);
+  static IndexMap const* InitFromNames(std::vector<std::string> const& vapors,
+                                       std::vector<std::string> const& clouds,
+                                       std::vector<std::string> const& tracers);
 
   static void Destroy();
 

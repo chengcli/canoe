@@ -3,6 +3,13 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
+// application
+#include <application/application.hpp>
+#include <application/exceptions.hpp>
+
+// yaml-cpp
+#include <yaml-cpp/yaml.h>
+
 // athena
 #include <athena/parameter_input.hpp>
 
@@ -17,15 +24,41 @@ namespace py = pybind11;
 void init_athena(py::module &);
 void init_harp(py::module &);
 void init_snap(py::module &);
-void init_utilities(py::module &);
+void init_utils(py::module &);
+
+void def_species(std::vector<std::string> vapors,
+                 std::vector<std::string> clouds,
+                 std::vector<std::string> tracers) {
+  IndexMap::InitFromNames(vapors, clouds, tracers);
+}
+
+std::string find_resource(const std::string &filename) {
+  auto app = Application::GetInstance();
+  try {
+    auto full_path = app->FindResource(filename);
+    return full_path;
+  } catch (NotFoundError &e) {
+    throw std::runtime_error(e.what());
+  }
+}
+
+auto cleanup = []() { IndexMap::Destroy(); };
 
 PYBIND11_MODULE(canoe, m) {
   m.attr("__name__") = "canoe";
   m.doc() = "Python bindings for canoe";
+  m.add_object("_cleanup", py::capsule(cleanup));
+
+  m.def("def_species", &def_species, py::arg("vapors"),
+        py::arg("clouds") = std::vector<std::string>(),
+        py::arg("tracers") = std::vector<std::string>());
+
+  m.def("load_configure", &YAML::LoadFile, "");
+  m.def("find_resource", &find_resource);
 
   init_athena(m);
   init_harp(m);
-  init_utilities(m);
+  init_utils(m);
   // init_snap(m);
   //
   //  Constants
@@ -44,8 +77,6 @@ PYBIND11_MODULE(canoe, m) {
   // IndexMap
   py::class_<IndexMap>(m, "index_map")
       .def_static("get", &IndexMap::GetInstance)
-      .def_static("from_file", &IndexMap::InitFromAthenaInput)
-      .def_static("from_dict", &IndexMap::InitFromSpeciesMap)
 
       .def("get_vapor_id", &IndexMap::GetVaporId)
       .def("get_cloud_id", &IndexMap::GetCloudId)
