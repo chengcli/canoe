@@ -26,10 +26,10 @@ void init_harp(py::module &);
 void init_snap(py::module &);
 void init_utils(py::module &);
 
-void def_species(std::vector<std::string> vapors,
-                 std::vector<std::string> clouds,
-                 std::vector<std::string> tracers) {
-  IndexMap::InitFromNames(vapors, clouds, tracers);
+IndexMap const *def_species(std::vector<std::string> vapors,
+                            std::vector<std::string> clouds,
+                            std::vector<std::string> tracers) {
+  return IndexMap::InitFromNames(vapors, clouds, tracers);
 }
 
 std::string find_resource(const std::string &filename) {
@@ -51,10 +51,52 @@ PYBIND11_MODULE(canoe, m) {
 
   m.def("def_species", &def_species, py::arg("vapors"),
         py::arg("clouds") = std::vector<std::string>(),
-        py::arg("tracers") = std::vector<std::string>());
+        py::arg("tracers") = std::vector<std::string>(),
+        py::return_value_policy::reference, R"(
+        Define species for the simulation.
 
-  m.def("load_configure", &YAML::LoadFile, "");
-  m.def("find_resource", &find_resource);
+        Parameters
+        ----------
+        vapors : list of str
+            List of vapor names.
+
+        clouds : list of str, optional
+
+        tracers : list of str, optional
+
+        Returns
+        -------
+        IndexMap
+            The index map object.
+        )");
+
+  m.def("load_configure", &YAML::LoadFile, R"(
+      Load configuration from a YAML file.
+
+      Parameters
+      ----------
+      arg0 : str
+          The path to the YAML file.
+
+      Returns
+      -------
+      YAML::Node
+          The configuration.
+      )");
+
+  m.def("find_resource", &find_resource, R"(
+      Find a resource file.
+
+      Parameters
+      ----------
+      filename : str
+          The name of the resource file.
+
+      Returns
+      -------
+      str
+          The full path to the resource file.
+      )");
 
   init_athena(m);
   init_harp(m);
