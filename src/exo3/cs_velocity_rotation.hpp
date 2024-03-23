@@ -21,7 +21,7 @@
 //!  y  x                                 (2) |___x
 //!                                          /
 //!                                        z/
- 
+
 //! Panel number assiangments
 //! (4) Right
 //! (5) Bottom
@@ -41,20 +41,26 @@
 namespace CubedSphereUtility {
 
 //! Transform cubed sphere velocity to local cartesian velocity
-inline void vel_zab_to_zxy(Real *v1, Real *v2, Real *v3, Real a, Real b) {
-
-}
+inline void vel_zab_to_zxy(Real *v1, Real *v2, Real *v3, Real a, Real b) {}
 
 //! Transform local cartesian velocity to cubed sphere velocity
 inline void vel_zxy_to_zab(Real *v1, Real *v2, Real *v3, Real a, Real b) {
-    Real vx = v2;
-    Real vy = v3;
-    Real delta = pow(pow(vx,2)+pow(vy,2)+1,1/2);
-    Real C = pow(1+pow(x,2),1/2);
-    Real D = pow(1+pow(y,2),1/2);
-    v1 = (vz+pow(vx,2)+pow(vy,2))/delta;
-    v2 = (-vx*vz/D+vx*(1+pow(vy,2))/D-vx*pow(vy,2)/D)/delta;
-    v3 = (-vy*vz/C-pow(vx,2)*vy/C+(1+pow(vx,2))*vy/C)/delta;
+  Real x = tan(a);
+  Real y = tan(b);
+
+  Real vx = *v2;
+  Real vy = *v3;
+  Real vz = *v1;
+
+  Real delta = pow(pow(x, 2) + pow(y, 2) + 1, 1 / 2);
+  Real C = pow(1 + pow(x, 2), 1 / 2);
+  Real D = pow(1 + pow(y, 2), 1 / 2);
+
+  *v1 = (vz + pow(vx, 2) + pow(vy, 2)) / delta;
+  *v2 =
+      (-vx * vz / D + vx * (1 + pow(vy, 2)) / D - vx * pow(vy, 2) / D) / delta;
+  *v3 =
+      (-vy * vz / C - pow(vx, 2) * vy / C + (1 + pow(vx, 2)) * vy / C) / delta;
 }
 
 //! Transform cubed sphere velocity from panel 1 to panel 2
@@ -90,10 +96,10 @@ inline void vel_zab_from_p1(Real *vz, Real *vx, Real *vy, Real a, Real b,
 }
 
 inline void vel_zab_from_p1_test(std::vector<Real> &v, int panel) {
-    Real vz = v[0];
-    Real vx = v[1];
-    Real vy = v[2];
-    switch (panel) {
+  Real vz = v[0];
+  Real vx = v[1];
+  Real vy = v[2];
+  switch (panel) {
     case 2:
       // z->y, x->-x, y->z
       //(*vx) *= -1;
@@ -116,7 +122,7 @@ inline void vel_zab_from_p1_test(std::vector<Real> &v, int panel) {
       v = {-vy, vx, vz};
       break;
   }
- }
+}
 }  // namespace CubedSphereUtility
 
 #endif  // SRC_EXO3_VELOCITY_ROTATION_HPP_
