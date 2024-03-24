@@ -44,3 +44,7 @@ endif()
 if (${TASK} STREQUAL "hjupiter")
   add_subdirectory(2024-XZhang-cloud-rt)
 endif()
+
+if (${TASK} STREQUAL "rcemip")
+  add_subdirectory(2024-CLi-RCEMIP)
+endif()

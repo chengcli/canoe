@@ -22,10 +22,15 @@ file_type   = pnetcdf        # Netcdf format output
 variable    = uov           # diagnostic variables
 dt          = 1.E4          # time increment
 
+<output3>
+file_type   = pnetcdf        # Netcdf format output
+variable    = diag           # diagnostic variables
+dt          = 1.E4          # time increment
+
 <time>
 cfl_number  = 0.9
 nlim        = -1            # cycle limit
-tlim        = 2.E5
+tlim        = 100.E5
 xorder      = 5             # horizontal reconstruction order
 integrator  = rk3           # integration method
 
@@ -50,8 +55,8 @@ ox3_bc      = periodic    # Outer-X3 boundary condition flag
 
 <meshblock>
 nx1         = 80
-nx2         = 25
-nx3         = 25
+nx2         = 50
+nx3         = 50
 
 <hydro>
 gamma       = 1.42
@@ -63,7 +68,7 @@ vapor = H2O
 cloud = H2O(c), H2O(p)
 
 <chemistry>
-microphysics_config = recmip.yaml
+microphysics_config = rcemip.yaml
 Nc = 1.e8
 Ni = 1.e5
 
@@ -80,8 +85,8 @@ sa.relax    = 1.0
 sa.max_iter = 4
 sa.ftol     = 1.e-2
 
-<forcing>
-packages = fix_bot_temp
+#<forcing>
+#packages = fix_bot_temp
 
 <problem>
 radius      = 6471.e3
@@ -99,3 +104,4 @@ q0          = 12.e-3
 P0          = 1.0148e5
 T0          = 295.
 gamma       = 0.0067
+diagnostics = div, curl, b, mean, div_h, tempa, presa, hydroflux
