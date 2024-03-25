@@ -18,6 +18,11 @@ if (${TASK} STREQUAL "juno")
   add_subdirectory(2024-CLi-juno-mwr)
 endif()
 
+if (${TASK} STREQUAL "juno_mcmc")
+  add_subdirectory(2024-CLi-juno-mwr)
+endif()
+
+
 if (${TASK} STREQUAL "saturn_radio")
   add_subdirectory(2023-Li-saturn-vla)
 endif()
