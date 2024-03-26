@@ -37,14 +37,14 @@ dt          = 1.E4
 <time>
 cfl_number  = 0.9           # The Courant, Friedrichs, & Lewy (CFL) Number
 nlim        = -1            # cycle limit
-tlim        = 100.E5         # time limit
+tlim        = 1.E7         # time limit
 xorder      = 5             # horizontal reconstruction order
 integrator  = rk3           # integration method
 
 <mesh>
-nx1         = 64           # Number of zones in X1-direction
+nx1         = 128           # Number of zones in X1-direction
 x1min       = 0.            # minimum value of X1
-x1max       = 16.E3         # maximum value of X1
+x1max       = 20.E3         # maximum value of X1
 ix1_bc      = reflecting    # inner-X1 boundary flag
 ox1_bc      = reflecting    # outer-X1 boundary flag
 
@@ -61,8 +61,8 @@ ix3_bc      = periodic    # Inner-X3 boundary condition flag
 ox3_bc      = periodic    # Outer-X3 boundary condition flag
 
 <meshblock>
-nx1         = 64
-nx2         = 32
+nx1         = 128
+nx2         = 16
 nx3         = 1
 
 <hydro>
@@ -78,7 +78,7 @@ top_cooling.flux = -2.
 
 <species>
 vapor = H2O, H2S, SO2, CO2
-cloud = H2O(c), H2O(p), H2S(c), H2S(p), SO2(c), SO2(p), CO2(c), CO2(p)
+cloud = H2O(c), H2S(c), SO2(c), CO2(c), H2O(p), H2S(p), SO2(p), CO2(p)
 
 <chemistry>
 microphysics_config = amars.yaml
@@ -114,6 +114,12 @@ rcp4        = 1.62    3.54    3.54
 Ttriple4    = 216.58
 Ptriple4    = 518500
 
+#eps4 = 0.45 0.45 0.45
+#beta4 = 0. 17.9 17.9
+#rcp4 = 8.05 8.05 8.05
+#Ttriple4 = 273.
+#Ptriple4 = 611.7
+
 sa.relax    = 1.0
 sa.max_iter = 20
 sa.ftol     = 0.1
@@ -141,16 +147,15 @@ HJ.equinox    = 0.
 
 <problem>
 P0            = 0.5E5
-T0            = 2.E2
-Tmin          = 80.
+T0            = 200.
+Tmin          = 178.
 qRelaxT       = 1.E-4
 distance_au   = 1.523
 
-qH2O.ppmv     = 3.
-qH2S.ppmv     = 983.
-qSO2.ppmv     = 6826.
-qCO2.ppmv     = 0.
-#qCO2.ppmv     = 98218.
-#qCO2.ppmv     = 982.
+qH2O.ppmv     = 5.
+qH2S.ppmv     = 1000.
+qSO2.ppmv     = 10000.
+qCO2.ppmv     = 978995.
+#qCO2.ppmv     = 0.001
 
 diagnostics   = div, curl, b, mean, div_h, tempa, presa, hydroflux

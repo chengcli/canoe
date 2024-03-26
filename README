@@ -1,0 +1,5 @@
+found error with vapor pressure functions:
+
+when vapor pressure are too low (~1e-10 Pa) at low temperatuers, the saturationadjustment fails and eventually crashes
+
+when vapor pressures are too high (1e5 Pa) eg. for CO2, the saturation adjustment fails immediately (all nan)
