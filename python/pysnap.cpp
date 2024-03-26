@@ -29,6 +29,7 @@ void init_snap(py::module &parent) {
 
       .def("get_Rd", &Thermodynamics::GetRd)
       .def("get_gammad", &Thermodynamics::GetGammad);
+      .def("get_GammadRef", &Thermodynamics::GetGammadRef);
 
   // m.def("init_thermo", &init_thermo);
 }

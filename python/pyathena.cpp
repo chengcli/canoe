@@ -90,4 +90,7 @@ void init_athena(py::module &parent) {
         }
         mesh.Initialize(restart, pin);
       });
+
+  // MeshBlock
+  py::class_<MeshBlock>(m, "mesh_block");
 }

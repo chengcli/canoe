@@ -124,12 +124,16 @@ PYBIND11_MODULE(canoe, m) {
 
   // IndexMap
   py::class_<IndexMap>(m, "index_map")
-      .def_static("get", &IndexMap::GetInstance)
+      .def_static("get_instance", &IndexMap::GetInstance)
 
       .def("get_vapor_id", &IndexMap::GetVaporId)
       .def("get_cloud_id", &IndexMap::GetCloudId)
       .def("get_tracer_id", &IndexMap::GetTracerId)
-      .def("get_species_id", &IndexMap::GetSpeciesId);
+      .def("get_species_id", &IndexMap::GetSpeciesId)
+
+      .def("get_vapor_name", &IndexMap::GetVaporName)
+      .def("get_cloud_name", &IndexMap::GetCloudName)
+      .def("get_tracer_name", &IndexMap::GetTracerName);
 
   // AirParcel type
   py::enum_<AirParcel::Type>(m, "VariableType")
@@ -140,12 +144,17 @@ PYBIND11_MODULE(canoe, m) {
       .export_values();
 
   // AirParcel
-  py::class_<AirParcel>(m, "AirParcel")
-      .def(py::init<>())
+  py::class_<AirParcel>(m, "air_parcel")
+      .def(py::init<AirParcel::Type>())
+
+      .def("set_vapor",
+          [](const AirParcel &var, size_t wid, double value) {
+            var.w[wid]=value;
+          })
 
       .def("hydro",
            [](const AirParcel &var) {
-             py::array_t<double> result(NCLOUD, var.c);
+             py::array_t<double> result(NHYDRO, var.w);
              return result;
            })
 
@@ -157,7 +166,7 @@ PYBIND11_MODULE(canoe, m) {
 
       .def("tracer",
            [](const AirParcel &var) {
-             py::array_t<double> result(NCLOUD, var.x);
+             py::array_t<double> result(NTRACER, var.x);
              return result;
            })
 
