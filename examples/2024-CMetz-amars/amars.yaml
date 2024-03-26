@@ -61,10 +61,10 @@ thermodynamics:
     gammad_ref: 1.66
 
 microphysics:
-  - SO2-system
-  - H2S-system
   - H2O-system
-    #- CO2-system
+  - H2S-system
+  - SO2-system
+  - CO2-system
 
 H2O-system:
   scheme: Kessler94
