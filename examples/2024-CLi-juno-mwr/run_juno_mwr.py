@@ -6,7 +6,7 @@ sys.path.append(".")
 
 from canoe import def_species, load_configure
 from canoe.snap import def_thermo
-from canoe.athena import Mesh, ParameterInput
+from canoe.athena import Mesh, ParameterInput, Outputs
 from typing import Tuple
 
 # from canoe.snap import air_parcel
@@ -62,3 +62,6 @@ if __name__ == "__main__":
 
     mesh = Mesh(pin)
     mesh.initialize(pin)
+
+    out = Outputs(mesh, pin)
+    out.make_outputs(mesh, pin)

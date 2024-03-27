@@ -358,5 +358,5 @@ jobs:
         run: ./combine.py -o test
 
       - name: Test
-        working-directory: ${{github.workspace}}/examples/2023-jupiter-mwr-eq
+        working-directory: ${{github.workspace}}/examples/2024-CLi-juno-mwr
         run: echo "cheers"

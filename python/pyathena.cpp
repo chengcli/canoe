@@ -93,4 +93,12 @@ void init_athena(py::module &parent) {
 
   // MeshBlock
   py::class_<MeshBlock>(m, "mesh_block");
+
+  // outputs
+  py::class_<Outputs>(m, "Outputs")
+      .def(py::init<Mesh *, ParameterInput *>(), py::arg("mesh"),
+           py::arg("pin"))
+
+      .def("make_outputs", &Outputs::MakeOutputs, py::arg("mesh"),
+           py::arg("pin"), py::arg("wtflag") = false);
 }
