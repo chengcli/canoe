@@ -6,7 +6,8 @@
 setup_problem(juno_mwr)
 
 # 4. Copy input file to run directory
-file(GLOB inputs *.inp *.yaml)
+file(GLOB inputs *.inp *.yaml *.py)
 foreach(input ${inputs})
-    file(COPY ${input} DESTINATION ${CMAKE_BINARY_DIR}/bin)
+  # softlink inp files
+  execute_process(COMMAND ln -sf ${input} ${CMAKE_BINARY_DIR}/bin/${inp})
 endforeach()

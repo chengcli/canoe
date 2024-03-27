@@ -15,7 +15,7 @@ else()
 endif()
 
 if (${TASK} STREQUAL "juno")
-  add_subdirectory(2023-jupiter-mwr-eq)
+  add_subdirectory(2024-CLi-juno-mwr)
 endif()
 
 if (${TASK} STREQUAL "saturn_radio")

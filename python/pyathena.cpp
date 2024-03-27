@@ -8,6 +8,9 @@
 #include <athena/outputs/outputs.hpp>
 #include <athena/parameter_input.hpp>
 
+// canoe
+#include <impl.hpp>
+
 namespace py = pybind11;
 
 void init_athena(py::module &parent) {
@@ -20,14 +23,15 @@ void init_athena(py::module &parent) {
       .value("write", IOWrapper::FileMode::write)
       .export_values();
 
-  py::class_<IOWrapper>(m, "io_wrapper")
+  py::class_<ParameterInput>(m, "ParameterInput")
       .def(py::init())
-      .def("open", &IOWrapper::Open)
-      .def("close", &IOWrapper::Close);
-
-  py::class_<ParameterInput>(m, "parameter_input")
-      .def(py::init())
-      .def("load_from_file", &ParameterInput::LoadFromFile)
+      .def("load_from_file",
+           [](ParameterInput &pin, const std::string &filename) {
+             IOWrapper infile;
+             infile.Open(filename.c_str(), IOWrapper::FileMode::read);
+             pin.LoadFromFile(infile);
+             infile.Close();
+           })
       .def("get_integer", &ParameterInput::GetInteger)
       .def("get_real", &ParameterInput::GetReal)
       .def("get_boolean", &ParameterInput::GetBoolean)
@@ -71,6 +75,19 @@ void init_athena(py::module &parent) {
         }
       });
 
-  // MeshBlock
-  py::class_<MeshBlock>(m, "meshblock");
+  // Mesh
+  py::class_<Mesh>(m, "Mesh")
+      .def(py::init<ParameterInput *, int>(), py::arg("pin"),
+           py::arg("mesh_only") = false)
+
+      .def("initialize", [](Mesh &mesh, ParameterInput *pin) {
+        bool restart = false;
+
+        // set up components
+        for (int b = 0; b < mesh.nblocal; ++b) {
+          MeshBlock *pmb = mesh.my_blocks(b);
+          pmb->pimpl = std::make_shared<MeshBlock::Impl>(pmb, pin);
+        }
+        mesh.Initialize(restart, pin);
+      });
 }

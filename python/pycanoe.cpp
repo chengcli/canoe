@@ -13,6 +13,9 @@
 // athena
 #include <athena/parameter_input.hpp>
 
+// snap
+#include <snap/thermodynamics/thermodynamics.hpp>
+
 // canoe
 #include <air_parcel.hpp>
 #include <configure.hpp>
@@ -69,6 +72,15 @@ PYBIND11_MODULE(canoe, m) {
         IndexMap
             The index map object.
         )");
+
+  m.def("def_thermo", &Thermodynamics::InitFromYAMLInput, R"(
+      Define thermodynamics for the simulation.
+
+      Parameters
+      ----------
+      node : YAML::Node
+          The thermodynamic configuration node.
+      )");
 
   m.def("load_configure", &YAML::LoadFile, R"(
       Load configuration from a YAML file.

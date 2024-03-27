@@ -1,18 +1,26 @@
+#! /usr/bin/env python3
+import sys, os
+
+sys.path.append("../python")
+sys.path.append(".")
+
 from canoe import def_species, def_thermo, load_configure
-from canoe.athena import mesh_block
-from canoe.snap import air_parcel
+from canoe.athena import Mesh, ParameterInput
+from typing import Tuple
+
+# from canoe.snap import air_parcel
 
 
 def construct_atmosphere(
     nlyr: int = 100,
     comp: dict = {},
-    plim: List[float, float] = [0.1e5, 100.0e5],
-    zlim: List[float, float] = [0.0, 10.0e3],
+    plim: Tuple[float, float] = [0.1e5, 100.0e5],
+    zlim: Tuple[float, float] = [0.0, 10.0e3],
     T0: float = 169.0,
     P0: float = 1.0e5,
     Tmin: float = 100.0,
-) -> mesh_block:
-    mb = mesh_block(nlyr)
+) -> Mesh:
+    mb = Mesh(nlyr)
 
     air = air_parcel(comp)
     dlnp = (log(plim[1]) - log(plim[0])) / nlyr
@@ -26,21 +34,28 @@ def construct_atmosphere(
 
 
 def modify_atmosphere(
-    mb: mesh_block,
+    mb: Mesh,
     comp: dict = {},
-    plim: List[float, float] = [0.1e5, 100.0e5],
-    zlim: List[float, float] = [0.0, 10.0e3],
+    plim: Tuple[float, float] = [0.1e5, 100.0e5],
+    zlim: Tuple[float, float] = [0.0, 10.0e3],
     T0: float = 169.0,
     P0: float = 1.0e5,
-) -> mesh_block:
+) -> Mesh:
     pass
 
 
 if __name__ == "__main__":
-    config = load_configure("juno_mwr.yaml")
+    config = load_configure("mwr_channels.yaml")
 
     def_species(vapors=["H2O", "NH3"])
-    def_thermo(config["thermo"])
+    # def_thermo(config["thermo"])
+
+    pin = ParameterInput()
+    pin.load_from_file("juno_mwr.inp")
+    print(pin.get_real("problem", "qH2O.ppmv"))
+
+    mesh = Mesh(pin)
+    mesh.initialize(pin)
 
     nlyr = 100
 
@@ -55,10 +70,10 @@ if __name__ == "__main__":
     comp["NH3"] = 300.0e-6
     comp["H2O"] = 3000.0e-6
 
-    mb = construct_atmosphere(100, comp, T0, P0, pim=[pmin, pmax])
+    # mb = construct_atmosphere(100, comp, T0, P0, pim=[pmin, pmax])
 
-    mb.add_radiation(config)
-    rad = mb.cal_radiance()
+    # mb.add_radiation(config)
+    # rad = mb.cal_radiance()
 
-    mb = modify_atmosphere(mb, T0, P0, plim=[pmin, pmax])
-    rad = mb.cal_radiance()
+    # mb = modify_atmosphere(mb, T0, P0, plim=[pmin, pmax])
+    # rad = mb.cal_radiance()
