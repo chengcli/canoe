@@ -45,7 +45,10 @@ std::string find_resource(const std::string &filename) {
   }
 }
 
-auto cleanup = []() { IndexMap::Destroy(); };
+auto cleanup = []() {
+  IndexMap::Destroy();
+  Thermodynamics::Destroy();
+};
 
 PYBIND11_MODULE(canoe, m) {
   m.attr("__name__") = "canoe";
@@ -72,15 +75,6 @@ PYBIND11_MODULE(canoe, m) {
         IndexMap
             The index map object.
         )");
-
-  m.def("def_thermo", &Thermodynamics::InitFromYAMLInput, R"(
-      Define thermodynamics for the simulation.
-
-      Parameters
-      ----------
-      node : YAML::Node
-          The thermodynamic configuration node.
-      )");
 
   m.def("load_configure", &YAML::LoadFile, R"(
       Load configuration from a YAML file.
@@ -113,8 +107,8 @@ PYBIND11_MODULE(canoe, m) {
   init_athena(m);
   init_harp(m);
   init_utils(m);
-  // init_snap(m);
-  //
+  init_snap(m);
+
   //  Constants
   py::module m_constants = m.def_submodule("constants");
   m_constants.attr("Rgas") = Constants::Rgas;

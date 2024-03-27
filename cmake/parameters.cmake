@@ -1,11 +1,5 @@
 # define default parameters
 
-macro(SET_IF_EMPTY _variable)
-  if("${${_variable}}" STREQUAL "")
-    set(${_variable} ${ARGN})
-  endif()
-endmacro()
-
 list(APPEND CMAKE_PREFIX_PATH "/usr/include/mpich-x84_64" "/usr/lib64/mpich/")
 
 # populate the default values

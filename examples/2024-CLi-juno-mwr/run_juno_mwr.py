@@ -4,7 +4,8 @@ import sys, os
 sys.path.append("../python")
 sys.path.append(".")
 
-from canoe import def_species, def_thermo, load_configure
+from canoe import def_species, load_configure
+from canoe.snap import def_thermo
 from canoe.athena import Mesh, ParameterInput
 from typing import Tuple
 
@@ -45,35 +46,19 @@ def modify_atmosphere(
 
 
 if __name__ == "__main__":
-    config = load_configure("mwr_channels.yaml")
-
-    def_species(vapors=["H2O", "NH3"])
-    # def_thermo(config["thermo"])
-
     pin = ParameterInput()
     pin.load_from_file("juno_mwr.inp")
+
+    vapors = pin.get_string("species", "vapor").split(", ")
+    clouds = pin.get_string("species", "cloud").split(", ")
+    tracers = pin.get_string("species", "tracer").split(", ")
+
+    def_species(vapors=vapors, clouds=clouds, tracers=tracers)
+    def_thermo(pin)
+
+    config = load_configure("juno_mwr.yaml")
+
     print(pin.get_real("problem", "qH2O.ppmv"))
 
     mesh = Mesh(pin)
     mesh.initialize(pin)
-
-    nlyr = 100
-
-    # pressure scale height
-    pmax = 100.0e5
-    pmin = 0.1e5
-
-    P0 = 1.0e5
-    T0 = 169.0
-
-    comp = {}
-    comp["NH3"] = 300.0e-6
-    comp["H2O"] = 3000.0e-6
-
-    # mb = construct_atmosphere(100, comp, T0, P0, pim=[pmin, pmax])
-
-    # mb.add_radiation(config)
-    # rad = mb.cal_radiance()
-
-    # mb = modify_atmosphere(mb, T0, P0, plim=[pmin, pmax])
-    # rad = mb.cal_radiance()

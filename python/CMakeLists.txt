@@ -15,13 +15,16 @@ execute_process(
 )
 
 set(namel canoe)
+set_if_empty(PGEN empty)
 
 # set module targets
 pybind11_add_module(${namel} MODULE
   pyathena.cpp
   pycanoe.cpp
   pyharp.cpp
+  pysnap.cpp
   pyutils.cpp
+  ${PGEN}.cpp
   )
 
 target_include_directories(${namel}
@@ -49,9 +52,3 @@ execute_process(
   COMMAND ln -sf ${CMAKE_BINARY_DIR}/python/${namel}${PYTHON_MODULE_EXTENSION}
   ${CMAKE_BINARY_DIR}/lib/${namel}${PYTHON_MODULE_EXTENSION}
   )
-
-# add python modules
-#add_python_module(pyathena)
-#add_python_module(pycanoe)
-#add_python_module(pyharp)
-#add_python_module(utilities)

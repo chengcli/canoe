@@ -55,7 +55,7 @@
 #include <opacity/Giants/microwave/mwr_absorbers.hpp>
 
 // inversion
-#include <inversion/profile_inversion.hpp>
+// #include <inversion/profile_inversion.hpp>
 
 // special includes
 #include "juno_mwr_specs.hpp"
