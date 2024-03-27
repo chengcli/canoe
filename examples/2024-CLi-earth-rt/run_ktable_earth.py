@@ -4,8 +4,8 @@ import sys, os
 sys.path.append("../python")
 sys.path.append(".")
 
-from pyharp import radiation_band
-from utilities import load_configure, find_resource
+from canoe.harp import radiation_band
+from canoe import load_configure, find_resource
 from numpy import *
 from rfmlib import *
 
@@ -44,7 +44,7 @@ if __name__ == "__main__":
 
     band = radiation_band(band_name, info)
 
-    nspec = band.get_num_spec_grids()
+    nspec = band.get_num_specgrids()
     wmin, wmax = band.get_range()
     wres = (wmax - wmin) / (nspec - 1)
 
