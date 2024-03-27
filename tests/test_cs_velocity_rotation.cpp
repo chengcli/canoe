@@ -14,18 +14,70 @@
 // exo3
 #include <exo3/cs_velocity_rotation.hpp>
 
-TEST(vel_zab_from_p1_test, test_case_to_4) {
-  std::vector <Real> result = {1,2,3};
-  std::vector <Real> expected_result = {-2,-3,1};
-  CubedSphereUtility::vel_zab_from_p1_test(result, 4);
-  EXPECT_EQ(result, expected_result);
+TEST(vel_zab_to_zxy, test_ab_to_xy_to_ab) {
+  Real result[3] = {1,2,3};
+  Real *vz = result;
+  Real *vx = result + 1;
+  Real *vy = result + 2;
+  Real expected_result[3] = {1,2,3};
+  CubedSphereUtility::vel_zxy_to_zab(vz, vx, vy, PI/3, PI/4);
+  std::cout << *vz << " " << *vx << " " << *vy;
+  CubedSphereUtility::vel_zab_to_zxy(vz, vx, vy, PI/3, PI/4);
+  for (int i = 0; i < 3; i++) {
+    EXPECT_NEAR(result[i], expected_result[i], pow(10,-5));
+  }
 }
 
-TEST(vel_zab_from_p1_test, test_case_to_6) {
-  std::vector <Real> result = {1,2,3};
-  std::vector <Real> expected_result = {-3,2,1};
-  CubedSphereUtility::vel_zab_from_p1_test(result, 6);
-  EXPECT_EQ(result, expected_result);
+TEST(vel_zab_from_test, test_case_1_to_3_to_1) {
+  Real result[3] = {1,2,3};
+  Real *vz = result;
+  Real *vx = result + 1;
+  Real *vy = result + 2;
+  Real expected_result[3] = {1,2,3};
+  CubedSphereUtility::vel_zab_from_p1(vz, vx, vy, PI/5*2, PI/8*3, 3);
+  CubedSphereUtility::vel_zab_from_p3(vz, vx, vy, PI/5*2, PI/8*3, 1);
+  for (int i = 0; i < 3; i++) {
+    EXPECT_NEAR(result[i], expected_result[i], pow(10,-5));
+  }
+}
+
+TEST(vel_zab_from_test, test_case_1_to_4_to_1) {
+  Real result[3] = {1,2,3};
+  Real *vz = result;
+  Real *vx = result + 1;
+  Real *vy = result + 2;
+  Real expected_result[3] = {1,2,3};
+  CubedSphereUtility::vel_zab_from_p1(vz, vx, vy, PI/5*2, PI/8*3, 4);
+  CubedSphereUtility::vel_zab_from_p4(vz, vx, vy, PI/5*2, PI/8*3, 1);
+  for (int i = 0; i < 3; i++) {
+    EXPECT_NEAR(result[i], expected_result[i], pow(10,-5));
+  }
+}
+
+TEST(vel_zab_from_test, test_case_1_to_5_to_1) {
+  Real result[3] = {1,2,3};
+  Real *vz = result;
+  Real *vx = result + 1;
+  Real *vy = result + 2;
+  Real expected_result[3] = {1,2,3};
+  CubedSphereUtility::vel_zab_from_p1(vz, vx, vy, PI/5*2, PI/8*3, 5);
+  CubedSphereUtility::vel_zab_from_p5(vz, vx, vy, PI/5*2, PI/8*3, 1);
+  for (int i = 0; i < 3; i++) {
+    EXPECT_NEAR(result[i], expected_result[i], pow(10,-5));
+  }
+}
+
+TEST(vel_zab_from_test, test_case_1_to_6_to_1) {
+  Real result[3] = {1,2,3};
+  Real *vz = result;
+  Real *vx = result + 1;
+  Real *vy = result + 2;
+  Real expected_result[3] = {1,2,3};
+  CubedSphereUtility::vel_zab_from_p1(vz, vx, vy, PI/5*2, PI/8*3, 6);
+  CubedSphereUtility::vel_zab_from_p6(vz, vx, vy, PI/5*2, PI/8*3, 1);
+  for (int i = 0; i < 3; i++) {
+    EXPECT_NEAR(result[i], expected_result[i], pow(10,-5));
+  }
 }
 
 int main(int argc, char **argv) {

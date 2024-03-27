@@ -49,12 +49,12 @@ inline void vel_zab_to_zxy(Real *v1, Real *v2, Real *v3, Real a, Real b) {
   Real vy = *v3;
   Real vz = *v1;
 
-  Real delta = pow(pow(x, 2) + pow(y, 2) + 1, 1 / 2);
-  Real C = pow(1 + pow(x, 2), 1 / 2);
-  Real D = pow(1 + pow(y, 2), 1 / 2);
+  Real delta = sqrt(pow(x, 2) + pow(y, 2) + 1);
+  Real C = sqrt(1 + pow(x, 2));
+  Real D = sqrt(1 + pow(y, 2));
 
   *v1 = (vz - D * x * vx - C * y * vy) / delta;
-  *v2 =
+  *v2 = 
       (x * vz + D * vx) / delta;
   *v3 =
       (y * vz + C * vy) / delta;
@@ -69,13 +69,13 @@ inline void vel_zxy_to_zab(Real *v1, Real *v2, Real *v3, Real a, Real b) {
   Real vy = *v3;
   Real vz = *v1;
 
-  Real delta = pow(pow(x, 2) + pow(y, 2) + 1, 1 / 2);
-  Real C = pow(1 + pow(x, 2), 1 / 2);
-  Real D = pow(1 + pow(y, 2), 1 / 2);
+  Real delta = sqrt(pow(x, 2) + pow(y, 2) + 1);
+  Real C = sqrt(1 + pow(x, 2));
+  Real D = sqrt(1 + pow(y, 2));
 
   *v1 = (vz + x * vx + y * vy) / delta;
   *v2 =
-      (-x * vz / D + vx * (1 + pow(vy, 2)) / D - vy * x * y / D) / delta;
+      (-x * vz / D + vx * (1 + pow(y, 2)) / D - vy * x * y / D) / delta;
   *v3 =
       (-y * vz / C - x * y * vx / C + (1 + pow(x, 2)) * vy / C) / delta;
 }
@@ -86,57 +86,179 @@ inline void vel_zxy_to_zab(Real *v1, Real *v2, Real *v3, Real a, Real b) {
 inline void vel_zab_from_p1(Real *vz, Real *vx, Real *vy, Real a, Real b,
                             int panel) {
   vel_zab_to_zxy(vz, vx, vy, a, b);
+  Real v1 = *vz;
+  Real v2 = *vx;
+  Real v3 = *vy;
 
-  switch (panel) {
-    case 2:
-      // z->y, x->-x, y->z
-      (*vx) *= -1;
-      vel_zxy_to_zab(vy, vx, vz, a, b);
-      break;
-    case 3:
-      // z->-x, x->z, y->y
-      (*vz) *= -1;
-      vel_zxy_to_zab(vx, vz, vy, a, b);
-      break;
-    case 4:
-      // z->-x, x->-y, y->z
-      (*vx) *= -1;
-      (*vy) *= -1;
-      vel_zxy_to_zab(vx, vy, vz, a, b);
-      break;
-    case 6:
-      // z->-y, x->x, y->z
-      (*vy) *= -1;
-      vel_zxy_to_zab(vy, vx, vz, a, b);
-      break;
-  }
-}
-
-inline void vel_zab_from_p1_test(std::vector<Real> &v, int panel) {
-  Real vz = v[0];
-  Real vx = v[1];
-  Real vy = v[2];
   switch (panel) {
     case 2:
       // z->y, x->-x, y->z
       //(*vx) *= -1;
-      v = {vy, -vx, vz};
+      //vel_zxy_to_zab(vy, vx, vz, a, b);
+      *vz = v3;
+      *vx = -v2;
+      *vy = v1;
+      vel_zxy_to_zab(vz, vx, vy, a, b);
       break;
     case 3:
       // z->-x, x->z, y->y
       //(*vz) *= -1;
-      v = {vx, -vz, vy};
+      //vel_zxy_to_zab(vx, vz, vy, a, b);
+      *vz = v2;
+      *vx = -v1;
+      *vy = v3;
+      vel_zxy_to_zab(vz, vx, vy, a, b);
       break;
     case 4:
       // z->-x, x->-y, y->z
       //(*vx) *= -1;
       //(*vy) *= -1;
-      v = {-vx, -vy, vz};
+      //vel_zxy_to_zab(vx, vy, vz, a, b);
+      *vz = -v2;
+      *vx = -v3;
+      *vy = v1;
+      vel_zxy_to_zab(vz, vx, vy, a, b);
+      break;
+    case 5:
+      // z->-z, x->-x, y->y
+      *vz = -v1;
+      *vx = -v2;
+      *vy = v3;
+      vel_zxy_to_zab(vz, vx, vy, a, b);
       break;
     case 6:
       // z->-y, x->x, y->z
       //(*vy) *= -1;
-      v = {-vy, vx, vz};
+      //vel_zxy_to_zab(vy, vx, vz, a, b);
+      *vz = -v3;
+      *vx = v2;
+      *vy = v1;
+      vel_zxy_to_zab(vz, vx, vy, a, b);
+      break;
+  }
+}
+
+inline void vel_zab_from_p2(Real *vz, Real *vx, Real *vy, Real a, Real b,
+                            int panel) {
+  vel_zab_to_zxy(vz, vx, vy, a, b);
+  Real v1 = *vz;
+  Real v2 = *vx;
+  Real v3 = *vy;
+  switch (panel) {
+    case 1:
+      // z->y, x->-x, y->z
+      *vz = v3;
+      *vx = -v2;
+      *vy = v1;
+      vel_zxy_to_zab(vz, vx, vy, a, b);
+      break;
+    case 2:
+      break;
+    case 4:
+      break;
+    case 5:
+      break;
+    case 6:
+      break;
+  }
+}
+
+inline void vel_zab_from_p3(Real *vz, Real *vx, Real *vy, Real a, Real b,
+                            int panel) {
+  vel_zab_to_zxy(vz, vx, vy, a, b);
+  Real v1 = *vz;
+  Real v2 = *vx;
+  Real v3 = *vy;
+  switch (panel) {
+    case 1:
+      // z->x, x->-z, y->y
+      *vz = -v2;
+      *vx = v1;
+      *vy = v3;
+      vel_zxy_to_zab(vz, vx, vy, a, b);
+      break;
+    case 2:
+      break;
+    case 4:
+      break;
+    case 5:
+      break;
+    case 6:
+      break;
+  }
+}
+
+inline void vel_zab_from_p4(Real *vz, Real *vx, Real *vy, Real a, Real b,
+                            int panel) {
+  vel_zab_to_zxy(vz, vx, vy, a, b);
+  Real v1 = *vz;
+  Real v2 = *vx;
+  Real v3 = *vy;
+  switch (panel) {
+    case 1:
+      // z->y, x->-z, y->-x
+      *vz = v3;
+      *vx = -v1;
+      *vy = -v2;
+      vel_zxy_to_zab(vz, vx, vy, a, b);
+      break;
+    case 2:
+      break;
+    case 3:
+      break;
+    case 5:
+      break;
+    case 6:
+      break;
+  }
+}
+
+inline void vel_zab_from_p5(Real *vz, Real *vx, Real *vy, Real a, Real b,
+                            int panel) {
+  vel_zab_to_zxy(vz, vx, vy, a, b);
+  Real v1 = *vz;
+  Real v2 = *vx;
+  Real v3 = *vy;
+  switch (panel) {
+    case 1:
+      // z->-z, x->-x, y->y
+      *vz = -v1;
+      *vx = -v2;
+      *vy = v3;
+      vel_zxy_to_zab(vz, vx, vy, a, b);
+      break;
+    case 2:
+      break;
+    case 3:
+      break;
+    case 4:
+      break;
+    case 6:
+      break;
+  }
+}
+
+inline void vel_zab_from_p6(Real *vz, Real *vx, Real *vy, Real a, Real b,
+                            int panel) {
+  vel_zab_to_zxy(vz, vx, vy, a, b);
+  Real v1 = *vz;
+  Real v2 = *vx;
+  Real v3 = *vy;
+  switch (panel) {
+    case 1:
+      // z->y, x->x, y->-z
+      *vz = v3;
+      *vx = v2;
+      *vy = -v1;
+      vel_zxy_to_zab(vz, vx, vy, a, b);
+      break;
+    case 2:
+      break;
+    case 3:
+      break;
+    case 4:
+      break;
+    case 5:
       break;
   }
 }
