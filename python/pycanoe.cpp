@@ -147,7 +147,7 @@ PYBIND11_MODULE(canoe, m) {
   py::class_<AirParcel>(m, "air_parcel")
       .def(py::init<AirParcel::Type>())
 
-      .def("set_vapor",
+      .def("set_property",
           [](const AirParcel &var, size_t wid, double value) {
             var.w[wid]=value;
           })
