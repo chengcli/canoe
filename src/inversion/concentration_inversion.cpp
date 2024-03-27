@@ -49,9 +49,9 @@ ConcentrationInversion::ConcentrationInversion(MeshBlock *pmb,
   int ndim = idx_.size();
   app->Log(name + "::number of input dimension = " + std::to_string(ndim));
 
-  // output dimension
-  int nvalue = target_.size();
-  app->Log("number of output dimension = " + std::to_string(nvalue));
+  // int nvalue = target_.size();
+  // app->Log("number of output dimension = " + std::to_string(nvalue));
+  int nvalue = 1;
 
   // number of walkers
   int nwalker = pmb->block_size.nx3;

@@ -105,8 +105,9 @@ ProfileInversion::ProfileInversion(MeshBlock *pmb, ParameterInput *pin,
   for (size_t n = 0; n < plevel_.size(); ++n) plevel_[n] *= 1.E5;
 
   // output dimension
-  int nvalue = target_.size();
+  // int nvalue = target_.size();
   // app->Log("number of output dimension = ", nvalue);
+  int nvalue = 1;
 
   // number of walkers
   int nwalker = pmb->block_size.nx3;

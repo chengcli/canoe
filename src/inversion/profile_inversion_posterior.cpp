@@ -11,6 +11,9 @@
 #include <memory>
 #include <sstream>
 
+// Eigen
+#include <Eigen/Core>
+
 // athena
 #include <athena/mesh/mesh.hpp>
 
@@ -74,17 +77,7 @@ Real ProfileInversion::LogPosteriorProbability(Radiation *prad, Hydro *phydro,
   // calculate model result for profile at j = ju_
   CalculateFitTarget(prad, val, nvalue, k, ju_);
 
-  Real lnpost = 0.;
-  if (target_.size() > 0) {
-    for (int m = 0; m < nvalue; ++m) misfit(m) = val[m] - target_(m);
-    lnpost = -0.5 * misfit.transpose() * icov_ * misfit;
-  }
-
-  // posterior probability
-  // Real lnprior = 0., lnpost = 0.;
-  app->Log("log posterir probability = " + std::to_string(lnpost));
-
   FreeCArray(XpSample);
 
-  return lnprior + lnpost;
+  return lnprior;
 }

@@ -28,6 +28,7 @@ void init_athena(py::module &);
 void init_harp(py::module &);
 void init_snap(py::module &);
 void init_utils(py::module &);
+void init_inversion(py::module &);
 
 IndexMap const *def_species(std::vector<std::string> vapors,
                             std::vector<std::string> clouds,
@@ -108,6 +109,7 @@ PYBIND11_MODULE(canoe, m) {
   init_harp(m);
   init_utils(m);
   init_snap(m);
+  init_inversion(m);
 
   //  Constants
   py::module m_constants = m.def_submodule("constants");
@@ -147,10 +149,8 @@ PYBIND11_MODULE(canoe, m) {
   py::class_<AirParcel>(m, "air_parcel")
       .def(py::init<AirParcel::Type>())
 
-      .def("set_property",
-          [](const AirParcel &var, size_t wid, double value) {
-            var.w[wid]=value;
-          })
+      .def("set_property", [](const AirParcel &var, size_t wid,
+                              double value) { var.w[wid] = value; })
 
       .def("hydro",
            [](const AirParcel &var) {

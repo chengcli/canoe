@@ -6,9 +6,6 @@
 #include <string>
 #include <vector>
 
-// Eigen
-#include <Eigen/Core>
-
 // athena
 #include <athena/athena.hpp>
 
@@ -77,18 +74,8 @@ class Inversion : public NamedGroup,
   void LoadFITSOutputData(OutputType *pod, int *num_vars) const override {}
 
  protected:
-  // name of the inversion
-  std::string name_;
-
-  // fit data
-  Eigen::VectorXd target_;
-  Eigen::MatrixXd icov_;
-
   // mcmc initial positions
   Real **init_pos_;
-
-  // whether to fit differential observation
-  bool fit_differential_;
 
   // j-index range
   int jl_, ju_;
@@ -116,9 +103,9 @@ class InversionsFactory {
 
 namespace InversionHelper {
 
-void read_observation_file(Eigen::VectorXd *target, Eigen::MatrixXd *icov,
-                           std::string fname);
-void gather_probability(std::vector<Inversion *> const &fitq);
+// void read_observation_file(Eigen::VectorXd *target, Eigen::MatrixXd *icov,
+//                            std::string fname);
+// void gather_probability(std::vector<Inversion *> const &fitq);
 
 }  // namespace InversionHelper
 

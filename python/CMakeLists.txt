@@ -24,6 +24,7 @@ pybind11_add_module(${namel} MODULE
   pyharp.cpp
   pysnap.cpp
   pyutils.cpp
+  pyinversion.cpp
   ${PGEN}.cpp
   )
 

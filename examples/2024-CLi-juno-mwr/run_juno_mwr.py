@@ -65,3 +65,9 @@ if __name__ == "__main__":
 
     out = Outputs(mesh, pin)
     out.make_outputs(mesh, pin)
+
+    print(len(mesh.meshblocks()))
+
+    mb = mesh.meshblock(0)
+    # for mb in mesh.meshblocks():
+    #    print(mb.block_size.nx1)

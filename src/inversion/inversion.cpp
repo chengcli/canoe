@@ -4,6 +4,9 @@
 #include <string>
 #include <utility>
 
+// Eigen
+#include <Eigen/Core>
+
 // athena
 #include <athena/coordinates/coordinates.hpp>
 #include <athena/mesh/mesh.hpp>
@@ -42,20 +45,6 @@ Inversion::Inversion(MeshBlock *pmb, ParameterInput *pin, std::string name)
            pin->GetOrAddString("inversion", name + ".logfile",
                                name + "_inversion.log")
                .c_str());
-
-  std::string obsfile = pin->GetOrAddString("inversion", "obsfile", "none");
-  if (obsfile != "none") {
-    InversionHelper::read_observation_file(&target_, &icov_, obsfile.c_str());
-    // app->Log("target = ", target_.transpose());
-    // app->Log("inverse covariance matrx = ", icov_);
-  } else {
-    target_.resize(1);
-    icov_.resize(1, 1);
-  }
-
-  // fit differential
-  fit_differential_ = pin->GetOrAddBoolean("inversion", "differential", false);
-  // app->Log("fit differential = ", fit_differential_);
 }
 
 Inversion::~Inversion() {
