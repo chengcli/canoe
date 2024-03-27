@@ -12,37 +12,20 @@ from typing import Tuple
 # from canoe.snap import air_parcel
 
 
-def construct_atmosphere(
-    nlyr: int = 100,
-    comp: dict = {},
-    plim: Tuple[float, float] = [0.1e5, 100.0e5],
-    zlim: Tuple[float, float] = [0.0, 10.0e3],
-    T0: float = 169.0,
-    P0: float = 1.0e5,
-    Tmin: float = 100.0,
-) -> Mesh:
-    mb = Mesh(nlyr)
-
-    air = air_parcel(comp)
-    dlnp = (log(plim[1]) - log(plim[0])) / nlyr
-
-    mb.set_layer(0, air)
-    for i in range(1, nlyr):
-        atm_extrapolate(air, -dlnp / 2.0, method="dry_adiabat")
-        mb.set_layer(i, air)
-
-    return mb
-
 
 def modify_atmosphere(
-    mb: Mesh,
-    comp: dict = {},
-    plim: Tuple[float, float] = [0.1e5, 100.0e5],
-    zlim: Tuple[float, float] = [0.0, 10.0e3],
-    T0: float = 169.0,
-    P0: float = 1.0e5,
-) -> Mesh:
-    pass
+    mesh : Mesh,
+    dlndlnP: float=0.,
+    pmin : float=0.,
+    pmax : float=0.,
+    var  : str="Temp"
+    ) -> Mesh:
+
+    if dlndlnP !=0.:
+        mesh.modify_Temp_profile()
+    else: 
+        pass
+    return mesh
 
 
 if __name__ == "__main__":
@@ -66,8 +49,22 @@ if __name__ == "__main__":
     out = Outputs(mesh, pin)
     out.make_outputs(mesh, pin)
 
+
     print(len(mesh.meshblocks()))
 
     mb = mesh.meshblock(0)
     # for mb in mesh.meshblocks():
     #    print(mb.block_size.nx1)
+
+    # modify atmosphere
+    # dlnTdlnP=0
+    # pmin=0
+    # pmax=0
+    # adlnNH3dlnP=0
+    # mesh=modify_atmosphere(mesh,dlnTdlnP,pmin,pmax,"Temp")
+    # mesh=modify_atmosphere(mesh,adlnNH3dlnP,pmin,pmax,"NH3")
+
+
+
+    # run rt again
+
