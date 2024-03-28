@@ -37,8 +37,8 @@
 
 ProfileInversion::~ProfileInversion() {}
 
-ProfileInversion::ProfileInversion(MeshBlock *pmb, YAML::Node const &node)
-    : Inversion(pmb, "profile") {
+ProfileInversion::ProfileInversion(YAML::Node const &node)
+    : Inversion("profile") {
   Application::Logger app("inversion");
   app->Log("Initializing ProfileInversion");
   char buf[80];
@@ -71,66 +71,18 @@ ProfileInversion::ProfileInversion(MeshBlock *pmb, YAML::Node const &node)
   }
 }
 
-void ProfileInversion::UpdateHydro(Hydro *phydro, ParameterInput *pin) const {
-  // read profile updates from input
-  char buf[80];
-  int nsample = samples();  // excluding boundaries
-  Application::Logger app("inversion");
-  app->Log("UpdateHydro");
-
-  // prepare inversion model
-  Real **XpSample;
-  NewCArray(XpSample, 1 + NVAPOR, nsample + 2);
-  std::fill(*XpSample, *XpSample + (1 + NVAPOR) * (nsample + 2), 0.);
-
-  int is = pmy_block_->is, js = pmy_block_->js, ks = pmy_block_->ks;
-  int ie = pmy_block_->ie, ke = pmy_block_->ke;
-
-  for (auto m : idx_) {
-    if (m == IDN) {  // temperature
-      snprintf(buf, sizeof(buf), "%s.tema.K", GetName().c_str());
-    } else {  // vapors
-      snprintf(buf, sizeof(buf), "%s.qvapor%da.gkg", GetName().c_str(), m);
-    }
-    std::string str = pin->GetString("problem", buf);
-    std::vector<Real> qa = Vectorize<Real>(str.c_str(), " ,");
-
-    if (qa.size() != nsample) {
-      throw ValueError("UpdateHydro", buf, qa.size(), nsample);
-    }
-
-    // g/kg -> kg/kg
-    for (int i = 1; i <= nsample; ++i) {
-      XpSample[m][i] = qa[i - 1] / 1.E3;
-    }
-
-    for (int k = ks; k <= ke; ++k) {
-      // revise atmospheric profiles
-      UpdateProfiles(phydro, XpSample, k, jl_, ju_);
-
-      // set the revised profile to js-1
-      for (int n = 0; n < NHYDRO; ++n)
-        for (int i = is; i <= ie; ++i) {
-          phydro->w(n, k, js - 1, i) = phydro->w(n, k, ju_, i);
-        }
-    }
-  }
-
-  FreeCArray(XpSample);
-}
-
-void ProfileInversion::UpdateModel(std::vector<Real> const &par, int k) const {
+void ProfileInversion::UpdateModel(MeshBlock *pmb, std::vector<Real> const &par,
+                                   int k) const {
   app->Log("Update profiles");
   auto pthermo = Thermodynamics::GetInstance();
-  auto pmb = pmy_block_;
 
-  int is = pmy_block_->is, ie = pmy_block_->ie;
-  int nlayer = ie - is + 1;
+  int nlayer = pmb->ie - pmb->is + 1;
+  int nvar = GetMySpeciesIndices().size();
   int nsample = plevel_.size();
 
   std::vector<Real> zlev(nsample);
-  Real P0 = pmy_block_->pcoord->GetReferencePressure();
-  Real H0 = pmy_block_->pcoord->GetPressureScaleHeight();
+  Real P0 = pmb->pcoord->GetReferencePressure();
+  Real H0 = pmb->pcoord->GetPressureScaleHeight();
 
   for (int i = 0; i < nsample; ++i) {
     zlev[i] = -H0 * log(plevel_[i] / P0);
@@ -140,25 +92,24 @@ void ProfileInversion::UpdateModel(std::vector<Real> const &par, int k) const {
   std::vector<Real> stdAll(nlayer);
   std::vector<Real> stdSample(nsample);
 
-  AirColumn ac(nlayer);
+  Real **XpSample, **Xp;
 
-  Real **Xp;
-  NewCArray(Xp, 1 + NVAPOR, nlayer);
+  XpSample = new Real *[nvar];
+  for (size_t n = 0; n < GetMySpeciesIndices().size(); ++n) {
+    XpSample[n] = &par[nvar * nsample];
+  }
 
-  // copy previous jl-1 -> jl .. ju
-  for (int n = 0; n < NHYDRO; ++n)
-    for (int j = jl; j <= ju; ++j)
-      for (int i = is; i <= ie; ++i)
-        phydro->w(n, k, j, i) = phydro->w(n, k, jl - 1, i);
+  NewCArray(Xp, nvar, nlayer);
 
   Real Rd = pthermo->GetRd();
-
   Real chi = GetPar<Real>("chi");
 
   // calculate perturbed profiles
   auto pcoord = pmb->pcoord;
-  for (size_t n = 0; n < GetMySpeciesIndices().size(); ++n) {
-    int jn = jl + n;
+  auto ac =
+      AirParcelHelper::gather_from_primitive(pmb, k, jl_, pmb->il, pmb->iu);
+
+  for (size_t n = 0; n < nvar; ++n) {
     int m = mySpeciesId(n);
 
     for (int i = is; i <= ie; ++i)
@@ -167,70 +118,45 @@ void ProfileInversion::UpdateModel(std::vector<Real> const &par, int k) const {
     for (int i = 0; i < nsample; ++i)
       stdSample[i] = Xstd_[n] * pow(exp(zlev[i] / H0), chi);
 
-    gp_predict(SquaredExponential, Xp[m], &pcoord->x1v(is), stdAll.data(),
-               nlayer, XpSample[m], zlev.data(), stdSample.data(), nsample,
+    gp_predict(SquaredExponential, Xp[n], &pcoord->x1v(is), stdAll.data(),
+               nlayer, XpSample[n], zlev.data(), stdSample.data(), nsample,
                Xlen_[n]);
 
-    for (int i = is; i <= ie; ++i) {
-      Real temp = pthermo->GetTemp(pmb, k, jn, i);
+    for (int i = 0; i < nlayer; ++i) {
+      ac[i].ToMoleFraction();
 
       // do not alter levels lower than zlev[0] or higher than zlev[nsample-1]
-      if (pcoord->x1v(i) < zlev[0] || pcoord->x1v(i) > zlev[nsample - 1])
+      if (pcoord->x1v(pmb->is + i) < zlev[0] ||
+          pcoord->x1v(pmb->is + i) > zlev[nsample - 1])
         continue;
 
       // save perturbed T profile
       if (m == IDN) {
-        if (temp + Xp[m][i - is] < 0.) {
-          temp = 1.;  // min 1K temperature
+        if (ac.w[IDN] + Xp[n][i] < 0.) {
+          ac.w[IDN] = 1.;  // min 1K temperature
         } else {
-          temp += Xp[m][i - is];
+          ac.w[IDN] += Xp[n][i];
         }
-        phydro->w(IDN, k, jn, i) = phydro->w(IPR, k, jn, i) /
-                                   (Rd * temp * pthermo->RovRd(pmb, k, jn, i));
       } else {  // save perturbed compositional profiles
-        phydro->w(m, k, jn, i) += Xp[m][i - is];
-        phydro->w(m, k, jn, i) = std::max(phydro->w(m, k, jn, i), 0.);
-        phydro->w(m, k, jn, i) = std::min(phydro->w(m, k, jn, i), 1.);
-      }
-    }
-  }
-
-  // copy final adjusted profiles to ju
-  // set density to reflect temperature
-  Real *temp1d = new Real[nlayer];
-
-  for (int i = is; i <= ie; ++i) {
-    // get initial temperature from jl-1
-    temp1d[i - is] = pthermo->GetTemp(pmb, k, jl - 1, i);
-
-    for (size_t n = 0; n < idx_.size(); ++n) {
-      int jn = jl + n;
-      int m = mySpeciesId(n);
-      if (m == IDN) {
-        // override with new temperature
-        temp1d[i - is] = pthermo->GetTemp(pmb, k, jn, i);
-      } else {
-        phydro->w(m, k, ju, i) = phydro->w(m, k, jn, i);
+        ac.w[m] += Xp[n][i - is];
+        ac.w[m] = std::max(ac.w[m], 0.);
+        ac.w[m] = std::min(ac.w[m], 1.);
       }
     }
 
-    // reset temperature given new concentration
-    phydro->w(IDN, k, ju, i) =
-        phydro->w(IPR, k, ju, i) /
-        (Rd * temp1d[i - is] * pthermo->RovRd(pmb, k, ju, i));
+    AirParcelHelper::distribute_to_primitive(pmb, k, jl_ + n, ac);
   }
 
-  delete[] temp1d;
+  enforceStability(ac, k, ju_);
+  AirParcelHelper::distribute_to_primitive(pmb, k, ju_, ac);
+
+  delete[] XpSample;
   FreeCArray(Xp);
-
-  enforceStability(phydro, k);
 }
 
 void ProfileInversion::enforceStability(AirColumn &ac, int k) const {
   Application::Logger app("inversion");
   app->Log("Enforce stability");
-
-  int is = pmy_block_->is, ie = pmy_block_->ie;
 
   auto pthermo = Thermodynamics::GetInstance();
   auto pmb = pmy_block_;
@@ -249,7 +175,7 @@ void ProfileInversion::enforceStability(AirColumn &ac, int k) const {
 
     // saturation
     for (int n = 1; n <= NVAPOR; ++n) {
-      Real rh = pthermo->RelativeHumidity(pmb, n, k, ju_, i);
+      Real rh = relative_humidity(pthermo, ac[i], n);
       if (rh > 1.) ac[i].w[n] /= rh;
     }
   }

@@ -31,12 +31,12 @@ class Inversion : public NamedGroup,
                   public SpeciesIndexGroup {
  public:
   /// Constructor and destructor
-  Inversion(MeshBlock *pmb, std::string name)
-      : NamedGroup(name), jl_(0), ju_(0), pmy_block_(pmb) {}
+  Inversion(std::string name) : jl_(0), ju_(0) {}
 
   virtual ~Inversion();
 
-  virtual void UpdateModel(std::vector<Real> const &par, int k) const {}
+  virtual void UpdateModel(MeshBlock *pmb, std::vector<Real> const &par,
+                           int k) const {}
 
   virtual int GetSteps() const { return 0; }
 
@@ -48,9 +48,6 @@ class Inversion : public NamedGroup,
  protected:
   // step index range (j-direction)
   int jl_, ju_;
-
-  //! pointer to parent MeshBlock
-  MeshBlock const *pmy_block_;
 };
 
 class CompositionInversion : public Inversion {
@@ -69,10 +66,11 @@ class CompositionInversion : public Inversion {
 
 class ProfileInversion : public Inversion {
  public:
-  ProfileInversion(MeshBlock *pmb, YAML::Node const &node);
+  ProfileInversion(YAML::Node const &node);
   ~ProfileInversion() {}
 
-  void UpdateModel(std::vector<Real> const &par, int k) const override;
+  void UpdateModel(MeshBlock *pmb, std::vector<Real> const &par,
+                   int k) const override;
 
   void UpdateProfiles(Hydro *phydro, Real **XpSample, int k, int jl,
                       int ju) const;
@@ -96,8 +94,7 @@ using InversionPtr = std::shared_ptr<Inversion>;
 
 class InversionFactory {
  public:
-  static std::vector<InversionPtr> CreateFrom(MeshBlock *pmb,
-                                              YAML::Node const &node);
+  static std::vector<InversionPtr> CreateFrom(YAML::Node const &node);
 };
 
 #endif  //  SRC_INVERSION_INVERSION_HPP_
