@@ -29,37 +29,38 @@ if __name__ == "__main__":
     mesh = Mesh(pin)
     mesh.initialize(pin)
 
-    out = Outputs(mesh, pin)
-    out.make_outputs(mesh, pin)
+    # out = Outputs(mesh, pin)
+    # out.make_outputs(mesh, pin)
 
+    # exit()
     mb = mesh.meshblock(0)
     # print(len(mesh.meshblocks()))
     # for mb in mesh.meshblocks():
     #    print(mb.block_size.nx1)
 
     adlnTdlnP=0.2 ##k
-    pmin=1.E5
-    pmax=20.E5
+    pmin=100.E5
+    pmax=800.E5
     mb.modify_dlnTdlnP(adlnTdlnP, pmin, pmax)
 
-    adlnNH3dlnP=1. ##ppmv
-    pmin=60.E5
+    adlnNH3dlnP=0.25 ##ppmv  -100
+    pmin=100.E5
     pmax=800.E5
     # mb.modify_dlnNH3dlnP(adlnNH3dlnP, pmin, pmax)
 
     prad=radiation(mb, pin)
-    # band1=prad.get_band(0)
-    # print(band1.cal_radiance(mb,0,0))
 
     for k in range(mb.k_st, mb.k_ed+1):
         for j in range(mb.j_st, mb.j_ed+1):
+            print(str(k)+" "+str(j))
             prad.cal_radiance(mb, k, j)
             
-    pin.set_string("job", "problem_id", "juno_mwr_modify_H2O")
+    pin.set_string("job", "problem_id", "juno_mwr_modify_Temp")
+    # pin.set_string("job", "problem_id", "juno_mwr_modify_NH3")
     print(pin.get_string("job", "problem_id"))
 
-    out1 = Outputs(mesh, pin)
-    out1.make_outputs(mesh, pin)
+    out = Outputs(mesh, pin)
+    out.make_outputs(mesh, pin)
 
 
     # run rt again
