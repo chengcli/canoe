@@ -6,38 +6,39 @@
 #include <string>
 #include <vector>
 
+// external
+#include <yaml-cpp/yaml.h>
+
 // athena
 #include <athena/athena.hpp>
+#include <athena/mesh/mesh.hpp>
 
 // canoe
+#include <air_parcel.hpp>
 #include <configure.hpp>
 #include <virtual_groups.hpp>
-
-// inversion
-#include "mcmc.hpp"
-
-class MeshBlock;
-class ParameterInput;
 
 //! \brief Base class for inversion
 //!
 //! This class is the base class for inversion.
-//! It provides the interface for one function, UpdateModel.
+//! It provides the interface for two functions, UpdateModel and GetSteps.
 //! The UpdateModel function takes a vector of parameters and updates the model.
 //! The parameters are to be adjusted for a better fit to the data.
 //! The UpdateModel function may take several steps to update the model.
 //! The results of each step are stored from index jl_ to ju_ (exclusive).
-class Inversion : public ParameterGroup {
+class Inversion : public NamedGroup,
+                  public ParameterGroup,
+                  public SpeciesIndexGroup {
  public:
-  enum {
-    Steps = 0,
-  }
-
   /// Constructor and destructor
-  Inversion(MeshBlock *pmb, ParameterInput *pin);
+  Inversion(MeshBlock *pmb, std::string name)
+      : NamedGroup(name), jl_(0), ju_(0), pmy_block_(pmb) {}
+
   virtual ~Inversion();
 
-  virtual void UpdateModel(std::vector<Real> const &par) const {}
+  virtual void UpdateModel(std::vector<Real> const &par, int k) const {}
+
+  virtual int GetSteps() const { return 0; }
 
   void SetStepRange(int js, int je) {
     jl_ = js;
@@ -54,57 +55,49 @@ class Inversion : public ParameterGroup {
 
 class CompositionInversion : public Inversion {
  public:
-  CompositionInversion(MeshBlock *pmb, ParameterInput *pin);
+  CompositionInversion(MeshBlock *pmb, YAML::Node const &node);
   ~CompositionInversion();
 
-  int GetSteps() const override { return idx_.size(); }
+  int GetSteps() const override { return GetMySpeciesIndices().size(); }
 
-  void UpdateConcentration(Hydro *phydro, Real *Xp, int k, int jl,
-                           int ju) const;
+  void UpdateModel(std::vector<Real> const &par, int k) const override;
 
  protected:
-  // inversion variable ids
-  std::vector<int> idx_;
-
   // prior standard deviation
   Real Xstd_[1 + NVAPOR];
 };
 
 class ProfileInversion : public Inversion {
  public:
-  ProfileInversion(MeshBlock *pmb, ParameterInput *pin);
+  ProfileInversion(MeshBlock *pmb, YAML::Node const &node);
   ~ProfileInversion() {}
 
-  size_t samples() const { return plevel_.size() - 2; }
-
-  void UpdateModel(std::vector<Real> const &par) const override;
+  void UpdateModel(std::vector<Real> const &par, int k) const override;
 
   void UpdateProfiles(Hydro *phydro, Real **XpSample, int k, int jl,
                       int ju) const;
 
-  void ConvectiveAdjustment(Hydro *phydro, int k, int ju) const;
+  int GetSteps() const override { return GetMySpeciesIndices().size() + 1; }
 
-  int GetSteps() const override { return idx_.size(); }
+ protected:
+  void enforceStability(AirColumn &ac, int k) const;
 
  protected:
   // pressure levels
   std::vector<Real> plevel_;
 
-  // inversion variable ids
-  std::vector<int> idx_;
-
   // hyper-parameters
   Real chi_;
-  Real Xstd_[1 + NVAPOR];
-  Real Xlen_[1 + NVAPOR];
+  std::vector<Real> Xstd_;
+  std::vector<Real> Xlen_;
 };
 
 using InversionPtr = std::shared_ptr<Inversion>;
 
-class InversionsFactory {
+class InversionFactory {
  public:
   static std::vector<InversionPtr> CreateFrom(MeshBlock *pmb,
-                                              ParameterInput *pin);
+                                              YAML::Node const &node);
 };
 
 #endif  //  SRC_INVERSION_INVERSION_HPP_
