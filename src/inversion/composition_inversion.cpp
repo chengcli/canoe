@@ -17,8 +17,9 @@
 // inversion
 #include "inversion.hpp"
 
-CompositionInversion::CompositionInversion(MeshBlock *pmb, ParameterInput *pin)
-    : Inversion(pmb, pin, name) {
+CompositionInversion::CompositionInversion(MeshBlock *pmb,
+                                           YAML::Node const &node)
+    : Inversion(pmb, "composition") {
   Application::Logger app("inversion");
   app->Log("Initializing CompositionInversion");
   char buf[80];
