@@ -39,6 +39,7 @@ void init_athena(py::module &parent) {
       .def("get_real", &ParameterInput::GetReal)
       .def("get_boolean", &ParameterInput::GetBoolean)
       .def("get_string", &ParameterInput::GetString)
+      .def("set_string", &ParameterInput::SetString)
       .def("does_parameter_exist", &ParameterInput::DoesParameterExist);
 
   // AthenArray
@@ -168,6 +169,13 @@ void init_athena(py::module &parent) {
   // MeshBlock
   py::class_<MeshBlock>(m, "MeshBlock")
       .def_readonly("block_size", &MeshBlock::block_size)
+
+      .def_readonly("i_st", &MeshBlock::is)
+      .def_readonly("i_ed", &MeshBlock::ie)
+      .def_readonly("j_st", &MeshBlock::js)
+      .def_readonly("j_ed", &MeshBlock::je)
+      .def_readonly("k_st", &MeshBlock::ks)
+      .def_readonly("k_ed", &MeshBlock::ke)
 
       //.def_readonly("inversion", [](MeshBlock const& pmb) {
       //  return pmb.pimpl->all_fits;
