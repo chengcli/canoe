@@ -18,95 +18,93 @@
 
 class MeshBlock;
 class ParameterInput;
-class Coordinates;
-class Hydro;
-class Thermodynamics;
-class Radiation;
 
-class Inversion : public NamedGroup,
-                  // public RestartGroup,
-                  public FITSOutputGroup {
+//! \brief Base class for inversion
+//!
+//! This class is the base class for inversion.
+//! It provides the interface for one function, UpdateModel.
+//! The UpdateModel function takes a vector of parameters and updates the model.
+//! The parameters are to be adjusted for a better fit to the data.
+//! The UpdateModel function may take several steps to update the model.
+//! The results of each step are stored from index jl_ to ju_ (exclusive).
+class Inversion : public ParameterGroup {
  public:
+  enum {
+    Steps = 0,
+  }
+
   /// Constructor and destructor
-  Inversion(MeshBlock *pmb, ParameterInput *pin, std::string name);
+  Inversion(MeshBlock *pmb, ParameterInput *pin);
   virtual ~Inversion();
 
-  virtual Real LogPosteriorProbability(Radiation *prad, Hydro *phydro,
-                                       Real const *par, Real *val,
-                                       int k) const {
-    return 0.;
+  virtual void UpdateModel(std::vector<Real> const &par) const {}
+
+  void SetStepRange(int js, int je) {
+    jl_ = js;
+    ju_ = je;
   }
-
-  virtual void CalculateFitTarget(Radiation const *prad, Real *val, int nvalue,
-                                  int k, int j) const {}
-
-  virtual void InitializePositions() {}
-
-  virtual void UpdateHydro(Hydro *phydro, ParameterInput *pin) const {}
-
-  virtual int getX2Span() const { return 0.; }
-
-  // MCMC functions
-  void InitializeChain(int nstep, int nwalker, int ndim, int nvalue);
-  void MakeMCMCOutputs(std::string fname);
-  void MCMCInit(Radiation *prad, Hydro *phydro);
-  void MCMCMove(Radiation *prad, Hydro *phydro);
-  void MCMCSave(Hydro *phydro);
-  void ResetChain();
-
-  // access functions
-  int GetDims() const { return recs_.ndim; }
-  int GetValues() const { return recs_.nvalue; }
-  int GetWalkers() const { return recs_.nwalker; }
-  int GetSteps() const { return recs_.nstep; }
-  void SetLogProbability(int k, Real lnp) { recs_.lnp[recs_.cur][k] = lnp; }
-  Real GetLogProbability(int k) const { return recs_.lnp[recs_.cur][k]; }
-
-  void setX2Indices(int j) {
-    jl_ = j;
-    ju_ = jl_ + getX2Span() - 1;
-  }
-
-  /// MeshOutputGroup functions
-  bool ShouldFITSOutput(std::string variable_name) const override {
-    return true;
-  }
-  void LoadFITSOutputData(OutputType *pod, int *num_vars) const override {}
 
  protected:
-  // mcmc initial positions
-  Real **init_pos_;
-
-  // j-index range
+  // step index range (j-direction)
   int jl_, ju_;
 
   //! pointer to parent MeshBlock
   MeshBlock const *pmy_block_;
+};
 
- private:
-  // mcmc variables
-  mcmc_opts opts_;
-  mcmc_recs recs_;
-  bool mcmc_initialized_;
+class CompositionInversion : public Inversion {
+ public:
+  CompositionInversion(MeshBlock *pmb, ParameterInput *pin);
+  ~CompositionInversion();
 
-  // scratch arrays
-  Real *zz_, *par_;
+  int GetSteps() const override { return idx_.size(); }
+
+  void UpdateConcentration(Hydro *phydro, Real *Xp, int k, int jl,
+                           int ju) const;
+
+ protected:
+  // inversion variable ids
+  std::vector<int> idx_;
+
+  // prior standard deviation
+  Real Xstd_[1 + NVAPOR];
+};
+
+class ProfileInversion : public Inversion {
+ public:
+  ProfileInversion(MeshBlock *pmb, ParameterInput *pin);
+  ~ProfileInversion() {}
+
+  size_t samples() const { return plevel_.size() - 2; }
+
+  void UpdateModel(std::vector<Real> const &par) const override;
+
+  void UpdateProfiles(Hydro *phydro, Real **XpSample, int k, int jl,
+                      int ju) const;
+
+  void ConvectiveAdjustment(Hydro *phydro, int k, int ju) const;
+
+  int GetSteps() const override { return idx_.size(); }
+
+ protected:
+  // pressure levels
+  std::vector<Real> plevel_;
+
+  // inversion variable ids
+  std::vector<int> idx_;
+
+  // hyper-parameters
+  Real chi_;
+  Real Xstd_[1 + NVAPOR];
+  Real Xlen_[1 + NVAPOR];
 };
 
 using InversionPtr = std::shared_ptr<Inversion>;
-using AllInversions = std::vector<std::shared_ptr<Inversion>>;
 
 class InversionsFactory {
  public:
-  static AllInversions Create(MeshBlock *pmb, ParameterInput *pin);
+  static std::vector<InversionPtr> CreateFrom(MeshBlock *pmb,
+                                              ParameterInput *pin);
 };
-
-namespace InversionHelper {
-
-// void read_observation_file(Eigen::VectorXd *target, Eigen::MatrixXd *icov,
-//                            std::string fname);
-// void gather_probability(std::vector<Inversion *> const &fitq);
-
-}  // namespace InversionHelper
 
 #endif  //  SRC_INVERSION_INVERSION_HPP_
