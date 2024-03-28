@@ -50,20 +50,20 @@ if __name__ == "__main__":
     out.make_outputs(mesh, pin)
 
 
-    print(len(mesh.meshblocks()))
+    # print(len(mesh.meshblocks()))
 
     mb = mesh.meshblock(0)
+
+
     # for mb in mesh.meshblocks():
     #    print(mb.block_size.nx1)
 
-    # modify atmosphere
-    # dlnTdlnP=0
-    # pmin=0
-    # pmax=0
-    # adlnNH3dlnP=0
-    # mesh=modify_atmosphere(mesh,dlnTdlnP,pmin,pmax,"Temp")
-    # mesh=modify_atmosphere(mesh,adlnNH3dlnP,pmin,pmax,"NH3")
+    adlnNH3dlnP=30.0
+    pmin=1.E5
+    pmax=20.E5
+    mb.modify_dlnNH3dlnP(adlnNH3dlnP, pmin, pmax)
 
+    print(mb)
 
 
     # run rt again
