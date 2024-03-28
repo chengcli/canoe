@@ -63,6 +63,18 @@ void JunoProfileInversion::CalculateFitTarget(Radiation const *prad, Real *val,
 
     Real tb45 = interp1(cos(45. / 180. * M_PI), tbs.data(), mus.data(), ndir);
     val[b * 2 + 1] = (tbs[0] - tb45) / tbs[0] * 100.;
+
+    if (fit_differential_) {
+      // brightness temperatures
+      val[b * 2] -= pband->btoa(0, k, pmy_block_->js - 1);
+
+      // limb darkening
+      for (int n = 0; n < ndir; ++n)
+        tbs[n] = pband->btoa(n, k, pmy_block_->js - 1);
+
+      tb45 = interp1(cos(45. / 180. * M_PI), tbs.data(), mus.data(), ndir);
+      val[b * 2 + 1] -= (tbs[0] - tb45) / tbs[0] * 100.;
+    }
   }
 
   // app->Log("foward model results = ", val, nvalue);

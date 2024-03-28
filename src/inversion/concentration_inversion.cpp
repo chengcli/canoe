@@ -14,17 +14,13 @@
 #include <utils/ndarrays.hpp>
 #include <utils/vectorize.hpp>
 
-// harp
-#include "concentration_inversion.hpp"
+// inversion
+#include "inversion.hpp"
 
-ConcentrationInversion::~ConcentrationInversion() {}
-
-ConcentrationInversion::ConcentrationInversion(MeshBlock *pmb,
-                                               ParameterInput *pin,
-                                               std::string name)
+CompositionInversion::CompositionInversion(MeshBlock *pmb, ParameterInput *pin)
     : Inversion(pmb, pin, name) {
   Application::Logger app("inversion");
-  app->Log("Initializing ConcentrationInversion");
+  app->Log("Initializing CompositionInversion");
   char buf[80];
 
   // species id
@@ -45,48 +41,9 @@ ConcentrationInversion::ConcentrationInversion(MeshBlock *pmb,
       app->Log(buf + std::to_string(Xstd_[m]));
     }
   }
-
-  int ndim = idx_.size();
-  app->Log(name + "::number of input dimension = " + std::to_string(ndim));
-
-  // int nvalue = target_.size();
-  // app->Log("number of output dimension = " + std::to_string(nvalue));
-  int nvalue = 1;
-
-  // number of walkers
-  int nwalker = pmb->block_size.nx3;
-  app->Log("walkers per block = " + std::to_string(nwalker));
-  app->Log("total number of walkers = " +
-           std::to_string(pmb->pmy_mesh->mesh_size.nx3));
-  if ((nwalker < 2) && pmb->pmy_mesh->nlim > 0) {
-    app->Error("nwalker (nx3) must be at least 2");
-  }
-
-  // initialize mcmc chain
-  InitializeChain(pmb->pmy_mesh->nlim + 1, nwalker, ndim, nvalue);
 }
 
-void ConcentrationInversion::InitializePositions() {
-  int nwalker = GetWalkers();
-  int ndim = GetDims();
-  Application::Logger app("inversion");
-
-  // initialize random positions
-  app->Log("Initializing random positions for walkers");
-
-  unsigned int seed = time(NULL) + Globals::my_rank;
-  NewCArray(init_pos_, nwalker, ndim);
-
-  for (int p = 0; p < nwalker; ++p) {
-    for (size_t n = 0; n < idx_.size(); ++n) {
-      int m = idx_[n];
-      init_pos_[p][n] = (1. * rand_r(&seed) / RAND_MAX - 0.5) * Xstd_[m];
-    }
-  }
-}
-
-void ConcentrationInversion::UpdateConcentration(Hydro *phydro, Real *Xp, int k,
-                                                 int jl, int ju) const {
+void CompositionInversion::UpdateModel(std::vector<Real> const &par) const {
   Application::Logger app("inversion");
   app->Log("UpdateConcentration");
 

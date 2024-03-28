@@ -37,8 +37,7 @@
 
 ProfileInversion::~ProfileInversion() {}
 
-ProfileInversion::ProfileInversion(MeshBlock *pmb, ParameterInput *pin,
-                                   std::string name)
+ProfileInversion::ProfileInversion(MeshBlock *pmb, ParameterInput *pin)
     : Inversion(pmb, pin, name) {
   Application::Logger app("inversion");
   app->Log("Initializing ProfileInversion");
@@ -47,32 +46,6 @@ ProfileInversion::ProfileInversion(MeshBlock *pmb, ParameterInput *pin,
   // species id
   idx_ =
       Vectorize<int>(pin->GetString("inversion", name + ".variables").c_str());
-
-  // read in prior
-  for (auto m : idx_) {
-    if (m == IDN) {  // change temperature
-      Xstd_[IDN] = pin->GetReal("inversion", name + ".tem.std");
-      Xlen_[IDN] =
-          pin->GetReal("inversion", name + ".tem.corr.km") * 1.E3;  // km -> m
-      app->Log(name + "::temperature std" + std::to_string(Xstd_[IDN]));
-      app->Log(name + "::temperature correlation length" +
-               std::to_string(Xlen_[0]));
-    } else {
-      Xstd_[m] = pin->GetReal("inversion", name + ".qvapor" +
-                                               std::to_string(m) + ".std.gkg") /
-                 1.E3;
-      // km -> m
-      Xlen_[m] = pin->GetReal("inversion", name + ".qvapor" +
-                                               std::to_string(m) + ".corr.km") *
-                 1.E3;
-      snprintf(buf, sizeof(buf),
-               "%s::vapor %d standard deviation = ", name.c_str(), m);
-      app->Log(buf + std::to_string(Xstd_[m]));
-      snprintf(buf, sizeof(buf),
-               "%s::vapor %d correlation length = ", name.c_str(), m);
-      app->Log(buf + std::to_string(Xlen_[m]));
-    }
-  }
 
   // power law coefficient
   chi_ = pin->GetOrAddReal("inversion", name + ".chi", 0.0);
@@ -119,32 +92,6 @@ ProfileInversion::ProfileInversion(MeshBlock *pmb, ParameterInput *pin,
 
   // initialize mcmc chain
   InitializeChain(pmb->pmy_mesh->nlim + 1, nwalker, ndim, nvalue);
-}
-
-void ProfileInversion::InitializePositions() {
-  int nwalker = GetWalkers();
-  int ndim = GetDims();
-  int nsample = samples();  // excluding boundaries
-
-  Application::Logger app("inversion");
-
-  // initialize random positions
-  app->Log("Initializing random positions for walkers");
-
-  unsigned int seed = time(NULL) + Globals::my_rank;
-  NewCArray(init_pos_, nwalker, ndim);
-
-  Real reference_pressure = pmy_block_->pcoord->GetReferencePressure();
-  for (int n = 0; n < nwalker; ++n) {
-    int ip = 0;
-    for (auto m : idx_) {
-      for (int i = 0; i < nsample; ++i)
-        init_pos_[n][ip * nsample + i] =
-            (1. * rand_r(&seed) / RAND_MAX - 0.5) * Xstd_[m] *
-            pow(reference_pressure / plevel_[i + 1], chi_);
-      ip++;
-    }
-  }
 }
 
 void ProfileInversion::UpdateHydro(Hydro *phydro, ParameterInput *pin) const {
