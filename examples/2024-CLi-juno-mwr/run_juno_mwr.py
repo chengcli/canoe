@@ -50,17 +50,18 @@ if __name__ == "__main__":
     out.make_outputs(mesh, pin)
 
 
-    # print(len(mesh.meshblocks()))
+    print(len(mesh.meshblocks()))
 
     mb = mesh.meshblock(0)
-
 
     # for mb in mesh.meshblocks():
     #    print(mb.block_size.nx1)
 
-    adlnNH3dlnP=30.0
+    adlnNH3dlnP=50.0 ##ppmv
+    adlnTdlnP=20 ##k
     pmin=1.E5
     pmax=20.E5
+    mb.modify_dlnTdlnP(adlnTdlnP, pmin, pmax)
     mb.modify_dlnNH3dlnP(adlnNH3dlnP, pmin, pmax)
 
     print(mb)

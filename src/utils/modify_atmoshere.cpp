@@ -42,13 +42,12 @@ void modify_atmoshere_adlnTdlnP(MeshBlock *pmb, Real adlnTdlnP, Real pmin, Real 
     Real H0 = pcoord->GetPressureScaleHeight();
     Real dlnp = pcoord->dx1f(is) / H0;
 
-
     // loop over all aircolumns
     for (int k = ks; k <= ke; ++k) {
         for (int j = js; j <= je; ++j) {
             int ibegin = find_pressure_level_lesser_pybind(pmax, phydro->w, k, j, is, ie);
             int iend = find_pressure_level_lesser_pybind(pmin, phydro->w, k, j, is, ie);
-
+            
             auto &&air = AirParcelHelper::gather_from_primitive(pmb, k, j, ibegin);
             air.ToMoleFraction();
 
@@ -76,6 +75,7 @@ void modify_atmoshere_adlnNH3dlnP(MeshBlock *pmb, Real adlnNH3dlnP, Real pmin, R
     // loop over all aircolumns
     for (int k = ks; k <= ke; ++k) {
         for (int j = js; j <= je; ++j) {
+
             int ibegin = find_pressure_level_lesser_pybind(pmax, phydro->w, k, j, is, ie);
             int iend = find_pressure_level_lesser_pybind(pmin, phydro->w, k, j, is, ie);
 

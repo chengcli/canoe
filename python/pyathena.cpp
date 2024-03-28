@@ -78,24 +78,100 @@ void init_athena(py::module &parent) {
         }
       });
 
+  // RegionSize
+  py::class_<RegionSize>(m, "RegionSize")
+      .def_property(
+          "x1min", [](RegionSize const &rs) { return rs.x1min; },
+          [](RegionSize &rs, Real x1min) { rs.x1min = x1min; })
+
+      .def_property(
+          "x2min", [](RegionSize const &rs) { return rs.x2min; },
+          [](RegionSize &rs, Real x2min) { rs.x2min = x2min; })
+
+      .def_property(
+          "x3min", [](RegionSize const &rs) { return rs.x3min; },
+          [](RegionSize &rs, Real x3min) { rs.x3min = x3min; })
+
+      .def_property(
+          "x1max", [](RegionSize const &rs) { return rs.x1max; },
+          [](RegionSize &rs, Real x1max) { rs.x1max = x1max; })
+
+      .def_property(
+          "x2max", [](RegionSize const &rs) { return rs.x2max; },
+          [](RegionSize &rs, Real x2max) { rs.x2max = x2max; })
+
+      .def_property(
+          "x3max", [](RegionSize const &rs) { return rs.x3max; },
+          [](RegionSize &rs, Real x3max) { rs.x3max = x3max; })
+
+      .def_property(
+          "nx1", [](RegionSize const &rs) { return rs.nx1; },
+          [](RegionSize &rs, int nx1) { rs.nx1 = nx1; })
+
+      .def_property(
+          "nx2", [](RegionSize const &rs) { return rs.nx2; },
+          [](RegionSize &rs, int nx2) { rs.nx2 = nx2; })
+
+      .def_property(
+          "nx3", [](RegionSize const &rs) { return rs.nx3; },
+          [](RegionSize &rs, int nx3) { rs.nx3 = nx3; })
+
+      .def_property(
+          "x1rat", [](RegionSize const &rs) { return rs.x1rat; },
+          [](RegionSize &rs, Real x1rat) { rs.x1rat = x1rat; })
+
+      .def_property(
+          "x2rat", [](RegionSize const &rs) { return rs.x2rat; },
+          [](RegionSize &rs, Real x2rat) { rs.x2rat = x2rat; })
+
+      .def_property(
+          "x3rat", [](RegionSize const &rs) { return rs.x3rat; },
+          [](RegionSize &rs, Real x3rat) { rs.x3rat = x3rat; });
+
   // Mesh
   py::class_<Mesh>(m, "Mesh")
       .def(py::init<ParameterInput *, int>(), py::arg("pin"),
            py::arg("mesh_only") = false)
 
-      .def("initialize", [](Mesh &mesh, ParameterInput *pin) {
-        bool restart = false;
+      .def("initialize",
+           [](Mesh &mesh, ParameterInput *pin) {
+             bool restart = false;
 
-        // set up components
-        for (int b = 0; b < mesh.nblocal; ++b) {
-          MeshBlock *pmb = mesh.my_blocks(b);
-          pmb->pimpl = std::make_shared<MeshBlock::Impl>(pmb, pin);
-        }
-        mesh.Initialize(restart, pin);
-      });
+             // set up components
+             for (int b = 0; b < mesh.nblocal; ++b) {
+               MeshBlock *pmb = mesh.my_blocks(b);
+               pmb->pimpl = std::make_shared<MeshBlock::Impl>(pmb, pin);
+             }
+             mesh.Initialize(restart, pin);
+           })
+
+      .def("meshblocks",
+           [](Mesh &mesh) {
+             py::list lst;
+             for (size_t i = 0; i < mesh.nbtotal; ++i) {
+               lst.append(mesh.my_blocks(i));
+             }
+             return lst;
+           })
+
+      .def(
+          "meshblock",
+          [](Mesh &mesh, int n) {
+            if (n < 0 || n >= mesh.nbtotal) {
+              throw py::index_error();
+            }
+            return mesh.my_blocks(n);
+          },
+          py::return_value_policy::reference);
+
 
   // MeshBlock
-  py::class_<MeshBlock>(m, "mesh_block")
+  py::class_<MeshBlock>(m, "MeshBlock")
+      .def_readonly("block_size", &MeshBlock::block_size)
+
+      //.def_readonly("inversion", [](MeshBlock const& pmb) {
+      //  return pmb.pimpl->all_fits;
+      //});
       .def("modify_dlnTdlnP", [](MeshBlock *mesh_block, Real adlnTdlnP, Real pmin, Real pmax) {
           return modify_atmoshere_adlnTdlnP(mesh_block, adlnTdlnP, pmin, pmax);
       })
