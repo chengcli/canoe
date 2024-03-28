@@ -4,7 +4,7 @@
 #include <iostream>
 
 // thermodynamics
-#include "thermodynamics.hpp"
+#include "atm_thermodynamics.hpp"
 
 void Thermodynamics::rk4IntegrateZ(AirParcel *air, Real dz, Method method,
                                    Real grav, Real adTdz) const {
@@ -44,10 +44,10 @@ void Thermodynamics::rk4IntegrateZ(AirParcel *air, Real dz, Method method,
 
     if (method == Method::ReversibleAdiabat ||
         method == Method::PseudoAdiabat) {
-      chi[rk] = calDlnTDlnP(*air, latent);
+      chi[rk] = cal_dlnT_dlnP(this, *air, latent);
     } else if (method == Method::DryAdiabat) {
       for (int i = 1; i <= NVAPOR; ++i) latent[i] = 0;
-      chi[rk] = calDlnTDlnP(*air, latent);
+      chi[rk] = cal_dlnT_dlnP(this, *air, latent);
     } else {  // isothermal
       chi[rk] = 0.;
     }

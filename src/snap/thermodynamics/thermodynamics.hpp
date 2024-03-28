@@ -115,9 +115,6 @@ class Thermodynamics {
   //! \return $R_d=\hat{R}/\mu_d$
   Real GetRd() const { return Rd_; }
 
-  //! adiaibatic index of dry air [1]
-  Real GetGammad(AirParcel const &var) const;
-
   //! reference adiabatic index of dry air [1]
   Real GetGammadRef() const { return gammad_ref_; }
 
@@ -156,25 +153,10 @@ class Thermodynamics {
   //! \param[in] j the sequential index of the cloud
   int GetCloudIndex(int i, int j) const { return cloud_index_set_[i][j]; }
 
-  //! Specific heat capacity [J/(kg K)] at constant volume
-  //! $c_{v,d} = \frac{R_d}{\gamma_d - 1}$ \n
-  //! $c_{v,i} = \frac{c_{v,i}}{c_{v,d}}\times c_{v,d}$
-  //! \return $c_{v,i}$
-  Real GetCvMass(AirParcel const &qfrac, int n) const {
-    Real cvd = Rd_ / (GetGammad(qfrac) - 1.);
-    return cv_ratio_mass_[n] * cvd;
-  }
-
   //! Reference specific heat capacity [J/(kg K)] at constant volume
   Real GetCvMassRef(int n) const {
     Real cvd = Rd_ / (gammad_ref_ - 1.);
     return cv_ratio_mass_[n] * cvd;
-  }
-
-  //! Specific heat capacity [J/(mol K)] of the air parcel at constant volume
-  //! \return $\hat{c}_v$
-  Real GetCvMole(AirParcel const &qfrac, int n) const {
-    return GetCvMass(qfrac, n) * mu_[n];
   }
 
   //! Ratio of specific heat capacity [J/(kg K)] at constant pressure
@@ -185,30 +167,10 @@ class Thermodynamics {
   //! \return $\hat{c}_{p,i}/\hat{c}_{p,d}$
   Real GetCpRatioMole(int n) const { return cp_ratio_mole_[n]; }
 
-  //! Specific heat capacity [J/(kg K)] at constant pressure
-  //! $c_{p,d} = \frac{\gamma_d}{\gamma_d - 1}R_d$ \n
-  //! $c_{p,i} = \frac{c_{p,i}}{c_{p,d}}\times c_{p,d}$
-  //! \return $c_p$
-  Real GetCpMass(AirParcel const &qfrac, int n) const {
-    Real gammad = GetGammad(qfrac);
-    Real cpd = Rd_ * gammad / (gammad - 1.);
-    return cp_ratio_mass_[n] * cpd;
-  }
-
   Real GetCpMassRef(int n) const {
     Real cpd = Rd_ * gammad_ref_ / (gammad_ref_ - 1.);
     return cp_ratio_mass_[n] * cpd;
   }
-
-  //! Specific heat capacity [J/(mol K)] of the air parcel at constant pressure
-  //! \return $\hat{c}_v$
-  Real GetCpMole(AirParcel const &qfrac, int n) const {
-    return GetCpMass(qfrac, n) * mu_[n];
-  }
-
-  //! Adiabatic index
-  //! \return $\chi = \frac{R}{c_p}$
-  Real GetChi(AirParcel const &qfrac) const;
 
   //! \brief Temperature dependent specific latent energy [J/kg] of condensates
   //! at constant volume $L_{ij}(T) = L_{ij}^r - (c_{ij} - c_{p,i})\times(T -
@@ -277,10 +239,6 @@ class Thermodynamics {
   //! \param[in,out] ac mole fraction representation of a collection of air
   //! parcels
   void SaturationAdjustment(AirColumn &ac) const;
-
-  //! Inverse of the mean molecular weight (with cloud)
-  //! \param[in] qfrac mole fraction representation of air parcel
-  Real RovRd(AirParcel const &qfrac) const;
 
   //! \brief Calculate potential temperature from primitive variable
   //!
@@ -376,17 +334,6 @@ class Thermodynamics {
   Real MoistStaticEnergy(MeshBlock const *pmb, Real gz, int k, int j,
                          int i) const;
 
-  //! \brief Relative humidity
-  //!
-  //! $H_i = \frac{e_i}{e_i^s}$
-  //! \return $H$
-  Real RelativeHumidity(MeshBlock const *pmb, int n, int k, int j, int i) const;
-
-  Real RelativeHumidity(AirParcel const &qfrac, int n) const {
-    auto rates = TryEquilibriumTP_VaporCloud(qfrac, n, 0., true);
-    return qfrac.w[n] / (qfrac.w[n] + rates[0]);
-  }
-
  protected:
   //! update T/P
   void updateTPConservingU(AirParcel *qfrac, Real rmole, Real umole) const;
@@ -397,14 +344,9 @@ class Thermodynamics {
 
   void setTotalEquivalentVapor(AirParcel *qfrac) const;
 
-  //! \brief Calculate moist adiabatic temperature gradient
-  //!
-  //! $\Gamma_m = (\frac{d\ln T}{d\ln P})_m$
-  //! \return $\Gamma_m$
-  Real calDlnTDlnP(AirParcel const &qfrac, Real latent[]) const;
-
   void rk4IntegrateLnp(AirParcel *qfrac, Real dlnp, Method method,
                        Real adlnTdlnP) const;
+
   void rk4IntegrateZ(AirParcel *qfrac, Real dlnp, Method method, Real grav,
                      Real adlnTdlnP) const;
 
