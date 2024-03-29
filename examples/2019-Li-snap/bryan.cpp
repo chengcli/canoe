@@ -36,7 +36,7 @@
 #include <climath/root.hpp>
 
 // snap
-#include <snap/thermodynamics/thermodynamics.hpp>
+#include <snap/thermodynamics/atm_thermodynamics.hpp>
 
 // special includes
 #include "bryan_vapor_functions.hpp"
@@ -120,13 +120,11 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
       air.c[iH2Oc] = 0.;
 
       // half a grid to cell center
-      pthermo->Extrapolate(&air, pcoord->dx1f(is) / 2.,
-                           Thermodynamics::Method::ReversibleAdiabat, grav);
+      pthermo->Extrapolate(&air, pcoord->dx1f(is) / 2., "reversible", grav);
 
       for (int i = is; i <= ie; ++i) {
         AirParcelHelper::distribute_to_conserved(this, k, j, i, air);
-        pthermo->Extrapolate(&air, pcoord->dx1f(i),
-                             Thermodynamics::Method::ReversibleAdiabat, grav);
+        pthermo->Extrapolate(&air, pcoord->dx1f(i), "reversible", grav);
       }
     }
 
@@ -141,7 +139,8 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
         if (L < 1.) {
           auto &&air = AirParcelHelper::gather_from_conserved(this, k, j, i);
           air.ToMoleFraction();
-          Real temp_v = air.w[IDN] * pthermo->RovRd(air);
+          Real rovrd = get_rovrd(air, pthermo->GetMuRatio());
+          Real temp_v = air.w[IDN] * rovrd;
           temp_v *= 1. + dT * sqr(cos(M_PI * L / 2.)) / 300.;
 
           Real temp;
@@ -153,8 +152,9 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
                                pthermo->TryEquilibriumTP_VaporCloud(air, iH2O);
                            air.w[iH2O] += rates[0];
                            air.c[iH2Oc] += rates[1];
+                           Real rovrd = get_rovrd(air, pthermo->GetMuRatio());
 
-                           return temp * pthermo->RovRd(air) - temp_v;
+                           return temp * rovrd - temp_v;
                          });
 
           if (err) throw RuntimeError("pgen", "TVSolver doesn't converge");

@@ -138,13 +138,16 @@ class Thermodynamics {
   //! \return $c_{v,i}/c_{v,d}$
   Real GetCvRatioMass(int n) const { return cv_ratio_mass_[n]; }
 
+  //! const pointer to cv_ratio_mass_
+  Real const *GetCvRatioMass() const { return cv_ratio_mass_.data(); }
+
   //! Ratio of specific heat capacity [J/(mol K)] at constant volume [1]
   //! \param[in] n the index of the thermodynamic species
   //! \return $\hat{c}_{v,i}/\hat{c}_{v,d}$
   Real GetCvRatioMole(int n) const { return cv_ratio_mole_[n]; }
 
   //! const pointer to cv_ratio_mole_
-  Real const *GetCvRatioMole() const { return &cv_ratio_mole_[0]; }
+  Real const *GetCvRatioMole() const { return cv_ratio_mole_.data(); }
 
   //! \return the index of the cloud
   //! \param[in] i the index of the vapor
@@ -152,7 +155,7 @@ class Thermodynamics {
   int GetCloudIndex(int i, int j) const { return cloud_index_set_[i][j]; }
 
   //! const pointer to cloud_index_set_
-  IndexSet const *GetCloudIndexSet() const { return &cloud_index_set_[0]; }
+  IndexSet const *GetCloudIndexSet() const { return cloud_index_set_.data(); }
 
   //! Reference specific heat capacity [J/(kg K)] at constant volume
   Real GetCvMassRef(int n) const {
@@ -164,12 +167,15 @@ class Thermodynamics {
   //! \return $c_{p,i}/c_{p,d}$
   Real GetCpRatioMass(int n) const { return cp_ratio_mass_[n]; }
 
+  //! const pointer to cp_ratio_mass_
+  Real const *GetCpRatioMass() const { return cp_ratio_mass_.data(); }
+
   //! Ratio of specific heat capacity [J/(mol K)] at constant pressure
   //! \return $\hat{c}_{p,i}/\hat{c}_{p,d}$
   Real GetCpRatioMole(int n) const { return cp_ratio_mole_[n]; }
 
   //! const pointer to cp_ratio_mole_
-  Real const *GetCpRatioMole() const { return &cp_ratio_mole_[0]; }
+  Real const *GetCpRatioMole() const { return cp_ratio_mole_.data(); }
 
   Real GetCpMassRef(int n) const {
     Real cpd = Rd_ * gammad_ref_ / (gammad_ref_ - 1.);
