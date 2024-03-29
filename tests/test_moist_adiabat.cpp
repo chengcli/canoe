@@ -167,8 +167,7 @@ TEST_F(TestMoistAdiabat, moist_adiabat) {
   air.w[IDN] = Ts;
   air.w[iH2Oc] = 0.;
 
-  pthermo->Extrapolate(&air, dz, Thermodynamics::Method::ReversibleAdiabat,
-                       grav);
+  pthermo->Extrapolate(&air, dz, "reversible", grav);
 
   EXPECT_NEAR(air.w[IDN], 289.392118923, 1e-8);
   EXPECT_NEAR(air.w[IPR], 98825.8592854826, 1e-8);
