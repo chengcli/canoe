@@ -11,12 +11,13 @@
 
 // athena
 #include <athena/athena.hpp>
-#include <athena/mesh/mesh.hpp>
 
 // canoe
 #include <air_parcel.hpp>
 #include <configure.hpp>
 #include <virtual_groups.hpp>
+
+class MeshBlock;
 
 //! \brief Base class for inversion
 //!
@@ -31,9 +32,9 @@ class Inversion : public NamedGroup,
                   public SpeciesIndexGroup {
  public:
   /// Constructor and destructor
-  Inversion(std::string name) : jl_(0), ju_(0) {}
+  Inversion(std::string name) : NamedGroup(name), jl_(0), ju_(0) {}
 
-  virtual ~Inversion();
+  virtual ~Inversion() {}
 
   virtual void UpdateModel(MeshBlock *pmb, std::vector<Real> const &par,
                            int k) const {}
@@ -52,12 +53,13 @@ class Inversion : public NamedGroup,
 
 class CompositionInversion : public Inversion {
  public:
-  CompositionInversion(MeshBlock *pmb, YAML::Node const &node);
-  ~CompositionInversion();
+  CompositionInversion(YAML::Node const &node);
+  ~CompositionInversion() {}
 
   int GetSteps() const override { return GetMySpeciesIndices().size(); }
 
-  void UpdateModel(std::vector<Real> const &par, int k) const override;
+  void UpdateModel(MeshBlock *pmb, std::vector<Real> const &par,
+                   int k) const override;
 
  protected:
   // prior standard deviation
@@ -78,7 +80,7 @@ class ProfileInversion : public Inversion {
   int GetSteps() const override { return GetMySpeciesIndices().size() + 1; }
 
  protected:
-  void enforceStability(AirColumn &ac, int k) const;
+  void enforceStability(AirColumn &ac) const;
 
  protected:
   // pressure levels

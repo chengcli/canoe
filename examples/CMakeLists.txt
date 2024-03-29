@@ -2,26 +2,13 @@
 # A collection of examples
 # ========================
 
-if(${HYDROSTATIC})
-  #add_subdirectory(1d-rad-jupiter)
-  add_subdirectory(2023-Li-uranus)
-  #add_subdirectory(2018-Li-harp)
-else()
-  if(${EQUATION_OF_STATE} STREQUAL "shallow_xy")
-    add_subdirectory(2020-Li-polar-vortex)
-  else()
-    add_subdirectory(2024-Li-plume)
-  endif()
-endif()
-
 if (${TASK} STREQUAL "juno")
   add_subdirectory(2024-CLi-juno-mwr)
 endif()
 
-if (${TASK} STREQUAL "juno_mcmc")
-  add_subdirectory(2024-CLi-juno-mwr)
+if (${TASK} STREQUAL "uranus_mwr")
+  add_subdirectory(2023-Li-uranus)
 endif()
-
 
 if (${TASK} STREQUAL "saturn_radio")
   add_subdirectory(2023-Li-saturn-vla)
@@ -52,4 +39,8 @@ endif()
 
 if (${TASK} STREQUAL "rcemip")
   add_subdirectory(2024-CLi-RCEMIP)
+endif()
+
+if (${TASK} STREQUAL "vortex")
+  add_subdirectory(2020-Li-polar-vortex)
 endif()

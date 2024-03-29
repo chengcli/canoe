@@ -5,8 +5,11 @@
 // thermodynamics
 #include "atm_thermodynamics.hpp"
 
-void Thermodynamics::rk4IntegrateLnp(AirParcel *air, Real dlnp, Method method,
-                                     Real adlnTdlnP) const {
+void rk4_integrate_lnp(AirParcel* air, Real dlnp, std::string method,
+                       Real adlnTdlnP) {
+  auto pthermo = Thermodynamics::GetInstance();
+  auto const& cp_ratio_mole = pthermo->GetCpRatioMole();
+
   Real step[] = {0.5, 0.5, 1.};
   Real temp = air->w[IDN];
   Real pres = air->w[IPR];
@@ -14,27 +17,26 @@ void Thermodynamics::rk4IntegrateLnp(AirParcel *air, Real dlnp, Method method,
   Real latent[1 + NVAPOR];
 
   for (int rk = 0; rk < 4; ++rk) {
-    EquilibrateTP(air);
-    if (method != Method::ReversibleAdiabat) {
+    pthermo->EquilibrateTP(air);
+    if (method != "reversible") {
       for (int j = 0; j < NCLOUD; ++j) air->c[j] = 0;
     }
 
     for (int i = 1; i <= NVAPOR; ++i) {
       // make a trial run to get latent heat
       air->w[i] += 1.E-6;
-      auto rates = TryEquilibriumTP_VaporCloud(*air, i);
-      latent[i] = GetLatentHeatMole(i, rates, air->w[IDN]) /
+      auto rates = pthermo->TryEquilibriumTP_VaporCloud(*air, i);
+      latent[i] = pthermo->GetLatentHeatMole(i, rates, air->w[IDN]) /
                   (Constants::Rgas * air->w[IDN]);
       air->w[i] -= 1.E-6;
     }
 
     // calculate tendency
-    if (method == Method::ReversibleAdiabat ||
-        method == Method::PseudoAdiabat) {
-      chi[rk] = cal_dlnT_dlnP(this, *air, latent);
-    } else if (method == Method::DryAdiabat) {
+    if (method == "reversible" || method == "pseudo") {
+      chi[rk] = cal_dlnT_dlnP(*air, cp_ratio_mole, latent);
+    } else if (method == "dry") {
       for (int i = 1; i <= NVAPOR; ++i) latent[i] = 0;
-      chi[rk] = cal_dlnT_dlnP(this, *air, latent);
+      chi[rk] = cal_dlnT_dlnP(*air, cp_ratio_mole, latent);
     } else {  // isothermal
       chi[rk] = 0.;
     }
@@ -52,8 +54,8 @@ void Thermodynamics::rk4IntegrateLnp(AirParcel *air, Real dlnp, Method method,
   }
 
   // recondensation
-  EquilibrateTP(air);
-  if (method != Method::ReversibleAdiabat) {
+  pthermo->EquilibrateTP(air);
+  if (method != "reversible") {
     for (int j = 0; j < NCLOUD; ++j) air->c[j] = 0;
   }
 }

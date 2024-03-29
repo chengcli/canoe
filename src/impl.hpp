@@ -13,14 +13,8 @@
 
 class ParameterInput;
 
-class Inversion;
-class ParticleBase;
-
 class MeshOutputGroup;
 class FITSOutputGroup;
-
-class Inversion;
-class ParticleBase;
 
 class Decomposition;
 class ImplicitSolver;
@@ -29,17 +23,13 @@ class Radiation;
 class Chemistry;
 class Tracer;
 class TurbulenceModel;
-
-class Inversion;
-class ParticleBase;
-
-class Scheduler;
-class MeshOutputGroup;
-class FITSOutputGroup;
-
 class CelestrialBody;
 class CubedSphere;
 class SingleColumn;
+
+class ParticleBase;
+class Scheduler;
+
 class Diagnostics;
 class Forcing;
 
@@ -65,7 +55,6 @@ class MeshBlock::Impl {
 
   // StaticVariablePtr pstatic;
 
-  std::vector<std::shared_ptr<Inversion>> all_fits;
   std::vector<std::shared_ptr<ParticleBase>> all_particles;
   std::vector<std::shared_ptr<Diagnostics>> all_diags;
   std::vector<std::shared_ptr<Forcing>> all_forcings;

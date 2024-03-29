@@ -10,9 +10,6 @@
 #include "harp/radiation.hpp"
 #include "harp/radiation_band.hpp"
 
-// inversion
-#include "inversion/inversion.hpp"
-
 // snap
 #include "snap/decomposition/decomposition.hpp"
 #include "snap/implicit/implicit_solver.hpp"
@@ -74,9 +71,6 @@ MeshBlock::Impl::Impl(MeshBlock *pmb, ParameterInput *pin) : pmy_block_(pmb) {
 
   // turbulence
   pturb = TurbulenceFactory::Create(pmb, pin);
-
-  // inversion queue
-  all_fits = InversionsFactory::Create(pmb, pin);
 
   // particle queue
   all_particles = ParticlesFactory::Create(pmb, pin);

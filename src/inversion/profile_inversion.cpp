@@ -25,7 +25,7 @@
 #include <application/exceptions.hpp>
 
 // snap
-#include <snap/thermodynamics/thermodynamics.hpp>
+#include <snap/thermodynamics/atm_thermodynamics.hpp>
 
 // utils
 #include <utils/ndarrays.hpp>
@@ -33,15 +33,12 @@
 
 // inversion
 #include "gaussian_process.hpp"
-#include "profile_inversion.hpp"
-
-ProfileInversion::~ProfileInversion() {}
+#include "inversion.hpp"
 
 ProfileInversion::ProfileInversion(YAML::Node const &node)
     : Inversion("profile") {
   Application::Logger app("inversion");
   app->Log("Initializing ProfileInversion");
-  char buf[80];
 
   // species id
   auto species = node["variables"].as<std::vector<std::string>>();
@@ -73,7 +70,9 @@ ProfileInversion::ProfileInversion(YAML::Node const &node)
 
 void ProfileInversion::UpdateModel(MeshBlock *pmb, std::vector<Real> const &par,
                                    int k) const {
-  app->Log("Update profiles");
+  Application::Logger app("inversion");
+  app->Log("Update Model");
+
   auto pthermo = Thermodynamics::GetInstance();
 
   int nlayer = pmb->ie - pmb->is + 1;
@@ -92,9 +91,10 @@ void ProfileInversion::UpdateModel(MeshBlock *pmb, std::vector<Real> const &par,
   std::vector<Real> stdAll(nlayer);
   std::vector<Real> stdSample(nsample);
 
-  Real **XpSample, **Xp;
+  Real const **XpSample;
+  Real **Xp;
 
-  XpSample = new Real *[nvar];
+  XpSample = new Real const *[nvar];
   for (size_t n = 0; n < GetMySpeciesIndices().size(); ++n) {
     XpSample[n] = &par[nvar * nsample];
   }
@@ -103,11 +103,11 @@ void ProfileInversion::UpdateModel(MeshBlock *pmb, std::vector<Real> const &par,
 
   Real Rd = pthermo->GetRd();
   Real chi = GetPar<Real>("chi");
+  int is = pmb->is, ie = pmb->ie;
 
   // calculate perturbed profiles
   auto pcoord = pmb->pcoord;
-  auto ac =
-      AirParcelHelper::gather_from_primitive(pmb, k, jl_, pmb->il, pmb->iu);
+  auto ac = AirParcelHelper::gather_from_primitive(pmb, k, jl_, is, ie);
 
   for (size_t n = 0; n < nvar; ++n) {
     int m = mySpeciesId(n);
@@ -126,47 +126,46 @@ void ProfileInversion::UpdateModel(MeshBlock *pmb, std::vector<Real> const &par,
       ac[i].ToMoleFraction();
 
       // do not alter levels lower than zlev[0] or higher than zlev[nsample-1]
-      if (pcoord->x1v(pmb->is + i) < zlev[0] ||
-          pcoord->x1v(pmb->is + i) > zlev[nsample - 1])
+      if (pcoord->x1v(is + i) < zlev[0] ||
+          pcoord->x1v(is + i) > zlev[nsample - 1])
         continue;
 
       // save perturbed T profile
       if (m == IDN) {
-        if (ac.w[IDN] + Xp[n][i] < 0.) {
-          ac.w[IDN] = 1.;  // min 1K temperature
+        if (ac[i].w[IDN] + Xp[n][i] < 0.) {
+          ac[i].w[IDN] = 1.;  // min 1K temperature
         } else {
-          ac.w[IDN] += Xp[n][i];
+          ac[i].w[IDN] += Xp[n][i];
         }
       } else {  // save perturbed compositional profiles
-        ac.w[m] += Xp[n][i - is];
-        ac.w[m] = std::max(ac.w[m], 0.);
-        ac.w[m] = std::min(ac.w[m], 1.);
+        ac[i].w[m] += Xp[n][i - is];
+        ac[i].w[m] = std::max(ac[i].w[m], 0.);
+        ac[i].w[m] = std::min(ac[i].w[m], 1.);
       }
     }
 
     AirParcelHelper::distribute_to_primitive(pmb, k, jl_ + n, ac);
   }
 
-  enforceStability(ac, k, ju_);
+  enforceStability(ac);
   AirParcelHelper::distribute_to_primitive(pmb, k, ju_, ac);
 
   delete[] XpSample;
   FreeCArray(Xp);
 }
 
-void ProfileInversion::enforceStability(AirColumn &ac, int k) const {
+void ProfileInversion::enforceStability(AirColumn &ac) const {
   Application::Logger app("inversion");
   app->Log("Enforce stability");
 
   auto pthermo = Thermodynamics::GetInstance();
-  auto pmb = pmy_block_;
 
   for (int i = 1; i < ac.size(); ++i) {
     auto air = ac[i - 1];
     air.ToMoleFraction();
 
     Real dlnp = ac[i].w[IPR] / ac[i - 1].w[IPR];
-    pthermo->Extrapolate(&air, dlnp, Thermodynamics::Method::NeutralStability);
+    pthermo->Extrapolate(&air, dlnp, "neutral");
 
     air.ToMassFraction();
 
@@ -175,7 +174,7 @@ void ProfileInversion::enforceStability(AirColumn &ac, int k) const {
 
     // saturation
     for (int n = 1; n <= NVAPOR; ++n) {
-      Real rh = relative_humidity(pthermo, ac[i], n);
+      Real rh = get_relative_humidity(ac[i], n);
       if (rh > 1.) ac[i].w[n] /= rh;
     }
   }

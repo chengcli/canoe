@@ -84,14 +84,6 @@ class Thermodynamics {
 
   enum { Size = 1 + NVAPOR + NCLOUD };
 
-  enum class Method {
-    ReversibleAdiabat = 0,
-    PseudoAdiabat = 1,
-    DryAdiabat = 2,
-    Isothermal = 3,
-    NeutralStability = 4
-  };
-
   static constexpr Real RefTemp = 300.;
   static constexpr Real RefPres = 1.e5;
 
@@ -133,6 +125,9 @@ class Thermodynamics {
   //! \return $\epsilon_i=\mu_i/\mu_d$
   Real GetMuRatio(int n) const { return mu_ratio_[n]; }
 
+  //! const pointer to mu_ratio_
+  Real const *GetMuRatio() const { return &mu_ratio_[0]; }
+
   //! Ratio of molecular weights [1]
   //! \param[in] n the index of the thermodynamic species
   //! \return $\epsilon_i^{-1} =\mu_d/\mu_i$
@@ -148,10 +143,16 @@ class Thermodynamics {
   //! \return $\hat{c}_{v,i}/\hat{c}_{v,d}$
   Real GetCvRatioMole(int n) const { return cv_ratio_mole_[n]; }
 
+  //! const pointer to cv_ratio_mole_
+  Real const *GetCvRatioMole() const { return &cv_ratio_mole_[0]; }
+
   //! \return the index of the cloud
   //! \param[in] i the index of the vapor
   //! \param[in] j the sequential index of the cloud
   int GetCloudIndex(int i, int j) const { return cloud_index_set_[i][j]; }
+
+  //! const pointer to cloud_index_set_
+  IndexSet const *GetCloudIndexSet() const { return &cloud_index_set_[0]; }
 
   //! Reference specific heat capacity [J/(kg K)] at constant volume
   Real GetCvMassRef(int n) const {
@@ -166,6 +167,9 @@ class Thermodynamics {
   //! Ratio of specific heat capacity [J/(mol K)] at constant pressure
   //! \return $\hat{c}_{p,i}/\hat{c}_{p,d}$
   Real GetCpRatioMole(int n) const { return cp_ratio_mole_[n]; }
+
+  //! const pointer to cp_ratio_mole_
+  Real const *GetCpRatioMole() const { return &cp_ratio_mole_[0]; }
 
   Real GetCpMassRef(int n) const {
     Real cpd = Rd_ * gammad_ref_ / (gammad_ref_ - 1.);
@@ -189,6 +193,9 @@ class Thermodynamics {
   Real GetLatentEnergyMole(int n, Real temp = 0.) const {
     return GetLatentEnergyMass(n, temp) * mu_[n];
   }
+
+  //! const pointer to latent_energy_mole_
+  Real const *GetLatentEnergyMole() const { return &latent_energy_mole_[0]; }
 
   Real GetLatentHeatMole(int i, std::vector<Real> const &rates,
                          Real temp) const;
@@ -228,7 +235,7 @@ class Thermodynamics {
   //! \param[in] method choose from [reversible, pseudo, dry, isothermal]
   //! \param[in] grav gravitational acceleration
   //! \param[in] userp user parameter to adjust the temperature gradient
-  void Extrapolate(AirParcel *qfrac, Real dzORdlnp, Method method,
+  void Extrapolate(AirParcel *qfrac, Real dzORdlnp, std::string method,
                    Real grav = 0., Real userp = 0.) const;
 
   //! Thermodnamic equilibrium at current TP
@@ -334,22 +341,10 @@ class Thermodynamics {
   Real MoistStaticEnergy(MeshBlock const *pmb, Real gz, int k, int j,
                          int i) const;
 
+  //! \brief Relative humidity
+  Real RelativeHumidity(MeshBlock const *pmb, int n, int k, int j, int i) const;
+
  protected:
-  //! update T/P
-  void updateTPConservingU(AirParcel *qfrac, Real rmole, Real umole) const;
-
-  Real getInternalEnergyMole(AirParcel const &qfrac) const;
-
-  Real getDensityMole(AirParcel const &qfrac) const;
-
-  void setTotalEquivalentVapor(AirParcel *qfrac) const;
-
-  void rk4IntegrateLnp(AirParcel *qfrac, Real dlnp, Method method,
-                       Real adlnTdlnP) const;
-
-  void rk4IntegrateZ(AirParcel *qfrac, Real dlnp, Method method, Real grav,
-                     Real adlnTdlnP) const;
-
   //! custom functions for vapor (to be overridden by user mods)
   void enrollVaporFunctions();
 

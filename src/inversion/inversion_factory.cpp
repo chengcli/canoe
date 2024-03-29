@@ -14,18 +14,17 @@
 // inversion
 #include "inversion.hpp"
 
-std::vector<InversionPtr> InversionFactory::CreateFrom(MeshBlock* pmb,
-                                                       YAML::Node const& node) {
+std::vector<InversionPtr> InversionFactory::CreateFrom(YAML::Node const& node) {
   Application::Logger app("inversion");
   app->Log("Create inversion queue");
 
-  if (node["tasks"] == nullptr) {
+  if (!node["tasks"]) {
     throw NotFoundError("InversionFactory::CreateFrom", "tasks");
   }
 
   if (!node["tasks"].IsSequence()) {
-    throw InvalidArgument("InversionFactory::CreateFrom",
-                          "tasks must be a sequence");
+    throw RuntimeError("InversionFactory::CreateFrom",
+                       "tasks must be a sequence");
   }
 
   std::vector<std::string> task_names;
@@ -37,12 +36,12 @@ std::vector<InversionPtr> InversionFactory::CreateFrom(MeshBlock* pmb,
   std::vector<InversionPtr> all_fits;
   InversionPtr pfit;
 
-  int jl = pmb->js, ju = pmb->js;
+  int jl = NGHOST, ju = NGHOST;
   for (auto p : task_names) {
     if (p == "profile") {
-      pfit = std::make_shared<ProfileInversion>(pmb, node["profile"]);
+      pfit = std::make_shared<ProfileInversion>(node["profile"]);
     } else if (p == "composition") {
-      pfit = std::make_shared<CompositionInversion>(pmb, node["composition"]);
+      pfit = std::make_shared<CompositionInversion>(node["composition"]);
     } else {
       throw NotFoundError("CreateAllInversions", p);
     }

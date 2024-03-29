@@ -32,7 +32,7 @@
 #include <climath/interpolation.h>
 
 // snap
-#include <snap/thermodynamics/thermodynamics.hpp>
+#include <snap/thermodynamics/atm_thermodynamics.hpp>
 #include <snap/thermodynamics/vapors/sodium_vapors.hpp>
 
 // utils
@@ -169,14 +169,12 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
 
     // stop at just above P0
     for (int i = is; i <= ie; ++i) {
-      pthermo->Extrapolate(&air, -dlnp / 2.,
-                           Thermodynamics::Method::DryAdiabat);
+      pthermo->Extrapolate(&air, -dlnp / 2., "dry");
       if (air.w[IPR] < P0) break;
     }
 
     // extrapolate down to where air is
-    pthermo->Extrapolate(&air, log(P0 / air.w[IPR]),
-                         Thermodynamics::Method::DryAdiabat);
+    pthermo->Extrapolate(&air, log(P0 / air.w[IPR]), "dry");
 
     // make up for the difference
     Ts += T0 - air.w[IDN];
@@ -203,21 +201,21 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
       int i = is;
       for (; i <= ie; ++i) {
         // check relative humidity
-        Real rh = pthermo->RelativeHumidity(air, iNH3);
+        Real rh = get_relative_humidity(air, iNH3);
         air.w[iNH3] *= std::min(rh_max_nh3 / rh, 1.);
 
         AirParcelHelper::distribute_to_primitive(this, k, j, i, air);
 
-        pthermo->Extrapolate(&air, -dlnp, Thermodynamics::Method::DryAdiabat);
+        pthermo->Extrapolate(&air, -dlnp, "dry");
 
         if (air.w[IDN] < Tmin) break;
       }
 
       // Replace adiabatic atmosphere with isothermal atmosphere if temperature
       // is too low
-      pthermo->Extrapolate(&air, dlnp, Thermodynamics::Method::DryAdiabat);
+      pthermo->Extrapolate(&air, dlnp, "dry");
       for (; i <= ie; ++i) {
-        pthermo->Extrapolate(&air, -dlnp, Thermodynamics::Method::Isothermal);
+        pthermo->Extrapolate(&air, -dlnp, "isothermal");
         AirParcelHelper::distribute_to_primitive(this, k, j, i, air);
       }
     }
@@ -240,8 +238,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
         air.ToMoleFraction();
 
         for (int i = ibegin; i < iend; ++i) {
-          pthermo->Extrapolate(&air, -dlnp, Thermodynamics::Method::DryAdiabat,
-                               0., adlnTdlnP);
+          pthermo->Extrapolate(&air, -dlnp, "dry", 0., adlnTdlnP);
           AirParcelHelper::distribute_to_primitive(this, k, j, i + 1, air);
         }
       }
@@ -260,7 +257,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
         air.ToMoleFraction();
 
         for (int i = ibegin; i < iend; ++i) {
-          pthermo->Extrapolate(&air, -dlnp, Thermodynamics::Method::DryAdiabat);
+          pthermo->Extrapolate(&air, -dlnp, "dry");
           air.w[iNH3] += adlnNH3dlnP * air.w[iNH3] * dlnp;
           auto rates = pthermo->TryEquilibriumTP_VaporCloud(air, iNH3);
           air.w[iNH3] += rates[0];
