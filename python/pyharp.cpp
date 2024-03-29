@@ -6,7 +6,6 @@
 // athena
 #include <athena/athena.hpp>
 #include <athena/globals.hpp>
-#include <athena/mesh/mesh.hpp>
 #include <athena/parameter_input.hpp>
 
 // canoe
@@ -18,69 +17,16 @@
 #include <harp/radiation.hpp>
 #include <harp/radiation_band.hpp>
 
-// snap
-#include <snap/thermodynamics/thermodynamics.hpp>
-
 // opacity
 #include <opacity/absorber.hpp>
 
 namespace py = pybind11;
 
-void subscribe_species(std::map<std::string, std::vector<std::string>> smap) {
-  IndexMap::InitFromSpeciesMap(smap);
-}
-
-void init_thermo(YAML::Node node) { Thermodynamics::InitFromYAMLInput(node); }
-
-PYBIND11_MODULE(pyharp, m) {
-  m.attr("__name__") = "pyharp";
-  m.doc() = "Python bindings for harp module";
-
-  m.def("subscribe_species", &subscribe_species);
-  m.def("init_thermo", &init_thermo);
-
-  // AthenArray
-  py::class_<AthenaArray<Real>>(m, "AthenaArray", py::buffer_protocol())
-      .def_buffer([](AthenaArray<Real> &m) -> py::buffer_info {
-        size_t stride4 = m.GetDim1() * m.GetDim2() * m.GetDim3() * sizeof(Real);
-        size_t stride3 = m.GetDim1() * m.GetDim2() * sizeof(Real);
-        size_t stride2 = m.GetDim1() * sizeof(Real);
-        size_t stride1 = sizeof(Real);
-        if (m.GetDim4() > 1) {
-          return py::buffer_info(
-              // Pointer to buffer
-              m.data(),
-              // Size of one scalar
-              sizeof(Real),
-              // Python struct-style format descriptor
-              py::format_descriptor<Real>::format(),
-              // Number of dimensions
-              4,
-              // Buffer dimensions
-              {m.GetDim4(), m.GetDim3(), m.GetDim2(), m.GetDim1()},
-              // Strides (in bytes) for each index
-              {stride4, stride3, stride2, stride1});
-        } else if (m.GetDim3() > 1) {
-          return py::buffer_info(m.data(), sizeof(Real),
-                                 py::format_descriptor<Real>::format(), 3,
-                                 {m.GetDim3(), m.GetDim2(), m.GetDim1()},
-                                 {stride3, stride2, stride1});
-        } else if (m.GetDim2() > 1) {
-          return py::buffer_info(
-              m.data(), sizeof(Real), py::format_descriptor<Real>::format(), 2,
-              {m.GetDim2(), m.GetDim1()}, {stride2, stride1});
-        } else {
-          return py::buffer_info(m.data(), sizeof(Real),
-                                 py::format_descriptor<Real>::format(), 1,
-                                 {m.GetDim1()}, {stride1});
-        }
-      });
-
-  // MeshBlock
-  py::class_<MeshBlock>(m, "meshblock");
+void init_harp(py::module &parent) {
+  auto m = parent.def_submodule("harp", "Python bindings for harp module");
 
   // Radiation
-  py::class_<Radiation>(m, "radiation")
+  py::class_<Radiation, RadiationPtr>(m, "radiation")
       .def_readonly("radiance", &Radiation::radiance)
       .def_readonly("fluxup", &Radiation::flxup)
       .def_readonly("fluxdn", &Radiation::flxdn)
@@ -107,7 +53,7 @@ PYBIND11_MODULE(pyharp, m) {
 
       .def("resize", &RadiationBand::Resize, py::arg("nc1"), py::arg("nc2") = 1,
            py::arg("nc3") = 1, py::arg("nstr") = 4)
-      .def("get_num_spec_grids", &RadiationBand::GetNumSpecGrids)
+      .def("get_num_specgrids", &RadiationBand::GetNumSpecGrids)
       .def("get_num_absorbers", &RadiationBand::GetNumAbsorbers)
       .def("absorbers", &RadiationBand::Absorbers)
       .def("get_absorber", &RadiationBand::GetAbsorber)

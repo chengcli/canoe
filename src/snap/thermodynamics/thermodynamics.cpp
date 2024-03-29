@@ -34,17 +34,12 @@
 #include <climath/core.h>
 
 // snap
+#include "atm_thermodynamics.hpp"
 #include "molecules.hpp"
-#include "thermodynamics.hpp"
 
 static std::mutex thermo_mutex;
 
 const std::string Thermodynamics::input_key = "thermodynamics_config";
-
-Real __attribute__((weak))
-Thermodynamics::GetGammad(AirParcel const& qfrac) const {
-  return gammad_ref_;
-}
 
 Thermodynamics::~Thermodynamics() {
   Application::Logger app("snap");
@@ -308,25 +303,6 @@ Real Thermodynamics::GetChi(MeshBlock const* pmb, int k, int j, int i) const {
   return (gammad - 1.) / gammad * feps / qsig;
 }
 
-// TODO(cli): check
-Real Thermodynamics::GetChi(AirParcel const& qfrac) const {
-  Real gammad = GetGammad(qfrac);
-
-  Real qsig = 1., feps = 1.;
-#pragma omp simd reduction(+ : qsig)
-  for (int n = 1; n <= NVAPOR; ++n) {
-    qsig += qfrac.w[n] * (cp_ratio_mole_[n] - 1.);
-  }
-
-#pragma omp simd reduction(+ : qsig, feps)
-  for (int n = 0; n < NCLOUD; ++n) {
-    feps += -qfrac.c[n];
-    qsig += qfrac.c[n] * (cp_ratio_mole_[n + 1 + NVAPOR] - 1.);
-  }
-
-  return (gammad - 1.) / gammad / qsig;
-}
-
 // Eq.63 in Li2019
 Real Thermodynamics::GetGamma(MeshBlock const* pmb, int k, int j, int i) const {
   Real gammad = pmb->peos->GetGamma();
@@ -346,24 +322,6 @@ Real Thermodynamics::GetGamma(MeshBlock const* pmb, int k, int j, int i) const {
   }
 
   return 1. + (gammad - 1.) * feps / fsig;
-}
-
-// Eq.94 in Li2019
-Real Thermodynamics::RovRd(AirParcel const& qfrac) const {
-  Real fgas = 1., feps = 1.;
-
-#pragma omp simd reduction(+ : feps)
-  for (int n = 1; n <= NVAPOR; ++n) {
-    feps += qfrac.w[n] * (mu_ratio_[n] - 1.);
-  }
-
-#pragma omp simd reduction(+ : fgas, feps)
-  for (int n = 0; n < NCLOUD; ++n) {
-    fgas += -qfrac.c[n];
-    feps += qfrac.c[n] * (mu_ratio_[n] - 1.);
-  }
-
-  return fgas / feps;
 }
 
 Real Thermodynamics::MoistStaticEnergy(MeshBlock const* pmb, Real gz, int k,
@@ -441,11 +399,12 @@ Real Thermodynamics::RelativeHumidity(MeshBlock const* pmb, int n, int k, int j,
                                       int i) const {
   auto&& air = AirParcelHelper::gather_from_primitive(pmb, k, j, i);
   air.ToMoleFraction();
-  return RelativeHumidity(air, n);
+  return get_relative_humidity(air, n);
 }
 
-void Thermodynamics::Extrapolate(AirParcel* qfrac, Real dzORdlnp, Method method,
-                                 Real grav, Real userp) const {
+void Thermodynamics::Extrapolate(AirParcel* qfrac, Real dzORdlnp,
+                                 std::string method, Real grav,
+                                 Real userp) const {
   qfrac->ToMoleFraction();
 
   // equilibrate vapor with clouds
@@ -462,9 +421,9 @@ void Thermodynamics::Extrapolate(AirParcel* qfrac, Real dzORdlnp, Method method,
 
   // RK4 integration
 #ifdef HYDROSTATIC
-  rk4IntegrateLnp(qfrac, dzORdlnp, method, userp);
+  rk4_integrate_lnp(qfrac, dzORdlnp, method, userp);
 #else
-  rk4IntegrateZ(qfrac, dzORdlnp, method, grav, userp);
+  rk4_integrate_z(qfrac, dzORdlnp, method, grav, userp);
 #endif
 }
 
@@ -530,81 +489,6 @@ Real Thermodynamics::EquivalentPotentialTemp(MeshBlock* pmb, Real p0, int v,
 #else
   return PotentialTemp(pmb, p0, k, j, i);
 #endif
-}
-
-void Thermodynamics::updateTPConservingU(AirParcel* qfrac, Real rmole,
-                                         Real umole) const {
-  Real cvd = Constants::Rgas / (GetGammad(*qfrac) - 1.);
-  Real fsig = 1., qgas = 1.;
-
-  for (int i = 1; i <= NVAPOR; ++i) {
-    // vapor
-    fsig += (cv_ratio_mole_[i] - 1.) * qfrac->w[i];
-
-    // clouds
-    for (auto j : cloud_index_set_[i]) {
-      int n = j + 1 + NVAPOR;
-      Real qc = qfrac->c[j];
-
-      fsig += (cv_ratio_mole_[n] - 1.) * qc;
-      umole += latent_energy_mole_[n] * qc;
-    }
-  }
-
-  // clouds
-#pragma omp simd reduction(+ : qgas)
-  for (int n = 0; n < NCLOUD; ++n) qgas += -qfrac->c[n];
-
-  qfrac->w[IDN] = umole / (cvd * fsig);
-  qfrac->w[IPR] = rmole * qgas * Constants::Rgas * qfrac->w[IDN];
-}
-
-Real Thermodynamics::getInternalEnergyMole(AirParcel const& qfrac) const {
-  Real cvd = Constants::Rgas / (GetGammad(qfrac) - 1.);
-  Real fsig = 1., LE = 0.;
-
-  for (int i = 1; i <= NVAPOR; ++i) {
-    // vapor
-    fsig += (cv_ratio_mole_[i] - 1.) * qfrac.w[i];
-
-    // clouds
-    for (auto j : cloud_index_set_[i]) {
-      int n = j + 1 + NVAPOR;
-      Real qc = qfrac.c[j];
-
-      fsig += (cv_ratio_mole_[n] - 1.) * qc;
-      LE += latent_energy_mole_[n] * qc;
-    }
-  }
-
-  return cvd * qfrac.w[IDN] * fsig - LE;
-}
-
-Real Thermodynamics::getDensityMole(AirParcel const& qfrac) const {
-  Real qgas = 1.;
-#pragma omp simd reduction(+ : qgas)
-  for (int n = 0; n < NCLOUD; ++n) qgas += -qfrac.c[n];
-  return qfrac.w[IPR] / (Constants::Rgas * qfrac.w[IDN] * qgas);
-}
-
-void Thermodynamics::setTotalEquivalentVapor(AirParcel* qfrac) const {
-  // vpaor <=> cloud
-  for (int i = 1; i <= NVAPOR; ++i)
-    for (auto& j : cloud_index_set_[i]) {
-      qfrac->w[i] += qfrac->c[j];
-      qfrac->c[j] = 0.;
-    }
-
-  // vapor + vapor <=> cloud
-  for (auto const& [ij, info] : cloud_reaction_map_) {
-    auto& indx = info.first;
-    auto& stoi = info.second;
-
-    qfrac->w[indx[0]] += stoi[0] / stoi[2] * qfrac->c[indx[2]];
-    qfrac->c[indx[2]] = 0.;
-    qfrac->w[indx[1]] += stoi[1] / stoi[2] * qfrac->c[indx[2]];
-    qfrac->c[indx[2]] = 0.;
-  }
 }
 
 Thermodynamics* Thermodynamics::mythermo_ = nullptr;

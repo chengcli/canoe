@@ -14,39 +14,42 @@ execute_process(
     OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
-macro(add_python_module namel)
-  # set module targets
-  pybind11_add_module(${namel} MODULE ${namel}.cpp)
+set(namel canoe)
+set_if_empty(PGEN empty)
 
-  target_include_directories(${namel}
-    PRIVATE
-    ${CMAKE_BINARY_DIR}
-    ${CPPDISORT_INCLUDE_DIR}
-    ${CANOE_INCLUDE_DIR}
-    ${PYTHON_INCLUDE_DIR}
-    ${PYBIND11_INCLUDE_DIR}
-    ${MPI_CXX_INCLUDE_PATH}
-    )
+# set module targets
+pybind11_add_module(${namel} MODULE
+  pyathena.cpp
+  pycanoe.cpp
+  pyharp.cpp
+  pysnap.cpp
+  pyutils.cpp
+  pyinversion.cpp
+  ${PGEN}.cpp
+  )
 
-  target_link_libraries(${namel} PRIVATE
-    search_path
-    ${CANOE_LIBRARY_${buildu}}
-    )
+target_include_directories(${namel}
+  PRIVATE
+  ${CMAKE_BINARY_DIR}
+  ${CPPDISORT_INCLUDE_DIR}
+  ${CANOE_INCLUDE_DIR}
+  ${PYTHON_INCLUDE_DIR}
+  ${PYBIND11_INCLUDE_DIR}
+  ${MPI_CXX_INCLUDE_PATH}
+  )
 
-  set_target_properties(${namel}
-    PROPERTIES
-    PREFIX "${PYTHON_MODULE_PREFIX}"
-    SUFFIX "${PYTHON_MODULE_EXTENSION}")
+target_link_libraries(${namel} PRIVATE
+  search_path
+  ${CANOE_LIBRARY_${buildu}}
+  )
 
-  # softlink library
-  execute_process(
-    COMMAND ln -sf ${CMAKE_BINARY_DIR}/python/${namel}${PYTHON_MODULE_EXTENSION}
-    ${CMAKE_BINARY_DIR}/lib/${namel}${PYTHON_MODULE_EXTENSION}
-    )
-endmacro()
+set_target_properties(${namel}
+  PROPERTIES
+  PREFIX "${PYTHON_MODULE_PREFIX}"
+  SUFFIX "${PYTHON_MODULE_EXTENSION}")
 
-# add python modules
-add_python_module(pyathena)
-add_python_module(pycanoe)
-add_python_module(pyharp)
-add_python_module(utilities)
+# softlink library
+execute_process(
+  COMMAND ln -sf ${CMAKE_BINARY_DIR}/python/${namel}${PYTHON_MODULE_EXTENSION}
+  ${CMAKE_BINARY_DIR}/lib/${namel}${PYTHON_MODULE_EXTENSION}
+  )

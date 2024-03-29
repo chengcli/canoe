@@ -17,8 +17,8 @@
 #include <index_map.hpp>
 
 // thermodynamics
+#include <snap/thermodynamics/atm_thermodynamics.hpp>
 #include <snap/thermodynamics/molecules.hpp>
-#include <snap/thermodynamics/thermodynamics.hpp>
 #include <snap/thermodynamics/vapors/ammonia_vapors.hpp>
 #include <snap/thermodynamics/vapors/ammonium_hydrosulfide_vapors.hpp>
 #include <snap/thermodynamics/vapors/hydrogen_sulfide_vapors.hpp>
@@ -139,7 +139,7 @@ void Thermodynamics::enrollVaporFunctions() {
 extern Real xHe, xCH4;
 
 // hydrogen heat capacity
-Real Thermodynamics::GetGammad(AirParcel const& qfrac) const {
+Real get_gammad(AirParcel const& qfrac) {
   Real T = qfrac.w[IDN], cp_h2, cp_he, cp_ch4;
   if (T < 300.) {
     cp_h2 = Hydrogen::cp_norm(T);

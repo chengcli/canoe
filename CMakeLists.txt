@@ -20,7 +20,15 @@ else()
   message(STATUS "")
 endif()
 
+# load all modules
 LIST(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules/)
+
+# load all macros
+FILE(GLOB _macro_files "${CMAKE_SOURCE_DIR}/cmake/macros/*.cmake")
+FOREACH(_file ${_macro_files})
+  MESSAGE(STATUS "Include ${_file}")
+  INCLUDE(${_file})
+ENDFOREACH()
 
 ## 1. set up compiler flags ##
 message(STATUS "1. Set up project compiler flags ...")
@@ -35,10 +43,10 @@ message(STATUS "Load custom task = ${TASK}")
 if (NOT ${TASK} STREQUAL "")
   if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/cmake/examples/${TASK}.cmake)
     message(STATUS "Load custom setting - ${TASK} -")
-    message(STATUS "Include ${CMAKE_CURRENT_SOURCE_DIR}/cmake/${TASK}.cmake")
+    message(STATUS "Include ${CMAKE_CURRENT_SOURCE_DIR}/cmake/examples/${TASK}.cmake")
     include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/examples/${TASK}.cmake)
   else()
-    message(FATAL_ERROR "Cannot find custom file cmake/${TASK}.cmake")
+    message(FATAL_ERROR "Cannot find custom file cmake/examples/${TASK}.cmake")
   endif()
   set(TASK ${TASK} CACHE STRING "Custom task to be performed")
 else()
@@ -70,23 +78,16 @@ add_subdirectory(src)
 add_subdirectory(tools)
 add_subdirectory(data)
 
-## 5. set up python binding ##
-if (PYTHON_BINDINGS)
-  add_subdirectory(python)
-endif()
-
-## 6. set up unit tests and examples
+## 5. set up examples and tests
 message(STATUS "6. Set up unit tests")
-
-# load all macros
-FILE(GLOB _macro_files "${CMAKE_SOURCE_DIR}/cmake/macros/*.cmake")
-FOREACH(_file ${_macro_files})
-  MESSAGE(STATUS "Include ${_file}")
-  INCLUDE(${_file})
-ENDFOREACH()
 
 add_subdirectory(examples)
 add_subdirectory(tests)
+
+## 6. set up python binding ##
+if (PYTHON_BINDINGS)
+  add_subdirectory(python)
+endif()
 
 ## 7. add uninstall targets ##
 configure_file(

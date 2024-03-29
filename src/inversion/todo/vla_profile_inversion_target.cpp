@@ -57,12 +57,5 @@ void VLAProfileInversion::CalculateFitTarget(Radiation const *prad, Real *val,
 
     // brightness temperature
     val[b] = prad->radiance(b, k, j);
-
-    if (fit_differential_) {
-      // brightness temperature differential
-      val[b] -= pband->btoa(0, k, pmy_block_->js - 1);
-    }
   }
-
-  // app->Log("foward model results", val, nvalue);
 }

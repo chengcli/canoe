@@ -4,8 +4,8 @@ import sys, os
 sys.path.append("../python")
 sys.path.append(".")
 
-from pyharp import radiation_band, subscribe_species
-from utilities import load_configure, find_resource
+from canoe import def_species, load_configure, find_resource
+from canoe.harp import radiation_band
 from netCDF4 import Dataset
 from numpy import *
 from rfmlib import *
@@ -40,16 +40,12 @@ def create_rfm_atmosphere(nlyr: int) -> dict:
 
 if __name__ == "__main__":
     hitran_file = find_resource("HITRAN2020.par")
-    subscribe_species(
-        {
-            "vapor": ["H2O", "NH3"],
-        }
-    )
+    def_species(vapors=["H2O", "NH3"])
 
     config = load_configure("jupiter_rt.yaml")
     band = radiation_band("B1", config)
 
-    nspec = band.get_num_spec_grids()
+    nspec = band.get_num_specgrids()
     wmin, wmax = band.get_range()
     wres = (wmax - wmin) / (nspec - 1)
 

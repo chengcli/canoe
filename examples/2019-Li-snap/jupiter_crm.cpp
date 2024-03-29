@@ -34,7 +34,7 @@
 #include <climath/interpolation.h>
 
 // snap
-#include <snap/thermodynamics/thermodynamics.hpp>
+#include <snap/thermodynamics/atm_thermodynamics.hpp>
 
 // special includes
 #include <special/giants_enroll_vapor_functions_v1.hpp>
@@ -87,7 +87,9 @@ void Forcing(MeshBlock *pmb, Real const time, Real const dt,
       for (int i = is; i <= ie; ++i) {
         auto &&air = AirParcelHelper::gather_from_primitive(pmb, k, j, i);
 
-        Real cv = pthermo->GetCvMass(air, 0);
+        air.ToMoleFraction();
+        Real cv =
+            get_cv_mass(air, 0, pthermo->GetRd(), pthermo->GetCvRatioMass());
 
         if (w(IPR, k, j, i) < prad) {
           du(IEN, k, j, i) += dt * hrate * w(IDN, k, j, i) * cv *
@@ -159,8 +161,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
 
     // stop at just above P0
     for (int i = is; i <= ie; ++i) {
-      pthermo->Extrapolate(&air, pcoord->dx1f(i),
-                           Thermodynamics::Method::PseudoAdiabat, grav);
+      pthermo->Extrapolate(&air, pcoord->dx1f(i), "pseudo", grav);
       if (air.w[IPR] < P0) break;
     }
 
@@ -186,24 +187,20 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
       air.w[IDN] = Ts;
 
       // half a grid to cell center
-      pthermo->Extrapolate(&air, pcoord->dx1f(is) / 2.,
-                           Thermodynamics::Method::ReversibleAdiabat, grav);
+      pthermo->Extrapolate(&air, pcoord->dx1f(is) / 2., "reversible", grav);
 
       int i = is;
       for (; i <= ie; ++i) {
         if (air.w[IDN] < Tmin) break;
         AirParcelHelper::distribute_to_conserved(this, k, j, i, air);
-        pthermo->Extrapolate(&air, pcoord->dx1f(i),
-                             Thermodynamics::Method::PseudoAdiabat, grav,
-                             1.e-5);
+        pthermo->Extrapolate(&air, pcoord->dx1f(i), "pseudo", grav, 1.e-5);
       }
 
       // Replace adiabatic atmosphere with isothermal atmosphere if temperature
       // is too low
       for (; i <= ie; ++i) {
         AirParcelHelper::distribute_to_conserved(this, k, j, i, air);
-        pthermo->Extrapolate(&air, pcoord->dx1f(i),
-                             Thermodynamics::Method::Isothermal, grav);
+        pthermo->Extrapolate(&air, pcoord->dx1f(i), "isothermal", grav);
       }
     }
 }

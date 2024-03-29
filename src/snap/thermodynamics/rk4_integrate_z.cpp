@@ -4,10 +4,15 @@
 #include <iostream>
 
 // thermodynamics
-#include "thermodynamics.hpp"
+#include "atm_thermodynamics.hpp"
 
-void Thermodynamics::rk4IntegrateZ(AirParcel *air, Real dz, Method method,
-                                   Real grav, Real adTdz) const {
+void rk4_integrate_z(AirParcel* air, Real dz, std::string method, Real grav,
+                     Real adTdz) {
+  auto pthermo = Thermodynamics::GetInstance();
+
+  auto const& mu_ratio = pthermo->GetMuRatio();
+  auto const& cp_ratio_mole = pthermo->GetCpRatioMole();
+
   Real step[] = {0.5, 0.5, 1.};
   Real temp = air->w[IDN];
   Real pres = air->w[IPR];
@@ -15,39 +20,38 @@ void Thermodynamics::rk4IntegrateZ(AirParcel *air, Real dz, Method method,
   Real latent[1 + NVAPOR];
 
   for (int rk = 0; rk < 4; ++rk) {
-    EquilibrateTP(air);
-    if (method != Method::ReversibleAdiabat) {
+    pthermo->EquilibrateTP(air);
+    if (method != "reversible") {
       for (int j = 0; j < NCLOUD; ++j) air->c[j] = 0;
     }
 
     for (int i = 1; i <= NVAPOR; ++i) {
       // make a trial run to get latent heat
       air->w[i] += 1.E-6;
-      auto rates = TryEquilibriumTP_VaporCloud(*air, i);
-      latent[i] = GetLatentHeatMole(i, rates, air->w[IDN]) /
+      auto rates = pthermo->TryEquilibriumTP_VaporCloud(*air, i);
+      latent[i] = pthermo->GetLatentHeatMole(i, rates, air->w[IDN]) /
                   (Constants::Rgas * air->w[IDN]);
       air->w[i] -= 1.E-6;
     }
 
     Real q_gas = 1., q_eps = 1.;
     for (int i = 1; i <= NVAPOR; ++i) {
-      q_eps += air->w[i] * (mu_ratio_[i] - 1.);
+      q_eps += air->w[i] * (mu_ratio[i] - 1.);
     }
 
     for (int j = 0; j < NCLOUD; ++j) {
-      q_eps += air->c[j] * (mu_ratio_[1 + NVAPOR + j] - 1.);
+      q_eps += air->c[j] * (mu_ratio[1 + NVAPOR + j] - 1.);
       q_gas += -air->c[j];
     }
 
-    Real g_ov_Rd = grav / Rd_;
+    Real g_ov_Rd = grav / pthermo->GetRd();
     Real R_ov_Rd = q_gas / q_eps;
 
-    if (method == Method::ReversibleAdiabat ||
-        method == Method::PseudoAdiabat) {
-      chi[rk] = calDlnTDlnP(*air, latent);
-    } else if (method == Method::DryAdiabat) {
+    if (method == "reversible" || method == "pseudo") {
+      chi[rk] = cal_dlnT_dlnP(*air, cp_ratio_mole, latent);
+    } else if (method == "dry") {
       for (int i = 1; i <= NVAPOR; ++i) latent[i] = 0;
-      chi[rk] = calDlnTDlnP(*air, latent);
+      chi[rk] = cal_dlnT_dlnP(*air, cp_ratio_mole, latent);
     } else {  // isothermal
       chi[rk] = 0.;
     }
@@ -78,8 +82,8 @@ void Thermodynamics::rk4IntegrateZ(AirParcel *air, Real dz, Method method,
   }
 
   // recondensation
-  EquilibrateTP(air);
-  if (method != Method::ReversibleAdiabat) {
+  pthermo->EquilibrateTP(air);
+  if (method != "reversible") {
     for (int j = 0; j < NCLOUD; ++j) air->c[j] = 0;
   }
 }

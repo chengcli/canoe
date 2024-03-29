@@ -2,10 +2,11 @@
 #include <air_parcel.hpp>
 
 // snap
-#include "thermodynamics.hpp"
+#include "atm_thermodynamics.hpp"
 
 void Thermodynamics::EquilibrateTP(AirParcel* qfrac) const {
-  setTotalEquivalentVapor(qfrac);
+  set_total_equivalent_vapor(qfrac, cloud_index_set_.data(),
+                             cloud_reaction_map_);
 
   // vapor <=> cloud
   for (int i = 1; i <= NVAPOR; ++i) {

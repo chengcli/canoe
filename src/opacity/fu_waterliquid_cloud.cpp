@@ -12,7 +12,7 @@
 #include <climath/interpolation.h>
 
 // snap
-#include <snap/thermodynamics/thermodynamics.hpp>
+#include <snap/thermodynamics/atm_thermodynamics.hpp>
 
 // harp
 #include <harp/radiation.hpp>  // GetPhaseMomentum
@@ -116,8 +116,8 @@ Real FuWaterLiquidCloud::getAttenuation1(Real wave,
 
   Real result = 0.;
   Real k = (1.0 / re[j + 1] - 1.0 / re[j]) / (1.0 / pre - 1.0 / re[j]);
-  Real dens =
-      qfrac.w[IPR] / (pthermo->GetRd() * qfrac.w[IDN] * pthermo->RovRd(qfrac));
+  Real rovrd = get_rovrd(qfrac, pthermo->GetMuRatio());
+  Real dens = qfrac.w[IPR] / (pthermo->GetRd() * qfrac.w[IDN] * rovrd);
 
   result = bz[iband - 1][j] / fl[j] +
            (bz[iband - 1][j + 1] / fl[j + 1] - bz[iband - 1][j] / fl[j]) / k;
