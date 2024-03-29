@@ -5,7 +5,8 @@
 #include "atm_thermodynamics.hpp"
 
 void Thermodynamics::EquilibrateTP(AirParcel* qfrac) const {
-  set_total_equivalent_vapor(qfrac, &cloud_index_set_[0], cloud_reaction_map_);
+  set_total_equivalent_vapor(qfrac, cloud_index_set_.data(),
+                             cloud_reaction_map_);
 
   // vapor <=> cloud
   for (int i = 1; i <= NVAPOR; ++i) {
