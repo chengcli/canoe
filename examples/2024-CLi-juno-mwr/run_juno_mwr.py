@@ -9,6 +9,7 @@ from canoe.snap import def_thermo
 from canoe.athena import Mesh, ParameterInput, Outputs
 from typing import Tuple
 from canoe.harp import radiation_band, radiation
+
 # from canoe.snap import air_parcel
 
 if __name__ == "__main__":
@@ -38,23 +39,23 @@ if __name__ == "__main__":
     # for mb in mesh.meshblocks():
     #    print(mb.block_size.nx1)
 
-    adlnTdlnP=0.2 ##k
-    pmin=100.E5
-    pmax=800.E5
+    adlnTdlnP = 0.2  ##k
+    pmin = 100.0e5
+    pmax = 800.0e5
     mb.modify_dlnTdlnP(adlnTdlnP, pmin, pmax)
 
-    adlnNH3dlnP=0.25 ##ppmv  -100
-    pmin=100.E5
-    pmax=800.E5
+    adlnNH3dlnP = 0.25  ##ppmv  -100
+    pmin = 100.0e5
+    pmax = 800.0e5
     # mb.modify_dlnNH3dlnP(adlnNH3dlnP, pmin, pmax)
 
-    prad=radiation(mb, pin)
+    prad = radiation(mb, pin)
 
-    for k in range(mb.k_st, mb.k_ed+1):
-        for j in range(mb.j_st, mb.j_ed+1):
-            print(str(k)+" "+str(j))
+    for k in range(mb.k_st, mb.k_ed + 1):
+        for j in range(mb.j_st, mb.j_ed + 1):
+            print(str(k) + " " + str(j))
             prad.cal_radiance(mb, k, j)
-            
+
     pin.set_string("job", "problem_id", "juno_mwr_modify_Temp")
     # pin.set_string("job", "problem_id", "juno_mwr_modify_NH3")
     print(pin.get_string("job", "problem_id"))
@@ -62,6 +63,4 @@ if __name__ == "__main__":
     out = Outputs(mesh, pin)
     out.make_outputs(mesh, pin)
 
-
     # run rt again
-

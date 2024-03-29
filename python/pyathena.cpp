@@ -165,7 +165,6 @@ void init_athena(py::module &parent) {
           },
           py::return_value_policy::reference);
 
-
   // MeshBlock
   py::class_<MeshBlock>(m, "MeshBlock")
       .def_readonly("block_size", &MeshBlock::block_size)
@@ -180,13 +179,17 @@ void init_athena(py::module &parent) {
       //.def_readonly("inversion", [](MeshBlock const& pmb) {
       //  return pmb.pimpl->all_fits;
       //});
-      .def("modify_dlnTdlnP", [](MeshBlock *mesh_block, Real adlnTdlnP, Real pmin, Real pmax) {
-          return modify_atmoshere_adlnTdlnP(mesh_block, adlnTdlnP, pmin, pmax);
-      })
-      
-      .def("modify_dlnNH3dlnP", [](MeshBlock *mesh_block, Real adlnNH3dlnP, Real pmin, Real pmax) {
-          return modify_atmoshere_adlnNH3dlnP(mesh_block, adlnNH3dlnP, pmin, pmax);
-      });
+      .def("modify_dlnTdlnP",
+           [](MeshBlock *mesh_block, Real adlnTdlnP, Real pmin, Real pmax) {
+             return modify_atmoshere_adlnTdlnP(mesh_block, adlnTdlnP, pmin,
+                                               pmax);
+           })
+
+      .def("modify_dlnNH3dlnP",
+           [](MeshBlock *mesh_block, Real adlnNH3dlnP, Real pmin, Real pmax) {
+             return modify_atmoshere_adlnNH3dlnP(mesh_block, adlnNH3dlnP, pmin,
+                                                 pmax);
+           });
 
   // outputs
   py::class_<Outputs>(m, "Outputs")
