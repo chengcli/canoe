@@ -49,12 +49,10 @@ if __name__ == "__main__":
     pmax = 800.0e5
     # mb.modify_dlnNH3dlnP(adlnNH3dlnP, pmin, pmax)
 
-    prad = radiation(mb, pin)
-
-    for k in range(mb.k_st, mb.k_ed + 1):
-        for j in range(mb.j_st, mb.j_ed + 1):
-            print(str(k) + " " + str(j))
-            prad.cal_radiance(mb, k, j)
+    # for k in range(mb.k_st, mb.k_ed + 1):
+    #    for j in range(mb.j_st, mb.j_ed + 1):
+    # print(str(k) + " " + str(j))
+    mb.get_rad().cal_radiance(mb, mb.k_st, mb.j_st)
 
     pin.set_string("job", "problem_id", "juno_mwr_modify_Temp")
     # pin.set_string("job", "problem_id", "juno_mwr_modify_NH3")

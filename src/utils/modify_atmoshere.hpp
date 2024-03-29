@@ -8,9 +8,6 @@
 #include <memory>
 #include <vector>
 
-// athena
-#include <athena/mesh/mesh.hpp>
-
 // helper functions, will be moved in the future
 int find_pressure_level_lesser_pybind(Real pres, AthenaArray<Real> const &w,
                                       int k, int j, int is, int ie);

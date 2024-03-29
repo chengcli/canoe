@@ -26,7 +26,7 @@ void init_harp(py::module &parent) {
   auto m = parent.def_submodule("harp", "Python bindings for harp module");
 
   // Radiation
-  py::class_<Radiation>(m, "radiation")
+  py::class_<Radiation, RadiationPtr>(m, "radiation")
       .def_readonly("radiance", &Radiation::radiance)
       .def_readonly("fluxup", &Radiation::flxup)
       .def_readonly("fluxdn", &Radiation::flxdn)

@@ -73,12 +73,6 @@ void modify_atmoshere_adlnNH3dlnP(MeshBlock *pmb, Real adlnNH3dlnP, Real pmin,
   Real H0 = pcoord->GetPressureScaleHeight();
   Real dlnp = pcoord->dx1f(is) / H0;
 
-  Hydro *phydro = pmb->phydro;
-  auto pthermo = Thermodynamics::GetInstance();
-  auto pcoord = pmb->pcoord;
-  Real H0 = pcoord->GetPressureScaleHeight();
-  Real dlnp = pcoord->dx1f(is) / H0;
-
   // index
   auto pindex = IndexMap::GetInstance();
   int iNH3 = pindex->GetVaporId("NH3");
@@ -95,7 +89,7 @@ void modify_atmoshere_adlnNH3dlnP(MeshBlock *pmb, Real adlnNH3dlnP, Real pmin,
       air.ToMoleFraction();
 
       for (int i = ibegin; i < iend; ++i) {
-        pthermo->Extrapolate(&air, -dlnp, Thermodynamics::Method::DryAdiabat);
+        pthermo->Extrapolate(&air, -dlnp, "dry");
         air.w[iNH3] += adlnNH3dlnP * air.w[iNH3] * dlnp;
         auto rates = pthermo->TryEquilibriumTP_VaporCloud(air, iNH3);
         air.w[iNH3] += rates[0];
