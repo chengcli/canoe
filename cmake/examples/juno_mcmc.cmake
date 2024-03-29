@@ -19,6 +19,6 @@ set_if_empty(NTRACER 2)
 # canoe configure
 set(HYDROSTATIC ON)
 set(NETCDF ON)
-# set(FITS ON)
+set(FITS ON)
 set(RadianceSolver lambert)
 set(PYTHON_BINDINGS ON)

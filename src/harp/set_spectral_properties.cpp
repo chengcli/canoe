@@ -15,7 +15,7 @@
 #include <impl.hpp>
 
 // snap
-#include <snap/thermodynamics/thermodynamics.hpp>
+#include <snap/thermodynamics/atm_thermodynamics.hpp>
 
 // opacity
 #include <opacity/absorber.hpp>
@@ -101,7 +101,7 @@ void RadiationBand::SetSpectralProperties(AirColumn& ac, Real const* x1f,
       }
 #ifdef HYDROSTATIC
       auto pthermo = Thermodynamics::GetInstance();
-      Real Rgas = pthermo->RovRd(ac[i]) * pthermo->GetRd();
+      Real Rgas = get_rovrd(ac[i], pthermo->GetMuRatio()) * pthermo->GetRd();
       // TODO(cli) check this
       // \delta z = \delt Z * (R T)/(g H0)
       tau_(m, i) *= (x1f[i + 1] - x1f[i]) * (Rgas * tem_[i]) / (gH0);

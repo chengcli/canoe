@@ -134,8 +134,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
 
     // stop at just above P0
     for (int i = is; i <= ie; ++i) {
-      pthermo->Extrapolate(&air, pcoord->dx1f(i),
-                           Thermodynamics::Method::PseudoAdiabat, grav);
+      pthermo->Extrapolate(&air, pcoord->dx1f(i), "pseudo", grav);
       if (air.w[IPR] < P0) break;
     }
 
@@ -165,16 +164,14 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
         if (air.w[IDN] < Tmin) break;
 
         AirParcelHelper::distribute_to_conserved(this, k, j, i, air);
-        pthermo->Extrapolate(&air, pcoord->dx1f(i),
-                             Thermodynamics::Method::PseudoAdiabat, grav);
+        pthermo->Extrapolate(&air, pcoord->dx1f(i), "pseudo", grav);
       }
 
       // Replace adiabatic atmosphere with isothermal atmosphere if temperature
       // is too low
       for (; i <= ie; ++i) {
         AirParcelHelper::distribute_to_conserved(this, k, j, i, air);
-        pthermo->Extrapolate(&air, pcoord->dx1f(i),
-                             Thermodynamics::Method::Isothermal, grav);
+        pthermo->Extrapolate(&air, pcoord->dx1f(i), "isothermal", grav);
       }
     }
 

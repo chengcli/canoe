@@ -152,15 +152,13 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
       air.c[iH2Oc] = 0.;
 
       // half a grid to cell center
-      pthermo->Extrapolate(&air, pcoord->dx1f(is) / 2.,
-                           Thermodynamics::Method::PseudoAdiabat, grav);
+      pthermo->Extrapolate(&air, pcoord->dx1f(is) / 2., "pseudo", grav);
 
       for (int i = is; i <= ie; ++i) {
         // add noise
         air.w[IVX] = 0.01 * (1. * rand() / RAND_MAX - 0.5);
         AirParcelHelper::distribute_to_conserved(this, k, j, i, air);
-        pthermo->Extrapolate(&air, pcoord->dx1f(i),
-                             Thermodynamics::Method::PseudoAdiabat, grav);
+        pthermo->Extrapolate(&air, pcoord->dx1f(i), "pseudo", grav);
       }
     }
 }

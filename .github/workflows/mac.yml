@@ -244,7 +244,7 @@ jobs:
       - name: create build directory
         # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
         # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
-        run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_Fortran_COMPILER=gfortran-12 -DEOS=shallow_xy -DNETCDF=ON -DMPI=ON -DNUMBER_GHOST_CELLS=3
+        run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_Fortran_COMPILER=gfortran-12 -DNETCDF=ON -DTASK=vortex
 
       - name: Build
         # Build your program with the given configuration
@@ -358,5 +358,5 @@ jobs:
         run: ./combine.py -o test
 
       - name: Test
-        working-directory: ${{github.workspace}}/examples/2023-jupiter-mwr-eq
+        working-directory: ${{github.workspace}}/examples/2024-CLi-juno-mwr
         run: echo "cheers"

@@ -254,8 +254,7 @@ TEST_F(TestConvectiveAdjustment, RandomProfile) {
   auto pthermo = Thermodynamics::GetInstance();
 
   // half a grid to cell center
-  pthermo->Extrapolate(&air, pcoord->dx1f(pmb->is) / 2.,
-                       Thermodynamics::Method::ReversibleAdiabat, grav);
+  pthermo->Extrapolate(&air, pcoord->dx1f(pmb->is) / 2., "reversible", grav);
 
   AirColumn ac(pmb->ncells1);
 
@@ -270,8 +269,7 @@ TEST_F(TestConvectiveAdjustment, RandomProfile) {
              << std::endl;
 
     ac[i] = air;
-    pthermo->Extrapolate(&air, pcoord->dx1f(i),
-                         Thermodynamics::Method::PseudoAdiabat, grav);
+    pthermo->Extrapolate(&air, pcoord->dx1f(i), "pseudo", grav);
   }
   outFile1.close();
 

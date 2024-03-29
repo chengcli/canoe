@@ -37,9 +37,9 @@ add_library(${namel}_${buildl}
     )
 
 target_include_directories(${namel}_${buildl}
-  PRIVATE
-  ${EIGEN3_INCLUDE_DIR}
-  )
+    PRIVATE
+    ${EIGEN3_INCLUDE_DIR}
+    )
 
 set_target_properties(${namel}_${buildl}
     PROPERTIES

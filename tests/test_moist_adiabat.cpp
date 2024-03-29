@@ -167,8 +167,7 @@ TEST_F(TestMoistAdiabat, moist_adiabat) {
   air.w[IDN] = Ts;
   air.w[iH2Oc] = 0.;
 
-  pthermo->Extrapolate(&air, dz, Thermodynamics::Method::ReversibleAdiabat,
-                       grav);
+  pthermo->Extrapolate(&air, dz, "reversible", grav);
 
   EXPECT_NEAR(air.w[IDN], 289.392118923, 1e-8);
   EXPECT_NEAR(air.w[IPR], 98825.8592854826, 1e-8);
@@ -201,8 +200,7 @@ TEST_F(TestMoistAdiabat, moist_static_energy) {
   EXPECT_NEAR(mse1, 272872.16946, 1.E-4);
 
   // second grid
-  pthermo->Extrapolate(&air, dz, Thermodynamics::Method::ReversibleAdiabat,
-                       grav);
+  pthermo->Extrapolate(&air, dz, "reversible", grav);
   AirParcelHelper::distribute_to_primitive(pmb, ks, js, is + 1, air);
 
   Real mse2 = pthermo->MoistStaticEnergy(pmb, grav * dz, ks, js, is + 1);
@@ -234,8 +232,7 @@ TEST_F(TestMoistAdiabat, equivalent_potential_temp) {
   EXPECT_NEAR(theta_e1, 320.54669065133, 1.E-8);
 
   // second grid
-  pthermo->Extrapolate(&air, dz, Thermodynamics::Method::ReversibleAdiabat,
-                       grav);
+  pthermo->Extrapolate(&air, dz, "reversible", grav);
   AirParcelHelper::distribute_to_primitive(pmb, ks, js, is + 1, air);
 
   Real theta_e2 =

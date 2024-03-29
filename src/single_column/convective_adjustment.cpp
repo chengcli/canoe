@@ -66,8 +66,7 @@ std::array<Real, 2> SingleColumn::findAdiabaticMassEnthalpy(AirParcel air,
 
     mass1 += density * vol_(i);
     enthalpy1 += (air.w[IEN] + density * grav * pcoord->x1v(i)) * vol_(i);
-    pthermo->Extrapolate(&air, pcoord->dx1f(i),
-                         Thermodynamics::Method::ReversibleAdiabat, grav);
+    pthermo->Extrapolate(&air, pcoord->dx1f(i), "reversible", grav);
   }
 
   return std::array<Real, 2>({mass1, enthalpy1});
@@ -115,8 +114,7 @@ void SingleColumn::FindUnstableRange(AirColumn const &ac, int il, int iu,
     auto air0 = ac[il];
     auto air1 = ac[il + 1];
     if (air0.w[IDN] < 0. || air0.w[IPR] < 0.) break;
-    pthermo->Extrapolate(&air0, pcoord->dx1f(il),
-                         Thermodynamics::Method::ReversibleAdiabat, grav);
+    pthermo->Extrapolate(&air0, pcoord->dx1f(il), "reversible", grav);
     air0.ToMassFraction();
     air1.ToMassFraction();
 
@@ -129,8 +127,7 @@ void SingleColumn::FindUnstableRange(AirColumn const &ac, int il, int iu,
   int i = il;
   for (; i < iu; ++i) {
     auto air1 = ac[i + 1];
-    pthermo->Extrapolate(&air0, pcoord->dx1f(i),
-                         Thermodynamics::Method::ReversibleAdiabat, grav);
+    pthermo->Extrapolate(&air0, pcoord->dx1f(i), "reversible", grav);
     air0.ToMassFraction();
     air1.ToMassFraction();
 
@@ -202,7 +199,6 @@ void SingleColumn::ConvectiveAdjustment(AirColumn &ac, int k, int j, int il,
     msg << "ac[" << k << "," << j << "," << i << "] = " << ac[i];
     app->Log(msg.str());
 
-    pthermo->Extrapolate(&solver.air0, pcoord->dx1f(i),
-                         Thermodynamics::Method::ReversibleAdiabat, grav);
+    pthermo->Extrapolate(&solver.air0, pcoord->dx1f(i), "reversible", grav);
   }
 }

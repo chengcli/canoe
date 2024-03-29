@@ -66,8 +66,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
       air.w[IDN] = Ts;
       for (int i = is; i <= ie; ++i) {
         AirParcelHelper::distribute_to_conserved(this, k, j, i, air);
-        pthermo->Extrapolate(&air, pcoord->dx1f(i),
-                             Thermodynamics::Method::DryAdiabat, grav);
+        pthermo->Extrapolate(&air, pcoord->dx1f(i), "dry", grav);
       }
     }
 }

@@ -15,7 +15,7 @@
 #include <constants.hpp>
 
 // snap
-#include "thermodynamics.hpp"
+#include "atm_thermodynamics.hpp"
 
 void Thermodynamics::SaturationAdjustment(AirColumn& air_column) const {
   // return if there's no vapor
@@ -26,8 +26,10 @@ void Thermodynamics::SaturationAdjustment(AirColumn& air_column) const {
     AirParcel air0(air);
 
     // calculate total mole density
-    Real rmole = getDensityMole(air);
-    Real umole = getInternalEnergyMole(air);
+    Real rmole = get_density_mole(air);
+    Real umole = get_internal_energy_mole(air, cv_ratio_mole_.data(),
+                                          latent_energy_mole_.data(),
+                                          cloud_index_set_.data());
 
     int iter = 0;
 
@@ -38,7 +40,7 @@ void Thermodynamics::SaturationAdjustment(AirColumn& air_column) const {
       // msg << "iter = " << iter << std::endl;
       // msg << "old var = " << air << std::endl;
 
-      Real cvd = 1. / (GetGammad(air) - 1.);
+      Real cvd = 1. / (get_gammad(air) - 1.);
       Real fsig = 1.;
       for (int i = 1; i <= NVAPOR; ++i) {
         Real qv = air.w[i];
@@ -63,7 +65,9 @@ void Thermodynamics::SaturationAdjustment(AirColumn& air_column) const {
       }
 
       Real Told = air.w[IDN];
-      updateTPConservingU(&air, rmole, umole);
+      update_TP_conserving_U(&air, rmole, umole, cv_ratio_mole_.data(),
+                             latent_energy_mole_.data(),
+                             cloud_index_set_.data());
       // msg << "new var = " << air << std::endl;
       if (fabs(air.w[IDN] - Teq) < sa_ftol_) break;
 

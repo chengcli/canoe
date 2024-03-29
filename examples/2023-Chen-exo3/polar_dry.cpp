@@ -224,8 +224,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
       //   if (pcoord->x1v(i) - Rp > z_iso) break;
 
       //   pimpl->DistributeToConserved(air, k, j, i);
-      //   pthermo->Extrapolate(&air, pcoord->dx1f(i),
-      //                        Thermodynamics::Method::DryAdiabat, grav,
+      //   pthermo->Extrapolate(&air, pcoord->dx1f(i), "dry", grav,
       //                        0.001);
       //   // add noise
       //   // air.w[IVX] = 0.01 * distribution(generator);
@@ -234,8 +233,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
       // construct isothermal atmosphere
       for (; i <= ie; ++i) {
         AirParcelHelper::distribute_to_conserved(this, k, j, i, air);
-        pthermo->Extrapolate(&air, pcoord->dx1f(i),
-                             Thermodynamics::Method::Isothermal, grav, 0.001);
+        pthermo->Extrapolate(&air, pcoord->dx1f(i), "isothermal", grav, 0.001);
         // add noise
         air.w[IVY] = 0.00001 * distribution(generator);
         air.w[IVZ] = 0.00001 * distribution(generator);

@@ -244,8 +244,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
       int i = is;
       for (; i <= ie; ++i) {
         AirParcelHelper::distribute_to_conserved(this, k, j, i, air);
-        pthermo->Extrapolate(&air, pcoord->dx1f(i),
-                             Thermodynamics::Method::Isothermal, grav, 0.001);
+        pthermo->Extrapolate(&air, pcoord->dx1f(i), "isothermal", grav, 0.001);
         // add noise
         air.w[IVY] = 10. * distribution(generator);
         air.w[IVZ] = 10. * distribution(generator);

@@ -6,27 +6,10 @@
 // yaml-cpp
 #include <yaml-cpp/yaml.h>
 
-// application
-#include <application/application.hpp>
-#include <application/exceptions.hpp>
-
 namespace py = pybind11;
 
-std::string find_resource(const std::string& filename) {
-  auto app = Application::GetInstance();
-  try {
-    auto full_path = app->FindResource(filename);
-    return full_path;
-  } catch (NotFoundError& e) {
-    throw std::runtime_error(e.what());
-  }
-}
-
-PYBIND11_MODULE(utilities, m) {
-  m.attr("__name__") = "utilities";
-  m.doc() = "External utilities";
-
-  m.def("find_resource", &find_resource);
+void init_utils(py::module& parent) {
+  auto m = parent.def_submodule("utils", "External utilities");
 
   // yaml-cpp
   py::enum_<YAML::NodeType::value>(m, "NodeType")
@@ -67,6 +50,4 @@ PYBIND11_MODULE(utilities, m) {
       .def("first", [](YAML::detail::iterator_value& val) { return val.first; })
       .def("second",
            [](YAML::detail::iterator_value& val) { return val.second; });
-
-  m.def("load_configure", &YAML::LoadFile, "");
 }

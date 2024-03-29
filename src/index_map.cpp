@@ -37,8 +37,10 @@ IndexMap const* IndexMap::GetInstance() {
   return myindex_map_;
 }
 
-IndexMap const* IndexMap::InitFromSpeciesMap(
-    std::map<std::string, std::vector<std::string>> const& smap) {
+IndexMap const* IndexMap::InitFromNames(
+    std::vector<std::string> const& vapors,
+    std::vector<std::string> const& clouds,
+    std::vector<std::string> const& tracers) {
   if (myindex_map_ != nullptr) {
     throw RuntimeError("IndexMap", "IndexMap has been initialized");
   }
@@ -48,44 +50,23 @@ IndexMap const* IndexMap::InitFromSpeciesMap(
   Application::Logger app("canoe");
   app->Log("Initialize IndexMap");
 
-  std::vector<std::string> names;
-
   // vapor id
-  if (smap.find("vapor") != smap.end()) {
-    names = smap.at("vapor");
-    if (names.size() > NVAPOR)
-      throw ValueError("IndexMap", "Number of vapors", NVAPOR, names.size());
-    for (size_t i = 0; i < names.size(); ++i)
-      myindex_map_->vapor_index_map_[names[i]] = 1 + i;
-  }
+  if (vapors.size() > NVAPOR)
+    throw ValueError("IndexMap", "Number of vapors", NVAPOR, vapors.size());
+  for (size_t i = 0; i < vapors.size(); ++i)
+    myindex_map_->vapor_index_map_[vapors[i]] = 1 + i;
 
   // cloud id
-  if (smap.find("cloud") != smap.end()) {
-    names = smap.at("cloud");
-    if (names.size() > NCLOUD)
-      throw ValueError("IndexMap", "Number of clouds", NCLOUD, names.size());
-    for (size_t i = 0; i < names.size(); ++i)
-      myindex_map_->cloud_index_map_[names[i]] = i;
-  }
-
-  // chemistry id
-  if (smap.find("chemistry") != smap.end()) {
-    names = smap.at("chemistry");
-    if (names.size() > NCHEMISTRY)
-      throw ValueError("IndexMap", "Number of chemistry", NCHEMISTRY,
-                       names.size());
-    for (size_t i = 0; i < names.size(); ++i)
-      myindex_map_->chemistry_index_map_[names[i]] = i;
-  }
+  if (clouds.size() > NCLOUD)
+    throw ValueError("IndexMap", "Number of clouds", NCLOUD, clouds.size());
+  for (size_t i = 0; i < clouds.size(); ++i)
+    myindex_map_->cloud_index_map_[clouds[i]] = i;
 
   // tracer id
-  if (smap.find("tracer") != smap.end()) {
-    names = smap.at("tracer");
-    if (names.size() > NTRACER)
-      throw ValueError("IndexMap", "Number of tracers", NTRACER, names.size());
-    for (size_t i = 0; i < names.size(); ++i)
-      myindex_map_->tracer_index_map_[names[i]] = i;
-  }
+  if (tracers.size() > NTRACER)
+    throw ValueError("IndexMap", "Number of tracers", NTRACER, tracers.size());
+  for (size_t i = 0; i < tracers.size(); ++i)
+    myindex_map_->tracer_index_map_[tracers[i]] = i;
 
   //! \todo add particle
   return myindex_map_;
