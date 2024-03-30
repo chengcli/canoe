@@ -93,8 +93,6 @@ inline void vel_zab_from_p1(Real *vz, Real *vx, Real *vy, Real a, Real b,
   switch (panel) {
     case 2:
       // z->y, x->-x, y->z
-      //(*vx) *= -1;
-      //vel_zxy_to_zab(vy, vx, vz, a, b);
       *vz = v3;
       *vx = -v2;
       *vy = v1;
@@ -102,8 +100,6 @@ inline void vel_zab_from_p1(Real *vz, Real *vx, Real *vy, Real a, Real b,
       break;
     case 3:
       // z->-x, x->z, y->y
-      //(*vz) *= -1;
-      //vel_zxy_to_zab(vx, vz, vy, a, b);
       *vz = v2;
       *vx = -v1;
       *vy = v3;
@@ -111,9 +107,6 @@ inline void vel_zab_from_p1(Real *vz, Real *vx, Real *vy, Real a, Real b,
       break;
     case 4:
       // z->-x, x->-y, y->z
-      //(*vx) *= -1;
-      //(*vy) *= -1;
-      //vel_zxy_to_zab(vx, vy, vz, a, b);
       *vz = -v2;
       *vx = -v3;
       *vy = v1;
@@ -121,8 +114,6 @@ inline void vel_zab_from_p1(Real *vz, Real *vx, Real *vy, Real a, Real b,
       break;
     case 6:
       // z->-y, x->x, y->z
-      //(*vy) *= -1;
-      //vel_zxy_to_zab(vy, vx, vz, a, b);
       *vz = -v3;
       *vx = v2;
       *vy = v1;
