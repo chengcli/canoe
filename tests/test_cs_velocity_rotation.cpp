@@ -24,7 +24,20 @@ TEST(vel_zab_to_zxy, test_ab_to_xy_to_ab) {
   std::cout << *vz << " " << *vx << " " << *vy;
   CubedSphereUtility::vel_zab_to_zxy(vz, vx, vy, PI/3, PI/4);
   for (int i = 0; i < 3; i++) {
-    EXPECT_NEAR(result[i], expected_result[i], pow(10,-5));
+    EXPECT_NEAR(result[i], expected_result[i], 1e-5);
+  }
+}
+
+TEST(vel_zab_from_test, test_case_1_to_2_to_1) {
+  Real result[3] = {1,2,3};
+  Real *vz = result;
+  Real *vx = result + 1;
+  Real *vy = result + 2;
+  Real expected_result[3] = {1,2,3};
+  CubedSphereUtility::vel_zab_from_p1(vz, vx, vy, PI/5*2, PI/8*3, 2);
+  CubedSphereUtility::vel_zab_from_p2(vz, vx, vy, PI/5*2, PI/8*3, 1);
+  for (int i = 0; i < 3; i++) {
+    EXPECT_NEAR(result[i], expected_result[i], 1e-5);
   }
 }
 
@@ -37,7 +50,7 @@ TEST(vel_zab_from_test, test_case_1_to_3_to_1) {
   CubedSphereUtility::vel_zab_from_p1(vz, vx, vy, PI/5*2, PI/8*3, 3);
   CubedSphereUtility::vel_zab_from_p3(vz, vx, vy, PI/5*2, PI/8*3, 1);
   for (int i = 0; i < 3; i++) {
-    EXPECT_NEAR(result[i], expected_result[i], pow(10,-5));
+    EXPECT_NEAR(result[i], expected_result[i], 1e-5);
   }
 }
 
@@ -50,20 +63,7 @@ TEST(vel_zab_from_test, test_case_1_to_4_to_1) {
   CubedSphereUtility::vel_zab_from_p1(vz, vx, vy, PI/5*2, PI/8*3, 4);
   CubedSphereUtility::vel_zab_from_p4(vz, vx, vy, PI/5*2, PI/8*3, 1);
   for (int i = 0; i < 3; i++) {
-    EXPECT_NEAR(result[i], expected_result[i], pow(10,-5));
-  }
-}
-
-TEST(vel_zab_from_test, test_case_1_to_5_to_1) {
-  Real result[3] = {1,2,3};
-  Real *vz = result;
-  Real *vx = result + 1;
-  Real *vy = result + 2;
-  Real expected_result[3] = {1,2,3};
-  CubedSphereUtility::vel_zab_from_p1(vz, vx, vy, PI/5*2, PI/8*3, 5);
-  CubedSphereUtility::vel_zab_from_p5(vz, vx, vy, PI/5*2, PI/8*3, 1);
-  for (int i = 0; i < 3; i++) {
-    EXPECT_NEAR(result[i], expected_result[i], pow(10,-5));
+    EXPECT_NEAR(result[i], expected_result[i], 1e-5);
   }
 }
 
@@ -76,7 +76,7 @@ TEST(vel_zab_from_test, test_case_1_to_6_to_1) {
   CubedSphereUtility::vel_zab_from_p1(vz, vx, vy, PI/5*2, PI/8*3, 6);
   CubedSphereUtility::vel_zab_from_p6(vz, vx, vy, PI/5*2, PI/8*3, 1);
   for (int i = 0; i < 3; i++) {
-    EXPECT_NEAR(result[i], expected_result[i], pow(10,-5));
+    EXPECT_NEAR(result[i], expected_result[i], 1e-5);
   }
 }
 

@@ -49,9 +49,9 @@ inline void vel_zab_to_zxy(Real *v1, Real *v2, Real *v3, Real a, Real b) {
   Real vy = *v3;
   Real vz = *v1;
 
-  Real delta = sqrt(pow(x, 2) + pow(y, 2) + 1);
-  Real C = sqrt(1 + pow(x, 2));
-  Real D = sqrt(1 + pow(y, 2));
+  Real delta = sqrt(x*x + y*y + 1);
+  Real C = sqrt(1 + x*x);
+  Real D = sqrt(1 + y*y);
 
   *v1 = (vz - D * x * vx - C * y * vy) / delta;
   *v2 = 
@@ -69,15 +69,15 @@ inline void vel_zxy_to_zab(Real *v1, Real *v2, Real *v3, Real a, Real b) {
   Real vy = *v3;
   Real vz = *v1;
 
-  Real delta = sqrt(pow(x, 2) + pow(y, 2) + 1);
-  Real C = sqrt(1 + pow(x, 2));
-  Real D = sqrt(1 + pow(y, 2));
+  Real delta = sqrt(x*x + y*y + 1);
+  Real C = sqrt(1 + x*x);
+  Real D = sqrt(1 + y*y);
 
   *v1 = (vz + x * vx + y * vy) / delta;
   *v2 =
-      (-x * vz / D + vx * (1 + pow(y, 2)) / D - vy * x * y / D) / delta;
+      (-x * vz / D + vx * (1 + y*y) / D - vy * x * y / D) / delta;
   *v3 =
-      (-y * vz / C - x * y * vx / C + (1 + pow(x, 2)) * vy / C) / delta;
+      (-y * vz / C - x * y * vx / C + (1 + x*x) * vy / C) / delta;
 }
 
 //! Transform cubed sphere velocity from panel 1 to panel 2
@@ -119,13 +119,6 @@ inline void vel_zab_from_p1(Real *vz, Real *vx, Real *vy, Real a, Real b,
       *vy = v1;
       vel_zxy_to_zab(vz, vx, vy, a, b);
       break;
-    case 5:
-      // z->-z, x->-x, y->y
-      *vz = -v1;
-      *vx = -v2;
-      *vy = v3;
-      vel_zxy_to_zab(vz, vx, vy, a, b);
-      break;
     case 6:
       // z->-y, x->x, y->z
       //(*vy) *= -1;
@@ -158,8 +151,6 @@ inline void vel_zab_from_p2(Real *vz, Real *vx, Real *vy, Real a, Real b,
       break;
     case 5:
       break;
-    case 6:
-      break;
   }
 }
 
@@ -178,8 +169,6 @@ inline void vel_zab_from_p3(Real *vz, Real *vx, Real *vy, Real a, Real b,
       vel_zxy_to_zab(vz, vx, vy, a, b);
       break;
     case 2:
-      break;
-    case 4:
       break;
     case 5:
       break;
@@ -204,8 +193,6 @@ inline void vel_zab_from_p4(Real *vz, Real *vx, Real *vy, Real a, Real b,
       break;
     case 2:
       break;
-    case 3:
-      break;
     case 5:
       break;
     case 6:
@@ -220,13 +207,6 @@ inline void vel_zab_from_p5(Real *vz, Real *vx, Real *vy, Real a, Real b,
   Real v2 = *vx;
   Real v3 = *vy;
   switch (panel) {
-    case 1:
-      // z->-z, x->-x, y->y
-      *vz = -v1;
-      *vx = -v2;
-      *vy = v3;
-      vel_zxy_to_zab(vz, vx, vy, a, b);
-      break;
     case 2:
       break;
     case 3:
@@ -251,8 +231,6 @@ inline void vel_zab_from_p6(Real *vz, Real *vx, Real *vy, Real a, Real b,
       *vx = v2;
       *vy = -v1;
       vel_zxy_to_zab(vz, vx, vy, a, b);
-      break;
-    case 2:
       break;
     case 3:
       break;
