@@ -7,18 +7,7 @@ opacity-sources:
     class: FreedmanSimple2
     parameters: {scale: 1.}
 
-  - name: premix
-    class: HeliosCK
-    data: ck_data_01242024/ck/PM_ck_HELIOSK_cond_11_nOPT_wcia.txt
-    parameters: {band_id: 1}
-
-bands: [ir, vis, ck]
-
-ck:
-  units: cm-1
-  wavenumber-range: [0.2, 0.4]
-  grid-type: cktable
-  opacity: [premix]
+bands: [ir, vis]
 
 ir:
   units: cm-1
@@ -27,7 +16,7 @@ ir:
   num-bins: 1
   opacity: [H2-ir]
   rt-solver: Disort
-  parameters: {fluor: 850.91056} #assuming Tint = 350. K
+  parameters: {} #assuming Tint = 350. K
   flags: [broad_band, thermal_emission]
 
 vis:
@@ -56,8 +45,3 @@ Disort-flags:
   print-intensity: false
   print-transmissivity: false
   print-phase-function: true
-
-thermodynamics:
-  dry:
-    Rd: 3777.
-    gammad: 1.4

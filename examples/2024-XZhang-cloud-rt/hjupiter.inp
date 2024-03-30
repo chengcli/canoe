@@ -9,7 +9,7 @@ tasklist   = ImplicitHydroTasks
 
 <output0>
 file_type  = rst
-dt         = 1.728E5
+dt         = 1.728E7
 
 <output1>
 file_type  = hst          # History data dump
@@ -18,34 +18,34 @@ dt         = 1.728E5      # time increment between outputs
 <output2>
 file_type  = pnetcdf      # Binary data dump
 variable   = prim         # variables to be output
-dt         = 1.728E5      # time increment between outputs
+dt         = 1.728E6      # time increment between outputs
 
 <output3>
 file_type  = pnetcdf
 variable   = uov
-dt         = 1.728E5
+dt         = 1.728E6
 
 <output4>
 file_type  = pnetcdf
 variable   = rad
-dt         = 1.728E5
+dt         = 1.728E6
 
-<output5>
-file_type  = dbg
-dt         = 1
+#<output5>
+#file_type  = dbg
+#dt         = 1
 
 <time>
-cfl_number = 0.9          # The Courant, Friedrichs, & Lewy (CFL) Number
+cfl_number = 0.3          # The Courant, Friedrichs, & Lewy (CFL) Number
 nlim       = -1           # cycle limit
-tlim       = 1.0368E10     # time limit
+tlim       = 1.0368E11     # time limit
 xorder     = 2            # horizontal reconstruction order
 integrator = rk3          # integration method
 shock_capture = true
 
 <mesh>
-nx1        = 64           # Number of zones in X1-direction
+nx1        = 64          # Number of zones in X1-direction
 x1min      = 8.E7         # minimum value of X1
-x1max      = 8.5E7       # maximum value of X1
+x1max      = 8.45E7       # maximum value of X1
 ix1_bc     = reflecting   # inner-X1 boundary flag
 ox1_bc     = reflecting   # outer-X1 boundary flag
 
@@ -66,8 +66,8 @@ PressureScaleHeight = 0.  # not used
 
 <meshblock>
 nx1        = 64
-nx2        = 16
-nx3        = 16
+nx2        = 4
+nx3        = 4
 
 <hydro>
 grav_acc1   = -23.1
@@ -97,18 +97,14 @@ nstr          = 4
 radiation_config = hjupiter.yaml
 relax_time    = 1.E4
 
-<convective_adjustment>
-den_tol = 1.e-5
-rel_tol = 1.e-4
-max_iter = 10
-
+<forcing>
+top_sponge_lyr.tau     = 1.E4
+bot_sponge_lyr.width   = 6.E5
+relax_bot_temp.tem     = 2500.
+relax_bot_temp.tau     = 1.E3
 
 <problem>
-Omega      = 2.1E-5           # Rotational frequency, 1/s
-Ts         = 5000.            # Surface temperature, K
-Ps         = 1.E7             # Surface pressure, Pa
-Tmin       = 1600.            # isothermal temperature, K
-bflux      = 0                # bottom upward flux, w/m^2
-
-sponge_tau = 1.E5
-sponge_layer = 10
+Ts         = 2500.            # Surface temperature, K
+Ps         = 2.E7             # Surface pressure, Pa
+Omega      = 3.277869E-5       # Rotational frequency
+Tmin       = 1400.

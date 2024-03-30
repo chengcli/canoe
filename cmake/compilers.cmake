@@ -35,8 +35,10 @@ endif()
 if(CMAKE_CXX_COMPILER_ID MATCHES "Intel")
   add_link_options("-fuse-ld=lld")
   set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
-  set(CMAKE_CXX_FLAGS_RELEASE "-O3")
-  set(CMAKE_C_FLAGS_RELEASE "-O3")
+  set(CMAKE_CXX_FLAGS_RELEASE
+      "-O3 -lstdc++ -fPIC")
+  set(CMAKE_C_FLAGS_RELEASE
+      "-O3 -lstdc++ -fPIC")
 
   set(CMAKE_CXX_FLAGS_DEBUG "-g3")
   set(CMAKE_C_FLAGS_DEBUG "-g3")
