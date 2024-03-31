@@ -93,17 +93,18 @@ HJ.equinox    = 0.
 <radiation>
 dt            = 200.
 nstr          = 4
-radiation_config = hjupiter.yaml
+radiation_config = minichem.yaml
 relax_time    = 1.E4
 
 <forcing>
 top_sponge_lyr.tau     = 1.E4
-bot_sponge_lyr.width   = 6.E5
+top_sponge_lyr.width   = 6.E5
 relax_bot_temp.tem     = 2500.
 relax_bot_temp.tau     = 1.E3
+#bot_heating.flux       = 850.91056
 
 <problem>
 Ts         = 2500.            # Surface temperature, K
 Ps         = 2.E7             # Surface pressure, Pa
-Omega      = 3.277869E-5       # Rotational frequency
+Omega      = 0.               # Rotational frequency
 Tmin       = 1400.
