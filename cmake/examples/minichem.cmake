@@ -9,6 +9,7 @@ endmacro()
 # athena variables
 set_if_empty(NUMBER_GHOST_CELLS 3)
 
+set(MINICHEM ON)
 set(CUBED_SPHERE OFF)
 set(NETCDF OFF)
 set(PNETCDF ON)
@@ -16,7 +17,7 @@ set(MPI ON)
 set(DISORT ON)
 set(PYTHON_BINDINGS ON)
 set_if_empty(RSOLVER hllc_transform)
-# set(GLOG ON)
+#set(GLOG ON)
 
 #set(NUMBER_CHEMICAL_SPECIES 2)
 #set(CHEMISTRY_ENABLED 1)
