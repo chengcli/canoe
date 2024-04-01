@@ -43,6 +43,9 @@
 // forcing
 #include "forcing/forcing.hpp"
 
+// parameterization
+#include "parameterization/parameterization.hpp"
+
 // canoe
 #include "impl.hpp"
 #include "index_map.hpp"
@@ -92,6 +95,9 @@ MeshBlock::Impl::Impl(MeshBlock *pmb, ParameterInput *pin) : pmy_block_(pmb) {
 
   // planet
   planet = PlanetFactory::CreateFrom(pmb, pin);
+
+  // parameterization
+  Parameterization::init_parameterization(pmb, pin);
 }
 
 MeshBlock::Impl::~Impl() {}

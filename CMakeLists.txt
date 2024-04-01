@@ -1,99 +1,95 @@
-cmake_minimum_required(VERSION 3.20)
+# compile the following modules
+#
+# climath : math library in c
+# astro: astronomy library in cpp
+# utils: utility library in c/cpp
+# harp: radiation library in c/cpp (backed by cdisort)
+# inversion: spectral inversion library
+# outputs: write netcdf/pnetcdf outputs
+# opacity: opacity library
 
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
+include_directories(
+  ${CMAKE_CURRENT_SOURCE_DIR}
+  ${CMAKE_BINARY_DIR}
+  ${EIGEN3_INCLUDE_DIR}
+  ${NETCDF_INCLUDES}
+  ${CFITSIO_INCLUDE_DIR}
+  ${MPI_CXX_INCLUDE_PATH}
+  ${PNETCDF_INCLUDE_DIR}
+  )
 
-project(canoe
-  LANGUAGES CXX C Fortran
-	)
+set(namel canoe)
+string(TOUPPER ${namel} nameu)
 
-message(STATUS "")
-message(STATUS "== Setting up canoe library ==")
+string(TOLOWER ${CMAKE_BUILD_TYPE} buildl)
+string(TOUPPER ${CMAKE_BUILD_TYPE} buildu)
 
-if (NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE Release)
-  message(STATUS "Default Build Type = Release")
-  message(STATUS "")
-else()
-  message(STATUS "Build Type = ${CMAKE_BUILD_TYPE}")
-  message(STATUS "")
-endif()
+file(GLOB src_files *.cpp)
 
-# load all modules
-LIST(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules/)
+add_library(${namel}_${buildl}
+    OBJECT
+    ${src_files}
+    )
 
-# load all macros
-FILE(GLOB _macro_files "${CMAKE_SOURCE_DIR}/cmake/macros/*.cmake")
-FOREACH(_file ${_macro_files})
-  MESSAGE(STATUS "Include ${_file}")
-  INCLUDE(${_file})
-ENDFOREACH()
+set_target_properties(${namel}_${buildl}
+    PROPERTIES
+    COMPILE_FLAGS ${CMAKE_CXX_FLAGS_${buildu}}
+    )
 
-## 1. set up compiler flags ##
-message(STATUS "1. Set up project compiler flags ...")
-message(STATUS "Include ${CMAKE_SOURCE_DIR}/cmake/compilers.cmake")
-include(${CMAKE_SOURCE_DIR}/cmake/compilers.cmake)
+add_subdirectory(climath)
+add_subdirectory(astro)
+add_subdirectory(utils)
+add_subdirectory(snap)
+add_subdirectory(harp)
+add_subdirectory(inversion)
+add_subdirectory(outputs)
+add_subdirectory(opacity)
+add_subdirectory(microphysics)
+add_subdirectory(c3m)
+add_subdirectory(tracer)
+add_subdirectory(tasklist)
+add_subdirectory(exo3)
+add_subdirectory(exchanger)
+add_subdirectory(nbody)
+add_subdirectory(special)
+add_subdirectory(single_column)
+add_subdirectory(diagnostics)
+add_subdirectory(forcing)
+#add_subdirectory(parameterization)
 
-## 2. set up project specific configuration ##
-message(STATUS "2. Set up project parameters ...")
+set(CANOE_LIBRARY_${buildu}
+  "canoe_${buildl}"
+  "athenapp_${buildl}"
+  "application_${buildl}"
+  "climath_${buildl}"
+  "astro_${buildl}"
+  "utils_${buildl}"
+  "snap_${buildl}"
+  "harp_${buildl}"
+  "inversion_${buildl}"
+  "outputs_${buildl}"
+  "opacity_${buildl}"
+  "dusts_${buildl}"
+  "c3m_${buildl}"
+  "tracer_${buildl}"
+  "tasklist_${buildl}"
+  "exo3_${buildl}"
+  "exchanger_${buildl}"
+  "nbody_${buildl}"
+  "scm_${buildl}"
+  "diagnostics_${buildl}"
+  "forcing_${buildl}"
+  "yaml-cpp"
+  ${CPPDISORT_LIBRARY_${buildu}}
+  ${PYTHON_LIBRARY_RELEASE}
+  ${NETCDF_LIBRARIES}
+  ${PNETCDF_LIBRARY}
+  ${CFITSIO_LIBRARY}
+  ${MPI_CXX_LIBRARIES}
+  ${GLOG_LIBRARIES}
+  ${OpenMP_libomp_LIBRARY}
+  CACHE INTERNAL "canoe library")
 
-# load custom task
-message(STATUS "Load custom task = ${TASK}")
-if (NOT ${TASK} STREQUAL "")
-  if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/cmake/examples/${TASK}.cmake)
-    message(STATUS "Load custom setting - ${TASK} -")
-    message(STATUS "Include ${CMAKE_CURRENT_SOURCE_DIR}/cmake/examples/${TASK}.cmake")
-    include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/examples/${TASK}.cmake)
-  else()
-    message(FATAL_ERROR "Cannot find custom file cmake/examples/${TASK}.cmake")
-  endif()
-  set(TASK ${TASK} CACHE STRING "Custom task to be performed")
-else()
-  set(TASK "default" CACHE STRING "Custom task to be performed")
-endif()
-
-message(STATUS "Include ${CMAKE_CURRENT_SOURCE_DIR}/cmake/parameters.cmake")
-include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/parameters.cmake)
-find_package(Eigen3 REQUIRED)
-
-## 3. set up project system libraries ##
-message(STATUS "3. Set up system libraries")
-#message(STATUS "Include ${CMAKE_SOURCE_DIR}/cmake/athena.cmake")
-#include(${CMAKE_SOURCE_DIR}/cmake/eigen.cmake)
-include(${CMAKE_SOURCE_DIR}/cmake/yamlpp.cmake)
-include(${CMAKE_SOURCE_DIR}/cmake/gtest.cmake)
-include(${CMAKE_SOURCE_DIR}/cmake/athena.cmake)
-include(${CMAKE_SOURCE_DIR}/cmake/application.cmake)
-include(${CMAKE_SOURCE_DIR}/cmake/rfm.cmake)
-include(${CMAKE_SOURCE_DIR}/cmake/disort.cmake)
-include(${CMAKE_SOURCE_DIR}/cmake/rrtmg.cmake)
-include(${CMAKE_SOURCE_DIR}/cmake/pvfmm.cmake)
-include(${CMAKE_SOURCE_DIR}/cmake/pybind11.cmake)
-
-## 4. set up project configure file and library ##
-message(STATUS "4. Set up project libraries")
-configure_file(${CMAKE_SOURCE_DIR}/configure.hpp.in configure.hpp @ONLY)
-add_subdirectory(src)
-add_subdirectory(tools)
-add_subdirectory(data)
-
-## 5. set up examples and tests
-message(STATUS "6. Set up unit tests")
-
-add_subdirectory(examples)
-add_subdirectory(tests)
-
-## 6. set up python binding ##
-if (PYTHON_BINDINGS)
-  add_subdirectory(python)
-endif()
-
-## 7. add uninstall targets ##
-configure_file(
-    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/cmake_uninstall.cmake.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
-    IMMEDIATE @ONLY)
-
-add_custom_target(canoe_uninstall
-    COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
+set(CANOE_INCLUDE_DIR
+  "${CMAKE_CURRENT_SOURCE_DIR}"
+  CACHE INTERNAL "canoe include directory")
