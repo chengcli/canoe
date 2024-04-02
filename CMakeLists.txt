@@ -83,7 +83,7 @@ add_subdirectory(data)
 message(STATUS "6. Set up unit tests")
 
 add_subdirectory(examples)
-#add_subdirectory(tests)
+add_subdirectory(tests)
 
 ## 6. set up python binding ##
 if (PYTHON_BINDINGS)
