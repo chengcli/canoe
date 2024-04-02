@@ -61,9 +61,7 @@ if __name__ == "__main__":
     tb=np.array([0.]*4*nb)
 
     for ib in range(nb):
-        print()
         band1=rad.get_band(ib)
-        print
         toa=rad.get_band(ib).get_toa()[0]
         tb[ib*4:ib*4+4]=toa
     print(tb)

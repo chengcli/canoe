@@ -6,13 +6,15 @@
 #include <vector>
 
 // athena
-#include <athena/athena.hpp>
 #include <athena/coordinates/coordinates.hpp>
 #include <athena/eos/eos.hpp>
 #include <athena/field/field.hpp>
 #include <athena/hydro/hydro.hpp>
 #include <athena/mesh/mesh.hpp>
+#include <athena/outputs/outputs.hpp>
 #include <athena/parameter_input.hpp>
+#include <athena/scalars/scalars.hpp>
+#include <athena/stride_iterator.hpp>
 
 // application
 #include <application/application.hpp>
@@ -20,13 +22,40 @@
 
 // canoe
 #include <air_parcel.hpp>
+#include <configure.hpp>
 #include <constants.hpp>
+// #include <dirty.hpp>
 #include <impl.hpp>
 #include <index_map.hpp>
 
+// climath
+#include <climath/interpolation.h>
+
+// snap
+#include <snap/thermodynamics/atm_thermodynamics.hpp>
+#include <snap/thermodynamics/vapors/sodium_vapors.hpp>
+
+// utils
+#include <utils/fileio.hpp>
+#include <utils/ndarrays.hpp>
+#include <utils/vectorize.hpp>
+
+// astro
+// #include <astro/Jupiter/jup_fletcher16_cirs.hpp>
+// #include <astro/planets.hpp>
+
+// harp
+// #include <harp/radiation.hpp>
+// #include <harp/radiation_band.hpp>
+
+// tracer
+#include <tracer/tracer.hpp>
+
 // snap
 #include <snap/thermodynamics/thermodynamics.hpp> 
-#include <snap/thermodynamics/atm_thermodynamics.hpp>
+
+// special includes
+// #include "juno_mwr_specs.hpp"
 
 // set up an adiabatic atmosphere
 void construct_atmosphere(MeshBlock *pmb, ParameterInput *pin, Real NH3ppmv, Real T0) {
@@ -39,12 +68,14 @@ void construct_atmosphere(MeshBlock *pmb, ParameterInput *pin, Real NH3ppmv, Rea
   auto pmy_mesh= pmb->pmy_mesh;
   auto pthermo = Thermodynamics::GetInstance();
   auto pcoord = pmb->pcoord;
+  auto pimpl = pmb->pimpl;
 
   int is = pmb->is;
   int ie = pmb->ie;
   int js = pmb->js, ks = pmb->ks;
   int je = pmb->je, ke = pmb->ke;
-
+  ke=ks;
+  je=js;
   // mesh limits
   Real x1min = pmy_mesh->mesh_size.x1min;
   Real x1max = pmy_mesh->mesh_size.x1max;
@@ -118,33 +149,95 @@ void construct_atmosphere(MeshBlock *pmb, ParameterInput *pin, Real NH3ppmv, Rea
 
   // construct atmosphere from bottom up
   air.ToMoleFraction();
-  //   for (int k = ks; k <= ke; ++k)
-    // for (int j = js; j <= je; ++j) {
-  air.SetZero();
-  air.w[iH2O] = xH2O;
-  air.w[iNH3] = xNH3;
-  air.w[IPR] = Ps;
-  air.w[IDN] = Ts;
+  for (int k = ks; k <= ke; ++k)
+    for (int j = js; j <= je; ++j) {
+      air.SetZero();
+      air.w[iH2O] = xH2O;
+      air.w[iNH3] = xNH3;
+      air.w[IPR] = Ps;
+      air.w[IDN] = Ts;
 
-  int i = is;
-  for (; i <= ie; ++i) {
-    // check relative humidity
-    Real rh = get_relative_humidity(air, iNH3);
-    air.w[iNH3] *= std::min(rh_max_nh3 / rh, 1.);
+      int i = is;
+      for (; i <= ie; ++i) {
+        // check relative humidity
+        Real rh = get_relative_humidity(air, iNH3);
+        air.w[iNH3] *= std::min(rh_max_nh3 / rh, 1.);
 
-    AirParcelHelper::distribute_to_primitive(pmb, ks, js, i, air);
+        AirParcelHelper::distribute_to_primitive(pmb, ks, js, i, air);
 
-    pthermo->Extrapolate(&air, -dlnp, "dry");
+        pthermo->Extrapolate(&air, -dlnp, "dry");
 
-    if (air.w[IDN] < Tmin) break;
-  }
+        if (air.w[IDN] < Tmin) break;
+      }
 
-  // Replace adiabatic atmosphere with isothermal atmosphere if temperature
-  // is too low
-  pthermo->Extrapolate(&air, dlnp, "dry");
-  for (; i <= ie; ++i) {
-    pthermo->Extrapolate(&air, -dlnp, "isothermal");
-    AirParcelHelper::distribute_to_primitive(pmb, ks, js, i, air);
-  }
-    // }
+      // Replace adiabatic atmosphere with isothermal atmosphere if temperature
+      // is too low
+      pthermo->Extrapolate(&air, dlnp, "dry");
+      for (; i <= ie; ++i) {
+        pthermo->Extrapolate(&air, -dlnp, "isothermal");
+        AirParcelHelper::distribute_to_primitive(pmb, ks, js, i, air);
+      }
+    }
+
+
+  // set tracers, electron and Na
+  int ielec = pindex->GetTracerId("e-");
+  int iNa = pindex->GetTracerId("Na");
+  auto ptracer = pimpl->ptracer;
+
+  Real xH2S = pin->GetReal("problem", "xH2S");
+
+  Real metallicity = pin->GetOrAddReal("problem", "metallicity", 0.);
+
+  Real xNa = pin->GetReal("problem", "xNa");
+  xNa *= pow(10., metallicity);
+
+  Real xKCl = pin->GetReal("problem", "xKCl");
+  xKCl *= pow(10., metallicity);
+
+  Real xHe = pin->GetReal("problem", "xHe");
+
+  Real xCH4 = pin->GetReal("problem", "xCH4");
+
+  auto phydro=pmb->phydro;
+
+  for (int k = ks; k <= ke; ++k)
+    for (int j = js; j <= je; ++j)
+      for (int i = is; i <= ie; ++i) {
+        Real temp = pthermo->GetTemp(pmb, k, j, i);
+        Real pH2S = xH2S * phydro->w(IPR, k, j, i);
+        Real pNa = xNa * phydro->w(IPR, k, j, i);
+        Real svp = sat_vapor_p_Na_H2S_Visscher(temp, pH2S);
+        pNa = std::min(svp, pNa);
+
+        ptracer->u(iNa, k, j, i) = pNa / (Constants::kBoltz * temp);
+        ptracer->u(ielec, k, j, i) = saha_ionization_electron_density(
+            temp, ptracer->u(iNa, k, j, i), 5.14);
+      }
+
+  auto peos=pmb->peos;
+  auto pfield=pmb->pfield;
+  auto pscalars=pmb->pscalars;
+  auto pbval=pmb->pbval;
+
+
+  // primitive to conserved conversion (hydro)
+  peos->PrimitiveToConserved(phydro->w, pfield->bcc, phydro->u, pcoord, is, ie,
+                             js, je, ks, ke);
+
+  // conserved to primitive conversion (tracer)
+  peos->PassiveScalarConservedToPrimitive(pscalars->s, phydro->u, pscalars->r,
+                                          pscalars->r, pcoord, is, ie, js, je,
+                                          ks, ke);
+
+  // Microwave radiative transfer needs temperatures at cell interfaces, which
+  // are interpolated from cell centered hydrodynamic variables. Normally, the
+  // boundary conditions are taken care of internally. But, since we call
+  // radiative tranfer directly in pgen, we would need to update the boundary
+  // conditions manually. The following lines of code updates the boundary
+  // conditions.
+  phydro->hbvar.SwapHydroQuantity(phydro->w, HydroBoundaryQuantity::prim);
+  pbval->ApplyPhysicalBoundaries(0., 0., pbval->bvars_main_int);
+
+
 };
