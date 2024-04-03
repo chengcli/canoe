@@ -79,6 +79,7 @@ set(CANOE_LIBRARY_${buildu}
   "diagnostics_${buildl}"
   "forcing_${buildl}"
   "yaml-cpp"
+  $<$<BOOL:${MINICHEM}>:minichem::minichem++>
   ${CPPDISORT_LIBRARY_${buildu}}
   ${PYTHON_LIBRARY_RELEASE}
   ${NETCDF_LIBRARIES}

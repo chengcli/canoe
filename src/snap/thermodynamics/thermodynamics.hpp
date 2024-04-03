@@ -279,6 +279,11 @@ class Thermodynamics {
     return w(IPR, k, j, i) / (w(IDN, k, j, i) * Rd_ * RovRd(pmb, k, j, i));
   }
 
+  template<typename T>
+  Real GetTemp(T const& w) const {
+    return w[IPR] / (w[IDN] * Rd_ * RovRd(w));
+  }
+
   //! \brief Mean molecular weight
   //!
   //! $mu = \mu_d (1 + \sum_i q_i (\epsilon_i - 1))$
@@ -296,6 +301,14 @@ class Thermodynamics {
 #pragma omp simd reduction(+ : feps)
     for (int n = 1; n <= NVAPOR; ++n)
       feps += w(n, k, j, i) * (inv_mu_ratio_[n] - 1.);
+    return feps;
+  }
+
+  template<typename T>
+  Real RovRd(T const& w) const {
+    Real feps = 1.;
+    for (int n = 1; n <= NVAPOR; ++n)
+      feps += w[n] * (inv_mu_ratio_[n] - 1.);
     return feps;
   }
 

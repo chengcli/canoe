@@ -11,6 +11,7 @@
 #include <athena/hydro/hydro.hpp>
 #include <athena/mesh/mesh.hpp>
 #include <athena/parameter_input.hpp>
+#include <athena/stride_iterator.hpp>
 
 // canoe
 #include <air_parcel.hpp>
@@ -32,10 +33,39 @@
 #include <astro/celestrial_body.hpp>
 
 // harp
-#include "harp/radiation.hpp"
+#include <harp/radiation.hpp>
+
+// minichem
+#include <minichem/mini_chem.hpp>
 
 Real Ps, Ts, Omega, grav, sponge_tau, bflux, gammad, Tmin;
 int sponge_layer;
+
+MiniChem *mc;
+
+void vmr_from_prim_scalar(std::vector<Real> &vmr, 
+                          AthenaArray<Real> const& prim_scalar, 
+                          AthenaArray<Real> const& w,
+                          int k, int j, int i)
+{
+  int n = NCLOUD;
+  vmr[0] = prim_scalar(n + 0, k, j, i);
+  vmr[1] = prim_scalar(n + 1, k, j, i);
+  vmr[2] = prim_scalar(n + 2, k, j, i);
+  vmr[3] = prim_scalar(n + 3, k, j, i);
+}
+
+void vmr_to_cons_scalar(AthenaArray<Real> &cons_scalar, 
+                        std::vector<Real> const& vmr, 
+                        AthenaArray<Real> const& w,
+                        int k, int j, int i)
+{
+  int n = NCLOUD;
+  cons_scalar(n + 0, k, j, i) = vmr[0];
+  cons_scalar(n + 1, k, j, i) = vmr[1];
+  cons_scalar(n + 2, k, j, i) = vmr[2];
+  cons_scalar(n + 3, k, j, i) = vmr[3];
+}
 
 void MeshBlock::InitUserMeshBlockData(ParameterInput *pin) {
   AllocateUserOutputVariables(7);
@@ -87,6 +117,8 @@ void Forcing(MeshBlock *pmb, Real const time, Real const dt,
   auto pthermo = Thermodynamics::GetInstance();
   auto prad = pmb->pimpl->prad;
 
+  std::vector<Real> vmr(NCHEMISTRY);
+
   for (int k = pmb->ks; k <= pmb->ke; ++k)
     for (int j = pmb->js; j <= pmb->je; ++j)
       for (int i = pmb->is; i <= pmb->ie; ++i) {
@@ -111,6 +143,13 @@ void Forcing(MeshBlock *pmb, Real const time, Real const dt,
         pexo3->ContravariantVectorToCovariant(j, k, acc2, acc3, &acc2, &acc3);
         du(IM2, k, j, i) += dt * acc2;
         du(IM3, k, j, i) += dt * acc3;
+
+        // minichem
+        Real temp = pthermo->GetTemp(w.at(k, j , i));
+        Real pres = w(IPR, k, j, i);
+        vmr_from_prim_scalar(vmr, prim_scalar, w, k, j, i);
+        mc->Run(temp, pres, dt, vmr.data(), "NCHO");
+        vmr_to_cons_scalar(cons_scalar, vmr, w, k, j, i);
       }
 }
 
@@ -139,6 +178,14 @@ void Mesh::InitUserMeshData(ParameterInput *pin) {
   // forcing function
   EnrollUserExplicitSourceFunction(Forcing);
   // EnrollUserTimeStepFunction(TimeStep);
+  
+  // minichem
+  mc = new MiniChem();
+  mc->SetDataFile("chem_data/mini_chem_data_NCHO.txt");
+  mc->SetSpeciesFile("chem_data/mini_chem_sp_NCHO.txt");
+  mc->SetNetworkDir("chem_data/1x/");
+  mc->SetMetallicityStr("1x");
+  mc->Initialize();
 }
 
 //! \fn void MeshBlock::ProblemGenerator(ParameterInput *pin)
