@@ -16,14 +16,31 @@ set(patch_command
     ${CMAKE_CURRENT_SOURCE_DIR}/patches/30.bvals_base.patch
     ${CMAKE_CURRENT_SOURCE_DIR}/patches/31.task_list.patch)
 
-FetchContent_Declare(
-  athenapp
-  GIT_REPOSITORY https://github.com/chengcli/athenapp/
-  GIT_TAG snap-mods
-  PATCH_COMMAND ${patch_command}
-  UPDATE_DISCONNECTED TRUE)
+# Define the path to the local directory
+set(local_dir "$ENV{HOME}/modules/athenapp")
+
+# Check if the local directory exists
+if(EXISTS ${local_dir})
+    message(STATUS "Using local directory: ${local_dir}")
+    # Use FetchContent with the local directory
+    FetchContent_Declare(
+      athenapp
+      URL "file://${local_dir}"
+      URL_HASH "SHA256=0"  # Dummy hash to satisfy FetchContent
+      PATCH_COMMAND ${patch_command}
+      DOWNLOAD_COMMAND rsync -a ${local_dir}/ <SOURCE_DIR>
+      UPDATE_DISCONNECTED TRUE)
+else()
+    message(STATUS "Local directory not found, downloading from GitHub")
+    FetchContent_Declare(
+      athenapp
+      GIT_REPOSITORY https://github.com/chengcli/athenapp/
+      GIT_TAG snap-mods
+      PATCH_COMMAND ${patch_command}
+      UPDATE_DISCONNECTED TRUE)
 # DOWNLOAD_EXTRACT_TIMESTAMP TRUE URL
 # https://github.com/chengcli/athenapp/archive/refs/tags/v0.8.tar.gz)
+endif()
 
 FetchContent_MakeAvailable(athenapp)
 
