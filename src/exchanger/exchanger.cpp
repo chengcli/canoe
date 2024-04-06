@@ -6,7 +6,12 @@
 // canoe
 #include "exchanger.hpp"
 
-ExchangerBase::ExchangerBase() {
+#ifdef MPI_PARALLEL
+template <>
+MPI_Datatype MPI_Type<Real>::type = MPI_ATHENA_REAL;
+#endif  // NO MPI
+
+ExchangerBase::ExchangerBase(std::string name) : NamedGroup(name) {
 #ifdef MPI_PARALLEL
   mpi_comm_ = MPI_COMM_WORLD;
   color_.resize(Globals::nranks);
@@ -35,7 +40,7 @@ ExchangerBase::~ExchangerBase() {
 void ExchangerBase::setColor(MeshBlock const *pmb, CoordinateDirection dir) {
 #ifdef MPI_PARALLEL
   NeighborBlock bblock, tblock;
-  ExchangerHelper::find_neighbors(pmb, dir, &bblock, &tblock);
+  ExchangeUtils::find_neighbors(pmb, dir, &bblock, &tblock);
 
   if (dir == X1DIR) {
     if (pmb->block_size.x1min <= pmb->pmy_mesh->mesh_size.x1min) {
@@ -102,7 +107,17 @@ int ExchangerBase::GetRankInGroup() const {
   return r;
 }
 
-namespace ExchangerHelper {
+int ExchangerBase::GetGroupSize() const {
+#ifdef MPI_PARALLEL
+  int nblocks;
+  MPI_Comm_size(mpi_comm_, &nblocks);
+  return nblocks;
+#endif  // MPI_PARALLEL
+
+  return 1;
+}
+
+namespace ExchangeUtils {
 
 int mpi_tag_ub;
 
@@ -214,4 +229,4 @@ void find_neighbors(MeshBlock const *pmb, CoordinateDirection dir,
   }
 }
 
-}  // namespace ExchangerHelper
+}  // namespace ExchangeUtils
