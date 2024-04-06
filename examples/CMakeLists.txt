@@ -20,6 +20,12 @@ if (${TASK} STREQUAL "straka" OR
   add_subdirectory(2019-Li-snap)
 endif()
 
+if (${TASK} STREQUAL "jupiter_dry" OR
+    ${TASK} STREQUAL "jupiter_h2o" OR
+    ${TASK} STREQUAL "jupiter_crm")
+  add_subdirectory(2024-YZhou-jupiter)
+endif()
+
 if (${TASK} STREQUAL "ktable_jup")
   add_subdirectory(2024-FDing-jupiter-rt)
 endif()

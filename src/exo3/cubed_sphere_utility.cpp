@@ -627,15 +627,17 @@ void get_latlon_on_sphere(Real *lat, Real *lon, MeshBlock const *pmb, int k,
                           int j, int i) {
 #ifdef CUBED_SPHERE
   pmb->pimpl->pexo3->GetLatLon(lat, lon, k, j, pmb->ie);
-#elif COORDINATE_SYSTEM == "spherical_polar"  // FIXME: add another condition
-  *lat = M_PI / 2. - pmb->pcoord->x2v(j);
-  *lon = pmb->pcoord->x3v(k);
-#else                                         // cartesian
-  std::stringstream msg;
-  msg << "Both Planet and TimeDependent flags are set, but coordinate system "
-      << COORDINATE_SYSTEM << " is not supported.";
-  throw RuntimeError("RTSolverDisort::Prepare", msg.str());
-#endif                                        // CUBED_SPHERE
+#else   // cartesian
+  if (strcmp(COORDINATE_SYSTEM, "spherical_polar") == 0) {
+    *lat = M_PI / 2. - pmb->pcoord->x2v(j);
+    *lon = pmb->pcoord->x3v(k);
+  } else {
+    std::stringstream msg;
+    msg << "Both Planet and TimeDependent flags are set, but coordinate system "
+        << COORDINATE_SYSTEM << " is not supported.";
+    throw RuntimeError("RTSolverDisort::Prepare", msg.str());
+  }
+#endif  // CUBED_SPHERE
 }
 
 }  // namespace CubedSphereUtility
