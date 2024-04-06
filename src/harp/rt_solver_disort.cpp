@@ -20,7 +20,6 @@
 #include <climath/interpolation.h>
 
 // canoe
-#include <configure.hpp>
 #include <constants.hpp>
 #include <impl.hpp>
 
@@ -29,6 +28,7 @@
 
 // exo3
 #include <exo3/cubed_sphere.hpp>
+#include <exo3/cubed_sphere_utility.hpp>
 
 // harp
 #include "radiation.hpp"
@@ -145,15 +145,11 @@ void RadiationBand::RTSolverDisort::Prepare(MeshBlock const *pmb, int k,
 
   if (planet && pmy_band_->TestFlag(RadiationFlags::TimeDependent)) {
     Real time = pmb->pmy_mesh->time;
-    Real lat, lon, colat;
-#ifdef CUBED_SPHERE
-    pmb->pimpl->pexo3->GetLatLon(&lat, &lon, k, j, pmb->ie);
-    colat = M_PI / 2. - lat;
-#else   // FIXME: add another condition
-    colat = pmb->pcoord->x2v(j);
-    lon = pmb->pcoord->x3v(k);
-#endif  // CUBED_SPHERE
-    ray = planet->ParentZenithAngle(time, colat, lon);
+    Real lat, lon;
+
+    CubedSphereUtility::get_latlon_on_sphere(&lat, &lon, pmb, k, j, pmb->is);
+
+    ray = planet->ParentZenithAngle(time, lat, lon);
     dist_au = planet->ParentDistanceInAu(time);
   } else {  // constant zenith angle
     if (pmy_band_->HasPar("umu0")) {
@@ -174,15 +170,13 @@ void RadiationBand::RTSolverDisort::Prepare(MeshBlock const *pmb, int k,
                      0);
   }
 
-  pmy_band_->Regroup(pmb, X1DIR);
-  myrank_in_column_ = pmy_band_->GetRankInGroup();
-
-  // transfer temperature
+  // pack temperature
   if (ds_.flag.planck) {
     pmy_band_->PackTemperature();
-    pmy_band_->Transfer(pmb, 0);
-    pmy_band_->UnpackTemperature(&ds_);
   }
+
+  // pack spectral properties
+  pmy_band_->PackSpectralProperties();
 
   ds_.bc.umu0 = ray.mu > 1.E-3 ? ray.mu : 1.E-3;
   ds_.bc.phi0 = ray.phi;
@@ -205,10 +199,8 @@ void RadiationBand::RTSolverDisort::Prepare(MeshBlock const *pmb, int k,
     ds_.bc.fbeam /= dist_au * dist_au;
   }
 
-  if (pmb->pcoord != nullptr) {
-    pmb->pcoord->Face1Area(k, j, pmb->is, pmb->ie + 1, farea_);
-    pmb->pcoord->CellVolume(k, j, pmb->is, pmb->ie, vol_);
-  }
+  pmb->pcoord->Face1Area(k, j, pmb->is, pmb->ie + 1, farea_);
+  pmb->pcoord->CellVolume(k, j, pmb->is, pmb->ie, vol_);
 
   auto &&uphi_umu = RadiationHelper::get_direction_grids(pmy_band_->rayOutput_);
   auto &uphi = uphi_umu.first;
@@ -232,7 +224,7 @@ void RadiationBand::RTSolverDisort::Prepare(MeshBlock const *pmb, int k,
 }
 
 void RadiationBand::RTSolverDisort::CalBandFlux(MeshBlock const *pmb, int k,
-                                                int j, int il, int iu) {
+                                                int j) {
   Real dist_au = 1.;
   auto planet = pmb->pimpl->planet;
 
@@ -245,7 +237,6 @@ void RadiationBand::RTSolverDisort::CalBandFlux(MeshBlock const *pmb, int k,
   // bflxup and bflxdn has been reset in RadiationBand::CalBandFlux
 
   // loop over spectral grids in the band
-  int b = 0;
   bool override_with_stellar_spectra = false;
   if (!pmy_band_->TestFlag(RadiationFlags::BroadBand) &&
       !pmy_band_->HasPar("S0") && !pmy_band_->HasPar("temp0") && planet &&
@@ -253,6 +244,12 @@ void RadiationBand::RTSolverDisort::CalBandFlux(MeshBlock const *pmb, int k,
     override_with_stellar_spectra = true;
   }
 
+  pmy_band_->pexv->GatherAll(pmb);
+  if (ds_.flag.planck) {
+    pmy_band_->UnpackTemperature(&ds_);
+  }
+
+  int b = 0;
   for (auto &spec : pmy_band_->pgrid_->spec) {
     if (override_with_stellar_spectra) {
       // stellar source function
@@ -264,17 +261,13 @@ void RadiationBand::RTSolverDisort::CalBandFlux(MeshBlock const *pmb, int k,
     }
 
     // transfer spectral grid data
-    pmy_band_->PackSpectralGrid(b);
-    pmy_band_->Transfer(pmb, 1);
-    pmy_band_->UnpackSpectralGrid(&ds_);
+    pmy_band_->UnpackSpectralProperties(b, &ds_);
 
     // run disort
     c_disort(&ds_, &ds_out_);
 
     // add spectral bin flux
-    if (pmb->pcoord != nullptr) {
-      addDisortFlux(pmb->pcoord, b++, k, j, il, iu);
-    }
+    addDisortFlux(pmb->pcoord, b++, k, j, pmb->is, pmb->ie + 1);
   }
 }
 
@@ -288,9 +281,11 @@ void RadiationBand::RTSolverDisort::addDisortFlux(Coordinates const *pcoord,
   auto &flxdn = pmy_band_->flxdn_;
   auto const &spec = pmy_band_->pgrid_->spec;
 
+  int rank_in_column = pmy_band_->pexv->GetRankInGroup();
+
   /// accumulate flux from spectral bins
   for (int i = il; i <= iu; ++i) {
-    int m = ds_.nlyr - (myrank_in_column_ * (iu - il) + i - il);
+    int m = ds_.nlyr - (rank_in_column * (iu - il) + i - il);
     //! \bug does not work for spherical geometry, need to scale area using
     //! farea(il)/farea(i)
     // flux up
@@ -315,20 +310,16 @@ void RadiationBand::RTSolverDisort::addDisortFlux(Coordinates const *pcoord,
   Real bflxup_iu = bflxup(k, j, iu);
   Real bflxdn_iu = bflxdn(k, j, iu);
 
-  if (pcoord != nullptr) {
-    for (int i = iu - 1; i >= il; --i) {
-      // upward
-      volh = (bflxup_iu - bflxup(k, j, i)) / pcoord->dx1f(i) * vol_(i);
-      bflxup_iu = bflxup(k, j, i);
-      bflxup(k, j, i) =
-          (bflxup(k, j, i + 1) * farea_(i + 1) - volh) / farea_(i);
+  for (int i = iu - 1; i >= il; --i) {
+    // upward
+    volh = (bflxup_iu - bflxup(k, j, i)) / pcoord->dx1f(i) * vol_(i);
+    bflxup_iu = bflxup(k, j, i);
+    bflxup(k, j, i) = (bflxup(k, j, i + 1) * farea_(i + 1) - volh) / farea_(i);
 
-      // downward
-      volh = (bflxdn_iu - bflxdn(k, j, i)) / pcoord->dx1f(i) * vol_(i);
-      bflxdn_iu = bflxdn(k, j, i);
-      bflxdn(k, j, i) =
-          (bflxdn(k, j, i + 1) * farea_(i + 1) - volh) / farea_(i);
-    }
+    // downward
+    volh = (bflxdn_iu - bflxdn(k, j, i)) / pcoord->dx1f(i) * vol_(i);
+    bflxdn_iu = bflxdn(k, j, i);
+    bflxdn(k, j, i) = (bflxdn(k, j, i + 1) * farea_(i + 1) - volh) / farea_(i);
   }
 }
 
@@ -362,7 +353,10 @@ void RadiationBand::RTSolverDisort::CalBandRadiance(MeshBlock const *pmb, int k,
     dist_au = pmy_band_->GetPar<Real>("dist_au");
   }
 
-  RadiationHelper::get_phase_momentum(ds_.pmom, ISOTROPIC, 0., ds_.nmom);
+  pmy_band_->pexv->GatherAll(pmb);
+  if (ds_.flag.planck) {
+    pmy_band_->UnpackTemperature(&ds_);
+  }
 
   // loop over spectral grids in the band
   int b = 0;
@@ -382,9 +376,7 @@ void RadiationBand::RTSolverDisort::CalBandRadiance(MeshBlock const *pmb, int k,
     }
 
     // transfer spectral grid data
-    pmy_band_->PackSpectralGrid(b);
-    pmy_band_->Transfer(pmb, 1);
-    pmy_band_->UnpackSpectralGrid(&ds_);
+    pmy_band_->UnpackSpectralProperties(b, &ds_);
 
     // run disort
     c_disort(&ds_, &ds_out_);

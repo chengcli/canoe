@@ -9,6 +9,7 @@
 
 // application
 #include <application/application.hpp>
+#include <application/exceptions.hpp>
 
 // canoe
 #include <configure.hpp>
@@ -49,15 +50,16 @@ class RadiationBand::RTSolver : public NamedGroup {
   }
 
  public:  // inbound functions
-  virtual void CalBandFlux(MeshBlock const *pmb, int k, int j, int il, int iu) {
+  virtual void CalBandFlux(MeshBlock const *pmb, int k, int j) {
+    throw NotImplementedError("CalBandFlux not implemented.");
   }
-
-  virtual void CalBandRadiance(MeshBlock const *pmb, int k, int j) {}
+  virtual void CalBandRadiance(MeshBlock const *pmb, int k, int j) {
+    throw NotImplementedError("CalBandRadiance not implemented.");
+  }
 
  protected:
   RadiationBand *pmy_band_;
   AthenaArray<Real> farea_, vol_;
-  int myrank_in_column_;
 };
 
 class RadiationBand::RTSolverLambert : public RadiationBand::RTSolver {
@@ -67,8 +69,6 @@ class RadiationBand::RTSolverLambert : public RadiationBand::RTSolver {
   ~RTSolverLambert() {}
 
  public:  // inbound functions
-  void CalBandFlux(MeshBlock const *pmb, int k, int j, int il, int iu) override;
-
   void CalBandRadiance(MeshBlock const *pmb, int k, int j) override;
 };
 
@@ -84,7 +84,7 @@ class RadiationBand::RTSolverDisort : public RadiationBand::RTSolver,
   void Resize(int nlyr, int nstr) override;
 
  public:  // inbound functions
-  void CalBandFlux(MeshBlock const *pmb, int k, int j, int il, int iu) override;
+  void CalBandFlux(MeshBlock const *pmb, int k, int j) override;
   void CalBandRadiance(MeshBlock const *pmb, int k, int j) override;
 
  protected:
