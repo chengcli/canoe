@@ -2,34 +2,23 @@
 #include <athena/coordinates/coordinates.hpp>
 #include <athena/hydro/hydro.hpp>
 
-// canoe
-#include <configure.hpp>
-
 // diagnostics
 #include "diagnostics.hpp"
 
 PressureAnomaly::PressureAnomaly(MeshBlock *pmb) : Diagnostics(pmb, "presa") {
   type = "SCALARS";
-  mean_.NewAthenaArray(ncells1_);
   data.NewAthenaArray(ncells3_, ncells2_, ncells1_);
+  mean_.resize(ncells1_);
 
-  Regroup(pmb, X1DIR);
+  pexh = std::make_shared<PlanarExchanger<Real, 2>>("diag/presa");
 
-  // calculate total volume
-  total_vol_.ZeroClear();
-  for (int k = pmb->ks; k <= pmb->ke; ++k)
-    for (int j = pmb->js; j <= pmb->je; ++j) {
-      pmb->pcoord->CellVolume(k, j, pmb->is, pmb->ie, vol_);
+  // volumn
+  pexh->send_buffer[0].resize(total_vol_.size());
+  pexh->recv_buffer[0].resize(total_vol_.size());
 
-      for (int i = pmb->is; i <= pmb->ie; ++i) {
-        total_vol_(i) += vol_(i);
-      }
-    }
-
-#ifdef MPI_PARALLEL
-  MPI_Allreduce(MPI_IN_PLACE, total_vol_.data(), total_vol_.GetSize(),
-                MPI_ATHENA_REAL, MPI_SUM, mpi_comm_);
-#endif
+  // value
+  pexh->send_buffer[1].resize(ncells1_);
+  pexh->recv_buffer[1].resize(ncells1_);
 }
 
 void PressureAnomaly::Finalize(MeshBlock *pmb) {
@@ -39,7 +28,8 @@ void PressureAnomaly::Finalize(MeshBlock *pmb) {
   int is = pmb->is, js = pmb->js, ks = pmb->ks;
   int ie = pmb->ie, je = pmb->je, ke = pmb->ke;
 
-  mean_.ZeroClear();
+  std::fill(total_vol_.begin(), total_vol_.end(), 0.);
+  std::fill(mean_.begin(), mean_.end(), 0.);
 
   // calculate horizontal mean
   for (int k = ks; k <= ke; ++k)
@@ -47,20 +37,31 @@ void PressureAnomaly::Finalize(MeshBlock *pmb) {
       pcoord->CellVolume(k, j, is, ie, vol_);
 
       for (int i = is; i <= ie; ++i) {
-        mean_(i) += vol_(i) * w(IPR, k, j, i);
+        total_vol_[i] += vol_(i);
+        mean_[i] += vol_(i) * w(IPR, k, j, i);
       }
     }
 
-    // gatherAllData23_(total_vol_, mean_);
-#ifdef MPI_PARALLEL
-  MPI_Allreduce(MPI_IN_PLACE, mean_.data(), mean_.GetSize(), MPI_ATHENA_REAL,
-                MPI_SUM, mpi_comm_);
-#endif
+  pexh->Regroup(pmb, X1DIR);
+
+  packData(pmb);
+  pexh->ReduceAll(pmb, MPI_SUM);
+  unpackData(pmb);
 
   // pressure anomaly
   for (int k = ks; k <= ke; ++k)
     for (int j = js; j <= je; ++j)
       for (int i = is; i <= ie; ++i) {
-        data(k, j, i) = w(IPR, k, j, i) - mean_(i) / total_vol_(i);
+        data(k, j, i) = w(IPR, k, j, i) - mean_[i] / total_vol_[i];
       }
+}
+
+void PressureAnomaly::packData(MeshBlock const *pmb) {
+  pexh->send_buffer[0].swap(total_vol_);
+  pexh->send_buffer[1].swap(mean_);
+}
+
+void PressureAnomaly::unpackData(MeshBlock const *pmb) {
+  total_vol_.swap(pexh->recv_buffer[0]);
+  mean_.swap(pexh->recv_buffer[1]);
 }

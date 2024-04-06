@@ -47,7 +47,9 @@ class Diagnostics : public NamedGroup {
 
   AthenaArray<Real> x1area_, x2area_, x2area_p1_, x3area_, x3area_p1_;
 
-  AthenaArray<Real> vol_, total_vol_, total_area_;
+  AthenaArray<Real> vol_;
+
+  std::vector<Real> total_vol_, total_area_;
 };
 
 using DiagnosticsPtr = std::shared_ptr<Diagnostics>;
@@ -127,7 +129,10 @@ class HorizontalDivergence : public Diagnostics {
 };
 
 // 6. temperature anomaly
-class TemperatureAnomaly : public Diagnostics, public PlanarExchanger<Real, 0> {
+class TemperatureAnomaly : public Diagnostics {
+ public:
+  std::shared_ptr<PlanarExchanger<Real, 2>> pexh;
+
  public:
   TemperatureAnomaly(MeshBlock *pmb);
   virtual ~TemperatureAnomaly() {}
@@ -136,12 +141,18 @@ class TemperatureAnomaly : public Diagnostics, public PlanarExchanger<Real, 0> {
   int GetNumVars() const override { return 1; }
 
  protected:
+  void packData(MeshBlock const *pmb);
+  void unpackData(MeshBlock const *pmb);
+
   //! mean component
-  AthenaArray<Real> mean_;
+  std::vector<Real> mean_;
 };
 
 // 7. pressure anomaly
-class PressureAnomaly : public Diagnostics, public PlanarExchanger<Real, 0> {
+class PressureAnomaly : public Diagnostics {
+ public:
+  std::shared_ptr<PlanarExchanger<Real, 2>> pexh;
+
  public:
   PressureAnomaly(MeshBlock *pmb);
   virtual ~PressureAnomaly() {}
@@ -150,12 +161,18 @@ class PressureAnomaly : public Diagnostics, public PlanarExchanger<Real, 0> {
   int GetNumVars() const override { return 1; }
 
  protected:
+  void packData(MeshBlock const *pmb);
+  void unpackData(MeshBlock const *pmb);
+
   //! mean component
-  AthenaArray<Real> mean_;
+  std::vector<Real> mean_;
 };
 
 // 8. total radiative flux
-class RadiativeFlux : public Diagnostics, public PlanarExchanger<Real, 0> {
+class RadiativeFlux : public Diagnostics {
+ public:
+  std::shared_ptr<PlanarExchanger<Real, 2>> pexh;
+
  public:
   RadiativeFlux(MeshBlock *pmb);
   virtual ~RadiativeFlux() {}
@@ -165,11 +182,17 @@ class RadiativeFlux : public Diagnostics, public PlanarExchanger<Real, 0> {
   int GetNumVars() const override { return 2; }
 
  protected:
+  void packData(MeshBlock const *pmb);
+  void unpackData(MeshBlock const *pmb);
+
   int ncycle_;
 };
 
 // 9. hydro flux
-class HydroFlux : public Diagnostics, public PlanarExchanger<Real, 0> {
+class HydroFlux : public Diagnostics {
+ public:
+  std::shared_ptr<PlanarExchanger<Real, 2>> pexh;
+
  public:
   HydroFlux(MeshBlock *pmb);
   virtual ~HydroFlux() {}
@@ -179,6 +202,9 @@ class HydroFlux : public Diagnostics, public PlanarExchanger<Real, 0> {
   int GetNumVars() const override { return NHYDRO; }
 
  protected:
+  void packData(MeshBlock const *pmb);
+  void unpackData(MeshBlock const *pmb);
+
   int ncycle_;
 };
 

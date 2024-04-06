@@ -5,9 +5,6 @@
 // snap
 #include <snap/thermodynamics/thermodynamics.hpp>
 
-// canoe
-#include <configure.hpp>
-
 // diagnostics
 #include "diagnostics.hpp"
 
@@ -23,23 +20,14 @@ HydroFlux::HydroFlux(MeshBlock *pmb)
   SetName(varname);
   data.NewAthenaArray(NHYDRO, ncells1_);
 
-  Regroup(pmb, X1DIR);
+  pexh = std::make_shared<PlanarExchanger<Real, 2>>("diag/hydroflux");
 
-  // calculate total volume
-  total_vol_.ZeroClear();
-  for (int k = pmb->ks; k <= pmb->ke; ++k)
-    for (int j = pmb->js; j <= pmb->je; ++j) {
-      pmb->pcoord->CellVolume(k, j, pmb->is, pmb->ie, vol_);
-
-      for (int i = pmb->is; i <= pmb->ie + 1; ++i) {
-        total_vol_(i) += vol_(i);
-      }
-    }
-
-#ifdef MPI_PARALLEL
-  MPI_Allreduce(MPI_IN_PLACE, total_vol_.data(), total_vol_.GetSize(),
-                MPI_ATHENA_REAL, MPI_SUM, mpi_comm_);
-#endif
+  // volumn
+  pexh->send_buffer[0].resize(total_vol_.size());
+  pexh->recv_buffer[0].resize(total_vol_.size());
+  // value
+  pexh->send_buffer[1].resize(NHYDRO * ncells1_);
+  pexh->recv_buffer[1].resize(NHYDRO * ncells1_);
 }
 
 void HydroFlux::Progress(MeshBlock *pmb) {
@@ -75,18 +63,50 @@ void HydroFlux::Progress(MeshBlock *pmb) {
 void HydroFlux::Finalize(MeshBlock *pmb) {
   // take time and spatial average
   if (ncycle_ > 0) {
-    // sum over all ranks
-#ifdef MPI_PARALLEL
-    MPI_Allreduce(MPI_IN_PLACE, data.data(), data.GetSize(), MPI_ATHENA_REAL,
-                  MPI_SUM, mpi_comm_);
-#endif
+    std::fill(total_vol_.begin(), total_vol_.end(), 0.);
+
+    // calculate total volume
+    for (int k = pmb->ks; k <= pmb->ke; ++k)
+      for (int j = pmb->js; j <= pmb->je; ++j) {
+        pmb->pcoord->CellVolume(k, j, pmb->is, pmb->ie, vol_);
+
+        for (int i = pmb->is; i <= pmb->ie + 1; ++i) {
+          total_vol_[i] += vol_(i);
+        }
+      }
+
+    pexh->Regroup(pmb, X1DIR);
+
+    packData(pmb);
+    pexh->ReduceAll(pmb, MPI_SUM);
+    unpackData(pmb);
 
     for (int n = 0; n < NHYDRO; ++n) {
       for (int i = pmb->is; i <= pmb->ie; ++i)
-        data(n, i) /= ncycle_ * total_vol_(i);
+        data(n, i) /= ncycle_ * total_vol_[i];
     }
   }
 
   // clear cycle;
   ncycle_ = 0;
+}
+
+void HydroFlux::packData(MeshBlock const *pmb) {
+  pexh->send_buffer[0].swap(total_vol_);
+
+  for (int n = 0; n < NHYDRO; ++n) {
+    for (int i = pmb->is; i <= pmb->ie; ++i) {
+      pexh->send_buffer[1][n * ncells1_ + i] = data(n, i);
+    }
+  }
+}
+
+void HydroFlux::unpackData(MeshBlock const *pmb) {
+  total_vol_.swap(pexh->recv_buffer[0]);
+
+  for (int n = 0; n < NHYDRO; ++n) {
+    for (int i = pmb->is; i <= pmb->ie; ++i) {
+      data(n, i) = pexh->recv_buffer[1][n * ncells1_ + i];
+    }
+  }
 }
