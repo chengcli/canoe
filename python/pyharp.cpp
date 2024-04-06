@@ -52,7 +52,7 @@ void init_harp(py::module &parent) {
       .def("__str__", &RadiationBand::ToString)
 
       .def("resize", &RadiationBand::Resize, py::arg("nc1"), py::arg("nc2") = 1,
-           py::arg("nc3") = 1, py::arg("nstr") = 4)
+           py::arg("nc3") = 1, py::arg("nstr") = 4, py::arg("mb") = nullptr)
       .def("get_num_specgrids", &RadiationBand::GetNumSpecGrids)
       .def("get_num_absorbers", &RadiationBand::GetNumAbsorbers)
       .def("absorbers", &RadiationBand::Absorbers)

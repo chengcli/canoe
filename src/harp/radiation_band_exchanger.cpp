@@ -15,9 +15,9 @@
 #include <mpi.h>
 #endif  // MPI_PARALLEL
 
-void RadiationBand::PackTemperature() { pexv->send_buffer[0].swap(temf_); }
+void RadiationBand::packTemperature() { pexv->send_buffer[0].swap(temf_); }
 
-bool RadiationBand::UnpackTemperature(void *arg) {
+bool RadiationBand::unpackTemperature(void *arg) {
   int nblocks = pexv->GetGroupSize();
   int nlevels = temf_.size();
   int nlayers = GetNumLayers();
@@ -38,7 +38,7 @@ bool RadiationBand::UnpackTemperature(void *arg) {
   return true;
 }
 
-void RadiationBand::PackSpectralProperties() {
+void RadiationBand::packSpectralProperties() {
   int nlayers = GetNumLayers();
   int npmom = GetNumPhaseMoments();
 
@@ -56,7 +56,7 @@ void RadiationBand::PackSpectralProperties() {
   }
 }
 
-void RadiationBand::UnpackSpectralProperties(int b, void *arg) {
+void RadiationBand::unpackSpectralProperties(int b, void *arg) {
   int nblocks = pexv->GetGroupSize();
   int nlayers = GetNumLayers();
   int npmom = GetNumPhaseMoments();

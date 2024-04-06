@@ -68,7 +68,7 @@ Radiation::Radiation(MeshBlock *pmb, ParameterInput *pin) {
     }
 
     // allocate memory
-    p->Resize(ncells1, ncells2, ncells3, nstr);
+    p->Resize(ncells1, ncells2, ncells3, nstr, pmb);
   }
 
   // output radiance

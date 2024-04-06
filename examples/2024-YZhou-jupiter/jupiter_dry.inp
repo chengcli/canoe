@@ -10,7 +10,7 @@ dt          = 10.E5
 
 <output1>
 file_type   = hst           # History data dump
-dt          = 2.E4          # time increment between outputs
+dt          = 1.E5          # time increment between outputs
 
 <output2>
 file_type   = pnetcdf        # Netcdf format output
@@ -20,6 +20,16 @@ dt          = 1.E4          # time increment between outputs
 <output3>
 file_type   = pnetcdf        # Netcdf format output
 variable    = uov           # diagnostic variables
+dt          = 1.E4          # time increment
+
+<output4>
+file_type   = pnetcdf        # Netcdf format output
+variable    = diag           # diagnostic variables
+dt          = 1.E4          # time increment
+
+<output5>
+file_type   = pnetcdf        # Netcdf format output
+variable    = rad           # diagnostic variables
 dt          = 1.E4          # time increment
 
 <time>
@@ -61,6 +71,12 @@ implicit_flag = 1
 <thermodynamics>
 Rd          = 3777.   # mu = 2.3175 g/mol
 
+<radiation>
+dt            = 200.
+nstr          = 4
+radiation_config = jupiter.yaml
+relax_time    = 1.E4
+
 <problem>
 P0          = 1.E5
 T0          = 169.
@@ -68,3 +84,4 @@ Tmin        = 110.
 hrate       = -100.
 prad        = 2.e5
 init_Ttol   = 2.
+diagnostics = div, curl, b, mean, div_h, tempa, presa, radflux, hydroflux

@@ -65,7 +65,7 @@ class RadiationBand : public NamedGroup,
 
  public:  // member functions
   //! \brief Allocate memory for radiation band
-  void Resize(int nc1, int nc2, int nc3, int nstr);
+  void Resize(int nc1, int nc2, int nc3, int nstr, MeshBlock const *pmb);
 
   //! \brief Create radiative transfer solver from YAML node
   //!
@@ -137,23 +137,23 @@ class RadiationBand : public NamedGroup,
   void WriteAsciiHeader(OutputParameters const *) const override;
   void WriteAsciiData(OutputParameters const *) const override;
 
+ public:  // StringReprGroup functions
+  std::string ToString() const override;
+
  public:  // Exchanger functions
   //! \brief Pack temperature at cell face into send buffer 0
-  void PackTemperature();
+  void packTemperature();
 
   //! \brief Unpack temperature at cell face from receive buffer 0
-  bool UnpackTemperature(void *arg);
+  bool unpackTemperature(void *arg);
 
   //! \brief Pack data in all spectral grids into send buffer 1
   //!
   //! \param[in] b spectral bin index
-  void PackSpectralProperties();
+  void packSpectralProperties();
 
   //! \brief Unpack data from receive buffer 1 into spectral grid b
-  void UnpackSpectralProperties(int b, void *arg);
-
- public:  // StringReprGroup functions
-  std::string ToString() const override;
+  void unpackSpectralProperties(int b, void *arg);
 
  protected:
   //! radiative transfer solver

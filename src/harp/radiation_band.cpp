@@ -111,7 +111,8 @@ RadiationBand::~RadiationBand() {
   app->Log("Destroy RadiationBand " + GetName());
 }
 
-void RadiationBand::Resize(int nc1, int nc2, int nc3, int nstr) {
+void RadiationBand::Resize(int nc1, int nc2, int nc3, int nstr,
+                           MeshBlock const *pmb) {
   // allocate memory for spectral properties
   tem_.resize(nc1);
   temf_.resize(nc1 + 1);
@@ -144,17 +145,22 @@ void RadiationBand::Resize(int nc1, int nc2, int nc3, int nstr) {
   bflxup.NewAthenaArray(nc3, nc2, nc1 + 1);
   bflxdn.NewAthenaArray(nc3, nc2, nc1 + 1);
 
-  if (psolver_ != nullptr) {
-    psolver_->Resize(nc1 - 2 * NGHOST, nstr);
-  }
-
   // exchange buffer
-  auto pexv = std::make_shared<LinearExchanger<Real, 2>>(GetName());
+  pexv = std::make_shared<LinearExchanger<Real, 2>>(GetName());
 
   int nlayers = GetNumLayers();
   int npmom = GetNumPhaseMoments();
   pexv->send_buffer[0].resize(temf_.size());
   pexv->send_buffer[1].resize(nlayers * (npmom + 3));
+
+  pexv->Regroup(pmb, X1DIR);
+  int nblocks = pexv->GetGroupSize();
+  pexv->recv_buffer[0].resize(nblocks * pexv->send_buffer[0].size());
+  pexv->recv_buffer[1].resize(nblocks * pexv->send_buffer[1].size());
+
+  if (psolver_ != nullptr) {
+    psolver_->Resize(nblocks * (nc1 - 2 * NGHOST), nstr);
+  }
 }
 
 AbsorberPtr RadiationBand::GetAbsorberByName(std::string const &name) {
@@ -178,12 +184,6 @@ RadiationBand const *RadiationBand::CalBandFlux(MeshBlock const *pmb, int k,
   }
 
   psolver_->Prepare(pmb, k, j);
-
-  pexv->Regroup(pmb, X1DIR);
-  int nblocks = pexv->GetGroupSize();
-  pexv->recv_buffer[0].resize(nblocks * pexv->send_buffer[0].size());
-  pexv->recv_buffer[1].resize(nblocks * pexv->send_buffer[1].size());
-
   psolver_->CalBandFlux(pmb, k, j);
 
   return this;
@@ -197,12 +197,6 @@ RadiationBand const *RadiationBand::CalBandRadiance(MeshBlock const *pmb, int k,
   }
 
   psolver_->Prepare(pmb, k, j);
-
-  pexv->Regroup(pmb, X1DIR);
-  int nblocks = pexv->GetGroupSize();
-  pexv->recv_buffer[0].resize(nblocks * pexv->send_buffer[0].size());
-  pexv->recv_buffer[1].resize(nblocks * pexv->send_buffer[1].size());
-
   psolver_->CalBandRadiance(pmb, k, j);
 
   return this;

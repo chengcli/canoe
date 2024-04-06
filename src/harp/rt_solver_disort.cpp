@@ -172,11 +172,11 @@ void RadiationBand::RTSolverDisort::Prepare(MeshBlock const *pmb, int k,
 
   // pack temperature
   if (ds_.flag.planck) {
-    pmy_band_->PackTemperature();
+    pmy_band_->packTemperature();
   }
 
   // pack spectral properties
-  pmy_band_->PackSpectralProperties();
+  pmy_band_->packSpectralProperties();
 
   ds_.bc.umu0 = ray.mu > 1.E-3 ? ray.mu : 1.E-3;
   ds_.bc.phi0 = ray.phi;
@@ -246,7 +246,7 @@ void RadiationBand::RTSolverDisort::CalBandFlux(MeshBlock const *pmb, int k,
 
   pmy_band_->pexv->GatherAll(pmb);
   if (ds_.flag.planck) {
-    pmy_band_->UnpackTemperature(&ds_);
+    pmy_band_->unpackTemperature(&ds_);
   }
 
   int b = 0;
@@ -261,7 +261,7 @@ void RadiationBand::RTSolverDisort::CalBandFlux(MeshBlock const *pmb, int k,
     }
 
     // transfer spectral grid data
-    pmy_band_->UnpackSpectralProperties(b, &ds_);
+    pmy_band_->unpackSpectralProperties(b, &ds_);
 
     // run disort
     c_disort(&ds_, &ds_out_);
@@ -355,7 +355,7 @@ void RadiationBand::RTSolverDisort::CalBandRadiance(MeshBlock const *pmb, int k,
 
   pmy_band_->pexv->GatherAll(pmb);
   if (ds_.flag.planck) {
-    pmy_band_->UnpackTemperature(&ds_);
+    pmy_band_->unpackTemperature(&ds_);
   }
 
   // loop over spectral grids in the band
@@ -376,7 +376,7 @@ void RadiationBand::RTSolverDisort::CalBandRadiance(MeshBlock const *pmb, int k,
     }
 
     // transfer spectral grid data
-    pmy_band_->UnpackSpectralProperties(b, &ds_);
+    pmy_band_->unpackSpectralProperties(b, &ds_);
 
     // run disort
     c_disort(&ds_, &ds_out_);
