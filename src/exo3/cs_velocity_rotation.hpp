@@ -48,18 +48,12 @@ void vel_zxy_to_zab(Real *v1, Real *v2, Real *v3, Real a, Real b);
 //! Transform cubed sphere velocity from panel 1 to panel 2
 //! \param a $x = \tan(\xi)$ coordinates
 //! \param b $y = \tan(\eta)$ coordinat
-void vel_zab_from_p1(Real *vz, Real *vx, Real *vy, Real a, Real b,
-                            int panel);
-void vel_zab_from_p2(Real *vz, Real *vx, Real *vy, Real a, Real b,
-                            int panel);
-void vel_zab_from_p3(Real *vz, Real *vx, Real *vy, Real a, Real b,
-                            int panel);
-void vel_zab_from_p4(Real *vz, Real *vx, Real *vy, Real a, Real b,
-                            int panel);
-void vel_zab_from_p5(Real *vz, Real *vx, Real *vy, Real a, Real b,
-                            int panel);
-void vel_zab_from_p6(Real *vz, Real *vx, Real *vy, Real a, Real b,
-                            int panel);
+void vel_zab_from_p1(Real *vz, Real *vx, Real *vy, Real a, Real b, int panel);
+void vel_zab_from_p2(Real *vz, Real *vx, Real *vy, Real a, Real b, int panel);
+void vel_zab_from_p3(Real *vz, Real *vx, Real *vy, Real a, Real b, int panel);
+void vel_zab_from_p4(Real *vz, Real *vx, Real *vy, Real a, Real b, int panel);
+void vel_zab_from_p5(Real *vz, Real *vx, Real *vy, Real a, Real b, int panel);
+void vel_zab_from_p6(Real *vz, Real *vx, Real *vy, Real a, Real b, int panel);
 }  // namespace CubedSphereUtility
 
 #endif  // SRC_EXO3_VELOCITY_ROTATION_HPP_
