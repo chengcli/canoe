@@ -30,13 +30,17 @@ class ParticleBase : public NamedGroup,
                      public RestartGroup,
                      // ASCIIOutputGroup,
                      // BinaryOutputGroup,
-                     public MeshOutputGroup,
-                     public MultiStageIntegrator,
-                     public Exchanger<ParticleData, 56> {
+                     public MeshOutputGroup {
  public:
   /// public data
   //! particle data container. pc1 is reserved for multi-stage integration
   ParticleContainer pc, pc1;
+
+  //! exchanger
+  std::shared_ptr<Exchanger<ParticleData, 56>> pexb;
+
+  //! integrator
+  std::shared_ptr<MultistageIntegrator> pint;
 
   //! mesh data container
   AthenaArray<Real> weight, charge;
@@ -66,10 +70,10 @@ class ParticleBase : public NamedGroup,
   void WeightedAverage(Real ave_wghts[]) override;
 
  public:  // Exchanger functions
-  void PackData(MeshBlock const *pmb) override;
-  bool UnpackData(MeshBlock const *pmb) override;
-  void Transfer(MeshBlock const *pmb, int n = -1) override;
-  void ClearBuffer(MeshBlock const *pmb) override;
+  void PackData(MeshBlock const *pmb);
+  bool UnpackData(MeshBlock const *pmb);
+  void Transfer(MeshBlock const *pmb, int n = -1);
+  void ClearBuffer(MeshBlock const *pmb);
 
  protected:
   /// protected data
