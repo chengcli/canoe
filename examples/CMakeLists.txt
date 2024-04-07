@@ -3,7 +3,7 @@
 # ========================
 
 if (${TASK} STREQUAL "juno")
-  add_subdirectory(2024-CLi-juno-mwr)
+  add_subdirectory(2024-JHu-juno-mwr)
 endif()
 
 if (${TASK} STREQUAL "uranus_mwr")
