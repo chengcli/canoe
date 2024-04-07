@@ -40,7 +40,7 @@ inline void IntegrateDownwards(AthenaArray<Real> &psf,
         psf(k, j, i) = psf(k, j, i + 1) - grav * w(IDN, k, j, i) * pco->dx1f(i);
 }
 
-void Decomposition::ChangeToEntropy(AthenaArray<Real> &w, int kl, int ku,
+void Decomposition::ChangeToAnomaly(AthenaArray<Real> &w, int kl, int ku,
                                     int jl, int ju) {
   MeshBlock *pmb = pmy_block_;
   Coordinates *pco = pmb->pcoord;
@@ -48,19 +48,15 @@ void Decomposition::ChangeToEntropy(AthenaArray<Real> &w, int kl, int ku,
 
   // positive in the x-increasing direction
   Real grav = pmb->phydro->hsrc.GetG1();
-  Real gamma = pmb->peos->GetGamma();
+  Real gammad = pmb->peos->GetGamma();
   Real Rd = pthermo->GetRd();
 
   int is = pmb->is, ie = pmb->ie;
   if (grav == 0.) return;
 
-  // FindNeighbors();
-  // ExchangeUtils::find_neighbors(pmb, X1DIR, &bblock, &tblock);
   auto ptop = ExchangeUtils::find_top_neighbor(pmb);
 
   if (ptop != nullptr) {
-    // RecvFromTop(psf_, kl, ku, jl, ju);
-    // auto ptop = ExchangeUtils::find_top_neighbor(pmb);
     pexv->RecvFrom(ptop->snb);
     unpackData(pmb, kl, ku, jl, ju);
   } else {
@@ -73,6 +69,14 @@ void Decomposition::ChangeToEntropy(AthenaArray<Real> &w, int kl, int ku,
       }
   }
   IntegrateDownwards(psf_, w, pco, grav, kl, ku, jl, ju, is, ie);
+
+  // density
+  for (int k = kl; k <= ku; ++k)
+    for (int j = jl; j <= ju; ++j)
+      for (int i = is + 1; i <= ie; ++i) {
+        dsf_(k, j, i) =
+            (w(IPR, k, j, i) - w(IPR, k, j, i - 1)) / (pco->dx1f(i) * grav);
+      }
 
   auto pbot = ExchangeUtils::find_bot_neighbor(pmb);
   // populate ghost cells
@@ -99,6 +103,22 @@ void Decomposition::ChangeToEntropy(AthenaArray<Real> &w, int kl, int ku,
   // decompose pressure and density
   for (int k = kl; k <= ku; ++k)
     for (int j = jl; j <= ju; ++j) {
+      // adiabatic to bottom boundary
+      // calculate local polytropic index
+      Real fsig = 1., feps = 1.;
+      for (int n = 1; n <= NVAPOR; ++n) {
+        fsig += w(n, k, j, is) * (pthermo->GetCvRatioMass(n) - 1.);
+        feps += w(n, k, j, is) * (1. / pthermo->GetMuRatio(n) - 1.);
+      }
+      Real gammas = 1. + (gammad - 1.) * feps / fsig;
+      dsf_(k, j, is) = w(IDN, k, j, is) *
+                       pow(psf_(k, j, is) / w(IPR, k, j, is), 1. / gammas);
+
+      // isothermal to top boundary
+      Real RdTv = w(IPR, k, j, ie) / w(IDN, k, j, ie);
+      dsf_(k, j, ie + 1) =
+          w(IDN, k, j, ie) * exp(grav * pco->dx1f(ie) / (2 * RdTv));
+
       // 1. change density and pressure (including ghost cells)
       for (int i = is - NGHOST; i <= ie + NGHOST; ++i) {
         // interpolate hydrostatic pressure, prevent divided by zero
@@ -108,49 +128,85 @@ void Decomposition::ChangeToEntropy(AthenaArray<Real> &w, int kl, int ku,
           psv_(k, j, i) = (psf_(k, j, i) - psf_(k, j, i + 1)) /
                           log(psf_(k, j, i) / psf_(k, j, i + 1));
 
-        // calculate local polytropic index
-        Real fsig = 1., feps = 1.;
-        for (int n = 1; n <= NVAPOR; ++n) {
-          fsig += w(n, k, j, i) * (pthermo->GetCvRatioMass(n) - 1.);
-          feps += w(n, k, j, i) * (1. / pthermo->GetMuRatio(n) - 1.);
-        }
-        gamma_(k, j, i) = 1. + (gamma - 1.) * feps / fsig;
-
-        // change density to entropy
-        w(IDN, k, j, i) =
-            log(w(IPR, k, j, i)) - gamma_(k, j, i) * log(w(IDN, k, j, i));
-
         // change pressure to pertubation
         w(IPR, k, j, i) -= psv_(k, j, i);
       }
 
-      // 2. adjust bottom boundary condition
+      for (int i = is + 1; i <= ie - 1; ++i) {
+        if (fabs(dsf_(k, j, i) - dsf_(k, j, i + 1)) < 1.E-6)
+          dsv_(k, j, i) = 0.5 * (dsf_(k, j, i) + dsf_(k, j, i + 1));
+        else
+          dsv_(k, j, i) = (dsf_(k, j, i) - dsf_(k, j, i + 1)) /
+                          log(dsf_(k, j, i) / dsf_(k, j, i + 1));
+
+        // change density to anomaly
+        // w(IDN, k, j, i) -= dsv_(k, j, i);
+      }
+
+      /* 2. adjust bottom boundary condition
+      for (int i = is - NGHOST; i <= is; ++i) {
+        dsv_(k, j, i) = w(IDN, k, j, i);
+        w(IDN, k, j, i) = 0.;
+      }
+
       if (pmb->pbval->block_bcs[inner_x1] == BoundaryFlag::outflow) {
         for (int i = is - NGHOST; i < is; ++i) {
-          w(IDN, k, j, i) = w(IDN, k, j, is);
           w(IPR, k, j, i) = w(IPR, k, j, is);
         }
       }
 
       // 3. adjust top boundary condition
+      for (int i = ie; i <= ie + NGHOST; ++i) {
+        dsv_(k, j, i) = w(IDN, k, j, i);
+        w(IDN, k, j, i) = 0.;
+      }
+
       if (pmb->pbval->block_bcs[outer_x1] == BoundaryFlag::outflow) {
         for (int i = ie + 1; i <= ie + NGHOST; ++i) {
-          w(IDN, k, j, i) = w(IDN, k, j, ie);
           w(IPR, k, j, i) = w(IPR, k, j, ie);
         }
+      }*/
+    }
+
+  /* debug
+  if (Globals::my_rank == 0) {
+    //int km = (kl + ku)/2;
+    //int jm = (jl + ju)/2;
+    int km = kl;
+    int jm = jl;
+    std::cout << "my.gid = " << pmb->gid << std::endl;
+    std::cout << "bblock.gid = " << bblock.snb.gid << std::endl;
+    std::cout << "===== k = " << km << " j = " << jm << std::endl;
+    for (int i = is - NGHOST; i <= ie + NGHOST; ++i) {
+      if (i == is)
+        std::cout << "-------- ";
+      if (i == 0)
+        std::cout << "i = " << "-1/2 ";
+      else if (i == 1)
+        std::cout << "i = " << "+1/2 ";
+      else
+        std::cout << "i = " << i-1 << "+1/2 ";
+      std::cout << "psf = " << psf_(km,jm,i) << ", ";
+      std::cout << "dsf = " << dsf_(km,jm,i) << std::endl;
+      std::cout << "i = " << i  << "    ";
+      std::cout << " pre = " << w(IPR,km,jm,i)
+                << " den = " << w(IDN,km,jm,i) << std::endl;
+      if (i == ie)
+        std::cout << "-------- ";
+      if (i == ie + NGHOST) {
+        std::cout << "i = " << i+1 << "+1/2 ";
+        std::cout << "psf = " << psf_(km,jm,i+1) << ", ";
+        std::cout << "dsf = " << dsf_(km,jm,i+1) << std::endl;
       }
     }
+    std::cout << "==========" << std::endl;
+  }*/
 
   // finish send top pressure
   pexv->ClearBuffer();
-  /*#ifdef MPI_PARALLEL
-    MPI_Status status;
-    if (has_bot_neighbor && (bblock.snb.rank != Globals::my_rank))
-      MPI_Wait(&req_send_bot_, &status);
-  #endif*/
 }
 
-void Decomposition::RestoreFromEntropy(AthenaArray<Real> &w,
+void Decomposition::RestoreFromAnomaly(AthenaArray<Real> &w,
                                        AthenaArray<Real> &wl,
                                        AthenaArray<Real> &wr, int k, int j,
                                        int il, int iu) {
@@ -165,30 +221,21 @@ void Decomposition::RestoreFromEntropy(AthenaArray<Real> &w,
 
   for (int i = is - NGHOST; i <= ie + NGHOST; ++i) {
     w(IPR, k, j, i) += psv_(k, j, i);
-    w(IDN, k, j, i) =
-        exp((log(w(IPR, k, j, i)) - w(IDN, k, j, i)) / gamma_(k, j, i));
+    // w(IDN, k, j, i) += dsv_(k, j, i);
   }
 
   for (int i = il; i <= iu; ++i) {
     wr(IPR, i) += psf_(k, j, i);
-    if (wr(IPR, i) < 0.) {
-      wr(IPR, i) = psf_(k, j, i);
-      Real gamma = gamma_(k, j, i);
-      wr(IDN, i) =
-          w(IDN, k, j, i) * pow(wr(IPR, i) / w(IPR, k, j, i), 1. / gamma);
-    } else {
-      wr(IDN, i) = exp((log(wr(IPR, i)) - wr(IDN, i)) / gamma_(k, j, i));
-    }
+    if (wr(IPR, i) < 0.) wr(IPR, i) = psf_(k, j, i);
+
+    // wr(IDN, i) += dsf_(k, j, i);
+    // if (wr(IDN, i) < 0.) wr(IDN, i) = dsf_(k, j, i);
 
     wl(IPR, i) += psf_(k, j, i);
-    if (wl(IPR, i) < 0.) {
-      wl(IPR, i) = psf_(k, j, i);
-      Real gamma = gamma_(k, j, i - 1);
-      wl(IDN, i) = w(IDN, k, j, i - 1) *
-                   pow(wl(IPR, i) / w(IPR, k, j, i - 1), 1. / gamma);
-    } else {
-      wl(IDN, i) = exp((log(wl(IPR, i)) - wl(IDN, i)) / gamma_(k, j, i - 1));
-    }
+    if (wl(IPR, i) < 0.) wl(IPR, i) = psf_(k, j, i);
+
+    // wl(IDN, i) += dsf_(k, j, i);
+    // if (wl(IDN, i) < 0.) wl(IDN, i) = dsf_(k, j, i);
   }
 
   check_decomposition(wl, wr, k, j, il, iu);

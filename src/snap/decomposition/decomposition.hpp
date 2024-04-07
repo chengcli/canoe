@@ -66,6 +66,10 @@ class Decomposition {
   void RestoreFromEntropy(AthenaArray<Real> &w, AthenaArray<Real> &wl,
                           AthenaArray<Real> &wr, int k, int j, int il, int iu);
 
+  void ChangeToAnomaly(AthenaArray<Real> &w, int kl, int ku, int jl, int ju);
+  void RestoreFromAnomaly(AthenaArray<Real> &w, AthenaArray<Real> &wl,
+                          AthenaArray<Real> &wr, int k, int j, int il, int iu);
+
  protected:
   void packData(MeshBlock const *pmb, int kl, int ku, int jl, int ju);
   void unpackData(MeshBlock const *pmb, int kl, int ku, int jl, int ju);
@@ -75,6 +79,7 @@ class Decomposition {
 
   // pressure decomposition
   AthenaArray<Real> psf_, psv_;
+  AthenaArray<Real> dsf_, dsv_;
   AthenaArray<Real> pres_, dens_;  // save of original w
                                    //
   Real *buffer_, *send_buffer_;    // MPI data buffer

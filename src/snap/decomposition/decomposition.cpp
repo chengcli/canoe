@@ -30,11 +30,13 @@ Decomposition::Decomposition(MeshBlock *pmb)
   // allocate hydrostatic and nonhydrostatic pressure
   psf_.NewAthenaArray(nc3, nc2, nc1 + 1);
   psv_.NewAthenaArray(nc3, nc2, nc1);
+  dsf_.NewAthenaArray(nc3, nc2, nc1 + 1);
+  dsv_.NewAthenaArray(nc3, nc2, nc1);
   pres_.NewAthenaArray(nc3, nc2, nc1);
   dens_.NewAthenaArray(nc3, nc2, nc1);
 
   buffer_ = new Real[3 * (NGHOST + 1) * nc3 * nc2];
-  send_buffer_ = new Real[2 * (NGHOST + 1) * nc3 * nc2];
+  send_buffer_ = new Real[(NGHOST + 1) * nc3 * nc2];
   wsend_top_ = new Real[2 * NGHOST * nc3 * nc2];
   wrecv_top_ = new Real[2 * NGHOST * nc3 * nc2];
   wsend_bot_ = new Real[2 * NGHOST * nc3 * nc2];
@@ -48,9 +50,8 @@ Decomposition::Decomposition(MeshBlock *pmb)
 
   pexv = std::make_shared<LinearExchanger<Real, 1>>("snap/decomp");
   pexv->SetBlockID(pmb->gid);
-  // pexv->Regroup(pmb, X1DIR);
-  pexv->send_buffer[0].resize(2 * (NGHOST + 1) * nc3 * nc2);
-  pexv->recv_buffer[0].resize(2 * (NGHOST + 1) * nc3 * nc2);
+  pexv->send_buffer[0].resize((NGHOST + 1) * nc3 * nc2);
+  pexv->recv_buffer[0].resize((NGHOST + 1) * nc3 * nc2);
 }
 
 Decomposition::~Decomposition() {
