@@ -16,6 +16,7 @@
 
 // utils
 #include <utils/modify_atmoshere.hpp>
+#include <utils/construct_atmosphere.hpp>
 
 namespace py = pybind11;
 
@@ -192,6 +193,11 @@ void init_athena(py::module &parent) {
            [](MeshBlock &mesh_block, Real adlnNH3dlnP, Real pmin, Real pmax) {
              return modify_atmoshere_adlnNH3dlnP(&mesh_block, adlnNH3dlnP, pmin,
                                                  pmax);
+           })
+
+      .def("construct_atmosphere",
+           [](MeshBlock &mesh_block, ParameterInput *pin, Real xNH3, Real T0) {
+             return construct_atmosphere(&mesh_block, pin, xNH3, T0);
            })
 
       .def(

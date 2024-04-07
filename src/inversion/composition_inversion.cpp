@@ -34,5 +34,30 @@ void CompositionInversion::UpdateModel(MeshBlock *pmb,
   Application::Logger app("inversion");
   app->Log("Update Model");
 
-  // int is = pblock_->is, ie = pblock_->ie;
+  auto air = AirParcel::gather_from_primitive(pmb, k, ju_, pmb->is);
+  air.ToMoleFraction();
+
+  int iter = 0, max_iter = 200;
+  while (iter++ < max_iter) {
+    // read in vapors
+    for (auto n : GetSpeciesIndex()) {
+      air.w[n] = par[n];
+    }
+
+    // stop at just above P0
+    for (int i = is; i <= ie; ++i) {
+      pthermo->Extrapolate(&air, -dlnp / 2., "dry");
+      if (air.w[IPR] < P0) break;
+    }
+
+    // extrapolate down to where air is
+    pthermo->Extrapolate(&air, log(P0 / air.w[IPR]), "dry");
+
+    // make up for the difference
+    Ts += T0 - air.w[IDN];
+    if (std::abs(T0 - air.w[IDN]) < 0.01) break;
+
+    // app->Log("Iteration #", iter);
+    // app->Log("T", air.w[IDN]);
+  }
 }
