@@ -12,9 +12,6 @@ if (${NVAPOR} EQUAL 2 AND ${NCLOUD} EQUAL 4 AND ${NPHASE_LEGACY} EQUAL 3)
   setup_problem(sedimentation)
 endif()
 
-# 3. Compile jupiter crm
-setup_problem(jupiter_crm)
-
 # 4. Copy input files to run directory
 file(GLOB inputs *.inp *.yaml)
 foreach(input ${inputs})

@@ -32,13 +32,14 @@ class RadiationBand : public NamedGroup,
                       public FlagGroup,
                       public ParameterGroup,
                       public ASCIIOutputGroup,
-                      public StringReprGroup,
-                      public LinearExchanger<Real, 2> {
+                      public StringReprGroup {
  public:  // public access data
   // implementation of RT Solver
   class RTSolver;
   class RTSolverLambert;
   class RTSolverDisort;
+
+  std::shared_ptr<LinearExchanger<Real, 2>> pexv;
 
   //! band optical depth
   AthenaArray<Real> btau;
@@ -64,7 +65,7 @@ class RadiationBand : public NamedGroup,
 
  public:  // member functions
   //! \brief Allocate memory for radiation band
-  void Resize(int nc1, int nc2, int nc3, int nstr);
+  void Resize(int nc1, int nc2, int nc3, int nstr, MeshBlock const *pmb);
 
   //! \brief Create radiative transfer solver from YAML node
   //!
@@ -122,11 +123,7 @@ class RadiationBand : public NamedGroup,
                              int k = 0, int j = 0);
 
   //! \brief Calculate band radiative fluxes
-  RadiationBand const *CalBandFlux(MeshBlock const *pmb, int k, int j, int il,
-                                   int iu);
-
-  //! \brief Calculate band flux for the entire column
-  RadiationBand const *CalBandFluxColumn(MeshBlock const *pmb, int k, int j);
+  RadiationBand const *CalBandFlux(MeshBlock const *pmb, int k, int j);
 
   //! \brief Calculate band radiances
   RadiationBand const *CalBandRadiance(MeshBlock const *pmb, int k, int j);
@@ -140,25 +137,23 @@ class RadiationBand : public NamedGroup,
   void WriteAsciiHeader(OutputParameters const *) const override;
   void WriteAsciiData(OutputParameters const *) const override;
 
- public:  // Exchanger functions
-  //! \brief Pack temperature at cell face into send buffer 0
-  void PackTemperature();
-
-  //! \brief Unpack temperature at cell face from receive buffer 0
-  bool UnpackTemperature(void *arg);
-
-  //! \brief Pack data in spectral grid b into send buffer 1
-  //!
-  //! \param[in] b spectral bin index
-  void PackSpectralGrid(int b);
-
-  //! \brief Unpack data from receive buffer 1 into spectral grid b
-  bool UnpackSpectralGrid(void *arg);
-
-  void Transfer(MeshBlock const *pmb, int n) override;
-
  public:  // StringReprGroup functions
   std::string ToString() const override;
+
+ public:  // Exchanger functions
+  //! \brief Pack temperature at cell face into send buffer 0
+  void packTemperature();
+
+  //! \brief Unpack temperature at cell face from receive buffer 0
+  bool unpackTemperature(void *arg);
+
+  //! \brief Pack data in all spectral grids into send buffer 1
+  //!
+  //! \param[in] b spectral bin index
+  void packSpectralProperties();
+
+  //! \brief Unpack data from receive buffer 1 into spectral grid b
+  void unpackSpectralProperties(int b, void *arg);
 
  protected:
   //! radiative transfer solver

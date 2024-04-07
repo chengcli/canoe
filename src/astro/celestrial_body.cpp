@@ -100,11 +100,10 @@ void CelestrialBody::loadSpectralData(std::string sfile) {
   spline(spec_.size(), spec_.data(), 0., 0.);
 }
 
-Direction CelestrialBody::ParentZenithAngle(Real time, Real colat,
+Direction CelestrialBody::ParentZenithAngle(Real time, Real lat,
                                             Real lon) const {
   Direction dir;
 
-  Real lat = M_PI / 2. - colat;
   if (spinp == 0. && orbit_p == 0.) dir.mu = cos(-lon + M_PI) * cos(lat);
   if (spinp == 0. && orbit_p != 0.)
     dir.mu = cos((time * 2. * M_PI * (-1. / orbit_p)) - lon + M_PI) * cos(lat);

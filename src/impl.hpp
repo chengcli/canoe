@@ -67,7 +67,7 @@ class MeshBlock::Impl {
   ~Impl();
 
  public:  // member functions
-  ExchangerBase *GetExchanger(char const *name) const {
+  ExchangerBase *FindExchanger(char const *name) const {
     return exchangers_.at(name);
   }
 

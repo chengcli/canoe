@@ -40,22 +40,19 @@ inline void IntegrateDownwards(AthenaArray<Real> &psf,
         psf(k, j, i) = psf(k, j, i + 1) - grav * w(IDN, k, j, i) * pco->dx1f(i);
 }
 
-void Decomposition::ChangeToEntropy(AthenaArray<Real> &w, int kl, int ku,
-                                    int jl, int ju) {
+void Decomposition::ChangeToTemperature(AthenaArray<Real> &w, int kl, int ku,
+                                        int jl, int ju) {
   MeshBlock *pmb = pmy_block_;
   Coordinates *pco = pmb->pcoord;
   auto pthermo = Thermodynamics::GetInstance();
 
   // positive in the x-increasing direction
   Real grav = pmb->phydro->hsrc.GetG1();
-  Real gamma = pmb->peos->GetGamma();
   Real Rd = pthermo->GetRd();
 
   int is = pmb->is, ie = pmb->ie;
   if (grav == 0.) return;
 
-  // FindNeighbors();
-  // ExchangeUtils::find_neighbors(pmb, X1DIR, &bblock, &tblock);
   auto ptop = ExchangeUtils::find_top_neighbor(pmb);
 
   if (ptop != nullptr) {
@@ -77,7 +74,6 @@ void Decomposition::ChangeToEntropy(AthenaArray<Real> &w, int kl, int ku,
   auto pbot = ExchangeUtils::find_bot_neighbor(pmb);
   // populate ghost cells
   if (pbot != nullptr) {
-    // SendToBottom(psf_, kl, ku, jl, ju);
     packData(pmb, kl, ku, jl, ju);
     pexv->SendTo(pmb, pbot->snb);
   }
@@ -108,17 +104,14 @@ void Decomposition::ChangeToEntropy(AthenaArray<Real> &w, int kl, int ku,
           psv_(k, j, i) = (psf_(k, j, i) - psf_(k, j, i + 1)) /
                           log(psf_(k, j, i) / psf_(k, j, i + 1));
 
-        // calculate local polytropic index
-        Real fsig = 1., feps = 1.;
-        for (int n = 1; n <= NVAPOR; ++n) {
-          fsig += w(n, k, j, i) * (pthermo->GetCvRatioMass(n) - 1.);
-          feps += w(n, k, j, i) * (1. / pthermo->GetMuRatio(n) - 1.);
-        }
-        gamma_(k, j, i) = 1. + (gamma - 1.) * feps / fsig;
+        // calculate RovRd
+        Real feps = 1.;
+        for (int n = 1; n <= NVAPOR; ++n)
+          feps += w(n, k, j, i) * (pthermo->GetInvMuRatio(n) - 1.);
+        gamma_(k, j, i) = Rd * feps;
 
-        // change density to entropy
-        w(IDN, k, j, i) =
-            log(w(IPR, k, j, i)) - gamma_(k, j, i) * log(w(IDN, k, j, i));
+        // change density to temperature
+        w(IDN, k, j, i) = w(IPR, k, j, i) / (w(IDN, k, j, i) * gamma_(k, j, i));
 
         // change pressure to pertubation
         w(IPR, k, j, i) -= psv_(k, j, i);
@@ -143,17 +136,12 @@ void Decomposition::ChangeToEntropy(AthenaArray<Real> &w, int kl, int ku,
 
   // finish send top pressure
   pexv->ClearBuffer();
-  /*#ifdef MPI_PARALLEL
-    MPI_Status status;
-    if (has_bot_neighbor && (bblock.snb.rank != Globals::my_rank))
-      MPI_Wait(&req_send_bot_, &status);
-  #endif*/
 }
 
-void Decomposition::RestoreFromEntropy(AthenaArray<Real> &w,
-                                       AthenaArray<Real> &wl,
-                                       AthenaArray<Real> &wr, int k, int j,
-                                       int il, int iu) {
+void Decomposition::RestoreFromTemperature(AthenaArray<Real> &w,
+                                           AthenaArray<Real> &wl,
+                                           AthenaArray<Real> &wr, int k, int j,
+                                           int il, int iu) {
   MeshBlock *pmb = pmy_block_;
   Hydro *phydro = pmb->phydro;
   auto pthermo = Thermodynamics::GetInstance();
@@ -165,30 +153,18 @@ void Decomposition::RestoreFromEntropy(AthenaArray<Real> &w,
 
   for (int i = is - NGHOST; i <= ie + NGHOST; ++i) {
     w(IPR, k, j, i) += psv_(k, j, i);
-    w(IDN, k, j, i) =
-        exp((log(w(IPR, k, j, i)) - w(IDN, k, j, i)) / gamma_(k, j, i));
+    w(IDN, k, j, i) = w(IPR, k, j, i) / (w(IDN, k, j, i) * gamma_(k, j, i));
   }
 
   for (int i = il; i <= iu; ++i) {
     wr(IPR, i) += psf_(k, j, i);
-    if (wr(IPR, i) < 0.) {
-      wr(IPR, i) = psf_(k, j, i);
-      Real gamma = gamma_(k, j, i);
-      wr(IDN, i) =
-          w(IDN, k, j, i) * pow(wr(IPR, i) / w(IPR, k, j, i), 1. / gamma);
-    } else {
-      wr(IDN, i) = exp((log(wr(IPR, i)) - wr(IDN, i)) / gamma_(k, j, i));
-    }
+    if (wr(IPR, i) < 0.) wr(IPR, i) = psf_(k, j, i);
+    Real gamma = sqrt(gamma_(k, j, i) * gamma_(k, j, i - 1));
+    wr(IDN, i) = wr(IPR, i) / (wr(IDN, i) * gamma);
 
     wl(IPR, i) += psf_(k, j, i);
-    if (wl(IPR, i) < 0.) {
-      wl(IPR, i) = psf_(k, j, i);
-      Real gamma = gamma_(k, j, i - 1);
-      wl(IDN, i) = w(IDN, k, j, i - 1) *
-                   pow(wl(IPR, i) / w(IPR, k, j, i - 1), 1. / gamma);
-    } else {
-      wl(IDN, i) = exp((log(wl(IPR, i)) - wl(IDN, i)) / gamma_(k, j, i - 1));
-    }
+    if (wl(IPR, i) < 0.) wl(IPR, i) = psf_(k, j, i);
+    wl(IDN, i) = wl(IPR, i) / (wl(IDN, i) * gamma);
   }
 
   check_decomposition(wl, wr, k, j, il, iu);

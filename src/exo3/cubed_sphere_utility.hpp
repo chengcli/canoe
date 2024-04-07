@@ -37,6 +37,9 @@ void ContravariantToCovariant(A a, Real cth) {
   a[IVZ] = w + v * cth;
 }
 
+void get_latlon_on_sphere(Real *lat, Real *lon, MeshBlock const *pmb, int k,
+                          int j, int i);
+
 }  // namespace CubedSphereUtility
 
 #endif  // SRC_EXO3_CUBED_SPHERE_UTILITY_HPP_

@@ -26,7 +26,7 @@
 #include "tracer/tracer.hpp"
 
 // n-body
-#include "nbody/particles.hpp"
+// #include "nbody/particles.hpp"
 
 // astro
 #include "astro/celestrial_body.hpp"
@@ -73,7 +73,7 @@ MeshBlock::Impl::Impl(MeshBlock *pmb, ParameterInput *pin) : pmy_block_(pmb) {
   pturb = TurbulenceFactory::Create(pmb, pin);
 
   // particle queue
-  all_particles = ParticlesFactory::Create(pmb, pin);
+  // all_particles = ParticlesFactory::Create(pmb, pin);
 
   // diagnostics
   all_diags = DiagnosticsFactory::CreateFrom(pmb, pin);

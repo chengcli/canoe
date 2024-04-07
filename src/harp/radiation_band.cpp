@@ -111,7 +111,8 @@ RadiationBand::~RadiationBand() {
   app->Log("Destroy RadiationBand " + GetName());
 }
 
-void RadiationBand::Resize(int nc1, int nc2, int nc3, int nstr) {
+void RadiationBand::Resize(int nc1, int nc2, int nc3, int nstr,
+                           MeshBlock const *pmb) {
   // allocate memory for spectral properties
   tem_.resize(nc1);
   temf_.resize(nc1 + 1);
@@ -144,8 +145,21 @@ void RadiationBand::Resize(int nc1, int nc2, int nc3, int nstr) {
   bflxup.NewAthenaArray(nc3, nc2, nc1 + 1);
   bflxdn.NewAthenaArray(nc3, nc2, nc1 + 1);
 
+  // exchange buffer
+  pexv = std::make_shared<LinearExchanger<Real, 2>>(GetName());
+
+  int nlayers = GetNumLayers();
+  int npmom = GetNumPhaseMoments();
+  pexv->send_buffer[0].resize(temf_.size());
+  pexv->send_buffer[1].resize(nlayers * (npmom + 3));
+
+  pexv->Regroup(pmb, X1DIR);
+  int nblocks = pexv->GetGroupSize();
+  pexv->recv_buffer[0].resize(nblocks * pexv->send_buffer[0].size());
+  pexv->recv_buffer[1].resize(nblocks * pexv->send_buffer[1].size());
+
   if (psolver_ != nullptr) {
-    psolver_->Resize(nc1 - 2 * NGHOST, nstr);
+    psolver_->Resize(nblocks * (nc1 - 2 * NGHOST), nstr);
   }
 }
 
@@ -162,25 +176,17 @@ AbsorberPtr RadiationBand::GetAbsorberByName(std::string const &name) {
 }
 
 RadiationBand const *RadiationBand::CalBandFlux(MeshBlock const *pmb, int k,
-                                                int j, int il, int iu) {
+                                                int j) {
   // reset flux of this column
-  for (int i = il; i <= iu; ++i) {
+  for (int i = pmb->is; i <= pmb->ie + 1; ++i) {
     bflxup(k, j, i) = 0.;
     bflxdn(k, j, i) = 0.;
   }
 
   psolver_->Prepare(pmb, k, j);
-  psolver_->CalBandFlux(pmb, k, j, il, iu);
+  psolver_->CalBandFlux(pmb, k, j);
 
   return this;
-}
-
-RadiationBand const *RadiationBand::CalBandFluxColumn(MeshBlock const *pmb,
-                                                      int k, int j) {
-  int il = NGHOST;
-  int iu = NGHOST + GetNumLayers();
-
-  return CalBandFlux(pmb, k, j, il, iu);
 }
 
 RadiationBand const *RadiationBand::CalBandRadiance(MeshBlock const *pmb, int k,
