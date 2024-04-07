@@ -70,6 +70,12 @@ class Decomposition {
   void RestoreFromAnomaly(AthenaArray<Real> &w, AthenaArray<Real> &wl,
                           AthenaArray<Real> &wr, int k, int j, int il, int iu);
 
+  void ChangeToTemperature(AthenaArray<Real> &w, int kl, int ku, int jl,
+                           int ju);
+  void RestoreFromTemperature(AthenaArray<Real> &w, AthenaArray<Real> &wl,
+                              AthenaArray<Real> &wr, int k, int j, int il,
+                              int iu);
+
  protected:
   void packData(MeshBlock const *pmb, int kl, int ku, int jl, int ju);
   void unpackData(MeshBlock const *pmb, int kl, int ku, int jl, int ju);
