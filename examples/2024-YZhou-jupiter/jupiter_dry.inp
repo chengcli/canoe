@@ -6,36 +6,36 @@ problem_id  = jupiter2d     # problem ID: basename of output filenames
 
 <output0>
 file_type   = rst
-dt          = 10.E5
+dt          = 100.E5
 
 <output1>
 file_type   = hst           # History data dump
-dt          = 1.E5          # time increment between outputs
+dt          = 10.E5          # time increment between outputs
 
 <output2>
 file_type   = pnetcdf        # Netcdf format output
 variable    = prim          # variables to be output
-dt          = 1.E4          # time increment between outputs
+dt          = 4.E4          # time increment between outputs
 
 <output3>
 file_type   = pnetcdf        # Netcdf format output
 variable    = uov           # diagnostic variables
-dt          = 1.E4          # time increment
+dt          = 4.E4          # time increment
 
 <output4>
 file_type   = pnetcdf        # Netcdf format output
 variable    = diag           # diagnostic variables
-dt          = 1.E4          # time increment
+dt          = 4.E4          # time increment
 
-<output5>
-file_type   = pnetcdf        # Netcdf format output
-variable    = rad           # diagnostic variables
-dt          = 1.E4          # time increment
+#<output5>
+#file_type   = pnetcdf        # Netcdf format output
+#variable    = rad           # diagnostic variables
+#dt          = 1.E4          # time increment
 
 <time>
 cfl_number  = 0.9
 nlim        = -1            # cycle limit
-tlim        = 2.E5
+tlim        = 200.E5
 xorder      = 5             # horizontal reconstruction order
 integrator  = rk3           # integration method
 
@@ -71,11 +71,11 @@ implicit_flag = 1
 <thermodynamics>
 Rd          = 3777.   # mu = 2.3175 g/mol
 
-<radiation>
-dt            = 200.
-nstr          = 4
-radiation_config = jupiter.yaml
-relax_time    = 1.E4
+#<radiation>
+#dt            = 200.
+#nstr          = 4
+#radiation_config = jupiter.yaml
+#relax_time    = 1.E4
 
 <problem>
 P0          = 1.E5
