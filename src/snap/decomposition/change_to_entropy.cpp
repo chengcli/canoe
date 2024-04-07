@@ -10,15 +10,16 @@
 // utils
 #include <utils/ndarrays.hpp>
 
+// exchanger
+#include <exchanger/exchanger.hpp>
+
 // canoe
+#include <checks.hpp>
 #include <impl.hpp>
 
 // snap
 #include "../thermodynamics/thermodynamics.hpp"
 #include "decomposition.hpp"
-
-// checks
-#include <checks.hpp>
 
 inline void IntegrateUpwards(AthenaArray<Real> &psf, AthenaArray<Real> const &w,
                              Coordinates *pco, Real grav, int kl, int ku,
@@ -53,10 +54,15 @@ void Decomposition::ChangeToEntropy(AthenaArray<Real> &w, int kl, int ku,
   int is = pmb->is, ie = pmb->ie;
   if (grav == 0.) return;
 
-  FindNeighbors();
+  // FindNeighbors();
+  // ExchangeUtils::find_neighbors(pmb, X1DIR, &bblock, &tblock);
+  auto ptop = ExchangeUtils::find_top_neighbor(pmb);
 
-  if (has_top_neighbor) {
-    RecvFromTop(psf_, kl, ku, jl, ju);
+  if (ptop != nullptr) {
+    // RecvFromTop(psf_, kl, ku, jl, ju);
+    // auto ptop = ExchangeUtils::find_top_neighbor(pmb);
+    pexv->RecvFrom(ptop->snb);
+    unpackData(pmb, kl, ku, jl, ju);
   } else {
     // isothermal extrapolation to find the pressure at top boundary
     for (int k = kl; k <= ku; ++k)
@@ -68,8 +74,13 @@ void Decomposition::ChangeToEntropy(AthenaArray<Real> &w, int kl, int ku,
   }
   IntegrateDownwards(psf_, w, pco, grav, kl, ku, jl, ju, is, ie);
 
+  auto pbot = ExchangeUtils::find_bot_neighbor(pmb);
   // populate ghost cells
-  if (has_bot_neighbor) SendToBottom(psf_, kl, ku, jl, ju);
+  if (pbot != nullptr) {
+    // SendToBottom(psf_, kl, ku, jl, ju);
+    packData(pmb, kl, ku, jl, ju);
+    pexv->SendTo(pmb, pbot->snb);
+  }
 
   // boundary condition
   if (pmb->pbval->block_bcs[inner_x1] == BoundaryFlag::reflect) {
@@ -130,12 +141,13 @@ void Decomposition::ChangeToEntropy(AthenaArray<Real> &w, int kl, int ku,
       }
     }
 
-    // finish send top pressure
-#ifdef MPI_PARALLEL
-  MPI_Status status;
-  if (has_bot_neighbor && (bblock.snb.rank != Globals::my_rank))
-    MPI_Wait(&req_send_bot_, &status);
-#endif
+  // finish send top pressure
+  pexv->ClearBuffer();
+  /*#ifdef MPI_PARALLEL
+    MPI_Status status;
+    if (has_bot_neighbor && (bblock.snb.rank != Globals::my_rank))
+      MPI_Wait(&req_send_bot_, &status);
+  #endif*/
 }
 
 void Decomposition::RestoreFromEntropy(AthenaArray<Real> &w,

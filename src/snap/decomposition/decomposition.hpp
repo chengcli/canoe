@@ -8,6 +8,9 @@
 #include <athena/athena.hpp>
 #include <athena/bvals/bvals.hpp>
 
+// exchanger
+#include <exchanger/exchanger.hpp>
+
 // MPI headers
 #ifdef MPI_PARALLEL
 #include <mpi.h>
@@ -18,11 +21,14 @@ template <typename T>
 class AthenaArray;
 
 class Decomposition {
- public:
+ public:  // public access data
   // data
   bool has_top_neighbor, has_bot_neighbor;
   NeighborBlock tblock, bblock;
 
+  std::shared_ptr<LinearExchanger<Real, 1>> pexv;
+
+ public:
   // functions
   explicit Decomposition(MeshBlock *pmb);
   ~Decomposition();
@@ -59,6 +65,10 @@ class Decomposition {
   void ChangeToEntropy(AthenaArray<Real> &w, int kl, int ku, int jl, int ju);
   void RestoreFromEntropy(AthenaArray<Real> &w, AthenaArray<Real> &wl,
                           AthenaArray<Real> &wr, int k, int j, int il, int iu);
+
+ protected:
+  void packData(MeshBlock const *pmb, int kl, int ku, int jl, int ju);
+  void unpackData(MeshBlock const *pmb, int kl, int ku, int jl, int ju);
 
  private:
   MeshBlock *pmy_block_;

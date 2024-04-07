@@ -2,6 +2,7 @@
 #define SRC_EXCHANGER_EXCHANGER_HPP_
 
 // Athena++
+#include <athena/athena.hpp>
 #include <athena/bvals/bvals.hpp>
 #include <athena/mesh/mesh.hpp>
 
@@ -16,7 +17,6 @@
 
 namespace ExchangeUtils {
 
-extern int mpi_tag_ub;
 int create_mpi_tag(int lid, int tid, std::string name);
 
 //! find bottom neighbor block
@@ -43,18 +43,12 @@ void find_neighbors(MeshBlock const *pmb, CoordinateDirection dir,
 
 }  // namespace ExchangeUtils
 
-#ifdef MPI_PARALLEL
-template <typename T>
-struct MPI_Type {
-  static MPI_Datatype type;
-};
-#else  // NO MPI
+#ifndef MPI_PARALLEL
 
 using MPI_Op = int;
-
 extern int MPI_SUM;
 
-#endif  // MPI_PARALLEL
+#endif  // NOT MPI_PARALLEL
 
 class ExchangerBase : public NamedGroup {
  public:  // constructor and destructor
@@ -66,6 +60,8 @@ class ExchangerBase : public NamedGroup {
   int GetGroupSize() const;
   void SetBlockID(int id) { gid_ = id; }
 
+  std::vector<SimpleNeighborBlock> neighbor;
+
  protected:
   void setColor(MeshBlock const *pmb, CoordinateDirection dir);
 
@@ -76,10 +72,10 @@ class ExchangerBase : public NamedGroup {
   //! \brief global block id associated with this exchanger
   int gid_;
 
-  //! \brief MPI color of each block
+  //! \brief MPI color of each block (nrank)
   std::vector<int> color_;
 
-  //! \brief MPI rank of the bottom of each block
+  //! \brief MPI rank of the bottom of each block (nrank)
   std::vector<int> brank_;
 };
 
@@ -92,6 +88,7 @@ class Exchanger : public ExchangerBase {
   std::array<BufferType, N> recv_buffer;
 
 #ifdef MPI_PARALLEL
+  static MPI_Datatype mpi_type;
   using ExchangerBase::mpi_comm_;
 #endif
 
@@ -124,9 +121,8 @@ class Exchanger : public ExchangerBase {
 #ifdef MPI_PARALLEL
       for (int n = 0; n < N; ++n) {
         int size = send_buffer[n].size();
-        MPI_Allgather(send_buffer[n].data(), size, MPI_Type<T>::type,
-                      recv_buffer[n].data(), size, MPI_Type<T>::type,
-                      mpi_comm_);
+        MPI_Allgather(send_buffer[n].data(), size, mpi_type,
+                      recv_buffer[n].data(), size, mpi_type, mpi_comm_);
       }
 #endif  // MPI_PARALLEL
     } else {
@@ -140,21 +136,21 @@ class Exchanger : public ExchangerBase {
     // sum over all ranks
     for (int n = 0; n < N; ++n) {
       MPI_Allreduce(send_buffer[n].data(), recv_buffer[n].data(),
-                    send_buffer[n].size(), MPI_Type<T>::type, op, mpi_comm_);
+                    send_buffer[n].size(), mpi_type, op, mpi_comm_);
     }
 #endif
   }
 
   //! \brief Point-to-Point communication
-  virtual void RecvFrom(NeighborBlock const *nb) {
-    if (nb->snb.rank != Globals::my_rank) {  // MPI boundary
+  virtual void RecvFrom(SimpleNeighborBlock const &snb) {
+    if (snb.rank != Globals::my_rank) {  // MPI boundary
 #ifdef MPI_PARALLEL
       MPI_Status status;
       for (int n = 0; n < N; ++n) {
-        int tag = ExchangeUtils::create_mpi_tag(nb->snb.gid, gid_,
+        int tag = ExchangeUtils::create_mpi_tag(gid_, snb.gid,
                                                 GetName() + std::to_string(n));
-        MPI_Recv(recv_buffer[n].data(), recv_buffer[n].size(),
-                 MPI_Type<T>::type, nb->snb.rank, tag, mpi_comm_, &status);
+        MPI_Recv(recv_buffer[n].data(), recv_buffer[n].size(), mpi_type,
+                 snb.rank, tag, mpi_comm_, &status);
         SetBoundaryStatus(n, BoundaryStatus::arrived);
       }
 #endif
@@ -162,23 +158,22 @@ class Exchanger : public ExchangerBase {
   }
 
   //! \brief Point-to-Point communication
-  virtual void SendTo(MeshBlock const *pmb, NeighborBlock const *nb) {
-    if (nb->snb.rank != Globals::my_rank) {  // MPI boundary
+  virtual void SendTo(MeshBlock const *pmb, SimpleNeighborBlock const &snb) {
+    if (snb.rank != Globals::my_rank) {  // MPI boundary
 #ifdef MPI_PARALLEL
       for (int n = 0; n < N; ++n) {
-        int tag = ExchangeUtils::create_mpi_tag(nb->snb.gid, gid_,
+        int tag = ExchangeUtils::create_mpi_tag(snb.gid, gid_,
                                                 GetName() + std::to_string(n));
-        MPI_Isend(send_buffer[n].data(), send_buffer[n].size(),
-                  MPI_Type<T>::type, nb->snb.rank, tag, mpi_comm_,
-                  &req_mpi_send_[n]);
+        MPI_Isend(send_buffer[n].data(), send_buffer[n].size(), mpi_type,
+                  snb.rank, tag, mpi_comm_, &req_mpi_send_[n]);
       }
 #endif
     } else {  // local boundary
-      MeshBlock *pbl = pmb->pmy_mesh->FindMeshBlock(nb->snb.gid);
+      MeshBlock *pbl = pmb->pmy_mesh->FindMeshBlock(snb.gid);
       auto pexv = static_cast<Exchanger<T, N> *>(
           pbl->pimpl->FindExchanger(GetName().c_str()));
       for (int n = 0; n < N; ++n) {
-        std::swap(pexv->recv_buffer[n], send_buffer[n]);
+        pexv->recv_buffer[n].swap(send_buffer[n]);
         pexv->SetBoundaryStatus(n, BoundaryStatus::arrived);
       }
     }
@@ -214,6 +209,11 @@ class Exchanger : public ExchangerBase {
   std::array<MPI_Request, N> req_mpi_recv_;
 #endif  // MPI_PARALLEL
 };
+
+#ifdef MPI_PARALLEL
+template <typename T, int N>
+MPI_Datatype Exchanger<T, N>::mpi_type = MPI_ATHENA_REAL;
+#endif  // MPI_PARALLEL
 
 template <typename T, int N>
 class LinearExchanger : public Exchanger<T, N> {
