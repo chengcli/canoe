@@ -8,8 +8,8 @@
 #include <memory>
 #include <vector>
 
-
 // set up an adiabatic atmosphere
-void construct_atmosphere(MeshBlock *pmb, ParameterInput *pin, Real xNH3, Real T0);
+void construct_atmosphere(MeshBlock *pmb, ParameterInput *pin, Real xNH3,
+                          Real T0);
 
 #endif  // SRC_UTILS_CONSTRUCT_ATMOSPHERE_HPP_

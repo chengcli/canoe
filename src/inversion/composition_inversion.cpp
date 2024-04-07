@@ -10,9 +10,11 @@
 // application
 #include <application/application.hpp>
 
-// utils
-#include <utils/ndarrays.hpp>
-#include <utils/vectorize.hpp>
+// canoe
+#include <air_parcel.hpp>
+
+// snap
+#include <snap/thermodynamics/thermodynamics.hpp>
 
 // inversion
 #include "inversion.hpp"
@@ -33,31 +35,19 @@ void CompositionInversion::UpdateModel(MeshBlock *pmb,
                                        int k) const {
   Application::Logger app("inversion");
   app->Log("Update Model");
+  auto pthermo = Thermodynamics::GetInstance();
 
-  auto air = AirParcel::gather_from_primitive(pmb, k, ju_, pmb->is);
+  auto air = AirParcelHelper::gather_from_primitive(pmb, k, ju_, pmb->is);
   air.ToMoleFraction();
 
-  int iter = 0, max_iter = 200;
-  while (iter++ < max_iter) {
-    // read in vapors
-    for (auto n : GetSpeciesIndex()) {
-      air.w[n] = par[n];
-    }
+  Real dlnp = 1.;
 
-    // stop at just above P0
-    for (int i = is; i <= ie; ++i) {
-      pthermo->Extrapolate(&air, -dlnp / 2., "dry");
-      if (air.w[IPR] < P0) break;
-    }
+  // read in vapors
+  for (auto n : GetMySpeciesIndices()) {
+    air.w[n] = par[n];
+  }
 
-    // extrapolate down to where air is
-    pthermo->Extrapolate(&air, log(P0 / air.w[IPR]), "dry");
-
-    // make up for the difference
-    Ts += T0 - air.w[IDN];
-    if (std::abs(T0 - air.w[IDN]) < 0.01) break;
-
-    // app->Log("Iteration #", iter);
-    // app->Log("T", air.w[IDN]);
+  for (int i = pmb->is; i <= pmb->ie; ++i) {
+    pthermo->Extrapolate(&air, -dlnp / 2., "dry");
   }
 }

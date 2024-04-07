@@ -52,20 +52,21 @@
 #include <tracer/tracer.hpp>
 
 // snap
-#include <snap/thermodynamics/thermodynamics.hpp> 
+#include <snap/thermodynamics/thermodynamics.hpp>
 
 // special includes
 // #include "juno_mwr_specs.hpp"
 
 // set up an adiabatic atmosphere
-void construct_atmosphere(MeshBlock *pmb, ParameterInput *pin, Real NH3ppmv, Real T0) {
+void construct_atmosphere(MeshBlock *pmb, ParameterInput *pin, Real NH3ppmv,
+                          Real T0) {
   Application::Logger app("main");
   // app->Log("ProblemGenerator: juno");
 
   app->Log("NH3.ppmv", NH3ppmv);
   app->Log("T0", T0);
 
-  auto pmy_mesh= pmb->pmy_mesh;
+  auto pmy_mesh = pmb->pmy_mesh;
   auto pthermo = Thermodynamics::GetInstance();
   auto pcoord = pmb->pcoord;
   auto pimpl = pmb->pimpl;
@@ -74,8 +75,8 @@ void construct_atmosphere(MeshBlock *pmb, ParameterInput *pin, Real NH3ppmv, Rea
   int ie = pmb->ie;
   int js = pmb->js, ks = pmb->ks;
   int je = pmb->je, ke = pmb->ke;
-  ke=ks;
-  je=js;
+  ke = ks;
+  je = js;
   // mesh limits
   Real x1min = pmy_mesh->mesh_size.x1min;
   Real x1max = pmy_mesh->mesh_size.x1max;
@@ -108,8 +109,8 @@ void construct_atmosphere(MeshBlock *pmb, ParameterInput *pin, Real NH3ppmv, Rea
   Real Ps = P0 * exp(-x1min / H0);
   Real Ts = T0 * pow(Ps / P0, Rd / cp);
   Real xH2O = pin->GetReal("problem", "qH2O.ppmv") / 1.E6;
-//   Real xNH3 = pin->GetReal("problem", "qNH3.ppmv") / 1.E6;
-  Real xNH3 = NH3ppmv/ 1.E6;
+  //   Real xNH3 = pin->GetReal("problem", "qNH3.ppmv") / 1.E6;
+  Real xNH3 = NH3ppmv / 1.E6;
   // app->Log("xH2O", xH2O);
   // app->Log("xNH3", xNH3);
   // app->Log("x1min", x1min);
@@ -179,7 +180,6 @@ void construct_atmosphere(MeshBlock *pmb, ParameterInput *pin, Real NH3ppmv, Rea
       }
     }
 
-
   // set tracers, electron and Na
   int ielec = pindex->GetTracerId("e-");
   int iNa = pindex->GetTracerId("Na");
@@ -199,7 +199,7 @@ void construct_atmosphere(MeshBlock *pmb, ParameterInput *pin, Real NH3ppmv, Rea
 
   Real xCH4 = pin->GetReal("problem", "xCH4");
 
-  auto phydro=pmb->phydro;
+  auto phydro = pmb->phydro;
 
   for (int k = ks; k <= ke; ++k)
     for (int j = js; j <= je; ++j)
@@ -215,11 +215,10 @@ void construct_atmosphere(MeshBlock *pmb, ParameterInput *pin, Real NH3ppmv, Rea
             temp, ptracer->u(iNa, k, j, i), 5.14);
       }
 
-  auto peos=pmb->peos;
-  auto pfield=pmb->pfield;
-  auto pscalars=pmb->pscalars;
-  auto pbval=pmb->pbval;
-
+  auto peos = pmb->peos;
+  auto pfield = pmb->pfield;
+  auto pscalars = pmb->pscalars;
+  auto pbval = pmb->pbval;
 
   // primitive to conserved conversion (hydro)
   peos->PrimitiveToConserved(phydro->w, pfield->bcc, phydro->u, pcoord, is, ie,
@@ -238,6 +237,4 @@ void construct_atmosphere(MeshBlock *pmb, ParameterInput *pin, Real NH3ppmv, Rea
   // conditions.
   phydro->hbvar.SwapHydroQuantity(phydro->w, HydroBoundaryQuantity::prim);
   pbval->ApplyPhysicalBoundaries(0., 0., pbval->bvars_main_int);
-
-
 };

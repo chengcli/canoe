@@ -4,6 +4,8 @@ breathe
 checksumdir
 cmakelang
 cpplint
+emcee
+h5py
 myst-parser
 netcdf4
 numpy

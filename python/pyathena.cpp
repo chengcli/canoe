@@ -15,8 +15,8 @@
 #include <harp/radiation.hpp>
 
 // utils
-#include <utils/modify_atmoshere.hpp>
 #include <utils/construct_atmosphere.hpp>
+#include <utils/modify_atmoshere.hpp>
 
 namespace py = pybind11;
 
