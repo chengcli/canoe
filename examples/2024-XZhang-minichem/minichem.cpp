@@ -12,6 +12,7 @@
 #include <athena/mesh/mesh.hpp>
 #include <athena/parameter_input.hpp>
 #include <athena/stride_iterator.hpp>
+#include <athena/scalars/scalars.hpp>
 
 // canoe
 #include <air_parcel.hpp>
@@ -48,11 +49,11 @@ void vmr_from_prim_scalar(std::vector<Real> &vmr,
                           AthenaArray<Real> const& w,
                           int k, int j, int i)
 {
-  int n = NCLOUD;
-  vmr[0] = prim_scalar(n + 0, k, j, i);
-  vmr[1] = prim_scalar(n + 1, k, j, i);
-  vmr[2] = prim_scalar(n + 2, k, j, i);
-  vmr[3] = prim_scalar(n + 3, k, j, i);
+  if (NCHEMISTRY > 0) {
+     for (int n=0; n<NCHEMISTRY; ++n) {
+        vmr[n] = prim_scalar(NCLOUD + n, k, j, i);
+      }
+    }
 }
 
 void vmr_to_cons_scalar(AthenaArray<Real> &cons_scalar, 
@@ -60,11 +61,11 @@ void vmr_to_cons_scalar(AthenaArray<Real> &cons_scalar,
                         AthenaArray<Real> const& w,
                         int k, int j, int i)
 {
-  int n = NCLOUD;
-  cons_scalar(n + 0, k, j, i) = vmr[0];
-  cons_scalar(n + 1, k, j, i) = vmr[1];
-  cons_scalar(n + 2, k, j, i) = vmr[2];
-  cons_scalar(n + 3, k, j, i) = vmr[3];
+  if (NCHEMISTRY > 0) {
+     for (int n=0; n<NCHEMISTRY; ++n) {
+        cons_scalar(NCLOUD + n, k, j, i) = vmr[n];
+      }
+    }
 }
 
 void MeshBlock::InitUserMeshBlockData(ParameterInput *pin) {
@@ -120,7 +121,7 @@ void Forcing(MeshBlock *pmb, Real const time, Real const dt,
   std::vector<Real> vmr(NCHEMISTRY);
 
   for (int k = pmb->ks; k <= pmb->ke; ++k)
-    for (int j = pmb->js; j <= pmb->je; ++j)
+    for (int j = pmb->js; j <= pmb->je; ++j) 
       for (int i = pmb->is; i <= pmb->ie; ++i) {
         Real lat, lon;
         pexo3->GetLatLon(&lat, &lon, k, j, i);
@@ -147,9 +148,20 @@ void Forcing(MeshBlock *pmb, Real const time, Real const dt,
         // minichem
         Real temp = pthermo->GetTemp(w.at(k, j , i));
         Real pres = w(IPR, k, j, i);
-        vmr_from_prim_scalar(vmr, prim_scalar, w, k, j, i);
-        mc->Run(temp, pres, dt, vmr.data(), "NCHO");
-        vmr_to_cons_scalar(cons_scalar, vmr, w, k, j, i);
+        //vmr_from_prim_scalar(vmr, prim_scalar, w, k, j, i);
+//        mc->Run(temp, pres, dt, vmr.data(), "NCHO");
+        //vmr_to_cons_scalar(cons_scalar, vmr, w, k, j, i);
+        
+        Real rho = w(IDN, k, j, i);
+        if (i > pmb->is) {
+          for (int n = 0; n < NCHEMISTRY; ++n) {
+            cons_scalar(NCLOUD + n, k, j, i) -= rho * prim_scalar(NCLOUD + n, k, j, i) * n * dt / 5.E7;
+          }
+        } else {
+          for (int n = 0; n < NCHEMISTRY; ++n) {
+            cons_scalar(NCLOUD + n, k, j, i) = 1.;
+          }
+        }
       }
 }
 
@@ -166,7 +178,9 @@ Real TimeStep(MeshBlock *pmb) {
 }
 
 //! \fn void Mesh::InitUserMeshData(ParameterInput *pin)
+//void Mesh::InitUserMeshData(ParameterInput *pin) {
 void Mesh::InitUserMeshData(ParameterInput *pin) {
+
   // forcing parameters
   Omega = pin->GetReal("problem", "Omega");
   grav = -pin->GetReal("hydro", "grav_acc1");
@@ -178,7 +192,7 @@ void Mesh::InitUserMeshData(ParameterInput *pin) {
   // forcing function
   EnrollUserExplicitSourceFunction(Forcing);
   // EnrollUserTimeStepFunction(TimeStep);
-  
+/*  
   // minichem
   mc = new MiniChem();
   mc->SetDataFile("chem_data/mini_chem_data_NCHO.txt");
@@ -186,14 +200,30 @@ void Mesh::InitUserMeshData(ParameterInput *pin) {
   mc->SetNetworkDir("chem_data/1x/");
   mc->SetMetallicityStr("1x");
   mc->Initialize();
+*/
 }
 
 //! \fn void MeshBlock::ProblemGenerator(ParameterInput *pin)
 void MeshBlock::ProblemGenerator(ParameterInput *pin) {
-  srand(Globals::my_rank + time(0));
 
+  srand(Globals::my_rank + time(0));
   auto pexo3 = pimpl->pexo3;
   auto pthermo = Thermodynamics::GetInstance();
+
+  Real d0 = 1.0e-2;  // uniform fluid density across the mesh
+  // initialize conserved variables
+  for (int k=ks; k<=ke; k++) {
+    for (int j=js; j<=je; j++) {
+      for (int i=is; i<=ie; i++) {
+        // uniformly fill all scalars to have equal concentration
+        if (NCHEMISTRY > 0) {
+          for (int n=0; n<NCHEMISTRY; ++n) {
+            pscalars->s(NCLOUD+n,k,j,i) = d0*1.0;
+          }
+        }
+      }
+    }
+   }
 
   AirParcel air(AirParcel::Type::MoleFrac);
   srand(Globals::my_rank + time(0));
