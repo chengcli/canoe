@@ -66,7 +66,7 @@ PressureScaleHeight = 0.  # not used
 
 <meshblock>
 nx1        = 64
-nx2        = 4
+nx2        = 64
 nx3        = 4
 
 <hydro>
@@ -98,8 +98,9 @@ radiation_config = hjupiter.yaml
 relax_time    = 1.E4
 
 <forcing>
+packages = top_sponge_lyr, relax_bot_temp
 top_sponge_lyr.tau     = 1.E4
-bot_sponge_lyr.width   = 6.E5
+top_sponge_lyr.width   = 6.E5
 relax_bot_temp.tem     = 2500.
 relax_bot_temp.tau     = 1.E3
 
