@@ -98,11 +98,26 @@ void vel_zab_from_p2(Real *vz, Real *vx, Real *vy, Real a, Real b,
       *vy = v1;
       vel_zxy_to_zab(vz, vx, vy, a, b);
       break;
-    case 2:
+    case 3:
+      // z->-x, x->-y, y->z
+      *vz = -v2;
+      *vx = -v3;
+      *vy = v1;
+      vel_zxy_to_zab(vz, vx, vy, a, b);
       break;
     case 4:
+      // z->x, x->-z, y->y
+      *vz = v2;
+      *vx = -v1;
+      *vy = v3;
+      vel_zxy_to_zab(vz, vx, vy, a, b);
       break;
     case 5:
+      // z->-y, x->x, y->z
+      *vz = -v3;
+      *vx = v2;
+      *vy = v1;
+      vel_zxy_to_zab(vz, vx, vy, a, b);
       break;
   }
 }
@@ -115,17 +130,32 @@ void vel_zab_from_p3(Real *vz, Real *vx, Real *vy, Real a, Real b,
   Real v3 = *vy;
   switch (panel) {
     case 1:
-      // z->x, x->-z, y->y
+      // z->-x, x->z, y->y
       *vz = -v2;
       *vx = v1;
       *vy = v3;
       vel_zxy_to_zab(vz, vx, vy, a, b);
       break;
     case 2:
+      // z->y, x->-z, y->-x
+      *vz = v3;
+      *vx = -v1;
+      *vy = -v2;
+      vel_zxy_to_zab(vz, vx, vy, a, b);
       break;
     case 5:
+      // z->x, x->-z, y->y
+      *vz = v2;
+      *vx = -v1;
+      *vy = v3;
+      vel_zxy_to_zab(vz, vx, vy, a, b);
       break;
     case 6:
+      // z->-y, x->z, y->-x
+      *vz = -v3;
+      *vx = v1;
+      *vy = -v2;
+      vel_zxy_to_zab(vz, vx, vy, a, b);
       break;
   }
 }
@@ -145,10 +175,25 @@ void vel_zab_from_p4(Real *vz, Real *vx, Real *vy, Real a, Real b,
       vel_zxy_to_zab(vz, vx, vy, a, b);
       break;
     case 2:
+      // z->-x, x->z, y->y
+      *vz = -v2;
+      *vx = v1;
+      *vy = v3;
+      vel_zxy_to_zab(vz, vx, vy, a, b);
       break;
     case 5:
+      // z->-y, x->z, y->-x
+      *vz = -v3;
+      *vx = v1;
+      *vy = -v2;
+      vel_zxy_to_zab(vz, vx, vy, a, b);
       break;
     case 6:
+      // z->x, x->-z, y->y
+      *vz = v2;
+      *vx = -v1;
+      *vy = v3;
+      vel_zxy_to_zab(vz, vx, vy, a, b);
       break;
   }
 }
@@ -161,12 +206,32 @@ void vel_zab_from_p5(Real *vz, Real *vx, Real *vy, Real a, Real b,
   Real v3 = *vy;
   switch (panel) {
     case 2:
+      // z->y, x->x, y->-z
+      *vz = v3;
+      *vx = v2;
+      *vy = -v1;
+      vel_zxy_to_zab(vz, vx, vy, a, b);
       break;
     case 3:
+      // z->-x, x->z, y->y
+      *vz = -v2;
+      *vx = v1;
+      *vy = v3;
+      vel_zxy_to_zab(vz, vx, vy, a, b);
       break;
     case 4:
+      // z->x, x->-y, y->-z
+      *vz = v2;
+      *vx = -v3;
+      *vy = -v1;
+      vel_zxy_to_zab(vz, vx, vy, a, b);
       break;
     case 6:
+      // z->-y, x->-x, y->-z
+      *vz = -v3;
+      *vx = -v2;
+      *vy = -v1;
+      vel_zxy_to_zab(vz, vx, vy, a, b);
       break;
   }
 }
@@ -186,10 +251,25 @@ void vel_zab_from_p6(Real *vz, Real *vx, Real *vy, Real a, Real b,
       vel_zxy_to_zab(vz, vx, vy, a, b);
       break;
     case 3:
+      // z->x, x->-y, y->-z
+      *vz = v2;
+      *vx = -v3;
+      *vy = -v1;
+      vel_zxy_to_zab(vz, vx, vy, a, b);
       break;
     case 4:
+      // z->-x, x->z, y->y
+      *vz = -v2;
+      *vx = v1;
+      *vy = v3;
+      vel_zxy_to_zab(vz, vx, vy, a, b);
       break;
     case 5:
+      // z->-y, x->-x, y->-z
+      *vz = -v3;
+      *vx = -v2;
+      *vy = -v1;
+      vel_zxy_to_zab(vz, vx, vy, a, b);
       break;
   }
 }
