@@ -71,6 +71,11 @@ implicit_flag = 1
 <thermodynamics>
 Rd          = 3777.   # mu = 2.3175 g/mol
 
+<forcing>
+packages = bot_heating, top_cooling
+bot_heating.flux = 50.
+top_cooling.flux = -50.
+
 #<radiation>
 #dt            = 200.
 #nstr          = 4
@@ -81,7 +86,7 @@ Rd          = 3777.   # mu = 2.3175 g/mol
 P0          = 1.E5
 T0          = 169.
 Tmin        = 110.
-hrate       = -20.
+hrate       = -0.01
 prad        = 2.e5
 init_Ttol   = 2.
-diagnostics = div, curl, b, mean, div_h, anomaly, radflux, hydroflux
+diagnostics = div, curl, b, mean, div_h, tempa, presa, radflux, hydroflux
