@@ -3,6 +3,7 @@
 
 // Athena++ headers
 #include <athena/coordinates/coordinates.hpp>
+#include <athena/globals.hpp>
 #include <athena/hydro/hydro.hpp>
 #include <athena/mesh/mesh.hpp>
 
@@ -17,6 +18,7 @@ TopCooling::TopCooling(MeshBlock *pmb, ParameterInput *pin) {
   app->Log("Initialize Forcing: TopCooling");
 
   SetPar("flux", pin->GetReal("forcing", "top_cooling.flux"));
+  srand(Globals::my_rank + time(0));
 }
 
 BotHeating::BotHeating(MeshBlock *pmb, ParameterInput *pin) {
@@ -24,6 +26,7 @@ BotHeating::BotHeating(MeshBlock *pmb, ParameterInput *pin) {
   app->Log("Initialize Forcing: BotHeating");
 
   SetPar("flux", pin->GetReal("forcing", "bot_heating.flux"));
+  srand(Globals::my_rank + time(0));
 }
 
 BodyHeating::BodyHeating(MeshBlock *pmb, ParameterInput *pin) {
@@ -33,6 +36,7 @@ BodyHeating::BodyHeating(MeshBlock *pmb, ParameterInput *pin) {
   SetPar("dTdt", pin->GetReal("forcing", "body_heating.dTdt.Kday") / 86400.);
   SetPar("pmin", pin->GetReal("forcing", "body_heating.pmin"));
   SetPar("pmax", pin->GetReal("forcing", "body_heating.pmax"));
+  srand(Globals::my_rank + time(0));
 }
 
 void TopCooling::Apply(AthenaArray<Real> &du, MeshBlock *pmb, Real time,
@@ -46,8 +50,9 @@ void TopCooling::Apply(AthenaArray<Real> &du, MeshBlock *pmb, Real time,
 
   for (int k = ks; k <= ke; ++k)
     for (int j = js; j <= je; ++j) {
-      du(IEN, k, j, ie) += dt * flux * pcoord->GetFace1Area(k, j, ie + 1) /
-                           pcoord->GetCellVolume(k, j, ie);
+      du(IEN, k, j, ie) +=
+          dt * flux * (1. + 1.E-4 * sin(2. * M_PI * rand() / RAND_MAX)) *
+          pcoord->GetFace1Area(k, j, ie + 1) / pcoord->GetCellVolume(k, j, ie);
     }
 }
 
@@ -62,8 +67,9 @@ void BotHeating::Apply(AthenaArray<Real> &du, MeshBlock *pmb, Real time,
 
   for (int k = ks; k <= ke; ++k)
     for (int j = js; j <= je; ++j) {
-      du(IEN, k, j, is) += dt * flux * pcoord->GetFace1Area(k, j, is) /
-                           pcoord->GetCellVolume(k, j, is);
+      du(IEN, k, j, is) +=
+          dt * flux * (1. + 1.E-4 * sin(2. * M_PI * rand() / RAND_MAX)) *
+          pcoord->GetFace1Area(k, j, is) / pcoord->GetCellVolume(k, j, is);
     }
 }
 
