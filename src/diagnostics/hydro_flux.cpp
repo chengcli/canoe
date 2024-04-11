@@ -2,6 +2,9 @@
 #include <athena/coordinates/coordinates.hpp>
 #include <athena/hydro/hydro.hpp>
 
+// exchanger
+#include <exchanger/exchanger.hpp>
+
 // snap
 #include <snap/thermodynamics/thermodynamics.hpp>
 

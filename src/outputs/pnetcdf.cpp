@@ -310,13 +310,13 @@ void PnetcdfOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) {
         ncmpi_def_var(ifile, name.c_str(), NC_FLOAT, 4, iaxis, ivar);
 
       // set units
-      auto attr = pmeta->GetUnits(pdata->name);
+      auto attr = pmeta->GetUnits(name);
       if (attr != "") {
         ncmpi_put_att_text(ifile, *ivar, "units", attr.length(), attr.c_str());
       }
 
       // set long_name
-      attr = pmeta->GetLongName(pdata->name);
+      attr = pmeta->GetLongName(name);
       if (attr != "") {
         ncmpi_put_att_text(ifile, *ivar, "long_name", attr.length(),
                            attr.c_str());

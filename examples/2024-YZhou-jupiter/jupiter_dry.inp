@@ -6,7 +6,7 @@ problem_id  = jupiter2d     # problem ID: basename of output filenames
 
 <output0>
 file_type   = rst
-dt          = 100.E5
+dt          = 10.E5
 
 <output1>
 file_type   = hst           # History data dump
@@ -35,33 +35,33 @@ dt          = 4.E4          # time increment
 <time>
 cfl_number  = 0.9
 nlim        = -1            # cycle limit
-tlim        = 200.E5
+tlim        = 1000.E5
 xorder      = 5             # horizontal reconstruction order
 integrator  = rk3           # integration method
 
 <mesh>
-nx1         = 80          # Number of zones in X1-direction
+nx1         = 40          # Number of zones in X1-direction
 x1min       = -320.E3     # minimum value of X1
 x1max       = 40.E3       # maximum value of X1
 ix1_bc      = reflecting  # Inner-X1 boundary condition flag
 ox1_bc      = reflecting  # Outer-X1 boundary condition flag
 
-nx2         = 320         # Number of zones in X2-direction
+nx2         = 80         # Number of zones in X2-direction
 x2min       = 0.          # minimum value of X2
-x2max       = 3200.E3     # maximum value of X2
+x2max       = 1600.E3     # maximum value of X2
 ix2_bc      = periodic    # Inner-X2 boundary condition flag
 ox2_bc      = periodic    # Outer-X2 boundary condition flag
 
-nx3         = 1           # Number of zones in X3-direction
-x3min       = -0.5        # minimum value of X3
-x3max       = 0.5         # maximum value of X3
+nx3         = 80         # Number of zones in X3-direction
+x3min       = 0.        	# minimum value of X3
+x3max       = 1600.E3    	# maximum value of X3
 ix3_bc      = periodic    # Inner-X3 boundary condition flag
 ox3_bc      = periodic    # Outer-X3 boundary condition flag
 
 <meshblock>
-nx1         = 80
-nx2         = 40
-nx3         = 1
+nx1         = 40
+nx2         = 20
+nx3         = 20
 
 <hydro>
 gamma       = 1.42
@@ -81,7 +81,7 @@ Rd          = 3777.   # mu = 2.3175 g/mol
 P0          = 1.E5
 T0          = 169.
 Tmin        = 110.
-hrate       = -100.
+hrate       = -20.
 prad        = 2.e5
 init_Ttol   = 2.
-diagnostics = div, curl, b, mean, div_h, tempa, presa, radflux, hydroflux
+diagnostics = div, curl, b, mean, div_h, anomaly, radflux, hydroflux
