@@ -1,6 +1,9 @@
 // athena
 #include <athena/coordinates/coordinates.hpp>
 
+// exchanger
+#include <exchanger/exchanger.hpp>
+
 // harp
 #include <harp/radiation.hpp>
 

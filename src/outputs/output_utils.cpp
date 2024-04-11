@@ -42,15 +42,22 @@ __attribute__((weak)) MetadataTable::MetadataTable() {
       {"theta", "potential temperature", "K", "CCC"},
       {"thetav", "virtual potential temperature", "K", "CCC"},
       {"mse", "moist static energy", "J/kg", "CCC"},
+      // relative humidity
       {"rh1", "relative humidity 1", "1", "CCC"},
       {"rh2", "relative humidity 2", "1", "CCC"},
       {"eps", "turbulent dissipation", "w/kg", "CCC"},
       {"tke", "turbulent kinetic energy", "J/kg", "CCC"},
       {"mut", "dynamic turbulent viscosity", "kg/(m.s)", "CCC"},
+      // radiation
       {"radiance", "top-of-atmosphere radiance", "K", "RCC"},
+      // curl
       {"curl", "curl", "1/s", "CCC"},
+      // divergence
       {"div", "divergence", "1/s", "CCC"},
+      {"div_h", "horizontal divergence", "1/s", "CCC"},
+      // buoyancy
       {"b", "buoyancy", "m/s^2", "CCC"},
+      // hydro mean
       {"rho_bar", "mean density", "kg/m^3", "CCC"},
       {"q1_bar", "mean vapor1 mixing ratio", "kg/kg", "CCC"},
       {"q2_bar", "mean vapor2 mixing ratio", "kg/kg", "CCC"},
@@ -59,12 +66,16 @@ __attribute__((weak)) MetadataTable::MetadataTable() {
       {"vel2_bar", "mean velocity 2", "m/s", "CCC"},
       {"vel3_bar", "mean velocity 3", "m/s", "CCC"},
       {"T_bar", "mean temperature", "K", "CCC"},
-      {"div_h", "horizontal divergence", "1/s", "CCC"},
+      // anomalies
+      {"rhoa", "horizontal density anomaly", "kg/m^3", "CCC"},
       {"tempa", "horizontal temperature anomaly", "K", "CCC"},
+      {"v1a", "horizontal vertical velocity anomaly", "m/s", "CCC"},
       {"presa", "horizontal pressure anomaly", "pa", "CCC"},
+      // radiative flux
       {"rflx_up", "total upward radiative flux", "w/m^2", "--F"},
       {"rflx_dn", "total downward radiative flux", "w/m^2", "--F"},
-      {"v1rho", "total upward mass flux", "kg/(m^2.s)", "--F"},
+      // hydro flux
+      {"v1rho", "total upward mass flux", "kg/(m^2.s)", "--C"},
       {"v1q1", "total upward vapor1 flux", "1/(m^2.s)", "--C"},
       {"v1q2", "total upward vapor2 flux", "1/(m^2.s)", "--C"},
       {"v1q3", "total upward vapor3 flux", "1/(m^2.s)", "--C"},
@@ -72,6 +83,10 @@ __attribute__((weak)) MetadataTable::MetadataTable() {
       {"v1v2", "total upward velocity 2 flux", "(m/s)/(m^2.s)", "--C"},
       {"v1v3", "total upward velocity 3 flux", "(m/s)/(m^2.s)", "--C"},
       {"v1T", "total upward temperature flux", "K/(m^2.s)", "--C"},
+      // v1 moments
+      {"w_avg", "mean vertical velocity", "m/s", "--C"},
+      {"w2_avg", "mean squard vertical velocity", "(m/s)^2", "--C"},
+      {"w3_avg", "mean cubed vertical velocity", "(m/s)^3", "--C"},
       // CMPI6 1D variables description
       {"ta_avg", "domain avg. air temperature profile", "K", "--C"},
       {"ua_avg", "domain avg. zonal wind profile", "m/s", "--C"},

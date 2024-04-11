@@ -12,11 +12,11 @@
 #include <configure.hpp>
 #include <virtual_groups.hpp>
 
-// exchanger
-#include <exchanger/exchanger.hpp>
-
 class ParameterInput;
 class Meshlock;
+
+template <typename T, int N>
+class PlanarExchanger;
 
 class Diagnostics : public NamedGroup {
  public:
@@ -128,37 +128,17 @@ class HorizontalDivergence : public Diagnostics {
   AthenaArray<Real> v2f2_, v3f3_;
 };
 
-// 6. temperature anomaly
-class TemperatureAnomaly : public Diagnostics {
+// 6. anomaly
+class Anomaly : public Diagnostics {
  public:
   std::shared_ptr<PlanarExchanger<Real, 2>> pexh;
 
  public:
-  TemperatureAnomaly(MeshBlock *pmb);
-  virtual ~TemperatureAnomaly() {}
+  Anomaly(MeshBlock *pmb);
+  virtual ~Anomaly() {}
 
   void Finalize(MeshBlock *pmb) override;
-  int GetNumVars() const override { return 1; }
-
- protected:
-  void packData(MeshBlock const *pmb);
-  void unpackData(MeshBlock const *pmb);
-
-  //! mean component
-  std::vector<Real> mean_;
-};
-
-// 7. pressure anomaly
-class PressureAnomaly : public Diagnostics {
- public:
-  std::shared_ptr<PlanarExchanger<Real, 2>> pexh;
-
- public:
-  PressureAnomaly(MeshBlock *pmb);
-  virtual ~PressureAnomaly() {}
-
-  void Finalize(MeshBlock *pmb) override;
-  int GetNumVars() const override { return 1; }
+  int GetNumVars() const override { return 4; }
 
  protected:
   void packData(MeshBlock const *pmb);
@@ -206,6 +186,23 @@ class HydroFlux : public Diagnostics {
   void unpackData(MeshBlock const *pmb);
 
   int ncycle_;
+};
+
+// 10. w_avg
+class V1Moments : public Diagnostics {
+ public:
+  std::shared_ptr<PlanarExchanger<Real, 2>> pexh;
+
+ public:
+  V1Moments(MeshBlock *pmb);
+  virtual ~V1Moments() {}
+
+  void Finalize(MeshBlock *pmb) override;
+  int GetNumVars() const override { return 3; }
+
+ protected:
+  void packData(MeshBlock const *pmb);
+  void unpackData(MeshBlock const *pmb);
 };
 
 /* 6. eddy flux
