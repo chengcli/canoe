@@ -36,7 +36,9 @@ __attribute__((weak)) MetadataTable::MetadataTable() {
       {"x3f", "distance at cell boundary", "m", "F--"},
       {"rho", "density", "kg/m^3", "CCC"},
       {"press", "pressure", "pa", "CCC"},
-      {"vel", "velocity", "m/s", "CCC"},
+      {"vel1", "vertical velocity", "m/s", "CCC"},
+      {"vel2", "horizontal velocity", "m/s", "CCC"},
+      {"vel3", "horizontal velocity", "m/s", "CCC"},
       {"vapor", "mass mixing ratio of vapor", "kg/kg", "CCC"},
       {"temp", "temperature", "K", "CCC"},
       {"theta", "potential temperature", "K", "CCC"},
@@ -51,7 +53,9 @@ __attribute__((weak)) MetadataTable::MetadataTable() {
       // radiation
       {"radiance", "top-of-atmosphere radiance", "K", "RCC"},
       // curl
-      {"curl", "curl", "1/s", "CCC"},
+      {"curl1", "curl in the vertical direction", "1/s", "CCC"},
+      {"curl2", "curl in the horizontal direction", "1/s", "CCC"},
+      {"curl3", "curl in the horizontal direction", "1/s", "CCC"},
       // divergence
       {"div", "divergence", "1/s", "CCC"},
       {"div_h", "horizontal divergence", "1/s", "CCC"},

@@ -6,10 +6,10 @@
 // canoe
 #include "diagnostics.hpp"
 
-Divergence::Divergence(MeshBlock *pmb) : Diagnostics(pmb, "div") {
-  type = "SCALARS";
+Divergence::Divergence(MeshBlock *pmb) : Diagnostics(pmb, "div,div_h") {
+  type = "VECTORS";
 
-  data.NewAthenaArray(ncells3_, ncells2_, ncells1_);
+  data.NewAthenaArray(2, ncells3_, ncells2_, ncells1_);
   v1f1_.NewAthenaArray(ncells3_, ncells2_, ncells1_ + 1);
 
   if (pmb->block_size.nx2 > 1) {
@@ -56,24 +56,29 @@ void Divergence::Finalize(MeshBlock *pmb) {
       pcoord->CellVolume(k, j, is, ie, vol_);
       for (int i = is; i <= ie; ++i) {
         pcoord->Face1Area(k, j, is, ie + 1, x1area_);
-        data(k, j, i) =
+        data(0, k, j, i) =
             x1area_(i + 1) * v1f1_(k, j, i + 1) - x1area_(i) * v1f1_(k, j, i);
 
         if (pmb->block_size.nx2 > 1) {
           pcoord->Face2Area(k, j, is, ie, x2area_);
           pcoord->Face2Area(k, j + 1, is, ie, x2area_p1_);
-          data(k, j, i) +=
+          data(0, k, j, i) +=
+              x2area_p1_(i) * v2f2_(k, j + 1, i) - x2area_(i) * v2f2_(k, j, i);
+          data(1, k, j, i) =
               x2area_p1_(i) * v2f2_(k, j + 1, i) - x2area_(i) * v2f2_(k, j, i);
         }
 
         if (pmb->block_size.nx3 > 1) {
           pcoord->Face3Area(k, j, is, ie, x3area_);
           pcoord->Face3Area(k + 1, j, is, ie, x3area_p1_);
-          data(k, j, i) +=
+          data(0, k, j, i) +=
+              x3area_p1_(i) * v3f3_(k + 1, j, i) - x3area_(i) * v3f3_(k, j, i);
+          data(1, k, j, i) +=
               x3area_p1_(i) * v3f3_(k + 1, j, i) - x3area_(i) * v3f3_(k, j, i);
         }
 
-        data(k, j, i) /= vol_(i);
+        data(0, k, j, i) /= vol_(i);
+        data(1, k, j, i) /= vol_(i);
       }
     }
 }

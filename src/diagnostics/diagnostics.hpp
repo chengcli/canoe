@@ -68,7 +68,7 @@ class Divergence : public Diagnostics {
   virtual ~Divergence() {}
 
   void Finalize(MeshBlock *pmb) override;
-  int GetNumVars() const override { return 1; }
+  int GetNumVars() const override { return 2; }
 
  protected:
   AthenaArray<Real> v1f1_, v2f2_, v3f3_;
@@ -113,19 +113,6 @@ class HydroMean : public Diagnostics {
 
  protected:
   int ncycle_;
-};
-
-// 5. horizontal divergence
-class HorizontalDivergence : public Diagnostics {
- public:
-  HorizontalDivergence(MeshBlock *pmb);
-  virtual ~HorizontalDivergence() {}
-
-  void Finalize(MeshBlock *pmb) override;
-  int GetNumVars() const override { return 1; }
-
- protected:
-  AthenaArray<Real> v2f2_, v3f3_;
 };
 
 // 6. anomaly
