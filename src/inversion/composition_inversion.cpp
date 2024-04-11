@@ -10,9 +10,11 @@
 // application
 #include <application/application.hpp>
 
-// utils
-#include <utils/ndarrays.hpp>
-#include <utils/vectorize.hpp>
+// canoe
+#include <air_parcel.hpp>
+
+// snap
+#include <snap/thermodynamics/thermodynamics.hpp>
 
 // inversion
 #include "inversion.hpp"
@@ -33,6 +35,19 @@ void CompositionInversion::UpdateModel(MeshBlock *pmb,
                                        int k) const {
   Application::Logger app("inversion");
   app->Log("Update Model");
+  auto pthermo = Thermodynamics::GetInstance();
 
-  // int is = pblock_->is, ie = pblock_->ie;
+  auto air = AirParcelHelper::gather_from_primitive(pmb, k, ju_, pmb->is);
+  air.ToMoleFraction();
+
+  Real dlnp = 1.;
+
+  // read in vapors
+  for (auto n : GetMySpeciesIndices()) {
+    air.w[n] = par[n];
+  }
+
+  for (int i = pmb->is; i <= pmb->ie; ++i) {
+    pthermo->Extrapolate(&air, -dlnp / 2., "dry");
+  }
 }

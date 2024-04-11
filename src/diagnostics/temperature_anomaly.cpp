@@ -2,9 +2,6 @@
 #include <athena/coordinates/coordinates.hpp>
 #include <athena/hydro/hydro.hpp>
 
-// canoe
-#include <configure.hpp>
-
 // snap
 #include <snap/thermodynamics/thermodynamics.hpp>
 
@@ -14,26 +11,18 @@
 TemperatureAnomaly::TemperatureAnomaly(MeshBlock *pmb)
     : Diagnostics(pmb, "tempa") {
   type = "SCALARS";
-  mean_.NewAthenaArray(ncells1_);
   data.NewAthenaArray(ncells3_, ncells2_, ncells1_);
+  mean_.resize(ncells1_);
 
-  Regroup(pmb, X1DIR);
+  pexh = std::make_shared<PlanarExchanger<Real, 2>>("diag/tempa");
 
-  // calculate total volume
-  total_vol_.ZeroClear();
-  for (int k = pmb->ks; k <= pmb->ke; ++k)
-    for (int j = pmb->js; j <= pmb->je; ++j) {
-      pmb->pcoord->CellVolume(k, j, pmb->is, pmb->ie, vol_);
+  // volumn
+  pexh->send_buffer[0].resize(total_vol_.size());
+  pexh->recv_buffer[0].resize(total_vol_.size());
 
-      for (int i = pmb->is; i <= pmb->ie; ++i) {
-        total_vol_(i) += vol_(i);
-      }
-    }
-
-#ifdef MPI_PARALLEL
-  MPI_Allreduce(MPI_IN_PLACE, total_vol_.data(), total_vol_.GetSize(),
-                MPI_ATHENA_REAL, MPI_SUM, mpi_comm_);
-#endif
+  // value
+  pexh->send_buffer[1].resize(ncells1_);
+  pexh->recv_buffer[1].resize(ncells1_);
 }
 
 void TemperatureAnomaly::Finalize(MeshBlock *pmb) {
@@ -45,27 +34,40 @@ void TemperatureAnomaly::Finalize(MeshBlock *pmb) {
   int is = pmb->is, js = pmb->js, ks = pmb->ks;
   int ie = pmb->ie, je = pmb->je, ke = pmb->ke;
 
-  mean_.ZeroClear();
+  std::fill(total_vol_.begin(), total_vol_.end(), 0.);
+  std::fill(mean_.begin(), mean_.end(), 0.);
 
   // calculate horizontal mean
   for (int k = ks; k <= ke; ++k)
     for (int j = js; j <= je; ++j) {
       pcoord->CellVolume(k, j, is, ie, vol_);
 
-      for (int i = is; i <= ie; ++i)
-        mean_(i) += vol_(i) * pthermo->GetTemp(pmb, k, j, i);
+      for (int i = is; i <= ie; ++i) {
+        total_vol_[i] += vol_(i);
+        mean_[i] += vol_(i) * pthermo->GetTemp(pmb, k, j, i);
+      }
     }
 
-#ifdef MPI_PARALLEL
-  MPI_Allreduce(MPI_IN_PLACE, mean_.data(), mean_.GetSize(), MPI_ATHENA_REAL,
-                MPI_SUM, mpi_comm_);
-#endif
+  pexh->Regroup(pmb, X1DIR);
+  packData(pmb);
+  pexh->ReduceAll(pmb, MPI_SUM);
+  unpackData(pmb);
 
-  // temperature anomaly
+  // pressure anomaly
   for (int k = ks; k <= ke; ++k)
     for (int j = js; j <= je; ++j)
       for (int i = is; i <= ie; ++i) {
         data(k, j, i) =
-            pthermo->GetTemp(pmb, k, j, i) - mean_(i) / total_vol_(i);
+            pthermo->GetTemp(pmb, k, j, i) - mean_[i] / total_vol_[i];
       }
+}
+
+void TemperatureAnomaly::packData(MeshBlock const *pmb) {
+  pexh->send_buffer[0].swap(total_vol_);
+  pexh->send_buffer[1].swap(mean_);
+}
+
+void TemperatureAnomaly::unpackData(MeshBlock const *pmb) {
+  total_vol_.swap(pexh->recv_buffer[0]);
+  mean_.swap(pexh->recv_buffer[1]);
 }

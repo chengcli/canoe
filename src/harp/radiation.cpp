@@ -68,7 +68,7 @@ Radiation::Radiation(MeshBlock *pmb, ParameterInput *pin) {
     }
 
     // allocate memory
-    p->Resize(ncells1, ncells2, ncells3, nstr);
+    p->Resize(ncells1, ncells2, ncells3, nstr, pmb);
   }
 
   // output radiance
@@ -131,7 +131,7 @@ size_t Radiation::GetNumOutgoingRays() const {
   return num;
 }
 
-void Radiation::CalFlux(MeshBlock const *pmb, int k, int j, int il, int iu) {
+void Radiation::CalFlux(MeshBlock const *pmb, int k, int j) {
   auto pcoord = pmb->pcoord;
 
   AirColumn &&ac = AirParcelHelper::gather_from_primitive(pmb, k, j);
@@ -142,7 +142,7 @@ void Radiation::CalFlux(MeshBlock const *pmb, int k, int j, int il, int iu) {
   for (auto &p : bands_) {
     // iu ~= ie + 1
     p->SetSpectralProperties(ac, pcoord->x1f.data(), grav * H0, k, j);
-    p->CalBandFlux(pmb, k, j, il, iu);
+    p->CalBandFlux(pmb, k, j);
   }
 }
 

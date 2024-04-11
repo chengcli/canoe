@@ -29,47 +29,47 @@ ForcingContainer ForcingFactory::CreateFrom(MeshBlock *pmb,
 
   while (p != NULL) {
     if (std::strcmp(p, "relax_bot_temp") == 0) {
-      auto nb = ExchangerHelper::find_bot_neighbor(pmb);
+      auto nb = ExchangeUtils::find_bot_neighbor(pmb);
       if (nb == nullptr) {  // no bottom neighbor
         forcing.push_back(std::make_shared<RelaxBotTemp>(pmb, pin));
       }
     } else if (std::strcmp(p, "relax_bot_comp") == 0) {
-      auto nb = ExchangerHelper::find_bot_neighbor(pmb);
+      auto nb = ExchangeUtils::find_bot_neighbor(pmb);
       if (nb == nullptr) {  // no bottom neighbor
         forcing.push_back(std::make_shared<RelaxBotComp>(pmb, pin));
       }
     } else if (std::strcmp(p, "relax_bot_velo") == 0) {
-      auto nb = ExchangerHelper::find_bot_neighbor(pmb);
+      auto nb = ExchangeUtils::find_bot_neighbor(pmb);
       if (nb == nullptr) {  // no bottom neighbor
         forcing.push_back(std::make_shared<RelaxBotVelo>(pmb, pin));
       }
     } else if (std::strcmp(p, "top_sponge_lyr") == 0) {
-      auto nb = ExchangerHelper::find_top_neighbor(pmb);
+      auto nb = ExchangeUtils::find_top_neighbor(pmb);
       if (nb == nullptr) {  // no top neighbor
         forcing.push_back(std::make_shared<TopSpongeLyr>(pmb, pin));
       }
     } else if (std::strcmp(p, "bot_sponge_lyr") == 0) {
-      auto nb = ExchangerHelper::find_bot_neighbor(pmb);
+      auto nb = ExchangeUtils::find_bot_neighbor(pmb);
       if (nb == nullptr) {  // no bottom neighbor
         forcing.push_back(std::make_shared<BotSpongeLyr>(pmb, pin));
       }
     } else if (std::strcmp(p, "left_sponge_lyr") == 0) {
-      auto nb = ExchangerHelper::find_left_neighbor(pmb);
+      auto nb = ExchangeUtils::find_left_neighbor(pmb);
       if (nb == nullptr) {  // no left neighbor
         forcing.push_back(std::make_shared<LeftSpongeLyr>(pmb, pin));
       }
     } else if (std::strcmp(p, "right_sponge_lyr") == 0) {
-      auto nb = ExchangerHelper::find_right_neighbor(pmb);
+      auto nb = ExchangeUtils::find_right_neighbor(pmb);
       if (nb == nullptr) {  // no right neighbor
         forcing.push_back(std::make_shared<RightSpongeLyr>(pmb, pin));
       }
     } else if (std::strcmp(p, "top_cooling") == 0) {
-      auto nb = ExchangerHelper::find_top_neighbor(pmb);
+      auto nb = ExchangeUtils::find_top_neighbor(pmb);
       if (nb == nullptr) {  // no top neighbor
         forcing.push_back(std::make_shared<TopCooling>(pmb, pin));
       }
     } else if (std::strcmp(p, "bot_heating") == 0) {
-      auto nb = ExchangerHelper::find_bot_neighbor(pmb);
+      auto nb = ExchangeUtils::find_bot_neighbor(pmb);
       if (nb == nullptr) {  // no bottom neighbor
         forcing.push_back(std::make_shared<BotHeating>(pmb, pin));
       }

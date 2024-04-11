@@ -3,7 +3,7 @@
 # ========================
 
 if (${TASK} STREQUAL "juno")
-  add_subdirectory(2024-CLi-juno-mwr)
+  add_subdirectory(2024-JHu-juno-mwr)
 endif()
 
 if (${TASK} STREQUAL "uranus_mwr")
@@ -18,6 +18,12 @@ if (${TASK} STREQUAL "straka" OR
     ${TASK} STREQUAL "robert" OR
     ${TASK} STREQUAL "bryan")
   add_subdirectory(2019-Li-snap)
+endif()
+
+if (${TASK} STREQUAL "jupiter_dry" OR
+    ${TASK} STREQUAL "jupiter_h2o" OR
+    ${TASK} STREQUAL "jupiter_crm")
+  add_subdirectory(2024-YZhou-jupiter)
 endif()
 
 if (${TASK} STREQUAL "ktable_jup")

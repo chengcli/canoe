@@ -3,10 +3,21 @@
 #include <athena/globals.hpp>
 #include <athena/mesh/mesh.hpp>
 
+// application
+#include <application/globals.hpp>
+
 // canoe
+#include <configure.hpp>
+
+// exchanger
 #include "exchanger.hpp"
 
-ExchangerBase::ExchangerBase() {
+#ifdef MPI_PARALLEL
+#else
+int MPI_SUM = 1;
+#endif  // NO MPI
+
+ExchangerBase::ExchangerBase(std::string name) : NamedGroup(name) {
 #ifdef MPI_PARALLEL
   mpi_comm_ = MPI_COMM_WORLD;
   color_.resize(Globals::nranks);
@@ -35,8 +46,9 @@ ExchangerBase::~ExchangerBase() {
 void ExchangerBase::setColor(MeshBlock const *pmb, CoordinateDirection dir) {
 #ifdef MPI_PARALLEL
   NeighborBlock bblock, tblock;
-  ExchangerHelper::find_neighbors(pmb, dir, &bblock, &tblock);
+  ExchangeUtils::find_neighbors(pmb, dir, &bblock, &tblock);
 
+  // avoid periodic boundary
   if (dir == X1DIR) {
     if (pmb->block_size.x1min <= pmb->pmy_mesh->mesh_size.x1min) {
       bblock.snb.gid = -1;
@@ -102,85 +114,77 @@ int ExchangerBase::GetRankInGroup() const {
   return r;
 }
 
-namespace ExchangerHelper {
+int ExchangerBase::GetGroupSize() const {
+#ifdef MPI_PARALLEL
+  int nblocks;
+  MPI_Comm_size(mpi_comm_, &nblocks);
+  return nblocks;
+#endif  // MPI_PARALLEL
 
-int mpi_tag_ub;
+  return 1;
+}
+
+namespace ExchangeUtils {
 
 int create_mpi_tag(int lid, int tid, std::string name) {
   int tag = BoundaryBase::CreateBvalsMPITag(lid, tid, 0);
 
   std::string str = name + std::to_string(tag);
-  return std::hash<std::string>{}(str) % (mpi_tag_ub);
+  return std::hash<std::string>{}(str) % (Globals::mpi_tag_ub);
 }
 
 NeighborBlock const *find_bot_neighbor(MeshBlock const *pmb) {
-  NeighborBlock *pbot = nullptr;
-
   for (int n = 0; n < pmb->pbval->nneighbor; ++n) {
     NeighborBlock *nb = pmb->pbval->neighbor + n;
-    if ((nb->ni.ox1 == -1) && (nb->ni.ox2 == 0) && (nb->ni.ox3 == 0)) pbot = nb;
+    if ((nb->ni.ox1 == -1) && (nb->ni.ox2 == 0) && (nb->ni.ox3 == 0)) return nb;
   }
 
-  return pbot;
+  return nullptr;
 }
 
 NeighborBlock const *find_top_neighbor(MeshBlock const *pmb) {
-  NeighborBlock *ptop = nullptr;
-
   for (int n = 0; n < pmb->pbval->nneighbor; ++n) {
     NeighborBlock *nb = pmb->pbval->neighbor + n;
-    if ((nb->ni.ox1 == 1) && (nb->ni.ox2 == 0) && (nb->ni.ox3 == 0)) ptop = nb;
+    if ((nb->ni.ox1 == 1) && (nb->ni.ox2 == 0) && (nb->ni.ox3 == 0)) return nb;
   }
 
-  return ptop;
+  return nullptr;
 }
 
 NeighborBlock const *find_left_neighbor(MeshBlock const *pmb) {
-  NeighborBlock *pleft = nullptr;
-
   for (int n = 0; n < pmb->pbval->nneighbor; ++n) {
     NeighborBlock *nb = pmb->pbval->neighbor + n;
-    if ((nb->ni.ox1 == 0) && (nb->ni.ox2 == -1) && (nb->ni.ox3 == 0))
-      pleft = nb;
+    if ((nb->ni.ox1 == 0) && (nb->ni.ox2 == -1) && (nb->ni.ox3 == 0)) return nb;
   }
 
-  return pleft;
+  return nullptr;
 }
 
 NeighborBlock const *find_right_neighbor(MeshBlock const *pmb) {
-  NeighborBlock *pright = nullptr;
-
   for (int n = 0; n < pmb->pbval->nneighbor; ++n) {
     NeighborBlock *nb = pmb->pbval->neighbor + n;
-    if ((nb->ni.ox1 == 1) && (nb->ni.ox2 == 1) && (nb->ni.ox3 == 0))
-      pright = nb;
+    if ((nb->ni.ox1 == 1) && (nb->ni.ox2 == 1) && (nb->ni.ox3 == 0)) return nb;
   }
 
-  return pright;
+  return nullptr;
 }
 
 NeighborBlock const *find_back_neighbor(MeshBlock const *pmb) {
-  NeighborBlock *pback = nullptr;
-
   for (int n = 0; n < pmb->pbval->nneighbor; ++n) {
     NeighborBlock *nb = pmb->pbval->neighbor + n;
-    if ((nb->ni.ox1 == 0) && (nb->ni.ox2 == 0) && (nb->ni.ox3 == -1))
-      pback = nb;
+    if ((nb->ni.ox1 == 0) && (nb->ni.ox2 == 0) && (nb->ni.ox3 == -1)) return nb;
   }
 
-  return pback;
+  return nullptr;
 }
 
 NeighborBlock const *find_front_neighbor(MeshBlock const *pmb) {
-  NeighborBlock *pfront = nullptr;
-
   for (int n = 0; n < pmb->pbval->nneighbor; ++n) {
     NeighborBlock *nb = pmb->pbval->neighbor + n;
-    if ((nb->ni.ox1 == 1) && (nb->ni.ox2 == 1) && (nb->ni.ox3 == 1))
-      pfront = nb;
+    if ((nb->ni.ox1 == 1) && (nb->ni.ox2 == 1) && (nb->ni.ox3 == 1)) return nb;
   }
 
-  return pfront;
+  return nullptr;
 }
 
 void find_neighbors(MeshBlock const *pmb, CoordinateDirection dir,
@@ -214,4 +218,4 @@ void find_neighbors(MeshBlock const *pmb, CoordinateDirection dir,
   }
 }
 
-}  // namespace ExchangerHelper
+}  // namespace ExchangeUtils

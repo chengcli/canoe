@@ -30,11 +30,13 @@ Decomposition::Decomposition(MeshBlock *pmb)
   // allocate hydrostatic and nonhydrostatic pressure
   psf_.NewAthenaArray(nc3, nc2, nc1 + 1);
   psv_.NewAthenaArray(nc3, nc2, nc1);
+  dsf_.NewAthenaArray(nc3, nc2, nc1 + 1);
+  dsv_.NewAthenaArray(nc3, nc2, nc1);
   pres_.NewAthenaArray(nc3, nc2, nc1);
   dens_.NewAthenaArray(nc3, nc2, nc1);
 
   buffer_ = new Real[3 * (NGHOST + 1) * nc3 * nc2];
-  send_buffer_ = new Real[2 * (NGHOST + 1) * nc3 * nc2];
+  send_buffer_ = new Real[(NGHOST + 1) * nc3 * nc2];
   wsend_top_ = new Real[2 * NGHOST * nc3 * nc2];
   wrecv_top_ = new Real[2 * NGHOST * nc3 * nc2];
   wsend_bot_ = new Real[2 * NGHOST * nc3 * nc2];
@@ -45,6 +47,11 @@ Decomposition::Decomposition(MeshBlock *pmb)
   // allocate polytropic index and pseudo entropy
   entropy_.NewAthenaArray(2, nc3, nc2);
   gamma_.NewAthenaArray(nc3, nc2, nc1);
+
+  pexv = std::make_shared<LinearExchanger<Real, 1>>("snap/decomp");
+  pexv->SetBlockID(pmb->gid);
+  pexv->send_buffer[0].resize((NGHOST + 1) * nc3 * nc2);
+  pexv->recv_buffer[0].resize((NGHOST + 1) * nc3 * nc2);
 }
 
 Decomposition::~Decomposition() {
@@ -155,6 +162,26 @@ void Decomposition::SendToBottom(AthenaArray<Real> const &psf, int kl, int ku,
     MeshBlock *pbl = pmy_block_->pmy_mesh->FindMeshBlock(bblock.snb.gid);
     std::memcpy(pbl->pimpl->pdec->buffer_, buffer_, ssize * sizeof(Real));
   }
+}
+
+void Decomposition::packData(MeshBlock const *pmb, int kl, int ku, int jl,
+                             int ju) {
+  int p = 0;
+  for (int k = kl; k <= ku; ++k)
+    for (int j = jl; j <= ju; ++j)
+      for (int i = 0; i <= NGHOST; ++i) {
+        pexv->send_buffer[0][p++] = psf_(k, j, pmb->ie + i + 1);
+      }
+}
+
+void Decomposition::unpackData(MeshBlock const *pmb, int kl, int ku, int jl,
+                               int ju) {
+  int p = 0;
+  for (int k = kl; k <= ku; ++k)
+    for (int j = jl; j <= ju; ++j)
+      for (int i = 0; i <= NGHOST; ++i) {
+        psf_(k, j, pmb->ie + i + 1) = pexv->recv_buffer[0][p++];
+      }
 }
 
 void Decomposition::SyncNewVariables(AthenaArray<Real> const &w, int kl, int ku,

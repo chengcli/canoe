@@ -50,11 +50,11 @@ add_subdirectory(tracer)
 add_subdirectory(tasklist)
 add_subdirectory(exo3)
 add_subdirectory(exchanger)
-add_subdirectory(nbody)
 add_subdirectory(special)
 add_subdirectory(single_column)
 add_subdirectory(diagnostics)
 add_subdirectory(forcing)
+#add_subdirectory(nbody)
 
 set(CANOE_LIBRARY_${buildu}
   "canoe_${buildl}"
@@ -74,7 +74,7 @@ set(CANOE_LIBRARY_${buildu}
   "tasklist_${buildl}"
   "exo3_${buildl}"
   "exchanger_${buildl}"
-  "nbody_${buildl}"
+  #"nbody_${buildl}"
   "scm_${buildl}"
   "diagnostics_${buildl}"
   "forcing_${buildl}"

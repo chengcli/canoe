@@ -52,19 +52,13 @@ void init_harp(py::module &parent) {
       .def("__str__", &RadiationBand::ToString)
 
       .def("resize", &RadiationBand::Resize, py::arg("nc1"), py::arg("nc2") = 1,
-           py::arg("nc3") = 1, py::arg("nstr") = 4)
+           py::arg("nc3") = 1, py::arg("nstr") = 4, py::arg("mb") = nullptr)
       .def("get_num_specgrids", &RadiationBand::GetNumSpecGrids)
       .def("get_num_absorbers", &RadiationBand::GetNumAbsorbers)
       .def("absorbers", &RadiationBand::Absorbers)
       .def("get_absorber", &RadiationBand::GetAbsorber)
       .def("get_absorber_by_name", &RadiationBand::GetAbsorberByName)
       .def("get_range", &RadiationBand::GetRange)
-
-      .def("cal_flux", &RadiationBand::CalBandFluxColumn,
-           py::arg("pmb") = nullptr, py::arg("k") = 0, py::arg("j") = 0)
-
-      .def("cal_radiance", &RadiationBand::CalBandRadiance,
-           py::arg("pmb") = nullptr, py::arg("k") = 0, py::arg("j") = 0)
 
       .def("get_toa",
            [](RadiationBand &band) {
