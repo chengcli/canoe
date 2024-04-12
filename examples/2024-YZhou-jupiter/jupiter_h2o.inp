@@ -68,8 +68,24 @@ gamma       = 1.42
 grav_acc1   = -24.79
 implicit_flag = 1
 
+<species>
+vapor = H2O
+cloud = H2O(c), H2O(p)
+
+<chemistry>
+microphysics_config = water_ammonia.yaml
+
 <thermodynamics>
 Rd          = 3777.   # mu = 2.3175 g/mol
+eps1        = 8.18    8.18    8.18
+beta1       = 0.      24.845  24.845
+rcp1        = 0.15    0.33    0.33
+Ttriple1    = 273.16
+Ptriple1    = 611.7
+
+sa.relax    = 1.0
+sa.max_iter = 4
+sa.ftol     = 1.e-2
 
 <forcing>
 packages = bot_heating, top_cooling
@@ -83,10 +99,12 @@ top_cooling.flux = -50.
 #relax_time    = 1.E4
 
 <problem>
+qH2O.ppmv   = 25000.
+
 P0          = 1.E5
 T0          = 169.
 Tmin        = 110.
 hrate       = 0.
 prad        = 2.e5
-init_Ttol   = 2.
+init_Ttol   = 0.1
 diagnostics = div, curl, b, mean, anomaly, radflux, hydroflux
