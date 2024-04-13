@@ -1,5 +1,9 @@
 
-setup_problem(minichem)
+if (${COORDINATE_SYSTEM} STREQUAL "spherical_polar")
+  setup_problem(minichem_sphr)
+else()
+  setup_problem(minichem)
+endif()
 
 # 2. Copy input files to run directory
 file(GLOB inputs *.py *.inp *.yaml)
