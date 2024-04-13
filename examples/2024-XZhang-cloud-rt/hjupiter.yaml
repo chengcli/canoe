@@ -12,7 +12,7 @@ opacity-sources:
     data: ck_data_01242024/ck/PM_ck_HELIOSK_cond_11_nOPT_wcia.txt
     parameters: {band_id: 1}
 
-bands: [ir, vis, ck]
+bands: [ir, vis]
 
 ck:
   units: cm-1

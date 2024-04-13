@@ -1,5 +1,5 @@
 diff --git a/src/task_list/time_integrator.cpp b/src/task_list/time_integrator.cpp
-index 2bfc5178..e0fca29d 100644
+index 2bfc5178..173b2566 100644
 --- a/src/task_list/time_integrator.cpp
 +++ b/src/task_list/time_integrator.cpp
 @@ -36,6 +36,13 @@
@@ -16,13 +16,15 @@ index 2bfc5178..e0fca29d 100644
  //----------------------------------------------------------------------------------------
  //! TimeIntegratorTaskList constructor
  
-@@ -998,6 +1005,14 @@ TimeIntegratorTaskList::TimeIntegratorTaskList(ParameterInput *pin, Mesh *pm) {
+@@ -998,6 +1005,16 @@ TimeIntegratorTaskList::TimeIntegratorTaskList(ParameterInput *pin, Mesh *pm) {
        AddTask(SEND_HYD,src_aterm);
        AddTask(RECV_HYD,NONE);
        AddTask(SETB_HYD,(RECV_HYD|SRC_TERM));
 +
 +#ifdef CUBED_SPHERE
-+      AddTask(CLEAR_ALLBND2, SETB_HYD);
++      if (NSCALARS == 0) {
++        AddTask(CLEAR_ALLBND2, SETB_HYD);
++      }
 +      AddTask(RESTART_RECV, CLEAR_ALLBND2);
 +      AddTask(SEND_HYD2, CLEAR_ALLBND2);
 +      AddTask(RECV_HYD2, RESTART_RECV);
@@ -31,12 +33,25 @@ index 2bfc5178..e0fca29d 100644
      }
  
      if (SHEAR_PERIODIC) {
-@@ -1157,9 +1172,17 @@ TimeIntegratorTaskList::TimeIntegratorTaskList(ParameterInput *pin, Mesh *pm) {
+@@ -1035,6 +1052,12 @@ TimeIntegratorTaskList::TimeIntegratorTaskList(ParameterInput *pin, Mesh *pm) {
+         AddTask(SEND_SCLR,SRC_TERM);
+         AddTask(RECV_SCLR,NONE);
+         AddTask(SETB_SCLR,(RECV_SCLR|SRC_TERM));
++#ifdef CUBED_SPHERE
++        AddTask(CLEAR_ALLBND2, (SETB_HYD|SETB_SCLR));
++        AddTask(SEND_SCLR2, CLEAR_ALLBND2);
++        AddTask(RECV_SCLR2, RESTART_RECV);
++        AddTask(SETB_SCLR2, RECV_SCLR2);
++#endif
+       }
+       if (SHEAR_PERIODIC) {
+         AddTask(SEND_SCLRSH,SETB_SCLR);
+@@ -1157,9 +1180,17 @@ TimeIntegratorTaskList::TimeIntegratorTaskList(ParameterInput *pin, Mesh *pm) {
            }
          } else {
            if (NSCALARS > 0) {
 +#ifdef CUBED_SPHERE
-+            AddTask(CONS2PRIM,(SETB_HYD2|SETB_SCLR));
++            AddTask(CONS2PRIM,(SETB_HYD2|SETB_SCLR2));
 +#else
              AddTask(CONS2PRIM,(SETB_HYD|SETB_SCLR));
 +#endif  // CUBED_SPHERE
@@ -49,7 +64,7 @@ index 2bfc5178..e0fca29d 100644
            }
          }
        }
-@@ -1225,11 +1248,16 @@ void TimeIntegratorTaskList::AddTask(const TaskID& id, const TaskID& dep) {
+@@ -1225,11 +1256,16 @@ void TimeIntegratorTaskList::AddTask(const TaskID& id, const TaskID& dep) {
    //!   SRC_TERM and SourceTerms(), USERWORK, PHY_BVAL, PROLONG, CONS2PRIM,
    //!   ... Although, AMR_FLAG = "flag blocks for AMR" should be FLAG_AMR in VERB_OBJECT
    using namespace HydroIntegratorTaskNames; // NOLINT (build/namespace)
@@ -67,7 +82,7 @@ index 2bfc5178..e0fca29d 100644
    } else if (id == CALC_HYDFLX) {
      task_list_[ntasks].TaskFunc=
          static_cast<TaskStatus (TaskList::*)(MeshBlock*,int)>
-@@ -1275,7 +1303,7 @@ void TimeIntegratorTaskList::AddTask(const TaskID& id, const TaskID& dep) {
+@@ -1275,7 +1311,7 @@ void TimeIntegratorTaskList::AddTask(const TaskID& id, const TaskID& dep) {
          static_cast<TaskStatus (TaskList::*)(MeshBlock*,int)>
          (&TimeIntegratorTaskList::AddSourceTerms);
      task_list_[ntasks].lb_time = true;
@@ -76,7 +91,7 @@ index 2bfc5178..e0fca29d 100644
      task_list_[ntasks].TaskFunc=
          static_cast<TaskStatus (TaskList::*)(MeshBlock*,int)>
          (&TimeIntegratorTaskList::SendHydro);
-@@ -1285,17 +1313,16 @@ void TimeIntegratorTaskList::AddTask(const TaskID& id, const TaskID& dep) {
+@@ -1285,17 +1321,16 @@ void TimeIntegratorTaskList::AddTask(const TaskID& id, const TaskID& dep) {
          static_cast<TaskStatus (TaskList::*)(MeshBlock*,int)>
          (&TimeIntegratorTaskList::SendField);
      task_list_[ntasks].lb_time = true;
@@ -96,7 +111,28 @@ index 2bfc5178..e0fca29d 100644
      task_list_[ntasks].TaskFunc=
          static_cast<TaskStatus (TaskList::*)(MeshBlock*,int)>
          (&TimeIntegratorTaskList::SetBoundariesHydro);
-@@ -1688,6 +1715,19 @@ TaskStatus TimeIntegratorTaskList::ClearAllBoundary(MeshBlock *pmb, int stage) {
+@@ -1405,17 +1440,17 @@ void TimeIntegratorTaskList::AddTask(const TaskID& id, const TaskID& dep) {
+         static_cast<TaskStatus (TaskList::*)(MeshBlock*,int)>
+         (&TimeIntegratorTaskList::IntegrateScalars);
+     task_list_[ntasks].lb_time = true;
+-  } else if (id == SEND_SCLR) {
++  } else if (id == SEND_SCLR or id == SEND_SCLR2) {
+     task_list_[ntasks].TaskFunc=
+         static_cast<TaskStatus (TaskList::*)(MeshBlock*,int)>
+         (&TimeIntegratorTaskList::SendScalars);
+     task_list_[ntasks].lb_time = true;
+-  } else if (id == RECV_SCLR) {
++  } else if (id == RECV_SCLR or id == RECV_SCLR2) {
+     task_list_[ntasks].TaskFunc=
+         static_cast<TaskStatus (TaskList::*)(MeshBlock*,int)>
+         (&TimeIntegratorTaskList::ReceiveScalars);
+     task_list_[ntasks].lb_time = false;
+-  } else if (id == SETB_SCLR) {
++  } else if (id == SETB_SCLR or id == SETB_SCLR2) {
+     task_list_[ntasks].TaskFunc=
+         static_cast<TaskStatus (TaskList::*)(MeshBlock*,int)>
+         (&TimeIntegratorTaskList::SetBoundariesScalars);
+@@ -1688,6 +1723,19 @@ TaskStatus TimeIntegratorTaskList::ClearAllBoundary(MeshBlock *pmb, int stage) {
    return TaskStatus::success;
  }
  
@@ -116,7 +152,7 @@ index 2bfc5178..e0fca29d 100644
  //----------------------------------------------------------------------------------------
  // Functions to calculates Hydro fluxes
  
-@@ -2305,6 +2345,12 @@ TaskStatus TimeIntegratorTaskList::PhysicalBoundary(MeshBlock *pmb, int stage) {
+@@ -2305,6 +2353,12 @@ TaskStatus TimeIntegratorTaskList::PhysicalBoundary(MeshBlock *pmb, int stage) {
  TaskStatus TimeIntegratorTaskList::UserWork(MeshBlock *pmb, int stage) {
    if (stage != nstages) return TaskStatus::success; // only do on last stage
  
@@ -129,7 +165,7 @@ index 2bfc5178..e0fca29d 100644
    pmb->UserWorkInLoop();
    return TaskStatus::success;
  }
-@@ -2395,6 +2441,7 @@ TaskStatus TimeIntegratorTaskList::IntegrateScalars(MeshBlock *pmb, int stage) {
+@@ -2395,6 +2449,7 @@ TaskStatus TimeIntegratorTaskList::IntegrateScalars(MeshBlock *pmb, int stage) {
        ave_wghts[2] = stage_wghts[stage-1].gamma_3;
        if (ave_wghts[0] == 0.0 && ave_wghts[1] == 1.0 && ave_wghts[2] == 0.0) {
          ps->s.SwapAthenaArray(ps->s1);

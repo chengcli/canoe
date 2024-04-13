@@ -1,5 +1,5 @@
 diff --git a/src/task_list/task_list.hpp b/src/task_list/task_list.hpp
-index d71ae3ea..ab14ee30 100644
+index d71ae3ea..931b17c2 100644
 --- a/src/task_list/task_list.hpp
 +++ b/src/task_list/task_list.hpp
 @@ -146,6 +146,7 @@ class TimeIntegratorTaskList : public TaskList {
@@ -10,7 +10,7 @@ index d71ae3ea..ab14ee30 100644
  
    TaskStatus CalculateHydroFlux(MeshBlock *pmb, int stage);
    TaskStatus CalculateEMF(MeshBlock *pmb, int stage);
-@@ -387,5 +388,11 @@ const TaskID RECV_RADSH(73);
+@@ -387,5 +388,15 @@ const TaskID RECV_RADSH(73);
  
  const TaskID SRCTERM_IMRAD(74);
  
@@ -19,6 +19,10 @@ index d71ae3ea..ab14ee30 100644
 +const TaskID SETB_HYD2(103);
 +const TaskID CLEAR_ALLBND2(104);
 +const TaskID RESTART_RECV(105);
++
++const TaskID SEND_SCLR2(106);
++const TaskID RECV_SCLR2(107);
++const TaskID SETB_SCLR2(108);
 +
  }  // namespace HydroIntegratorTaskNames
  #endif  // TASK_LIST_TASK_LIST_HPP_
