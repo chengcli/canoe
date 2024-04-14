@@ -7,6 +7,8 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 project(canoe
   LANGUAGES CXX C Fortran
 	)
+# search for <Package>_ROOT
+cmake_policy(SET CMP0074 NEW)
 
 message(STATUS "")
 message(STATUS "== Setting up canoe library ==")
