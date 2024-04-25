@@ -78,7 +78,7 @@ set(CANOE_LIBRARY_${buildu}
   "scm_${buildl}"
   "diagnostics_${buildl}"
   "forcing_${buildl}"
-  "yaml-cpp"
+  #"yaml-cpp"
   ${CPPDISORT_LIBRARY_${buildu}}
   ${PYTHON_LIBRARY_RELEASE}
   ${NETCDF_LIBRARIES}
