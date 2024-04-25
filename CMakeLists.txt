@@ -56,6 +56,8 @@ endif()
 message(STATUS "Include ${CMAKE_CURRENT_SOURCE_DIR}/cmake/parameters.cmake")
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/parameters.cmake)
 find_package(Eigen3 REQUIRED)
+find_package(Cantera REQUIRED)
+find_package(HDF5 REQUIRED)
 
 ## 3. set up project system libraries ##
 message(STATUS "3. Set up system libraries")
