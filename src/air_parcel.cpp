@@ -15,7 +15,7 @@
 #include "microphysics/microphysics.hpp"
 
 // chemistry
-#include "c3m/chemistry.hpp"
+#include "flask/chemistry.hpp"
 
 // tracer
 #include "tracer/tracer.hpp"

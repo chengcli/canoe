@@ -20,7 +20,7 @@ class Decomposition;
 class ImplicitSolver;
 class Microphysics;
 class Radiation;
-class Chemistry;
+class Flask;
 class Tracer;
 class TurbulenceModel;
 class CelestrialBody;
@@ -46,7 +46,7 @@ class MeshBlock::Impl {
   std::shared_ptr<ImplicitSolver> phevi;
   std::shared_ptr<Microphysics> pmicro;
   std::shared_ptr<Radiation> prad;
-  std::shared_ptr<Chemistry> pchem;
+  std::shared_ptr<Flask> pchem;
   std::shared_ptr<Tracer> ptracer;
   std::shared_ptr<TurbulenceModel> pturb;
   std::shared_ptr<CelestrialBody> planet;

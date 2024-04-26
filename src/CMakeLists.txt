@@ -45,7 +45,7 @@ add_subdirectory(inversion)
 add_subdirectory(outputs)
 add_subdirectory(opacity)
 add_subdirectory(microphysics)
-#add_subdirectory(c3m)
+add_subdirectory(flask)
 add_subdirectory(tracer)
 add_subdirectory(tasklist)
 add_subdirectory(exo3)
@@ -69,7 +69,7 @@ set(CANOE_LIBRARY_${buildu}
   "outputs_${buildl}"
   "opacity_${buildl}"
   "dusts_${buildl}"
-  "c3m_${buildl}"
+  "flask_${buildl}"
   "tracer_${buildl}"
   "tasklist_${buildl}"
   "exo3_${buildl}"
