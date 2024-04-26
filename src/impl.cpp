@@ -20,7 +20,7 @@
 #include "microphysics/microphysics.hpp"
 
 // flask
-#include "flask/flask.hpp"
+#include "flask/chemistry.hpp"
 
 // tracer
 #include "tracer/tracer.hpp"
@@ -64,7 +64,7 @@ MeshBlock::Impl::Impl(MeshBlock *pmb, ParameterInput *pin) : pmy_block_(pmb) {
   prad = std::make_shared<Radiation>(pmb, pin);
 
   // chemistry
-  pchem = std::make_shared<Flask>(pmb, pin);
+  pchem = std::make_shared<Chemistry>(pmb, pin);
 
   // tracer
   ptracer = std::make_shared<Tracer>(pmb, pin);

@@ -9,22 +9,22 @@
 // canoe
 #include <configure.hpp>
 
-// flask
-#include "flask.hpp"
+// chemistry
+#include "chemistry.hpp"
 
-Flask::Flask(MeshBlock *pmb, ParameterInput *pin) : pmy_block_(pmb) {
+Chemistry::Chemistry(MeshBlock *pmb, ParameterInput *pin) {
   if (NCHEMISTRY == 0) return;
 
   Application::Logger app("flask");
-  app->Log("Initialize Flask");
+  app->Log("Initialize Chemistry");
 
   w.InitWithShallowSlice(pmb->pscalars->r, 4, NCLOUD, NCHEMISTRY);
   u.InitWithShallowSlice(pmb->pscalars->s, 4, NCLOUD, NCHEMISTRY);
 }
 
-Flask::~Flask() {
+Chemistry::~Chemistry() {
   if (NCHEMISTRY == 0) return;
 
   Application::Logger app("flask");
-  app->Log("Destroy Flask");
+  app->Log("Destroy Chemistry");
 }

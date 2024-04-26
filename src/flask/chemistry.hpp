@@ -10,17 +10,14 @@
 class MeshBlock;
 class ParameterInput;
 
-class Flask {
+class Chemistry {
  public:
   AthenaArray<Real> w, u;
 
-  Flask(MeshBlock *pmb, ParameterInput *pin);
-  ~Flask();
-
- protected:
-  MeshBlock *pmy_block_;
+  Chemistry(MeshBlock *pmb, ParameterInput *pin);
+  ~Chemistry();
 };
 
-using ChemistryPtr = std::shared_ptr<Flask>;
+using ChemistryPtr = std::shared_ptr<Chemistry>;
 
-#endif  // SRC_C3M_CHEMISTRY_HPP_
+#endif  // SRC_FLASK_CHEMISTRY_HPP_
