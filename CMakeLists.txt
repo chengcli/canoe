@@ -60,7 +60,6 @@ find_package(Eigen3 REQUIRED)
 ## 3. set up project system libraries ##
 message(STATUS "3. Set up system libraries")
 #message(STATUS "Include ${CMAKE_SOURCE_DIR}/cmake/athena.cmake")
-#include(${CMAKE_SOURCE_DIR}/cmake/eigen.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/yamlpp.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/gtest.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/athena.cmake)
@@ -70,6 +69,7 @@ include(${CMAKE_SOURCE_DIR}/cmake/disort.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/rrtmg.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/pvfmm.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/pybind11.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/c3m.cmake)
 
 ## 4. set up project configure file and library ##
 message(STATUS "4. Set up project libraries")

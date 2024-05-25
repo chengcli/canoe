@@ -1,4 +1,4 @@
-set(namel c3m)
+set(namel flask)
 string(TOUPPER ${namel} nameu)
 
 file(GLOB src_files

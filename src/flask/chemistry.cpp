@@ -12,10 +12,10 @@
 // chemistry
 #include "chemistry.hpp"
 
-Chemistry::Chemistry(MeshBlock *pmb, ParameterInput *pin) : pmy_block_(pmb) {
+Chemistry::Chemistry(MeshBlock *pmb, ParameterInput *pin) {
   if (NCHEMISTRY == 0) return;
 
-  Application::Logger app("c3m");
+  Application::Logger app("flask");
   app->Log("Initialize Chemistry");
 
   w.InitWithShallowSlice(pmb->pscalars->r, 4, NCLOUD, NCHEMISTRY);
@@ -25,6 +25,6 @@ Chemistry::Chemistry(MeshBlock *pmb, ParameterInput *pin) : pmy_block_(pmb) {
 Chemistry::~Chemistry() {
   if (NCHEMISTRY == 0) return;
 
-  Application::Logger app("c3m");
+  Application::Logger app("flask");
   app->Log("Destroy Chemistry");
 }

@@ -4,11 +4,14 @@ breathe
 checksumdir
 cmakelang
 cpplint
+cython
 emcee
 h5py
 myst-parser
 netcdf4
 numpy
 pre-commit
+ruamel.yaml
+scons
 sphinx_rtd_theme
 tqdm

@@ -1,5 +1,5 @@
-#ifndef SRC_C3M_CHEMISTRY_HPP_
-#define SRC_C3M_CHEMISTRY_HPP_
+#ifndef SRC_FLASK_CHEMISTRY_HPP_
+#define SRC_FLASK_CHEMISTRY_HPP_
 
 // C/C++
 #include <memory>
@@ -16,11 +16,8 @@ class Chemistry {
 
   Chemistry(MeshBlock *pmb, ParameterInput *pin);
   ~Chemistry();
-
- protected:
-  MeshBlock *pmy_block_;
 };
 
 using ChemistryPtr = std::shared_ptr<Chemistry>;
 
-#endif  // SRC_C3M_CHEMISTRY_HPP_
+#endif  // SRC_FLASK_CHEMISTRY_HPP_
