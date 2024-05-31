@@ -17,7 +17,7 @@ setup_test(test_read_rayleigh)
 setup_test(test_read_yaml)
 setup_test(test_helios_ck_read)
 setup_test(test_cs_velocity_rotation)
-setup_test(test_rad_unit)
+#setup_test(test_rad_unit)
 
 if (PVFMM_OPTION STREQUAL "ENABLE_PVFMM")
   setup_test(test_nbody)

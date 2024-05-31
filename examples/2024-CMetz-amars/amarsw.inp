@@ -3,36 +3,36 @@ problem   = Cloud radiative dynamics + Hydrogen Atm + Ocean below
 configure = -Dpnetcdf_path=/home/cometz/canoe/external/pnetcdf-1.12.3
 
 <job>
-problem_id  = amars   # problem ID: basename of output filenames
+problem_id  = amarsw   # problem ID: basename of output filenames
 tasklist    = ImplicitHydroTasks
 
 <output0>
 file_type   = rst
-dt          = 1.E3
+dt          = 1.E2
 
 <output1>
 file_type   = hst       # History data dump
-dt          = 5.E1      # time increment between outputs
+dt          = 1.E2      # time increment between outputs
 
 <output2>
 file_type   = pnetcdf    # Binary data dump
 variable    = prim      # variables to be output
-dt          = 5.E1       # time increment between outputs
+dt          = 1.E2       # time increment between outputs
 
 <output3>
 file_type   = pnetcdf
 variable    = uov
-dt          = 5.E1
+dt          = 1.E2
 
 <output4>
 file_type   = pnetcdf
 variable    = diag
-dt          = 5.E1
+dt          = 1.E2
 
 <output5>
 file_type   = pnetcdf
 variable    = rad
-dt          = 5.E1
+dt          = 1.E2
 
 <time>
 cfl_number  = 0.9           # The Courant, Friedrichs, & Lewy (CFL) Number
@@ -77,17 +77,13 @@ bot_heating.flux = 0.
 top_cooling.flux = 0.
 
 <species>
-#vapor = H2O, H2S, SO2, CO2
-#cloud = H2O(c), H2S(c), SO2(c), CO2(c), H2O(p), H2S(p), SO2(p), CO2(p)
-
-vapor = H2O, H2S, SO2
-cloud = H2O(c), H2S(c), SO2(c), H2O(p), H2S(p), SO2(p)
+vapor = H2O
+cloud = H2O(c), H2O(p)
 
 <chemistry>
-microphysics_config = amars.yaml
+microphysics_config = amarsw.yaml
 
 <thermodynamics>
-#Rd          = 207.85. #dry is 1% Argon u = 40g/mol
 Rd          = 189.
 
 #H2O
@@ -96,27 +92,6 @@ beta1       = 0.      17.9    17.9
 rcp1        = 8.0455  8.05    8.05
 Ttriple1    = 273.16
 Ptriple1    = 611.7
-
-#H2S
-eps2        = 0.85    0.85    0.85
-beta2       = 0.      12.5    12.5
-rcp2        = 1.935   4.329   4.329
-Ttriple2    = 187.63
-Ptriple2    = 23200
-
-#SO2
-eps3        = 1.6     1.6     1.6
-beta3       = 0.      15.96   15.96
-rcp3        = 1.2     2.56    2.56
-Ttriple3    = 197.64
-Ptriple3    = 1670
-
-#CO2
-#eps4        = 1.1     1.1     1.1
-#beta4       = 0.      10.51   10.51
-#rcp4        = 1.62    3.54    3.54
-#Ttriple4    = 216.58
-#Ptriple4    = 518500
 
 sa.relax    = 1.0
 sa.max_iter = 40
@@ -140,7 +115,7 @@ HJ.equinox    = 0.
 
 <radiation>
 dt            = 40.
-radiation_config = amars.yaml
+radiation_config = amarsw.yaml
 nstr          = 4
 
 <problem>
@@ -150,9 +125,6 @@ Tmin          = 178.
 qRelaxT       = 1.E-4
 distance_au   = 1.523
 
-qH2O.ppmv     = 5.
-qH2S.ppmv     = 1000.
-qSO2.ppmv     = 10000.
-#qCO2.ppmv     = 978995.
+qH2O.ppmv     = 10000.
 
 diagnostics   = div, curl, b, mean, div_h, tempa, presa, hydroflux
