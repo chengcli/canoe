@@ -45,6 +45,6 @@ if (${TASK} STREQUAL "vortex")
   add_subdirectory(2020-Li-polar-vortex)
 endif()
 
-  if (${TASK} STREQUAL "amars")
+if (${TASK} STREQUAL "amars")
   add_subdirectory(2024-CMetz-amars)
 endif()

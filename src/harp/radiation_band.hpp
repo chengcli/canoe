@@ -49,13 +49,13 @@ class RadiationBand : public NamedGroup,
   //! band phase function moments
   AthenaArray<Real> bpmom;
 
-  //! band upward flux
+  //! band upward flux (shallow reference to fluxup)
   AthenaArray<Real> bflxup;
 
-  //! band downward flux
+  //! band downward flux (shallow reference to flxdn)
   AthenaArray<Real> bflxdn;
 
-  //! \brief band top-of-the-atmosphere radiance
+  //! \brief band top-of-the-atmosphere radiance (shallow reference to radiance)
   AthenaArray<Real> btoa;
 
  public:  // constructor and destructor

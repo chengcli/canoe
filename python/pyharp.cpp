@@ -60,20 +60,6 @@ void init_harp(py::module &parent) {
       .def("get_absorber_by_name", &RadiationBand::GetAbsorberByName)
       .def("get_range", &RadiationBand::GetRange)
 
-      .def("cal_flux", &RadiationBand::CalBandFluxColumn,
-           py::arg("pmb") = nullptr, py::arg("k") = 0, py::arg("j") = 0)
-
-      .def("cal_radiance", &RadiationBand::CalBandRadiance,
-           py::arg("pmb") = nullptr, py::arg("k") = 0, py::arg("j") = 0)
-
-      .def("get_toa",
-           [](RadiationBand &band) {
-             py::array_t<Real> ndarray(
-                 {band.GetNumSpecGrids(), band.GetNumOutgoingRays()},
-                 band._GetToaPtr());
-             return ndarray;
-           })
-
       .def("get_dtau",
            [](RadiationBand &band) {
              py::capsule tau_capsule(band._GetTauPtr(), [](void *) {});
