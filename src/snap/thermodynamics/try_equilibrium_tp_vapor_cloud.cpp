@@ -30,6 +30,12 @@ RealArrayX Thermodynamics::TryEquilibriumTP_VaporCloud(AirParcel const& qfrac,
 
     if (misty) {  // in a cloudy ambient environment
       rates[0] += xs - xv / (xg + xv);
+
+      // tried this as a potential fix to negative water when T very low, did
+      // not seem to work if (rates[0] < 0.) {
+      //   rates[0] += -std::min(-rates[0], xv);
+      //   rates[1 + n] = std::min(-rates[0], xv);
+      // }
       continue;
     }
 
