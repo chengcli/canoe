@@ -18,6 +18,7 @@ macro(setup_test namel)
             ${CANOE_INCLUDE_DIR}
             ${EIGEN3_INCLUDE_DIR}
             ${MPI_CXX_INCLUDE_PATH}
+            ${MPI_CXX_HEADER_DIR}
             ${NETCDF_INCLUDES}
             ${PNETCDF_INCLUDE_DIR}
             ${OpenMP_CXX_INCLUDE_DIR}
