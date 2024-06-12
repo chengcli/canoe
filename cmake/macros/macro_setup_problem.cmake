@@ -18,5 +18,6 @@ macro(setup_problem namel)
   target_include_directories(
     ${namel}.${buildl}
     PRIVATE ${CMAKE_BINARY_DIR} ${CANOE_INCLUDE_DIR} ${EIGEN3_INCLUDE_DIR}
+            ${MPI_CXX_HEADER_DIR}
             ${MPI_CXX_INCLUDE_PATH} ${NETCDF_INCLUDES} ${PNETCDF_INCLUDE_DIR})
 endmacro()

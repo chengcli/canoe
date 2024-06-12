@@ -10,10 +10,11 @@ setup_problem(bryan)
 # 2. Compile sedimentation
 if (${NVAPOR} EQUAL 2 AND ${NCLOUD} EQUAL 4 AND ${NPHASE_LEGACY} EQUAL 3)
   setup_problem(sedimentation)
+  setup_problem(jvortex)
 endif()
 
 # 4. Copy input files to run directory
 file(GLOB inputs *.inp *.yaml)
 foreach(input ${inputs})
-    file(COPY ${input} DESTINATION ${CMAKE_BINARY_DIR}/bin)
+  execute_process(COMMAND ln -sf ${input} ${CMAKE_BINARY_DIR}/bin/${inp})
 endforeach()

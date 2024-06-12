@@ -1,0 +1,109 @@
+<comment>
+problem   = Jupiter 3d box model
+
+<job>
+problem_id  = vortex  # problem ID: basename of output filenames
+
+<output0>
+file_type   = rst
+dt          = 1.E5
+
+<output1>
+file_type   = hst
+dt          = 5.E3
+
+<output2>
+file_type   = pnetcdf     # Tabular data dump
+variable    = prim        # variables to be output
+dt          = 5.E3        # time increment between outputs
+
+<output3>
+file_type   = pnetcdf
+variable    = uov
+dt          = 5.E3
+
+<output4>
+file_type   = pnetcdf
+variable    = diag
+dt          = 5.E3
+
+<time>
+cfl_number  = 1.          # The Courant, Friedrichs, & Lewy (CFL) Number
+nlim        = -1          # cycle limit
+xorder      = 5
+integrator  = rk3
+tlim        = 10.E5       # time limit
+
+<mesh>
+nx1         = 48          # Number of zones in X1-direction
+x1min       = -300.E3     # minimum value of X1
+x1max       = 60.E3       # maximum value of X1
+ix1_bc      = reflecting  # Inner-X1 boundary condition flag
+ox1_bc      = reflecting  # Outer-X1 boundary condition flag
+
+nx2         = 128          # Number of zones in X2-direction
+x2min       = -2400.E3    # minimum value of X2
+x2max       = 2400.E3     # maximum value of X2
+ix2_bc      = periodic    # Inner-X2 boundary condition flag
+ox2_bc      = periodic    # Outer-X2 boundary condition flag
+
+nx3         = 128          # Number of zones in X3-direction
+x3min       = -2400.E3    # minimum value of X3
+x3max       = 2400.E3     # maximum value of X3
+ix3_bc      = periodic    # Inner-X3 boundary condition flag
+ox3_bc      = periodic    # Outer-X3 boundary condition flag
+
+<meshblock>
+nx1         = 48
+nx2         = 64
+nx3         = 32
+
+<hydro>
+gamma           = 1.42    # gamma = C_p/C_v
+grav_acc1       = -24.79
+min_tem         = 110.
+implicit_flag   = 1
+
+<species>
+vapor = H2O, NH3
+cloud = H2O(c), NH3(c), H2O(p), NH3(p)
+
+<forcing>
+packages = bot_heating, top_cooling
+bot_heating.flux = 50.
+top_cooling.flux = -50.
+
+<thermodynamics>
+Rd          = 3777.
+eps1        = 8.18    8.18    8.18
+beta1       = 0.      24.85   24.85
+rcp1        = 0.15    0.33    0.33
+Ttriple1    = 273.16
+Ptriple1    = 611.7
+
+eps2        = 7.72    7.72    7.72
+rcp2        = 0.08    0.37    0.37
+beta2       = 0.      23.67   23.67
+Ttriple2    = 195.4
+Ptriple2    = 6060.
+
+sa.relax    = 1.0
+sa.max_iter = 4
+sa.ftol     = 0.1
+
+<chemistry>
+microphysics_config = water_ammonia.yaml
+
+<problem>
+Omega       = 1.74E-4
+Rp          = 7.E6
+qH2O.ppmv   = 25000.
+qNH3.ppmv   = 320.
+
+P0          = 1.E5
+T0          = 169.
+Tmin        = 110.
+prad        = 1.0E5
+hrate       = 0.
+init_Ttol   = 2.
+diagnostics = div, curl, b, mean, anomaly, radflux, hydroflux, w_avg

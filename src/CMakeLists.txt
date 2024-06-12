@@ -15,6 +15,7 @@ include_directories(
   ${NETCDF_INCLUDES}
   ${CFITSIO_INCLUDE_DIR}
   ${MPI_CXX_INCLUDE_PATH}
+  ${MPI_CXX_HEADER_DIR}
   ${PNETCDF_INCLUDE_DIR}
   )
 
