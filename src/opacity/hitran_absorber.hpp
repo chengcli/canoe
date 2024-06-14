@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-// harp
+// opacity
 #include "absorber.hpp"
 
 class HitranAbsorber : public Absorber {
@@ -26,6 +26,18 @@ class HitranAbsorber : public Absorber {
   std::vector<Real> kcoeff_; /**< absorption coefficient */
   AthenaArray<Real> refatm_; /**< reference atmosphere */
   Real getRefTemp(Real pres) const;
+};
+
+class HitranAbsorberCK : public HitranAbsorber {
+ public:
+  using Base = HitranAbsorber;
+  HitranAbsorberCK(std::string name) : HitranAbsorber(name) {}
+
+  void LoadCoefficient(std::string fname, int bid) override;
+  void ModifySpectralGrid(std::vector<SpectralBin>& spec) const override;
+
+ private:
+  std::vector<Real> weights_;
 };
 
 #endif  // SRC_HARP_HITRAN_ABSORBER_HPP_

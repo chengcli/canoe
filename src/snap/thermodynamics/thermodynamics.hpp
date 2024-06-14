@@ -154,6 +154,10 @@ class Thermodynamics {
   //! \param[in] j the sequential index of the cloud
   int GetCloudIndex(int i, int j) const { return cloud_index_set_[i][j]; }
 
+  //! \return the index set of the cloud
+  //! \param[in] i the index of the vapor
+  std::vector<int> GetCloudIndexSet(int i) const { return cloud_index_set_[i]; }
+
   //! const pointer to cloud_index_set_
   IndexSet const *GetCloudIndexSet() const { return cloud_index_set_.data(); }
 
@@ -210,6 +214,10 @@ class Thermodynamics {
                          Real temp) const {
     return GetLatentHeatMole(i, rates, temp) * inv_mu_[i];
   }
+
+  RealArrayX CalcSurfEvapRates(AirParcel const &qfrac, int i, Real &amd,
+                               Real btemp, Real dTs, Real cSurf, Real dt,
+                               Real Cde, Real Mbar) const;
 
   //! \brief Calculate the equilibrium mole transfer by cloud reaction
   //! vapor -> cloud

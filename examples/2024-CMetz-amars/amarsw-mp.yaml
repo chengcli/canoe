@@ -1,0 +1,38 @@
+microphysics:
+  - H2O-system
+
+H2O-system:
+  scheme: Kessler94
+  dependent-species: [vapor.H2O, cloud.H2O(c), cloud.H2O(p)]
+  parameters:
+    autoconversion: 1.e-4
+    accretion: 0.0
+    evaporation: 3.e-1
+    sedimentation: -20.
+
+CO2-system:
+  scheme: Kessler94
+  dependent-species: [vapor.CO2, cloud.CO2(c), cloud.CO2(p)]
+  parameters:
+    autoconversion: 1.e-4
+    accretion: 0.0
+    evaporation: 3.e-1
+    sedimentation: -20.
+
+H2S-system:
+  scheme: Kessler94
+  dependent-species: [vapor.H2S, cloud.H2S(c), cloud.H2S(p)]
+  parameters:
+    autoconversion: 1.e-4
+    accretion: 0.0
+    evaporation: 3.e-1
+    sedimentation: -20.
+
+SO2-system:
+  scheme: Kessler94
+  dependent-species: [vapor.SO2, cloud.SO2(c), cloud.SO2(p)]
+  parameters:
+    autoconversion: 1.e-4
+    accretion: 0.0
+    evaporation: 3.e-1
+    sedimentation: -20.

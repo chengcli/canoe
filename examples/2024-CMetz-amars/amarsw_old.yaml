@@ -1,41 +1,36 @@
 opacity-sources:
   - name: H2O
-    class: HitranCK
-    data: amars-cktable_B1.nc
+    class: Hitran
+    data: amars-ktable_B1.nc
     dependent-species: [vapor.H2O]
 
   - name: CO2
-    class: HitranCK
-    data: amars-cktable_B2.nc
+    class: Hitran
+    data: amars-ktable_B2.nc
     dependent-species: [vapor.dry]
-
-  - name: H2O_B3
-    class: HitranCK
-    data: amars-cktable_B3.nc
-    dependent-species: [vapor.H2O]
 
   - name: cloud
     class: SimpleCloud
     dependent-species: [cloud.H2O(c), cloud.H2O(p)]
     parameters: {qext: 1., ssa: 0.01, asymf: 0.01}
 
-bands: [B1]
+bands: [B1, B2]
 
 B1:
   units: cm-1
-  grid-type: cktable
+  grid-type: regular
   wavenumber-range: [1., 500.]
-  opacity: [H2O]
   resolution: 0.1
+  opacity: [H2O]
   rt-solver: Disort
   flags: [thermal_emission]
   albedo: 0.01
 
 B2:
   units: cm-1
-  grid-type: cktable
-  resolution: 0.1
+  grid-type: regular
   wavenumber-range: [500., 1200.]
+  resolution: 0.1
   opacity: [CO2]
   rt-solver: Disort
   flags: [thermal_emission]
@@ -43,10 +38,60 @@ B2:
 
 B3:
   units: cm-1
-  grid-type: cktable
-  wavenumber-range: [1200., 2000.]
-  opacity: [H2O]
+  grid-type: regular
+  wavenumber-range: [150., 400.]
   resolution: 0.1
+  opacity: [H2O,CO2]
+  rt-solver: Disort
+  flags: [thermal_emission]
+  albedo: 0.01
+
+B4:
+  units: cm-1
+  grid-type: regular
+  wavenumber-range: [400., 500.]
+  resolution: 0.1
+  opacity: [H2O,CO2]
+  rt-solver: Disort
+  flags: [thermal_emission]
+  albedo: 0.01
+
+B5:
+  units: cm-1
+  grid-type: regular
+  wavenumber-range: [500., 650.]
+  resolution: 0.1
+  opacity: [H2O,CO2]
+  rt-solver: Disort
+  flags: [thermal_emission]
+  albedo: 0.01
+
+B6:
+  units: cm-1
+  grid-type: regular
+  wavenumber-range: [650., 850.]
+  resolution: 0.1
+  opacity: [H2O,CO2]
+  rt-solver: Disort
+  flags: [thermal_emission]
+  albedo: 0.01
+
+B7:
+  units: cm-1
+  grid-type: regular
+  wavenumber-range: [850., 1000.]
+  resolution: 0.1
+  opacity: [H2O,CO2]
+  rt-solver: Disort
+  flags: [thermal_emission]
+  albedo: 0.01
+
+B8:
+  units: cm-1
+  grid-type: regular
+  wavenumber-range: [1000., 2000.]
+  resolution: 0.1
+  opacity: [H2O,CO2]
   rt-solver: Disort
   flags: [thermal_emission]
   albedo: 0.01
