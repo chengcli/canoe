@@ -1,0 +1,65 @@
+opacity-sources:
+  - name: H2O
+    class: Hitran
+    data: amarsw-lbl-B1.nc
+    dependent-species: [vapor.H2O]
+
+  - name: CO2
+    class: Hitran
+    data: amarsw-lbl-B2.nc
+    dependent-species: [vapor.dry]
+
+  - name: H2O
+    class: Hitran
+    data: amarsw-lbl-B3.nc
+    dependent-species: [vapor.H2O]
+
+bands: [B1, B2, B3]
+
+B1:
+  units: cm-1
+  grid-type: regular
+  wavenumber-range: [1., 500.]
+  resolution: 0.1
+  opacity: [H2O]
+  rt-solver: Disort
+  flags: [thermal_emission]
+  albedo: 0.01
+
+B2:
+  units: cm-1
+  grid-type: regular
+  wavenumber-range: [500., 1200.]
+  resolution: 0.1
+  opacity: [CO2]
+  rt-solver: Disort
+  flags: [thermal_emission]
+  albedo: 0.01
+
+B3:
+  units: cm-1
+  grid-type: regular
+  wavenumber-range: [1200., 2000.]
+  resolution: 0.1
+  opacity: [H2O]
+  rt-solver: Disort
+  flags: [thermal_emission]
+  albedo: 0.01
+
+Disort-flags:
+  ibcnd: false
+  usrtau: false
+  usrang: false
+  lamber: true
+  onlyfl: true
+  spher: false
+  intensity_correction: true
+  old_intensity_correction: false
+  general_source: false
+  output_uum: false
+  quiet: true
+  print-input: false
+  print-fluxes: false
+  print-intensity: false
+  print-transmissivity: false
+  print-phase-function: true

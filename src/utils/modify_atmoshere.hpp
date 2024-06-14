@@ -13,11 +13,15 @@ int find_pressure_level_lesser_pybind(Real pres, AthenaArray<Real> const &w,
                                       int k, int j, int is, int ie);
 
 // modify atmoshere with adlnTdlnP
-void modify_atmoshere_adlnTdlnP(MeshBlock *pmb, Real adlnTdlnP, Real pmin,
+void modify_adlnTdlnP(MeshBlock *pmb, Real adlnTdlnP, Real pmin,
                                 Real pmax);
 
 // modify atmoshere with adlnNH3dlnP
-void modify_atmoshere_adlnNH3dlnP(MeshBlock *pmb, Real adlnNH3dlnP, Real pmin,
+void modify_adlnXdlnP(MeshBlock *pmb, Real adlnNH3dlnP, Real pmin,
                                   Real pmax);
+
+// modify the whole atmosphere
+void modify_atm(MeshBlock *pmb, 
+                std::map<std::string, std::vector<Real>> const& atm);
 
 #endif  // SRC_UTILS_MODIFY_ATMOSPHERE_HPP_

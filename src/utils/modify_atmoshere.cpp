@@ -4,6 +4,7 @@
 #include <fstream>
 #include <memory>
 #include <vector>
+#include <map>
 
 // athena
 #include <athena/coordinates/coordinates.hpp>
@@ -31,8 +32,8 @@ int find_pressure_level_lesser_pybind(Real pres, AthenaArray<Real> const &w,
 }
 
 // modify atmoshere with adlnTdlnP
-void modify_atmoshere_adlnTdlnP(MeshBlock *pmb, Real adlnTdlnP, Real pmin,
-                                Real pmax) {
+void modify_adlnTdlnP(MeshBlock *pmb, Real adlnTdlnP, Real pmin,
+                      Real pmax) {
   int is = pmb->is, js = pmb->js, ks = pmb->ks;
   int ie = pmb->ie, je = pmb->je, ke = pmb->ke;
 
@@ -61,9 +62,9 @@ void modify_atmoshere_adlnTdlnP(MeshBlock *pmb, Real adlnTdlnP, Real pmin,
   }
 };
 
-// modify atmoshere with adlnNH3dlnP
-void modify_atmoshere_adlnNH3dlnP(MeshBlock *pmb, Real adlnNH3dlnP, Real pmin,
-                                  Real pmax) {
+// modify atmoshere with adlnXdlnP
+void modify_adlnXdlnP(MeshBlock *pmb, Real adlnXdlnP, Real pmin,
+                        Real pmax) {
   int is = pmb->is, js = pmb->js, ks = pmb->ks;
   int ie = pmb->ie, je = pmb->je, ke = pmb->ke;
 
@@ -90,10 +91,69 @@ void modify_atmoshere_adlnNH3dlnP(MeshBlock *pmb, Real adlnNH3dlnP, Real pmin,
 
       for (int i = ibegin; i < iend; ++i) {
         pthermo->Extrapolate(&air, -dlnp, "dry");
-        air.w[iNH3] += adlnNH3dlnP * air.w[iNH3] * dlnp;
+        air.w[iNH3] += adlnXdlnP * air.w[iNH3] * dlnp;
         auto rates = pthermo->TryEquilibriumTP_VaporCloud(air, iNH3);
         air.w[iNH3] += rates[0];
         AirParcelHelper::distribute_to_primitive(pmb, k, j, i + 1, air);
       }
+    }
+};
+
+void modify_atm(MeshBlock *pmb, 
+                std::map<std::string, std::vector<Real>> const& atm)
+{
+  int is = pmb->is, ie = pmb->ie;
+
+  if (atm.find("TEM") == atm.end() || atm.find("PRE") == atm.end()) {
+    throw std::runtime_error("The atmosphere data is not complete.");
+  }
+
+  int nlayer = atm.at("TEM").size();
+
+  if (nlayer != ie - is + 1) {
+    throw std::runtime_error("The number of layers is not consistent.");
+  }
+
+  AirColumn ac(pmb->ncells1);
+
+  // temperature and pressure
+  for (int i = 0; i < nlayer; ++i) {
+    ac[is + i].SetType(AirParcel::Type::MoleFrac);
+    ac[is + i].w[IDN] = atm.at("TEM")[i];
+    ac[is + i].w[IPR] = atm.at("PRE")[i];
+  }
+
+  auto pindex = IndexMap::GetInstance();
+
+  for (auto const &pair : atm) {
+    if (pair.first == "HGT" || pair.first == "TEM" ||
+        pair.first == "PRE" || pair.first == "IDX") {
+      continue;
+    }
+
+    if (pindex->HasVapor(pair.first))
+      for (int i = 0; i < nlayer; ++i) {
+        ac[is + i].w[pindex->GetVaporId(pair.first)] = pair.second[i];
+      }
+
+    if (pindex->HasCloud(pair.first))
+      for (int i = 0; i < nlayer; ++i) {
+        ac[is + i].c[pindex->GetCloudId(pair.first)] = pair.second[i];
+      }
+
+    if (pindex->HasChemistry(pair.first))
+      for (int i = 0; i < nlayer; ++i) {
+        ac[is + i].q[pindex->GetChemistryId(pair.first)] = pair.second[i];
+      }
+
+    if (pindex->HasTracer(pair.first))
+      for (int i = 0; i < nlayer; ++i) {
+        ac[is + i].x[pindex->GetTracerId(pair.first)] = pair.second[i];
+      }
+  }
+
+  for (int k = pmb->ks; k <= pmb->ke; ++k)
+    for (int j = pmb->js; j <= pmb->je; ++j) {
+      AirParcelHelper::distribute_to_primitive(pmb, k, j, ac);
     }
 };
