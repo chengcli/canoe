@@ -36,7 +36,7 @@ dt          = 1.E2
 
 <time>
 cfl_number  = 0.9           # The Courant, Friedrichs, & Lewy (CFL) Number
-nlim        = -1            # cycle limit
+nlim        = 1            # cycle limit
 tlim        = 1.E7         # time limit
 xorder      = 5             # horizontal reconstruction order
 integrator  = rk3           # integration method
@@ -44,11 +44,11 @@ integrator  = rk3           # integration method
 <mesh>
 nx1         = 128           # Number of zones in X1-direction
 x1min       = 0.            # minimum value of X1
-x1max       = 50.E3         # maximum value of X1
+x1max       = 20.E3         # maximum value of X1
 ix1_bc      = reflecting    # inner-X1 boundary flag
 ox1_bc      = reflecting    # outer-X1 boundary flag
 
-nx2         = 128            # Number of zones in X2-direction
+nx2         = 1            # Number of zones in X2-direction
 x2min       = 0            # minimum value of X2
 x2max       = 64.E3        # maximum value of X2
 ix2_bc      = periodic      # Inner-X2 boundary condition flag
@@ -60,10 +60,10 @@ x3max       = 0.5         # maximum value of X3
 ix3_bc      = periodic    # Inner-X3 boundary condition flag
 ox3_bc      = periodic    # Outer-X3 boundary condition flag
 
-<meshblock>
-nx1         = 128
-nx2         = 16
-nx3         = 1
+#<meshblock>
+#nx1         = 128
+#nx2         = 16
+#nx3         = 1
 
 <hydro>
 gamma           = 1.66    # gamma = C_p/C_v general, for Argon gamma = 1.6597
@@ -81,7 +81,7 @@ vapor = H2O
 cloud = H2O(c), H2O(p)
 
 <chemistry>
-microphysics_config = amarsw.yaml
+microphysics_config = amarsw-mp.yaml
 
 <thermodynamics>
 Rd          = 189.
@@ -115,7 +115,7 @@ HJ.equinox    = 0.
 
 <radiation>
 dt            = 40.
-radiation_config = amarsw.yaml
+radiation_config = amarsw-ck.yaml
 nstr          = 4
 
 <problem>

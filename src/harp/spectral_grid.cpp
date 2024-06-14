@@ -36,8 +36,8 @@ RegularSpacingSpectralGrid::RegularSpacingSpectralGrid(YAML::Node const& my)
       spec[i].wght = (i == 0) || (i == num_bins - 1) ? 0.5 * dwave : dwave;
     }
   } else if (my["num-bins"]) {
-    Real dwave = static_cast<Real>(1. * (wmax - wmin) / num_bins);
     num_bins = my["num-bins"].as<int>();
+    Real dwave = static_cast<Real>(1. * (wmax - wmin) / num_bins);
     spec.resize(num_bins);
     for (int i = 0; i < num_bins; ++i) {
       spec[i].wav1 = wmin + dwave * i;
@@ -48,6 +48,13 @@ RegularSpacingSpectralGrid::RegularSpacingSpectralGrid(YAML::Node const& my)
     throw NotFoundError("RegularSpacingSpectralGrid",
                         "either 'resolution' or 'num-bins' must be defined");
   }
+
+  // normalize weights to add up to 1
+  Real total_wght = 0;
+
+  for (int i = 0; i < num_bins; ++i) total_wght += spec[i].wght;
+
+  for (int i = 0; i < num_bins; ++i) spec[i].wght /= total_wght;
 }
 
 CustomSpacingSpectralGrid::CustomSpacingSpectralGrid(YAML::Node const& my)
@@ -78,5 +85,6 @@ CustomSpacingSpectralGrid::CustomSpacingSpectralGrid(YAML::Node const& my)
   }
 }
 
+// delayed setting weights
 CKTableSpectralGrid::CKTableSpectralGrid(YAML::Node const& my)
     : SpectralGridBase(my) {}

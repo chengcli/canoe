@@ -26,6 +26,7 @@ class TurbulenceModel;
 class CelestrialBody;
 class CubedSphere;
 class SingleColumn;
+// class Surface;
 
 class ParticleBase;
 class Scheduler;
@@ -52,6 +53,7 @@ class MeshBlock::Impl {
   std::shared_ptr<CelestrialBody> planet;
   std::shared_ptr<CubedSphere> pexo3;
   std::shared_ptr<SingleColumn> pscm;
+  // std::shared_ptr<Surface> psurf;
 
   // StaticVariablePtr pstatic;
 

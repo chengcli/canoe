@@ -14,6 +14,9 @@
 // climath
 #include <climath/interpolation.h>
 
+// harp
+#include <harp/spectral_grid.hpp>
+
 // athena
 #include <athena/athena.hpp>
 
@@ -149,4 +152,47 @@ Real HitranAbsorber::GetAttenuation(Real wave1, Real wave2,
     x0 = var.w[mySpeciesId(0)];
   }
   return 1.E-3 * exp(val) * dens * x0;  // ln(m*2/kmol) -> 1/m
+}
+
+void HitranAbsorberCK::LoadCoefficient(std::string fname, int b) {
+  // load lbl hitran absorber data
+  Base::LoadCoefficient(fname, b);
+
+  // load weights
+#ifdef NETCDFOUTPUT
+  int fileid, dimid, varid, err;
+  nc_open(fname.c_str(), NC_NETCDF4, &fileid);
+
+  size_t len = 0;
+  nc_inq_dimid(fileid, "weights", &dimid);
+  nc_inq_dimlen(fileid, dimid, &len);
+  weights_.resize(len);
+
+  err = nc_inq_varid(fileid, "weights", &varid);
+  if (err != NC_NOERR) {
+    throw std::runtime_error(nc_strerror(err));
+  }
+
+  err = nc_get_var_double(fileid, varid, weights_.data());
+  if (err != NC_NOERR) {
+    throw std::runtime_error(nc_strerror(err));
+  }
+
+  nc_close(fileid);
+#endif
+}
+
+//(cmetz) spec is initially unsized because
+// CKTableSpectralGrid::CKTableSpectralGrid is left undefined but this is OK,
+// because ModifySpectralGrid is called right after LoadCoeff in RadiationBand
+// constructor
+void HitranAbsorberCK::ModifySpectralGrid(
+    std::vector<SpectralBin> &spec) const {
+  spec.resize(weights_.size());
+
+  for (size_t i = 0; i < weights_.size(); ++i) {
+    spec[i].wav1 = axis_[i];
+    spec[i].wav2 = axis_[i];
+    spec[i].wght = weights_[i];
+  }
 }

@@ -12,6 +12,7 @@
 
 // athena
 #include <athena/parameter_input.hpp>
+#include <athena/mesh/mesh.hpp>
 
 // snap
 #include <snap/thermodynamics/thermodynamics.hpp>
@@ -21,6 +22,7 @@
 #include <configure.hpp>
 #include <constants.hpp>
 #include <index_map.hpp>
+#include <impl.hpp>
 
 namespace py = pybind11;
 
@@ -46,15 +48,57 @@ std::string find_resource(const std::string &filename) {
   }
 }
 
+auto start_with_input(const std::string &inp) {
+  Application::Start(0, nullptr);
+
+  std::unique_ptr<ParameterInput> pinput;
+  std::unique_ptr<Mesh> pmesh;
+
+  // input
+  pinput = std::make_unique<ParameterInput>();
+  IOWrapper infile;
+  infile.Open(inp.c_str(), IOWrapper::FileMode::read);
+  pinput->LoadFromFile(infile);
+  infile.Close();
+
+  // singletons
+  IndexMap::InitFromAthenaInput(pinput.get());
+  Thermodynamics::InitFromAthenaInput(pinput.get());
+
+  // mesh
+  pmesh = std::make_unique<Mesh>(pinput.get());
+  for (int b = 0; b < pmesh->nblocal; ++b) {
+    MeshBlock *pmb = pmesh->my_blocks(b);
+    pmb->pimpl = std::make_shared<MeshBlock::Impl>(pmb, pinput.get());
+  }
+  pmesh->Initialize(false, pinput.get());
+
+  return std::make_pair(std::move(pmesh), std::move(pinput));
+}
+
 auto cleanup = []() {
   IndexMap::Destroy();
   Thermodynamics::Destroy();
+  Application::Destroy();
 };
 
 PYBIND11_MODULE(canoe, m) {
   m.attr("__name__") = "canoe";
   m.doc() = "Python bindings for canoe";
   m.add_object("_cleanup", py::capsule(cleanup));
+
+  init_athena(m);
+  init_harp(m);
+  init_utils(m);
+  init_snap(m);
+  init_inversion(m);
+
+  m.def("start", []() {
+        Application::Start(0, nullptr);
+      });
+
+  m.def("start_with_input", &start_with_input,
+        py::return_value_policy::reference);
 
   m.def("def_species", &def_species, py::arg("vapors"),
         py::arg("clouds") = std::vector<std::string>(),
@@ -104,12 +148,6 @@ PYBIND11_MODULE(canoe, m) {
       str
           The full path to the resource file.
       )");
-
-  init_athena(m);
-  init_harp(m);
-  init_utils(m);
-  init_snap(m);
-  init_inversion(m);
 
   //  Constants
   py::module m_constants = m.def_submodule("constants");

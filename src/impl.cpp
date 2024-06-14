@@ -43,6 +43,9 @@
 // forcing
 #include "forcing/forcing.hpp"
 
+// surface
+// #include "surface/surface.hpp"
+
 // canoe
 #include "impl.hpp"
 #include "index_map.hpp"
@@ -86,6 +89,9 @@ MeshBlock::Impl::Impl(MeshBlock *pmb, ParameterInput *pin) : pmy_block_(pmb) {
 
   // single column model
   pscm = std::make_shared<SingleColumn>(pmb, pin);
+
+  // surface
+  // psurf = std::make_shared<Surface>(pmb, pin);
 
   // scheduler
   scheduler = SchedulerFactory::Create(pmb, pin);
