@@ -26,7 +26,8 @@ class ParameterInput;
 
 namespace Cantera {
 class ThermoPhase;
-}
+class Kinetics;
+}  // namespace Cantera
 
 using IndexPair = std::pair<int, int>;
 using IndexSet = std::vector<int>;
@@ -37,8 +38,8 @@ using RealArrayX = std::vector<Real>;
 using SatVaporPresFunc1 = Real (*)(AirParcel const &, int i, int j);
 using SatVaporPresFunc2 = Real (*)(AirParcel const &, int i, int j, int k);
 
-//! \todo(CLI): move to configure.hpp
 enum { MAX_REACTANT = 3 };
+
 using ReactionIndx = std::array<int, MAX_REACTANT>;
 using ReactionStoi = std::array<int, MAX_REACTANT>;
 using ReactionInfo = std::pair<ReactionIndx, ReactionStoi>;
@@ -366,6 +367,7 @@ class Thermodynamics {
  protected:
   std::shared_ptr<Cantera::ThermoPhase> vapor_;
   std::shared_ptr<Cantera::ThermoPhase> cloud_;
+  std::shared_ptr<Cantera::Kinetics> kinetics_;
 
   //! ideal gas constant of dry air in J/kg
   Real Rd_;
@@ -423,22 +425,22 @@ class Thermodynamics {
   std::array<Real, Size> delta_;
 
   //! triple point temperature [K]
-  std::array<Real, 1 + NVAPOR> t3_;
+  // std::array<Real, 1 + NVAPOR> t3_;
 
   //! triple point pressure [pa]
-  std::array<Real, 1 + NVAPOR> p3_;
+  // std::array<Real, 1 + NVAPOR> p3_;
 
   //! saturation vapor pressure function: Vapor -> Cloud
   SVPFunc1Container svp_func1_;
 
   //! cloud index set
-  std::vector<IndexSet> cloud_index_set_;
-
-  //! saturation vapor pressure function: Vapor + Vapor -> Cloud
-  SVPFunc2Container svp_func2_;
+  std::array<IndexSet, 1 + NVAPOR> cloud_index_set_;
 
   //! reaction information map
   std::map<IndexPair, ReactionInfo> cloud_reaction_map_;
+
+  //! saturation vapor pressure function: Vapor + Vapor -> Cloud
+  SVPFunc2Container svp_func2_;
 
   //! pointer to the single Thermodynamics instance
   static Thermodynamics *mythermo_;

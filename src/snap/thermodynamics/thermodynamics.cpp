@@ -9,7 +9,8 @@
 #include <string>
 #include <vector>  // fill
 
-// Cantera
+// cantera
+#include <cantera/kinetics.h>
 #include <cantera/thermo.h>
 
 // athena
@@ -49,24 +50,78 @@ Thermodynamics::~Thermodynamics() {
 Thermodynamics* Thermodynamics::fromYAMLInput(std::string const& fname) {
   mythermo_ = new Thermodynamics();
 
-  mythermo_->vapor_ = Cantera::newThermo(fname, "vapor");
-  mythermo_->cloud_ = Cantera::newThermo(fname, "cloud");
+  auto& vapor = mythermo_->vapor_;
+  auto& cloud = mythermo_->cloud_;
+  auto& kinetics = mythermo_->kinetics_;
 
-  /* non-condensable
-  mythermo_->Rd_ = node["dry"]["Rd"].as<Real>();
-  mythermo_->gammad_ref_ = node["dry"]["gammad"].as<Real>();
+  vapor = Cantera::newThermo(fname, "vapor");
+  cloud = Cantera::newThermo(fname, "cloud");
 
-  // saturation adjustment
-  if (node["saturation_adjustment"]) {
-    mythermo_->sa_max_iter_ =
-        node["saturation_adjustment"]["max_iter"].as<int>(10);
-    mythermo_->sa_ftol_ = node["saturation_adjustment"]["ftol"].as<Real>(1e-4);
-    mythermo_->sa_relax_ = node["saturation_adjustment"]["relax"].as<Real>(0.8);
-  } else {
-    mythermo_->sa_max_iter_ = 10;
-    mythermo_->sa_ftol_ = 1e-4;
-    mythermo_->sa_relax_ = 0.8;
-  }*/
+  // lowest dimension reaction phase (cloud) must be the first phase
+  kinetics = Cantera::newKinetics({cloud, vapor}, fname);
+
+  // --------- vapor + cloud thermo ---------
+  std::vector<Real> mu(mythermo_->vapor_->nSpecies() +
+                       mythermo_->cloud_->nSpecies());
+  std::vector<Real> cp_mole(mythermo_->vapor_->nSpecies() +
+                            mythermo_->cloud_->nSpecies());
+
+  // g/mol
+  vapor->getMolecularWeights(mu.data());
+  cloud->getMolecularWeights(mu.data() + vapor->nSpecies());
+
+  // J/kmol/K
+  vapor->getPartialMolarCp(cp_mole.data());
+  cloud->getPartialMolarCp(cp_mole.data() + vapor->nSpecies());
+
+  // ---------- non-condensable ----------
+  auto idry = vapor->speciesIndex("dry");
+  if (idry == Cantera::npos) {
+    throw RuntimeError("Thermodynamics",
+                       "'dry' species not found in the thermo file");
+  }
+  if (idry != 0) {
+    throw RuntimeError("Thermodynamics",
+                       "'dry' species must be the first species");
+  }
+
+  mythermo_->Rd_ = Cantera::GasConstant / mu[0];
+  mythermo_->gammad_ref_ = cp_mole[0] / (cp_mole[0] - Cantera::GasConstant);
+
+  std::cout << "Rd = " << mythermo_->Rd_ << std::endl;
+  std::cout << "gammad = " << mythermo_->gammad_ref_ << std::endl;
+
+  // ---------- dimensionless properties ----------
+
+  // cp ratios
+  for (size_t i = 1; i < cp_mole.size(); ++i) {
+    mythermo_->cp_ratio_mole_[i] = cp_mole[i] / cp_mole[0];
+  }
+  mythermo_->cp_ratio_mole_[0] = 1.;
+
+  // molecular weight ratios
+  for (size_t i = 1; i < mu.size(); ++i) {
+    mythermo_->mu_ratio_[i] = mu[i] / mu[0];
+  }
+  mythermo_->mu_ratio_[0] = 1.;
+
+  // beta parameter (dimensionless internal energy)
+  std::fill(mythermo_->beta_.begin(), mythermo_->beta_.end(), 0.);
+
+  for (size_t i = 0; i < cloud->nSpecies(); ++i) {
+    auto& thermo = cloud->species(i)->thermo;
+    size_t n;
+    int type;
+    Real tlow, thigh, pref;
+    std::vector<Real> coeffs(thermo->nCoeffs());
+    thermo->reportParameters(n, type, tlow, thigh, pref, coeffs.data());
+
+    Real t0 = coeffs[0];
+    Real h0 = coeffs[1];
+    Real s0 = coeffs[2];
+    Real cp0 = coeffs[3];
+    mythermo_->beta_[vapor->nSpecies() + i] = h0 / (Cantera::GasConstant * t0);
+  }
 
   return mythermo_;
 }
@@ -91,12 +146,11 @@ Thermodynamics* Thermodynamics::fromLegacyInput(ParameterInput* pin) {
   read_thermo_property(mythermo_->beta_.data(), "beta", NPHASE, 0., pin);
 
   // Read triple point temperature
-  read_thermo_property(mythermo_->t3_.data(), "Ttriple", 1, 0., pin);
+  // read_thermo_property(mythermo_->t3_.data(), "Ttriple", 1, 0., pin);
 
   // Read triple point pressure
-  read_thermo_property(mythermo_->p3_.data(), "Ptriple", 1, 0., pin);
+  // read_thermo_property(mythermo_->p3_.data(), "Ptriple", 1, 0., pin);
 
-  mythermo_->cloud_index_set_.resize(1 + NVAPOR);
   mythermo_->svp_func1_.resize(1 + NVAPOR);
 
   for (int i = 0; i <= NVAPOR; ++i) {
@@ -172,8 +226,8 @@ Thermodynamics const* Thermodynamics::InitFromAthenaInput(ParameterInput* pin) {
 
   auto& beta = mythermo_->beta_;
   auto& delta = mythermo_->delta_;
-  auto& t3 = mythermo_->t3_;
-  auto& p3 = mythermo_->p3_;
+  // auto& t3 = mythermo_->t3_;
+  // auto& p3 = mythermo_->p3_;
   auto& cloud_index_set = mythermo_->cloud_index_set_;
 
   // molecular weight
@@ -187,7 +241,7 @@ Thermodynamics const* Thermodynamics::InitFromAthenaInput(ParameterInput* pin) {
     cp_ratio_mole[n] = cp_ratio_mass[n] * mu_ratio[n];
   }
 
-  // calculate latent energy = $\beta\frac{R_d}{\epsilon}T^r$
+  /* calculate latent energy = $\beta\frac{R_d}{\epsilon}T^r$
   for (int n = 0; n <= NVAPOR; ++n) {
     latent_energy_mass[n] = 0.;
     latent_energy_mole[n] = 0.;
@@ -199,7 +253,7 @@ Thermodynamics const* Thermodynamics::InitFromAthenaInput(ParameterInput* pin) {
       latent_energy_mass[n] = beta[n] * Rd / mu_ratio[n] * t3[i];
       latent_energy_mole[n] = latent_energy_mass[n] * mu[n];
     }
-  }
+  }*/
 
   // calculate delta = $(\sigma_j - \sigma_i)*\epsilon_i*\gamma/(\gamma - 1)$
   for (int n = 0; n <= NVAPOR; ++n) delta[n] = 0.;
@@ -209,30 +263,6 @@ Thermodynamics const* Thermodynamics::InitFromAthenaInput(ParameterInput* pin) {
       delta[n] = (cp_ratio_mass[n] - cp_ratio_mass[i]) * mu_ratio[i] /
                  (1. - 1. / gammad);
     }
-  }
-
-  // set up extra clouds
-  auto pindex = IndexMap::GetInstance();
-
-  for (int n = (NPHASE - 1) * NVAPOR; n < NCLOUD; ++n) {
-    Molecule mol;
-    mol.LoadThermodynamicFile(pindex->GetCloudName(n) + ".thermo");
-
-    int j = 1 + NVAPOR + n;
-    mu[j] = mol.mu();
-    inv_mu[j] = 1. / mu[j];
-
-    mu_ratio[j] = mol.mu() / mu[0];
-    inv_mu_ratio[j] = 1. / mu_ratio[j];
-
-    cp_ratio_mass[j] = mol.cp() / (mol.mu() * mythermo_->GetCpMassRef(0));
-    cp_ratio_mole[j] = cp_ratio_mass[j] * mu_ratio[j];
-
-    latent_energy_mole[j] = mol.latent();
-    latent_energy_mass[j] = mol.latent() / mol.mu();
-
-    beta[j] = mol.latent() / (Constants::Rgas * Thermodynamics::RefTemp);
-    delta[j] = 0.;
   }
 
   // finally, set up cv ratio

@@ -1,0 +1,108 @@
+# Thermodynamic data for Jupiter's atmosphere
+#
+# constant-cp model assumes a constant specific heat, which by default is zero.
+# Parameters that can be specified are `cp0`, `t0`, `h0`, and `s0`.
+# If omitted, t0 = 298.15 K, cp0 = 0, h0 = 0, and s0 = 0 at 101325 Pa (OneAtm).
+#
+# The thermo properties are computed as follows:
+#
+#   h = h0 + cp0 * (t - t0)
+#   s = s0 + cp0 * ln(t/t0)
+
+phases:
+  - name: vapor
+    elements: [H, He, O, N, S]
+    species: [dry, H2O, NH3]
+    thermo: ideal-gas
+    adjacent-phases: [cloud]
+
+  - name: cloud
+    elements: [H, O, N, S]
+    species: [H2O(l), NH3(l), H2O(s), NH3(s), NH4SH(s)]
+    thermo: ideal-surface
+    adjacent-phases: [vapor]
+
+species:
+  - name: dry
+    composition: {H: 2, He: 1}
+    thermo:
+      model: constant-cp
+      cp0: 29.1 J/mol/K
+
+  - name: H2O
+    composition: {H: 2, O: 1}
+    thermo:
+      model: constant-cp
+
+  - name: NH3
+    composition: {N: 1, H: 3}
+    thermo:
+      model: constant-cp
+
+  - name: H2S
+    composition: {H: 2, S: 1}
+    thermo:
+      model: constant-cp
+
+  - name: H2O(l)
+    composition: {H: 2, O: 1}
+    thermo:
+      model: constant-cp
+      cp0: 75.3 J/mol/K
+      h0: -285.8 kJ/mol
+    equation-of-state:
+      model: constant-volume
+      density: 1.0 g/cm^3
+
+  - name: NH3(l)
+    composition: {N: 1, H: 3}
+    thermo:
+      model: constant-cp
+      cp0: 80.0 J/mol/K
+      h0: -45.9 kJ/mol
+    equation-of-state:
+      model: constant-volume
+      density: 1.0 g/cm^3
+
+  - name: H2O(s)
+    composition: {H: 2, O: 1}
+    thermo:
+      model: constant-cp
+      cp0: 75.3 J/mol/K
+      h0: -285.8 kJ/mol
+    equation-of-state:
+      model: constant-volume
+      density: 0.917 g/cm^3
+
+  - name: NH3(s)
+    composition: {N: 1, H: 3}
+    thermo:
+      model: constant-cp
+      cp0: 80.0 J/mol/K
+      h0: -45.9 kJ/mol
+    equation-of-state:
+      model: constant-volume
+      density: 0.917 g/cm^3
+
+  - name: NH4SH(s)
+    composition: {N: 1, H: 4, S: 1}
+    thermo:
+      model: constant-cp
+      cp0: 80.0 J/mol/K
+      h0: -105.9 kJ/mol
+    equation-of-state:
+      model: constant-volume
+      density: 1.5 g/cm^3
+
+reaction:
+  - equation: H2O <=> H2O(l) + H2O(s)
+    type: condensation
+    parameters: {sa_max_iter: 10, sa_ftol: 1.e-4, sa_relax: 0.8, T3: 273.15}
+
+  - equation: NH3 <=> NH3(l) + NH3(s)
+    type: condensation
+    parameters: {sa_max_iter: 10, sa_ftol: 1.e-4, sa_relax: 0.8, T3: 273.15}
+
+  - equation: NH3 + H2S <=> NH4SH(s)
+    type: double-condensation
+    parameters: {A: 1.e-3, n: 1.0, E: 1.e4}
