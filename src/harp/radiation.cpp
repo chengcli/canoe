@@ -5,8 +5,8 @@
 #include <stdexcept>
 #include <utility>
 
-// external
-#include <yaml-cpp/yaml.h>
+// cantera
+#include <cantera/base/yaml.h>
 
 // application
 #include <application/application.hpp>

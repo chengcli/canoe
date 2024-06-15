@@ -7,9 +7,6 @@
 #include <string>
 #include <vector>
 
-// external
-#include <yaml-cpp/yaml.h>
-
 // athena
 #include <athena/athena.hpp>  // Real
 
@@ -22,6 +19,10 @@
 
 // harp
 #include "spectral_grid.hpp"
+
+namespace YAML {
+class Node;
+}
 
 class OutputParameters;
 class Absorber;

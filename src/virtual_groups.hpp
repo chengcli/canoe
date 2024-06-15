@@ -6,9 +6,6 @@
 #include <string>
 #include <unordered_map>
 
-// external
-#include <yaml-cpp/yaml.h>  // YAML::Node
-
 // athena
 #include <athena/athena.hpp>  // Real
 
@@ -20,6 +17,10 @@ class Mesh;
 class MeshBlock;
 class OutputType;
 class OutputParameters;
+
+namespace YAML {
+class Node;
+}
 
 class NamedGroup {
  public:
@@ -62,17 +63,9 @@ class ParameterGroup {
  public:
   virtual ~ParameterGroup() {}
 
-  void SetRealsFrom(YAML::Node const &node) {
-    for (auto it = node.begin(); it != node.end(); ++it) {
-      params_real_[it->first.as<std::string>()] = it->second.as<Real>();
-    }
-  }
+  void SetRealsFrom(YAML::Node const &node);
 
-  void SetIntsFrom(YAML::Node const &node) {
-    for (auto it = node.begin(); it != node.end(); ++it) {
-      params_int_[it->first.as<std::string>()] = it->second.as<int>();
-    }
-  }
+  void SetIntsFrom(YAML::Node const &node);
 
   //! Set real parameter
   void SetPar(std::string const &name, Real value) {

@@ -11,12 +11,12 @@
 include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}
   ${CMAKE_BINARY_DIR}
-  ${EIGEN3_INCLUDE_DIR}
   ${NETCDF_INCLUDES}
   ${CFITSIO_INCLUDE_DIR}
   ${MPI_CXX_INCLUDE_PATH}
   ${MPI_CXX_HEADER_DIR}
   ${PNETCDF_INCLUDE_DIR}
+  ${CANTERA_INCLUDE_DIR}
   )
 
 set(namel canoe)
@@ -35,6 +35,11 @@ add_library(${namel}_${buildl}
 set_target_properties(${namel}_${buildl}
     PROPERTIES
     COMPILE_FLAGS ${CMAKE_CXX_FLAGS_${buildu}}
+    )
+
+target_include_directories(${namel}_${buildl}
+    PRIVATE
+    ${CANTERA_INCLUDE_DIR}/cantera/ext  # for yaml-cpp
     )
 
 add_subdirectory(climath)
@@ -79,7 +84,7 @@ set(CANOE_LIBRARY_${buildu}
   "scm_${buildl}"
   "diagnostics_${buildl}"
   "forcing_${buildl}"
-  "yaml-cpp"
+  #"yaml-cpp"
   ${CPPDISORT_LIBRARY_${buildu}}
   ${PYTHON_LIBRARY_RELEASE}
   ${NETCDF_LIBRARIES}

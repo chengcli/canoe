@@ -2,6 +2,9 @@
 #include <sstream>
 #include <string>
 
+// cantera
+#include <cantera/base/yaml.h>
+
 // application
 #include <application/application.hpp>
 #include <application/exceptions.hpp>

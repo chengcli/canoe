@@ -4,6 +4,9 @@
 #include <type_traits>
 #include <vector>
 
+// cantera
+#include <cantera/base/yaml.h>
+
 // athena
 #include <athena/mesh/mesh.hpp>
 #include <athena/outputs/outputs.hpp>

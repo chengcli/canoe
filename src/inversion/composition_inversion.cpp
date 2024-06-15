@@ -2,6 +2,9 @@
 #include <memory>
 #include <string>
 
+// cantera
+#include <cantera/base/yaml.h>
+
 // athena
 #include <athena/hydro/hydro.hpp>
 #include <athena/mesh/mesh.hpp>

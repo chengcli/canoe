@@ -7,9 +7,10 @@
 #include <string>
 #include <vector>
 
-// external
-#include <yaml-cpp/yaml.h>
+// cantera
+#include <cantera/base/yaml.h>
 
+// eigen
 #include <Eigen/Core>
 #include <Eigen/Dense>
 

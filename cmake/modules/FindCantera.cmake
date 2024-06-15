@@ -3,8 +3,8 @@
 # CANTERA_INCLUDE_DIR  - where to find cantera/kinetics.h CANTERA_LIBRARY      -
 # link library CANTERA_FOUND        - True if Cantera found
 #
-# Normal usage would be find_package (Cantera REQUIRED)
-# target_include_directories (${CANTERA_INCLUDE_DIR}) target_link_libraries
+# Normal usage would be find_package (Cantera REQUIRED) -
+# target_include_directories (${CANTERA_INCLUDE_DIR}) - target_link_libraries
 # (${CANTERA_LIBRARY})
 #
 find_path(CANTERA_INCLUDE_DIR cantera/kinetics.h HINTS $ENV{HOME}/opt/include

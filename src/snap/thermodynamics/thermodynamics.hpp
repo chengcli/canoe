@@ -11,9 +11,6 @@
 #include <utility>
 #include <vector>
 
-// external
-#include <yaml-cpp/yaml.h>
-
 // athena
 #include <athena/athena.hpp>
 #include <athena/hydro/hydro.hpp>
@@ -26,6 +23,10 @@
 
 class MeshBlock;
 class ParameterInput;
+
+namespace Cantera {
+class ThermoPhase;
+}
 
 using IndexPair = std::pair<int, int>;
 using IndexSet = std::vector<int>;
@@ -76,7 +77,7 @@ class Thermodynamics {
   //! Protected ctor access thru static member function Instance
   Thermodynamics() {}
   static Thermodynamics *fromLegacyInput(ParameterInput *pin);
-  static Thermodynamics *fromYAMLInput(YAML::Node const &node);
+  static Thermodynamics *fromYAMLInput(std::string const &fname);
 
  public:
   using SVPFunc1Container = std::vector<std::vector<SatVaporPresFunc1>>;
@@ -96,7 +97,7 @@ class Thermodynamics {
   //! Return a pointer to the one and only instance of Thermodynamics
   static Thermodynamics const *GetInstance();
 
-  static Thermodynamics const *InitFromYAMLInput(YAML::Node const &node);
+  static Thermodynamics const *InitFromYAMLInput(std::string const &fname);
 
   static Thermodynamics const *InitFromAthenaInput(ParameterInput *pin);
 
@@ -363,6 +364,9 @@ class Thermodynamics {
   void enrollVaporFunctions();
 
  protected:
+  std::shared_ptr<Cantera::ThermoPhase> vapor_;
+  std::shared_ptr<Cantera::ThermoPhase> cloud_;
+
   //! ideal gas constant of dry air in J/kg
   Real Rd_;
 

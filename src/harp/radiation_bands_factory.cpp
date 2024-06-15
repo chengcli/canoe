@@ -1,4 +1,7 @@
-// external
+// yaml
+#include <cantera/base/yaml.h>
+
+// application
 #include <application/application.hpp>
 
 // utils

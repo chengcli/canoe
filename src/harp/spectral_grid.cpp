@@ -1,5 +1,5 @@
-// external
-#include <yaml-cpp/yaml.h>
+// cantera
+#include <cantera/base/yaml.h>
 
 // athena
 #include <athena/athena.hpp>

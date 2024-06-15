@@ -1,14 +1,25 @@
-name: giant planet chemistry model
+phases:
+  - thermo.yaml/phases: all
+  - name: precipitation
+    species: [H2O(p), NH3(p)]
+    thermo: ideal-solution
 
-microphysics:
-  - water-system
+species:
+  - name: H2O(p)
+    composition: {H: 2, O: 1}
+    thermo:
+      model: const-cp
 
-water-system:
-  scheme: Kessler94
-  dependent-species: [vapor.H2O, cloud.H2O(c), cloud.H2O(p)]
-  parameters: {autoconversion: 1.e-3, accretion: 0.0, evaporation: 1.e-3, sedimentation: -20.}
+  - name: NH3(p)
+    composition: {N: 1, H: 3}
+    thermo:
+      model: const-cp
 
-ammonia-system:
-  scheme: Kessler94
-  dependent-species: [vapor.NH3, cloud.NH3(c), cloud.NH3(p)]
-  parameters: {autoconversion: 1.e-3, accretion: 0.0, evaporation: 1.e-3, sedimentation: -20.}
+reaction:
+  - equation: H2O <=> H2O(l) + H2O(s) + H2O(p)
+    type: Kessler94
+    parameters: {autoconversion: 1.e-3, accretion: 0.0, evaporation: 1.e-3, sedimentation: -20.}
+
+  - equation: NH3 <=> NH3(l) + NH3(s) + NH3(p)
+    type: Kessler94
+    parameters: {autoconversion: 1.e-3, accretion: 0.0, evaporation: 1.e-3, sedimentation: -20.}

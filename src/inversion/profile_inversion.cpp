@@ -5,6 +5,9 @@
 #include <sstream>
 #include <string>
 
+// cantera
+#include <cantera/base/yaml.h>
+
 // canoe
 #include <configure.hpp>
 #include <impl.hpp>

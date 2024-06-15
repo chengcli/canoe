@@ -9,8 +9,8 @@
 #include <string>
 #include <vector>  // fill
 
-// external
-#include <yaml-cpp/yaml.h>
+// Cantera
+#include <cantera/thermo.h>
 
 // athena
 #include <athena/athena.hpp>
@@ -46,10 +46,13 @@ Thermodynamics::~Thermodynamics() {
   app->Log("Destroy Thermodynamics");
 }
 
-Thermodynamics* Thermodynamics::fromYAMLInput(YAML::Node const& node) {
+Thermodynamics* Thermodynamics::fromYAMLInput(std::string const& fname) {
   mythermo_ = new Thermodynamics();
 
-  // non-condensable
+  mythermo_->vapor_ = Cantera::newThermo(fname, "vapor");
+  mythermo_->cloud_ = Cantera::newThermo(fname, "cloud");
+
+  /* non-condensable
   mythermo_->Rd_ = node["dry"]["Rd"].as<Real>();
   mythermo_->gammad_ref_ = node["dry"]["gammad"].as<Real>();
 
@@ -63,7 +66,7 @@ Thermodynamics* Thermodynamics::fromYAMLInput(YAML::Node const& node) {
     mythermo_->sa_max_iter_ = 10;
     mythermo_->sa_ftol_ = 1e-4;
     mythermo_->sa_relax_ = 0.8;
-  }
+  }*/
 
   return mythermo_;
 }
@@ -122,7 +125,7 @@ Thermodynamics const* Thermodynamics::GetInstance() {
 }
 
 Thermodynamics const* Thermodynamics::InitFromYAMLInput(
-    YAML::Node const& node) {
+    std::string const& fname) {
   if (mythermo_ != nullptr) {
     throw RuntimeError("Thermodynamics", "Thermodynamics has been initialized");
   }
@@ -130,7 +133,7 @@ Thermodynamics const* Thermodynamics::InitFromYAMLInput(
   Application::Logger app("snap");
   app->Log("Initialize Thermodynamics");
 
-  return fromYAMLInput(node);
+  return fromYAMLInput(fname);
 }
 
 Thermodynamics const* Thermodynamics::InitFromAthenaInput(ParameterInput* pin) {
@@ -143,13 +146,7 @@ Thermodynamics const* Thermodynamics::InitFromAthenaInput(ParameterInput* pin) {
 
   if (pin->DoesParameterExist("thermodynamics", input_key)) {
     std::string filename = pin->GetString("thermodynamics", input_key);
-    std::ifstream stream(filename);
-    if (stream.good() == false) {
-      throw RuntimeError("Thermodynamics",
-                         "Cannot open thermodynamic file: " + filename);
-    }
-
-    mythermo_ = fromYAMLInput(YAML::Load(stream));
+    mythermo_ = fromYAMLInput(filename);
   } else {  // legacy input
     mythermo_ = fromLegacyInput(pin);
   }

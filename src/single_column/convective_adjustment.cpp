@@ -1,6 +1,7 @@
 // C/C++
 #include <array>
 #include <cmath>
+#include <sstream>
 
 // external
 #include <application/application.hpp>

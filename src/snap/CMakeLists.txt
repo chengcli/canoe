@@ -45,3 +45,8 @@ set_target_properties(${namel}_${buildl}
     PROPERTIES
     COMPILE_FLAGS ${CMAKE_CXX_FLAGS_${buildu}}
     )
+
+target_link_libraries(${namel}_${buildl}
+    PRIVATE
+    ${CANTERA_LIBRARY}
+    )
