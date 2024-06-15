@@ -22,7 +22,9 @@ macro(setup_test namel)
             ${NETCDF_INCLUDES}
             ${PNETCDF_INCLUDE_DIR}
             ${OpenMP_CXX_INCLUDE_DIR}
-            ${FFTW_INCLUDE_DIRS})
+            ${FFTW_INCLUDE_DIRS}
+            ${CANTERA_INCLUDE_DIR}
+            ${CANTERA_INCLUDE_DIR}/cantera/ext) # for yaml-cpp
 
   target_link_libraries(
     ${namel}.${buildl} gtest_main $<$<BOOL:${PVFMM}>:pvfmmStatic>

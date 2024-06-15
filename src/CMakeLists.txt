@@ -93,6 +93,7 @@ set(CANOE_LIBRARY_${buildu}
   ${MPI_CXX_LIBRARIES}
   ${GLOG_LIBRARIES}
   ${OpenMP_libomp_LIBRARY}
+  ${CANTERA_LIBRARY}
   CACHE INTERNAL "canoe library")
 
 set(CANOE_INCLUDE_DIR
