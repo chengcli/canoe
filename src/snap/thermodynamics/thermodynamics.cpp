@@ -56,9 +56,10 @@ Thermodynamics* Thermodynamics::fromYAMLInput(std::string const& fname) {
 
   vapor = Cantera::newThermo(fname, "vapor");
   cloud = Cantera::newThermo(fname, "cloud");
+  auto surf = Cantera::newThermo(fname, "surface");
 
-  // lowest dimension reaction phase (cloud) must be the first phase
-  kinetics = Cantera::newKinetics({cloud, vapor}, fname);
+  // surface must be included in the kinetics file
+  kinetics = Cantera::newKinetics({surf, vapor, cloud}, fname);
 
   // --------- vapor + cloud thermo ---------
   std::vector<Real> mu(mythermo_->vapor_->nSpecies() +
@@ -123,6 +124,20 @@ Thermodynamics* Thermodynamics::fromYAMLInput(std::string const& fname) {
     mythermo_->beta_[vapor->nSpecies() + i] = h0 / (Cantera::GasConstant * t0);
   }
 
+  // ---------- reactions ----------
+  std::cout << "Number of reactions: " << kinetics->nReactions() << std::endl;
+
+  std::vector<Real> svp(kinetics->nReactions());
+
+  kinetics->thermo().setTemperature(300.);
+
+  // saturation vapor pressure
+  kinetics->getFwdRateConstants(svp.data());
+
+  for (size_t i = 0; i < svp.size(); ++i) {
+    std::cout << "Reaction " << i << ": " << svp[i] << std::endl;
+  }
+
   return mythermo_;
 }
 
@@ -146,12 +161,13 @@ Thermodynamics* Thermodynamics::fromLegacyInput(ParameterInput* pin) {
   read_thermo_property(mythermo_->beta_.data(), "beta", NPHASE, 0., pin);
 
   // Read triple point temperature
-  // read_thermo_property(mythermo_->t3_.data(), "Ttriple", 1, 0., pin);
+  read_thermo_property(mythermo_->t3_.data(), "Ttriple", 1, 0., pin);
 
   // Read triple point pressure
-  // read_thermo_property(mythermo_->p3_.data(), "Ptriple", 1, 0., pin);
+  read_thermo_property(mythermo_->p3_.data(), "Ptriple", 1, 0., pin);
 
   mythermo_->svp_func1_.resize(1 + NVAPOR);
+  mythermo_->cloud_index_set_.resize(1 + NVAPOR);
 
   for (int i = 0; i <= NVAPOR; ++i) {
     mythermo_->cloud_index_set_[i].resize(NPHASE - 1);
@@ -226,8 +242,8 @@ Thermodynamics const* Thermodynamics::InitFromAthenaInput(ParameterInput* pin) {
 
   auto& beta = mythermo_->beta_;
   auto& delta = mythermo_->delta_;
-  // auto& t3 = mythermo_->t3_;
-  // auto& p3 = mythermo_->p3_;
+  auto& t3 = mythermo_->t3_;
+  auto& p3 = mythermo_->p3_;
   auto& cloud_index_set = mythermo_->cloud_index_set_;
 
   // molecular weight

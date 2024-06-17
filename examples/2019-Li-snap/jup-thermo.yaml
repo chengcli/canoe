@@ -10,17 +10,21 @@
 #   s = s0 + cp0 * ln(t/t0)
 
 phases:
+  - name: surface
+    thermo: ideal-surface
+    species: [dry]
+    adjacent-phases: [vapor, cloud]
+    kinetics: surface
+
   - name: vapor
     elements: [H, He, O, N, S]
-    species: [dry, H2O, NH3]
+    species: [dry, H2O, NH3, H2S]
     thermo: ideal-gas
-    adjacent-phases: [cloud]
 
   - name: cloud
     elements: [H, O, N, S]
     species: [H2O(l), NH3(l), H2O(s), NH3(s), NH4SH(s)]
-    thermo: ideal-surface
-    adjacent-phases: [vapor]
+    thermo: ideal-gas
 
 species:
   - name: dry
@@ -85,7 +89,7 @@ species:
       density: 0.917 g/cm^3
 
   - name: NH4SH(s)
-    composition: {N: 1, H: 4, S: 1}
+    composition: {N: 1, H: 5, S: 1}
     thermo:
       model: constant-cp
       cp0: 80.0 J/mol/K
@@ -94,15 +98,23 @@ species:
       model: constant-volume
       density: 1.5 g/cm^3
 
-reaction:
-  - equation: H2O <=> H2O(l) + H2O(s)
+reactions:
+  - equation: H2O <=> H2O(l)
     type: condensation
-    parameters: {sa_max_iter: 10, sa_ftol: 1.e-4, sa_relax: 0.8, T3: 273.15}
+    rate-constant: {formula: ideal, T3: 273.16, P3: 611.7, beta: 24.845, delta: 4.986, minT: 273.16}
 
-  - equation: NH3 <=> NH3(l) + NH3(s)
+  - equation: H2O <=> H2O(s)
     type: condensation
-    parameters: {sa_max_iter: 10, sa_ftol: 1.e-4, sa_relax: 0.8, T3: 273.15}
+    rate-constant: {formula: ideal, T3: 273.16, P3: 611.7, beta: 22.98, delta: 0.52, maxT: 273.16}
+
+  - equation: NH3 <=> NH3(l)
+    type: condensation
+    rate-constant: {formula: ideal, T3: 195.4, P3: 6060., beta: 20.08, delta: 5.62, minT: 195.4}
+
+  - equation: NH3 <=> NH3(s)
+    type: condensation
+    rate-constant: {formula: ideal, T3: 195.4, P3: 6060., beta: 20.64, delta: 1.43, maxT: 195.4}
 
   - equation: NH3 + H2S <=> NH4SH(s)
-    type: double-condensation
-    parameters: {A: 1.e-3, n: 1.0, E: 1.e4}
+    type: condensation
+    rate-constant: {formula: lewis}

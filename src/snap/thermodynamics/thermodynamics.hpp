@@ -86,9 +86,6 @@ class Thermodynamics {
 
   enum { Size = 1 + NVAPOR + NCLOUD };
 
-  static constexpr Real RefTemp = 300.;
-  static constexpr Real RefPres = 1.e5;
-
   //! thermodynamics input key in the input file [thermodynamics_config]
   static const std::string input_key;
 
@@ -425,16 +422,16 @@ class Thermodynamics {
   std::array<Real, Size> delta_;
 
   //! triple point temperature [K]
-  // std::array<Real, 1 + NVAPOR> t3_;
+  std::array<Real, 1 + NVAPOR> t3_;
 
   //! triple point pressure [pa]
-  // std::array<Real, 1 + NVAPOR> p3_;
+  std::array<Real, 1 + NVAPOR> p3_;
 
   //! saturation vapor pressure function: Vapor -> Cloud
   SVPFunc1Container svp_func1_;
 
   //! cloud index set
-  std::array<IndexSet, 1 + NVAPOR> cloud_index_set_;
+  std::vector<IndexSet> cloud_index_set_;
 
   //! reaction information map
   std::map<IndexPair, ReactionInfo> cloud_reaction_map_;
