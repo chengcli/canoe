@@ -8,6 +8,18 @@ void Thermodynamics::EquilibrateTP(AirParcel* qfrac) const {
   set_total_equivalent_vapor(qfrac, cloud_index_set_.data(),
                              cloud_reaction_map_);
 
+  /*std::array<Real, Size> rates;
+  std::vector<Real> svp(kinetics_->nReactions());
+
+  Real temp = qfrac->w[IDN];
+  Real pres = qfrac->w[IPR];
+
+  kinetics->thermo().setTemperature(temp);
+  kinetics->thermo().setPressure(pres);
+
+  // saturation vapor pressure
+  kinetics->getFwdRateConstants(svp.data());*/
+
   // vapor <=> cloud
   for (int i = 1; i <= NVAPOR; ++i) {
     auto rates = TryEquilibriumTP_VaporCloud(*qfrac, i);

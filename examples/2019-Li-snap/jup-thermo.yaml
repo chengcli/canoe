@@ -14,21 +14,19 @@ phases:
     thermo: ideal-surface
     species: [dry]
     adjacent-phases: [vapor, cloud]
-    kinetics: surface
+    kinetics: condensation
 
   - name: vapor
-    elements: [H, He, O, N, S]
-    species: [dry, H2O, NH3, H2S]
+    species: [H2O, NH3, H2S]
     thermo: ideal-gas
 
   - name: cloud
-    elements: [H, O, N, S]
     species: [H2O(l), NH3(l), H2O(s), NH3(s), NH4SH(s)]
-    thermo: ideal-gas
+    thermo: ideal-molal-solution
 
 species:
   - name: dry
-    composition: {H: 2, He: 1}
+    composition: {H: 1.686, He: 0.157}
     thermo:
       model: constant-cp
       cp0: 29.1 J/mol/K
@@ -37,16 +35,19 @@ species:
     composition: {H: 2, O: 1}
     thermo:
       model: constant-cp
+      cp0: 37.4 J/mol/K
 
   - name: NH3
     composition: {N: 1, H: 3}
     thermo:
       model: constant-cp
+      cp0: 37.4 J/mol/K
 
   - name: H2S
     composition: {H: 2, S: 1}
     thermo:
       model: constant-cp
+      cp0: 37.4 J/mol/K
 
   - name: H2O(l)
     composition: {H: 2, O: 1}
@@ -100,21 +101,21 @@ species:
 
 reactions:
   - equation: H2O <=> H2O(l)
-    type: condensation
+    type: nucleation
     rate-constant: {formula: ideal, T3: 273.16, P3: 611.7, beta: 24.845, delta: 4.986, minT: 273.16}
 
   - equation: H2O <=> H2O(s)
-    type: condensation
+    type: nucleation
     rate-constant: {formula: ideal, T3: 273.16, P3: 611.7, beta: 22.98, delta: 0.52, maxT: 273.16}
 
   - equation: NH3 <=> NH3(l)
-    type: condensation
+    type: nucleation
     rate-constant: {formula: ideal, T3: 195.4, P3: 6060., beta: 20.08, delta: 5.62, minT: 195.4}
 
   - equation: NH3 <=> NH3(s)
-    type: condensation
+    type: nucleation
     rate-constant: {formula: ideal, T3: 195.4, P3: 6060., beta: 20.64, delta: 1.43, maxT: 195.4}
 
   - equation: NH3 + H2S <=> NH4SH(s)
-    type: condensation
+    type: nucleation
     rate-constant: {formula: lewis}

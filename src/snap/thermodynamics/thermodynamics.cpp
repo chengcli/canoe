@@ -4,6 +4,7 @@
 #include <iomanip>
 #include <iostream>
 #include <mutex>
+#include <numeric>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -54,9 +55,9 @@ Thermodynamics* Thermodynamics::fromYAMLInput(std::string const& fname) {
   auto& cloud = mythermo_->cloud_;
   auto& kinetics = mythermo_->kinetics_;
 
+  auto surf = Cantera::newThermo(fname, "surface");
   vapor = Cantera::newThermo(fname, "vapor");
   cloud = Cantera::newThermo(fname, "cloud");
-  auto surf = Cantera::newThermo(fname, "surface");
 
   // surface must be included in the kinetics file
   kinetics = Cantera::newKinetics({surf, vapor, cloud}, fname);
@@ -76,33 +77,29 @@ Thermodynamics* Thermodynamics::fromYAMLInput(std::string const& fname) {
   cloud->getPartialMolarCp(cp_mole.data() + vapor->nSpecies());
 
   // ---------- non-condensable ----------
-  auto idry = vapor->speciesIndex("dry");
-  if (idry == Cantera::npos) {
-    throw RuntimeError("Thermodynamics",
-                       "'dry' species not found in the thermo file");
-  }
-  if (idry != 0) {
-    throw RuntimeError("Thermodynamics",
-                       "'dry' species must be the first species");
-  }
+  Real mu0, cp0;
+  surf->getMolecularWeights(&mu0);
+  surf->getPartialMolarCp(&cp0);
 
-  mythermo_->Rd_ = Cantera::GasConstant / mu[0];
-  mythermo_->gammad_ref_ = cp_mole[0] / (cp_mole[0] - Cantera::GasConstant);
+  mythermo_->Rd_ = Cantera::GasConstant / mu0;
+  mythermo_->gammad_ref_ = cp0 / (cp0 - Cantera::GasConstant);
 
   std::cout << "Rd = " << mythermo_->Rd_ << std::endl;
   std::cout << "gammad = " << mythermo_->gammad_ref_ << std::endl;
+  std::cout << "vapors = " << vapor->nSpecies() << std::endl;
+  std::cout << "clouds = " << cloud->nSpecies() << std::endl;
 
   // ---------- dimensionless properties ----------
 
   // cp ratios
-  for (size_t i = 1; i < cp_mole.size(); ++i) {
-    mythermo_->cp_ratio_mole_[i] = cp_mole[i] / cp_mole[0];
+  for (size_t i = 0; i < cp_mole.size(); ++i) {
+    mythermo_->cp_ratio_mole_[1 + i] = cp_mole[i] / cp0;
   }
   mythermo_->cp_ratio_mole_[0] = 1.;
 
   // molecular weight ratios
-  for (size_t i = 1; i < mu.size(); ++i) {
-    mythermo_->mu_ratio_[i] = mu[i] / mu[0];
+  for (size_t i = 0; i < mu.size(); ++i) {
+    mythermo_->mu_ratio_[1 + i] = mu[i] / mu0;
   }
   mythermo_->mu_ratio_[0] = 1.;
 
@@ -121,7 +118,8 @@ Thermodynamics* Thermodynamics::fromYAMLInput(std::string const& fname) {
     Real h0 = coeffs[1];
     Real s0 = coeffs[2];
     Real cp0 = coeffs[3];
-    mythermo_->beta_[vapor->nSpecies() + i] = h0 / (Cantera::GasConstant * t0);
+    mythermo_->beta_[1 + vapor->nSpecies() + i] =
+        h0 / (Cantera::GasConstant * t0);
   }
 
   // ---------- reactions ----------
@@ -134,6 +132,14 @@ Thermodynamics* Thermodynamics::fromYAMLInput(std::string const& fname) {
   // saturation vapor pressure
   kinetics->getFwdRateConstants(svp.data());
 
+  std::cout << kinetics->kineticsType() << std::endl;
+
+  for (size_t i = 0; i < svp.size(); ++i) {
+    std::cout << "Reaction " << i << ": " << svp[i] << std::endl;
+  }
+
+  std::cout << "ROP" << std::endl;
+  kinetics->getNetRatesOfProgress(svp.data());
   for (size_t i = 0; i < svp.size(); ++i) {
     std::cout << "Reaction " << i << ": " << svp[i] << std::endl;
   }
@@ -221,9 +227,6 @@ Thermodynamics const* Thermodynamics::InitFromAthenaInput(ParameterInput* pin) {
     mythermo_ = fromLegacyInput(pin);
   }
 
-  // enroll vapor functions
-  mythermo_->enrollVaporFunctions();
-
   // alias
   auto& Rd = mythermo_->Rd_;
   auto& gammad = mythermo_->gammad_ref_;
@@ -254,7 +257,7 @@ Thermodynamics const* Thermodynamics::InitFromAthenaInput(ParameterInput* pin) {
     inv_mu_ratio[n] = 1. / mu_ratio[n];
     mu[n] = mu[0] * mu_ratio[n];
     inv_mu[n] = 1. / mu[n];
-    cp_ratio_mole[n] = cp_ratio_mass[n] * mu_ratio[n];
+    cp_ratio_mass[n] = cp_ratio_mole[n] * inv_mu_ratio[n];
   }
 
   /* calculate latent energy = $\beta\frac{R_d}{\epsilon}T^r$
@@ -269,7 +272,7 @@ Thermodynamics const* Thermodynamics::InitFromAthenaInput(ParameterInput* pin) {
       latent_energy_mass[n] = beta[n] * Rd / mu_ratio[n] * t3[i];
       latent_energy_mole[n] = latent_energy_mass[n] * mu[n];
     }
-  }*/
+  }
 
   // calculate delta = $(\sigma_j - \sigma_i)*\epsilon_i*\gamma/(\gamma - 1)$
   for (int n = 0; n <= NVAPOR; ++n) delta[n] = 0.;
@@ -279,12 +282,13 @@ Thermodynamics const* Thermodynamics::InitFromAthenaInput(ParameterInput* pin) {
       delta[n] = (cp_ratio_mass[n] - cp_ratio_mass[i]) * mu_ratio[i] /
                  (1. - 1. / gammad);
     }
-  }
+  }*/
 
   // finally, set up cv ratio
   // calculate cv_ratio = $\sigma_i + (1. - \gamma)/\epsilon_i$
   for (int n = 0; n <= NVAPOR; ++n) {
-    cv_ratio_mass[n] = gammad * cp_ratio_mass[n] + (1. - gammad) / mu_ratio[n];
+    cv_ratio_mass[n] =
+        gammad * cp_ratio_mass[n] + (1. - gammad) * inv_mu_ratio[n];
     cv_ratio_mole[n] = cv_ratio_mass[n] * mu_ratio[n];
   }
 
@@ -450,6 +454,15 @@ void Thermodynamics::Extrapolate(AirParcel* qfrac, Real dzORdlnp,
                                  Real userp) const {
   qfrac->ToMoleFraction();
 
+  /*std::array<Real, Size> rates;
+  EquilibriumTP(*qfrac);
+
+  for (int i = 1; i < Size; ++i) {
+    qfrac->w[i] += rates[i];
+  }
+
+  auto rates = TryEquilibriumTP(*qfrac);*/
+
   // equilibrate vapor with clouds
   for (int i = 1; i <= NVAPOR; ++i) {
     auto rates = TryEquilibriumTP_VaporCloud(*qfrac, i);
@@ -481,6 +494,26 @@ Real Thermodynamics::GetLatentHeatMole(int i, std::vector<Real> const& rates,
   }
 
   return heat / std::abs(rates[0]);
+}
+
+void Thermodynamics::SetState(MeshBlock* pmb, int k, int j, int i) const {
+  Hydro* phydro = pmb->phydro;
+
+  Real pres = phydro->w(IPR, k, j, i);
+  Real dens = phydro->w(IDN, k, j, i);
+
+  size_t nvapor = vapor_->nSpecies();
+
+  Real sum = std::accumulate(&phydro->w(IDN, k, j, i),
+                             &phydro->w(nvapor, k, j, i), 0.);
+  size_t total_cells = pmb->ncells1 * pmb->ncells2 * pmb->ncells3;
+
+  vapor_->setMassFractionsPartial(&phydro->w(IDN + 1, k, j, i), total_cells);
+  vapor_->setDensity(dens * sum);
+  vapor_->setPressure(pres);
+
+  cloud_->setMassFractions(&phydro->w(nvapor, k, j, i), total_cells);
+  cloud_->setDensity(dens * (1. - sum));
 }
 
 // Eq.4.5.11 in Emanuel (1994)

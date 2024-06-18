@@ -214,10 +214,6 @@ class Thermodynamics {
     return GetLatentHeatMole(i, rates, temp) * inv_mu_[i];
   }
 
-  RealArrayX CalcSurfEvapRates(AirParcel const &qfrac, int i, Real &amd,
-                               Real btemp, Real dTs, Real cSurf, Real dt,
-                               Real Cde, Real Mbar) const;
-
   //! \brief Calculate the equilibrium mole transfer by cloud reaction
   //! vapor -> cloud
   //!
@@ -255,10 +251,15 @@ class Thermodynamics {
   //! \param[in,out] qfrac mole fraction representation of air parcel
   void EquilibrateTP(AirParcel *qfrac) const;
 
+  //! Thermodnamic equilibrium at current UV
+  void EquilibrateUV(AirParcel *qfrac) const;
+
   //! Adjust to the maximum saturation state conserving internal energy
   //! \param[in,out] ac mole fraction representation of a collection of air
   //! parcels
   void SaturationAdjustment(AirColumn &ac) const;
+
+  void SetState(MeshBlock *pmb, int k, int j, int i) const;
 
   //! \brief Calculate potential temperature from primitive variable
   //!

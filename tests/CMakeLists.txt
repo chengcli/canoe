@@ -40,12 +40,13 @@ if (${NVAPOR} EQUAL 2)
     setup_test(test_air_parcel)
     setup_test(test_radiation)
     setup_test(test_microwave_opacity)
-    setup_test(test_thermodynamics)
     setup_test(test_microphysics)
   elseif (${NCLOUD} EQUAL 5)
     setup_test(test_ammonium_hydrosulfide)
   endif()
 endif()
+
+setup_test(test_thermodynamics)
 
 # copy yaml files
 file(GLOB inputs *.inp *.yaml)
