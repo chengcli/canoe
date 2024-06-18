@@ -148,6 +148,8 @@ class Thermodynamics {
   //! const pointer to cv_ratio_mole_
   Real const *GetCvRatioMole() const { return cv_ratio_mole_.data(); }
 
+  std::shared_ptr<Cantera::Kinetics> Kinetics() const { return kinetics_; }
+
   //! \return the index of the cloud
   //! \param[in] i the index of the vapor
   //! \param[in] j the sequential index of the cloud
@@ -363,8 +365,6 @@ class Thermodynamics {
   void enrollVaporFunctions();
 
  protected:
-  std::shared_ptr<Cantera::ThermoPhase> vapor_;
-  std::shared_ptr<Cantera::ThermoPhase> cloud_;
   std::shared_ptr<Cantera::Kinetics> kinetics_;
 
   //! ideal gas constant of dry air in J/kg

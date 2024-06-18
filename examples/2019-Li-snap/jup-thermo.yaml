@@ -22,7 +22,7 @@ phases:
 
   - name: cloud
     species: [H2O(l), NH3(l), H2O(s), NH3(s), NH4SH(s)]
-    thermo: ideal-molal-solution
+    thermo: ideal-mist
 
 species:
   - name: dry

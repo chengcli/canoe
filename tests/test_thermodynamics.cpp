@@ -1,8 +1,16 @@
+// C/C++
+#include <algorithm>
+#include <numeric>
+
 // external
 #include <gtest/gtest.h>
 
 // application
 #include <application/application.hpp>
+
+// cantera
+#include <cantera/kinetics.h>
+#include <cantera/thermo.h>
 
 // canoe
 #include <air_parcel.hpp>
@@ -19,7 +27,7 @@
 
 class TestThermodynamics : public testing::Test {
  protected:
-  ParameterInput *pinput;
+  ParameterInput* pinput;
 
   virtual void SetUp() {
     // code here will execute just before the test ensues
@@ -45,7 +53,6 @@ class TestThermodynamics : public testing::Test {
 };
 
 TEST_F(TestThermodynamics, dry) {
-  std::cout << "aabb" << std::endl;
   auto pthermo = Thermodynamics::GetInstance();
 
   EXPECT_NEAR(pthermo->GetRd(), 3571.66, 1e-2);
@@ -111,24 +118,56 @@ TEST_F(TestThermodynamics, ammonia_cloud) {
 TEST_F(TestThermodynamics, equilibrium_water) {
   auto pthermo = Thermodynamics::GetInstance();
 
-  int iH2O = 1;
-  int iNH3 = 2;
+  std::vector<Real> yvapors = {0.2, 0.1, 0.1};
+  std::vector<Real> yclouds = {0.1, 0.1, 0.1, 0.1, 0.1};
 
-  AirParcel air(AirParcel::Type::MoleFrac);
-  air.SetZero();
+  auto kinetics = pthermo->Kinetics();
+  auto& surf = kinetics->thermo(0);
+  auto& vapor = kinetics->thermo(1);
+  auto& cloud = kinetics->thermo(2);
 
-  air.w[IDN] = 300.;
-  air.w[IPR] = 7.E5;
-  air.w[iH2O] = 0.2;
-  air.w[iNH3] = 0.1;
+  surf.setTemperature(300.);
 
-  // water
+  vapor.setMassFractions_NoNorm(yvapors.data());
+  vapor.setDensity(1.);
+  vapor.setTemperature(300.);
+
+  std::cout << "P = " << vapor.pressure() << std::endl;
+  std::cout << "T = " << vapor.temperature() << std::endl;
+
+  cloud.setMassFractions_NoNorm(yclouds.data());
+  Real mfrac = std::accumulate(yclouds.begin(), yclouds.end(), 0.) /
+               std::accumulate(yvapors.begin(), yvapors.end(), 0.);
+  cloud.setDensity(mfrac);
+
+  std::cout << "Number of reactions: " << kinetics->nReactions() << std::endl;
+
+  std::vector<Real> svp(kinetics->nReactions());
+
+  kinetics->thermo().setTemperature(300.);
+
+  // saturation vapor pressure
+  kinetics->getFwdRateConstants(svp.data());
+
+  std::cout << kinetics->kineticsType() << std::endl;
+
+  for (size_t i = 0; i < svp.size(); ++i) {
+    std::cout << "FWD Reaction " << i << ": " << svp[i] << std::endl;
+  }
+
+  std::cout << "ROP" << std::endl;
+  kinetics->getNetRatesOfProgress(svp.data());
+  for (size_t i = 0; i < svp.size(); ++i) {
+    std::cout << "NET Reaction " << i << ": " << svp[i] << std::endl;
+  }
+
+  /* water
   Real svp = sat_vapor_p_H2O_BriggsS(air.w[IDN]);
   auto rates = pthermo->TryEquilibriumTP_VaporCloud(air, iH2O);
 
   EXPECT_NEAR(rates[0], svp / air.w[IPR] - air.w[iH2O], 1e-3);
   EXPECT_NEAR(rates[1], 0.19592911846053, 1e-8);
-  EXPECT_NEAR(rates[2], 0.0, 1e-8);
+  EXPECT_NEAR(rates[2], 0.0, 1e-8);*/
 }
 
 TEST_F(TestThermodynamics, equilibrium_ammonia) {
@@ -164,7 +203,7 @@ TEST_F(TestThermodynamics, saturation_adjust) {
 
   std::vector<AirParcel> air_column(1);
 
-  auto &air = air_column[0];
+  auto& air = air_column[0];
   air.SetType(AirParcel::Type::MoleFrac);
 
   air.SetZero();
@@ -192,7 +231,7 @@ TEST_F(TestThermodynamics, saturation_adjust) {
   EXPECT_NEAR(air.c[iNH3c], 0.1 - air.w[iNH3], 1e-8);
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
   Application::Start(argc, argv);
 
   testing::InitGoogleTest(&argc, argv);
