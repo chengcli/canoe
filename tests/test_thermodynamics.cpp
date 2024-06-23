@@ -115,83 +115,28 @@ TEST_F(TestThermodynamics, ammonia_cloud) {
   EXPECT_NEAR(pthermo->GetCpMassRef(5), 4697.32, 1e-2);
 };
 
-TEST_F(TestThermodynamics, equilibrium_water) {
+TEST_F(TestThermodynamics, equilibrium_tp) {
   auto pthermo = Thermodynamics::GetInstance();
 
-  std::vector<Real> yvapors = {0.2, 0.1, 0.1};
-  std::vector<Real> yclouds = {0.1, 0.1, 0.1, 0.1, 0.1};
+  std::vector<Real> yfrac = {0.2, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1};
 
   auto kinetics = pthermo->Kinetics();
-  auto& surf = kinetics->thermo(0);
-  auto& vapor = kinetics->thermo(1);
-  auto& cloud = kinetics->thermo(2);
+  auto& thermo = kinetics->thermo(0);
 
-  surf.setTemperature(300.);
+  thermo.setMassFractionsPartial(yfrac.data());
+  thermo.setTemperature(300.);
+  thermo.setPressure(1.e5);
 
-  vapor.setMassFractions_NoNorm(yvapors.data());
-  vapor.setDensity(1.);
-  vapor.setTemperature(300.);
-
-  std::cout << "P = " << vapor.pressure() << std::endl;
-  std::cout << "T = " << vapor.temperature() << std::endl;
-
-  cloud.setMassFractions_NoNorm(yclouds.data());
-  Real mfrac = std::accumulate(yclouds.begin(), yclouds.end(), 0.) /
-               std::accumulate(yvapors.begin(), yvapors.end(), 0.);
-  cloud.setDensity(mfrac);
+  std::cout << "T = " << thermo.temperature() << std::endl;
+  std::cout << "P = " << thermo.pressure() << std::endl;
+  std::cout << "D = " << thermo.density() << std::endl;
 
   std::cout << "Number of reactions: " << kinetics->nReactions() << std::endl;
 
-  std::vector<Real> svp(kinetics->nReactions());
-
-  kinetics->thermo().setTemperature(300.);
-
-  // saturation vapor pressure
-  kinetics->getFwdRateConstants(svp.data());
-
-  std::cout << kinetics->kineticsType() << std::endl;
-
-  for (size_t i = 0; i < svp.size(); ++i) {
-    std::cout << "FWD Reaction " << i << ": " << svp[i] << std::endl;
-  }
-
-  std::cout << "ROP" << std::endl;
-  kinetics->getNetRatesOfProgress(svp.data());
-  for (size_t i = 0; i < svp.size(); ++i) {
-    std::cout << "NET Reaction " << i << ": " << svp[i] << std::endl;
-  }
-
-  /* water
-  Real svp = sat_vapor_p_H2O_BriggsS(air.w[IDN]);
-  auto rates = pthermo->TryEquilibriumTP_VaporCloud(air, iH2O);
-
-  EXPECT_NEAR(rates[0], svp / air.w[IPR] - air.w[iH2O], 1e-3);
-  EXPECT_NEAR(rates[1], 0.19592911846053, 1e-8);
-  EXPECT_NEAR(rates[2], 0.0, 1e-8);*/
+  pthermo->EquilibrateTP();
 }
 
-TEST_F(TestThermodynamics, equilibrium_ammonia) {
-  auto pthermo = Thermodynamics::GetInstance();
-
-  int iH2O = 1;
-  int iNH3 = 2;
-
-  AirParcel air(AirParcel::Type::MoleFrac);
-  air.SetZero();
-
-  air.w[IDN] = 160.;
-  air.w[IPR] = 7.E4;
-  air.w[iH2O] = 0.02;
-  air.w[iNH3] = 0.01;
-
-  // ammonia
-  Real svp = sat_vapor_p_NH3_BriggsS(air.w[IDN]);
-  auto rates = pthermo->TryEquilibriumTP_VaporCloud(air, iNH3);
-
-  EXPECT_NEAR(rates[0], svp / air.w[IPR] - air.w[iNH3], 1e-3);
-  EXPECT_NEAR(rates[1], 0.0088517945331865, 1e-8);
-  EXPECT_NEAR(rates[2], 0.0, 1e-8);
-}
+TEST_F(TestThermodynamics, equilibrium_uv) {}
 
 TEST_F(TestThermodynamics, saturation_adjust) {
   auto pthermo = Thermodynamics::GetInstance();

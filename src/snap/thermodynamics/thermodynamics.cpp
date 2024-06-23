@@ -13,6 +13,7 @@
 // cantera
 #include <cantera/kinetics.h>
 #include <cantera/thermo.h>
+#include <cantera/thermo/IdealMoistPhase.h>
 
 // athena
 #include <athena/athena.hpp>
@@ -51,65 +52,52 @@ Thermodynamics::~Thermodynamics() {
 Thermodynamics* Thermodynamics::fromYAMLInput(std::string const& fname) {
   mythermo_ = new Thermodynamics();
 
-  auto surf = Cantera::newThermo(fname, "surface");
-  auto vapor = Cantera::newThermo(fname, "vapor");
-  auto cloud = Cantera::newThermo(fname, "cloud");
-  auto& kinetics = mythermo_->kinetics_;
+  auto thermo = Cantera::newThermo(fname, "gas");
+  std::static_pointer_cast<Cantera::IdealMoistPhase>(thermo)->setNumVapors(
+      NVAPOR);
 
-  // surface must be included in the kinetics file
-  kinetics = Cantera::newKinetics({surf, vapor, cloud}, fname);
+  auto& kinetics = mythermo_->kinetics_;
+  kinetics = Cantera::newKinetics({thermo}, fname);
 
   // --------- vapor + cloud thermo ---------
-  std::vector<Real> mu(vapor->nSpecies() + cloud->nSpecies());
-  std::vector<Real> cp_mole(vapor->nSpecies() + cloud->nSpecies());
+  std::vector<Real> mu(thermo->nSpecies());
+  std::vector<Real> cp_mole(thermo->nSpecies());
 
   // g/mol
-  vapor->getMolecularWeights(mu.data());
-  cloud->getMolecularWeights(mu.data() + vapor->nSpecies());
+  thermo->getMolecularWeights(mu.data());
 
   // J/kmol/K
-  vapor->getPartialMolarCp(cp_mole.data());
-  cloud->getPartialMolarCp(cp_mole.data() + vapor->nSpecies());
+  thermo->getPartialMolarCp(cp_mole.data());
 
-  // ---------- non-condensable ----------
-  Real mu0, cp0;
-  surf->getMolecularWeights(&mu0);
-  surf->getPartialMolarCp(&cp0);
-
-  mythermo_->Rd_ = Cantera::GasConstant / mu0;
-  mythermo_->gammad_ref_ = cp0 / (cp0 - Cantera::GasConstant);
+  mythermo_->Rd_ = Cantera::GasConstant / mu[0];
+  mythermo_->gammad_ref_ = cp_mole[0] / (cp_mole[0] - Cantera::GasConstant);
 
   // ---------- dimensionless properties ----------
 
   // cp ratios
   for (size_t i = 0; i < cp_mole.size(); ++i) {
-    mythermo_->cp_ratio_mole_[1 + i] = cp_mole[i] / cp0;
+    mythermo_->cp_ratio_mole_[i] = cp_mole[i] / cp_mole[0];
   }
-  mythermo_->cp_ratio_mole_[0] = 1.;
 
   // molecular weight ratios
   for (size_t i = 0; i < mu.size(); ++i) {
-    mythermo_->mu_ratio_[1 + i] = mu[i] / mu0;
+    mythermo_->mu_ratio_[i] = mu[i] / mu[0];
   }
-  mythermo_->mu_ratio_[0] = 1.;
 
   // beta parameter (dimensionless internal energy)
-  std::fill(mythermo_->beta_.begin(), mythermo_->beta_.end(), 0.);
-
-  for (size_t i = 0; i < cloud->nSpecies(); ++i) {
-    auto& thermo = cloud->species(i)->thermo;
+  for (size_t i = 0; i < thermo->nSpecies(); ++i) {
+    auto& tp = thermo->species(i)->thermo;
     size_t n;
     int type;
     Real tlow, thigh, pref;
-    std::vector<Real> coeffs(thermo->nCoeffs());
-    thermo->reportParameters(n, type, tlow, thigh, pref, coeffs.data());
+    std::vector<Real> coeffs(tp->nCoeffs());
+    tp->reportParameters(n, type, tlow, thigh, pref, coeffs.data());
 
     Real t0 = coeffs[0];
     Real h0 = coeffs[1];
     Real s0 = coeffs[2];
     Real cp0 = coeffs[3];
-    mythermo_->beta_[1 + vapor->nSpecies() + i] =
-        h0 / (Cantera::GasConstant * t0);
+    mythermo_->beta_[i] = h0 / (Cantera::GasConstant * t0);
   }
 
   return mythermo_;
@@ -464,27 +452,32 @@ Real Thermodynamics::GetLatentHeatMole(int i, std::vector<Real> const& rates,
   return heat / std::abs(rates[0]);
 }
 
-void Thermodynamics::SetState(MeshBlock* pmb, int k, int j, int i) const {
+void Thermodynamics::SetStateFromPrimitive(MeshBlock* pmb, int k, int j,
+                                           int i) const {
   Hydro* phydro = pmb->phydro;
 
-  Real pres = phydro->w(IPR, k, j, i);
-  Real dens = phydro->w(IDN, k, j, i);
-
-  auto& vapor = kinetics_->thermo(1);
-  auto& cloud = kinetics_->thermo(2);
-  size_t nvapor = vapor.nSpecies();
-
-  Real sum1 = std::accumulate(&phydro->w(IDN, k, j, i),
-                              &phydro->w(nvapor, k, j, i), 0.);
-  Real sum2 = std::accumulate(&phydro->w(nvapor + 1, k, j, i),
-                              &phydro->w(Size, k, j, i), 0.);
+  auto& thermo = kinetics_->thermo();
   size_t total_cells = pmb->ncells1 * pmb->ncells2 * pmb->ncells3;
 
-  vapor.setMassFractions_NoNorm(&phydro->w(1, k, j, i), total_cells);
-  vapor.setState_DP(dens * sum1, pres);
+  thermo.setMassFractionsPartial(&phydro->w(1, k, j, i), total_cells);
+  thermo.setDensity(phydro->w(IDN, k, j, i));
+  thermo.setPressure(phydro->w(IPR, k, j, i));
+}
 
-  cloud.setMassFractions_NoNorm(&phydro->w(1 + nvapor, k, j, i), total_cells);
-  cloud.setDensity(dens * sum2);
+void Thermodynamics::SetStateFromConserved(MeshBlock* pmb, int k, int j,
+                                           int i) const {
+  Hydro* phydro = pmb->phydro;
+
+  auto& thermo = kinetics_->thermo();
+  size_t total_cells = pmb->ncells1 * pmb->ncells2 * pmb->ncells3;
+
+  thermo.setMassFractions(&phydro->u(0, k, j, i), total_cells);
+  Real rho = 0.;
+  for (int n = 0; n < Size; ++n) {
+    rho += phydro->u(n, k, j, i);
+  }
+  thermo.setDensity(rho);
+  thermo.setPressure(GetPres(pmb, k, j, i));
 }
 
 // Eq.4.5.11 in Emanuel (1994)

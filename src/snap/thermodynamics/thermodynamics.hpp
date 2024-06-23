@@ -251,6 +251,8 @@ class Thermodynamics {
 
   //! Thermodnamic equilibrium at current TP
   //! \param[in,out] qfrac mole fraction representation of air parcel
+  void EquilibrateTP() const;
+
   void EquilibrateTP(AirParcel *qfrac) const;
 
   //! Thermodnamic equilibrium at current UV
@@ -261,7 +263,8 @@ class Thermodynamics {
   //! parcels
   void SaturationAdjustment(AirColumn &ac) const;
 
-  void SetState(MeshBlock *pmb, int k, int j, int i) const;
+  void SetStateFromPrimitive(MeshBlock *pmb, int k, int j, int i) const;
+  void SetStateFromConserved(MeshBlock *pmb, int k, int j, int i) const;
 
   //! \brief Calculate potential temperature from primitive variable
   //!
