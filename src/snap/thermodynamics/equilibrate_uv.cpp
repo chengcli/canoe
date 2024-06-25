@@ -22,7 +22,7 @@ void Thermodynamics::EquilibrateUV() const {
 
   auto& thermo = kin->thermo();
 
-  int iter = 0, max_iter = 5;
+  int iter = 0, max_iter = 4;
   while (iter++ < max_iter) {
     std::cout << "#############" << std::endl;
     std::cout << "Iteration " << iter << std::endl;
@@ -64,7 +64,7 @@ void Thermodynamics::EquilibrateUV() const {
       std::cout << "Concentration" << i << ": " << conc[i] << std::endl;
     }
 
-    thermo.setConcentrations(conc.data());
+    thermo.setConcentrationsNoNorm(conc.data());
     thermo.setTemperature(temp + dT);
 
     thermo.getIntEnergy_RT(intEng.data());

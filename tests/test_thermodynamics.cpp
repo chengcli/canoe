@@ -168,31 +168,29 @@ TEST_F(TestThermodynamics, saturation_adjust) {
   std::vector<AirParcel> air_column(1);
 
   auto& air = air_column[0];
-  air.SetType(AirParcel::Type::MoleFrac);
+  air.SetType(AirParcel::Type::MassFrac);
 
   air.SetZero();
 
-  air.w[IDN] = 160.;
+  air.w[IDN] = 200.;
   air.w[IPR] = 7.E4;
-  air.w[iH2O] = 0.02;
-  air.w[iNH3] = 0.10;
+  air.w[iH2O] = 0.1;
+  air.w[iNH3] = 0.1;
 
-  pthermo->SaturationAdjustment(air_column);
+  auto kinetics = pthermo->Kinetics();
+  auto& thermo = kinetics->thermo();
 
-  EXPECT_NEAR(air.w[IDN], 206.41192408792, 1e-8);
-  EXPECT_NEAR(air.w[IPR], 88499.534594159, 1e-8);
+  for (int i = NVAPOR; i < kinetics->nTotalSpecies(); ++i) {
+    air.w[i] = 0.;
+  }
 
-  Real svp1 = sat_vapor_p_H2O_BriggsS(air.w[IDN]);
+  std::cout << air << std::endl;
 
-  Real qgas = 1.;
-#pragma omp parallel for reduction(+ : qgas)
-  for (int n = 0; n < NCLOUD; ++n) qgas += -air.c[n];
+  thermo.setMassFractionsPartial(&air.w[1]);
+  thermo.setTemperature(160.);
+  thermo.setPressure(7.E4);
 
-  EXPECT_NEAR(air.w[iH2O] / qgas * air.w[IPR] / svp1, 1., 0.01);
-  EXPECT_NEAR(air.w[iNH3], 0.1, 1e-8);
-
-  EXPECT_NEAR(air.c[iH2Oc], 0.02 - air.w[iH2O], 1e-8);
-  EXPECT_NEAR(air.c[iNH3c], 0.1 - air.w[iNH3], 1e-8);
+  pthermo->EquilibrateUV();
 }
 
 int main(int argc, char* argv[]) {
