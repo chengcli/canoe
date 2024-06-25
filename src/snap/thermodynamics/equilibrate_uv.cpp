@@ -22,8 +22,9 @@ void Thermodynamics::EquilibrateUV() const {
 
   auto& thermo = kin->thermo();
 
-  int iter = 0, max_iter = 1;
+  int iter = 0, max_iter = 5;
   while (iter++ < max_iter) {
+    std::cout << "#############" << std::endl;
     std::cout << "Iteration " << iter << std::endl;
 
     Real temp = thermo.temperature();
@@ -55,6 +56,13 @@ void Thermodynamics::EquilibrateUV() const {
 
     // update temperature
     auto dT = -temp * rates.dot(intEng) / conc.dot(cv);
+    std::cout << "dT = " << dT << std::endl;
+
+    // print initial conditions
+    std::cout << "Concentration" << std::endl;
+    for (size_t i = 0; i < conc.size(); ++i) {
+      std::cout << "Concentration" << i << ": " << conc[i] << std::endl;
+    }
 
     thermo.setConcentrations(conc.data());
     thermo.setTemperature(temp + dT);

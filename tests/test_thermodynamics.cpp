@@ -124,7 +124,7 @@ TEST_F(TestThermodynamics, equilibrium_tp) {
   auto& thermo = kinetics->thermo();
 
   thermo.setMassFractionsPartial(yfrac.data());
-  thermo.setTemperature(200.);
+  thermo.setTemperature(300.);
   thermo.setPressure(1.e5);
 
   std::cout << "T = " << thermo.temperature() << std::endl;
