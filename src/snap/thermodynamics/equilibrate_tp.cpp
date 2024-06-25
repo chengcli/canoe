@@ -22,7 +22,7 @@ void Thermodynamics::EquilibrateTP() const {
   Real temp = thermo.temperature();
   Real pres = thermo.pressure();
 
-  int iter = 0, max_iter = 5;
+  int iter = 0, max_iter = 3;
 
   while (iter++ < max_iter) {
     std::cout << "Iteration " << iter << std::endl;
@@ -41,6 +41,7 @@ void Thermodynamics::EquilibrateTP() const {
       std::cout << "NET Production " << i << ": " << rates[i] << std::endl;
     }
 
+    // update mole fraction
     for (size_t i = 1; i < rates.size(); ++i) {
       mfrac[i] += rates[i];
     }

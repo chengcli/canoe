@@ -256,6 +256,8 @@ class Thermodynamics {
   void EquilibrateTP(AirParcel *qfrac) const;
 
   //! Thermodnamic equilibrium at current UV
+  void EquilibrateUV() const;
+
   void EquilibrateUV(AirParcel *qfrac) const;
 
   //! Adjust to the maximum saturation state conserving internal energy

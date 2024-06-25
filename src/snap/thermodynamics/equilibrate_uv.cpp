@@ -1,5 +1,6 @@
 // cantera
 #include <cantera/kinetics.h>
+#include <cantera/kinetics/Condensation.h>
 #include <cantera/thermo.h>
 
 // canoe
@@ -8,62 +9,63 @@
 // snap
 #include "atm_thermodynamics.hpp"
 
-void Thermodynamics::EquilibrateTP(AirParcel *air) const {}
+void Thermodynamics::EquilibrateUV(AirParcel* air) const {}
 
-void Thermodynamics::EquilibrateTP() const {
-  std::vector<Real> rates(kinetics_->nTotalSpecies());
-  std::vector<Real> conc(kinetics_->nTotalSpecies());
+void Thermodynamics::EquilibrateUV() const {
+  auto kin = std::static_pointer_cast<Cantera::Condensation>(kinetics_);
+  kin->setQuantityConcentration();
 
-  // save initial concentrations
-  for (size_t k = 0; k < kinetics_->nPhases(); ++k) {
-    auto &thermo = kinetics_->thermo(k);
-    size_t n = kinetics_->kineticsSpeciesIndex(0, k);
-    thermo.getConcentrations(&conc[n]);
-  }
-  Real pres0 = kinetics_->thermo(1).pressure();
+  Eigen::VectorXd rates(kin->nTotalSpecies());
+  Eigen::VectorXd conc(kin->nTotalSpecies());
+  Eigen::VectorXd intEng(kin->nTotalSpecies());
+  Eigen::VectorXd cv(kin->nTotalSpecies());
 
-  int iter = 0;
-  int max_iter = 10;
+  auto& thermo = kin->thermo();
+
+  int iter = 0, max_iter = 1;
   while (iter++ < max_iter) {
     std::cout << "Iteration " << iter << std::endl;
 
-    kinetics_->getNetProductionRates(rates.data());
-    for (size_t i = 0; i < rates.size(); ++i) {
-      std::cout << "NET Production " << i << ": " << rates[i] << std::endl;
+    Real temp = thermo.temperature();
+    Real pres = thermo.pressure();
+
+    // get concentration
+    kin->getActivityConcentrations(conc.data());
+    thermo.getIntEnergy_RT(intEng.data());
+    thermo.getCv_R(cv.data());
+
+    Real cc = conc.dot(cv);
+    Real uc = conc.dot(intEng);
+
+    std::cout << "internal energy 1 = " << uc * temp << std::endl;
+
+    // print initial conditions
+    std::cout << "Concentration" << std::endl;
+    for (size_t i = 0; i < conc.size(); ++i) {
+      std::cout << "Concentration" << i << ": " << conc[i] << std::endl;
     }
+
+    kin->getNetProductionRates(rates.data());
+    std::cout << "rates = " << rates << std::endl;
 
     // update concentrations
     for (size_t i = 1; i < rates.size(); ++i) {
-      conc[i] += rates[i];
+      conc(i) += rates(i);
     }
 
-    for (size_t k = 0; k < kinetics_->nPhases(); ++k) {
-      auto &thermo = kinetics_->thermo(k);
-      size_t n = kinetics_->kineticsSpeciesIndex(0, k);
-      thermo.setConcentrationsNoNorm(&conc[n]);
-      // thermo.setPressure(49657.6);
-      // thermo.setPressure(1.e5);
-    }
+    // update temperature
+    auto dT = -temp * rates.dot(intEng) / conc.dot(cv);
 
-    // volumne change
-    Real x = pres0 / kinetics_->thermo(1).pressure();
-    for (size_t i = 0; i < conc.size(); ++i) {
-      conc[i] *= x;
-    }
+    thermo.setConcentrations(conc.data());
+    thermo.setTemperature(temp + dT);
 
-    for (size_t k = 0; k < kinetics_->nPhases(); ++k) {
-      auto &thermo = kinetics_->thermo(k);
-      size_t n = kinetics_->kineticsSpeciesIndex(0, k);
-      thermo.setConcentrationsNoNorm(&conc[n]);
-      // thermo.setPressure(49657.6);
-      // thermo.setPressure(1.e5);
-    }
+    thermo.getIntEnergy_RT(intEng.data());
+    thermo.getCv_R(cv.data());
+    std::cout << "internal energy 2 = "
+              << conc.dot(intEng) * thermo.temperature() << std::endl;
 
-    // print again
-    std::cout << "Concentrations" << std::endl;
-    for (size_t i = 0; i < conc.size(); ++i) {
-      std::cout << "Concentration " << i << ": " << conc[i] << std::endl;
-    }
-    std::cout << "P = " << kinetics_->thermo(1).pressure() << std::endl;
+    std::cout << "T = " << thermo.temperature() << std::endl;
+    std::cout << "P = " << thermo.pressure() << std::endl;
+    std::cout << "D = " << thermo.density() << std::endl;
   }
 }

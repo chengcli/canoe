@@ -13,7 +13,6 @@
 // cantera
 #include <cantera/kinetics.h>
 #include <cantera/thermo.h>
-#include <cantera/thermo/IdealMoistPhase.h>
 
 // athena
 #include <athena/athena.hpp>
@@ -53,8 +52,11 @@ Thermodynamics* Thermodynamics::fromYAMLInput(std::string const& fname) {
   mythermo_ = new Thermodynamics();
 
   auto thermo = Cantera::newThermo(fname, "gas");
-  std::static_pointer_cast<Cantera::IdealMoistPhase>(thermo)->setNumVapors(
-      NVAPOR);
+
+  if (thermo->nSpecies() != 1 + NVAPOR + NCLOUD) {
+    throw RuntimeError("Thermodynamics",
+                       "Number of species does not match the input file");
+  }
 
   auto& kinetics = mythermo_->kinetics_;
   kinetics = Cantera::newKinetics({thermo}, fname);

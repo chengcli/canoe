@@ -45,7 +45,7 @@ species:
     thermo:
       model: constant-cp
       cp0: 75.3 J/mol/K
-      h0: -285.8 kJ/mol
+      h0: -28.5 kJ/mol
     equation-of-state:
       model: constant-volume
       density: 1.0 g/cm^3
@@ -65,7 +65,7 @@ species:
     thermo:
       model: constant-cp
       cp0: 75.3 J/mol/K
-      h0: -285.8 kJ/mol
+      h0: -28.5 kJ/mol
     equation-of-state:
       model: constant-volume
       density: 0.917 g/cm^3

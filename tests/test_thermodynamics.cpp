@@ -121,10 +121,10 @@ TEST_F(TestThermodynamics, equilibrium_tp) {
   std::vector<Real> yfrac = {0.2, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1};
 
   auto kinetics = pthermo->Kinetics();
-  auto& thermo = kinetics->thermo(0);
+  auto& thermo = kinetics->thermo();
 
   thermo.setMassFractionsPartial(yfrac.data());
-  thermo.setTemperature(300.);
+  thermo.setTemperature(200.);
   thermo.setPressure(1.e5);
 
   std::cout << "T = " << thermo.temperature() << std::endl;
@@ -136,7 +136,26 @@ TEST_F(TestThermodynamics, equilibrium_tp) {
   pthermo->EquilibrateTP();
 }
 
-TEST_F(TestThermodynamics, equilibrium_uv) {}
+TEST_F(TestThermodynamics, equilibrium_uv) {
+  auto pthermo = Thermodynamics::GetInstance();
+
+  std::vector<Real> yfrac = {0.2, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1};
+
+  auto kinetics = pthermo->Kinetics();
+  auto& thermo = kinetics->thermo();
+
+  thermo.setMassFractionsPartial(yfrac.data());
+  thermo.setTemperature(200.);
+  thermo.setPressure(1.e5);
+
+  std::cout << "T = " << thermo.temperature() << std::endl;
+  std::cout << "P = " << thermo.pressure() << std::endl;
+  std::cout << "D = " << thermo.density() << std::endl;
+
+  std::cout << "Number of reactions: " << kinetics->nReactions() << std::endl;
+
+  pthermo->EquilibrateUV();
+}
 
 TEST_F(TestThermodynamics, saturation_adjust) {
   auto pthermo = Thermodynamics::GetInstance();
