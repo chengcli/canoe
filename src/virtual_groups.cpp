@@ -1,5 +1,5 @@
-// cantera
-#include <cantera/base/yaml.h>
+// external
+#include <yaml-cpp/yaml.h>
 
 // canoe
 #include "virtual_groups.hpp"
