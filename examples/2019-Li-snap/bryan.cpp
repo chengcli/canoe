@@ -69,11 +69,11 @@ void MeshBlock::UserWorkBeforeOutput(ParameterInput *pin) {
         // mse
         user_out_var(3, k, j, i) =
             pthermo->MoistStaticEnergy(this, grav * pcoord->x1v(i), k, j, i);
-        /* theta_e
+        // theta_e
         user_out_var(4, k, j, i) =
             pthermo->EquivalentPotentialTemp(this, p0, iH2O, k, j, i);
         user_out_var(5, k, j, i) =
-            pthermo->RelativeHumidity(this, iH2O, k, j, i);*/
+            pthermo->RelativeHumidity(this, iH2O, k, j, i);
         // total mixing ratio
         auto &&air = AirParcelHelper::gather_from_primitive(this, k, j, i);
         user_out_var(6, k, j, i) = air.w[iH2O] + air.c[iH2Oc];
@@ -148,7 +148,10 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
                          [&pthermo, &air, temp_v](Real temp) {
                            air.w[IDN] = temp;
 
-                           pthermo->EquilibrateTP(&air);
+                           auto rates =
+                               pthermo->TryEquilibriumTP_VaporCloud(air, iH2O);
+                           air.w[iH2O] += rates[0];
+                           air.c[iH2Oc] += rates[1];
                            Real rovrd = get_rovrd(air, pthermo->GetMuRatio());
 
                            return temp * rovrd - temp_v;
@@ -157,7 +160,10 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
           if (err) throw RuntimeError("pgen", "TVSolver doesn't converge");
 
           air.w[IDN] = temp;
-          pthermo->EquilibrateTP(&air);
+          auto rates = pthermo->TryEquilibriumTP_VaporCloud(air, iH2O);
+          air.w[iH2O] += rates[0];
+          air.c[iH2Oc] += rates[1];
+
           AirParcelHelper::distribute_to_conserved(this, k, j, i, air);
         }
       }
