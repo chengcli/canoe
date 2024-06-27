@@ -7,7 +7,9 @@
 #include <athena/mesh/mesh.hpp>
 #include <athena/parameter_input.hpp>
 
-// application
+// external
+#include <yaml-cpp/yaml.h>
+
 #include <application/exceptions.hpp>
 
 // microphysics

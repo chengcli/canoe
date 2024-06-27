@@ -6,9 +6,6 @@
 #include <string>
 #include <vector>
 
-// external
-#include <yaml-cpp/yaml.h>
-
 // athena
 #include <athena/athena.hpp>
 
@@ -18,6 +15,9 @@
 #include <virtual_groups.hpp>
 
 class MeshBlock;
+namespace YAML {
+class Node;
+}
 
 //! \brief Base class for inversion
 //!

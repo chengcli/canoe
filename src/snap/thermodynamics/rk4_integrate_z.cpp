@@ -3,35 +3,56 @@
 #include <iomanip>
 #include <iostream>
 
+// cantera
+#include <cantera/kinetics.h>
+#include <cantera/thermo.h>
+
 // thermodynamics
 #include "atm_thermodynamics.hpp"
 
 void rk4_integrate_z(AirParcel* air, Real dz, std::string method, Real grav,
                      Real adTdz) {
   auto pthermo = Thermodynamics::GetInstance();
+  auto& thermo = pthermo->Kinetics()->thermo();
 
   auto const& mu_ratio = pthermo->GetMuRatio();
   auto const& cp_ratio_mole = pthermo->GetCpRatioMole();
 
   Real step[] = {0.5, 0.5, 1.};
-  Real temp = air->w[IDN];
-  Real pres = air->w[IPR];
   Real dTdz[4], chi[4];
   Real latent[1 + NVAPOR];
+  Real temp = air->w[IDN];
+
+  std::vector<Real> rates(pthermo->Kinetics()->nTotalSpecies());
+  std::vector<Real> enthalpy(pthermo->Kinetics()->nTotalSpecies());
+
+  air->ToMassFraction();
+  Real pres = air->w[IPR];
+  for (int n = IVX; n < IVX + NCLOUD; ++n) air->w[n] = air->c[n - IVX];
+  thermo.setMassFractionsPartial(&air->w[1]);
+  thermo.setDensity(air->w[IDN]);
+  thermo.setPressure(air->w[IPR]);
+
+  thermo.getEnthalpy_RT(enthalpy.data());
+  pthermo->Kinetics()->getNetProductionRates(rates.data());
+
+  for (int n = 0; n < NCLOUD; ++n) air->c[n] = air->w[IVX + n];
+  air->w[IPR] = pres;
+  air->ToMoleFraction();
+
+  for (int i = 1; i <= NVAPOR; ++i) {
+    if (rates[i] > 0.) {
+      latent[i] = enthalpy[i] - enthalpy[i + NVAPOR];
+    } else {
+      latent[i] = 0.;
+    }
+  }
 
   for (int rk = 0; rk < 4; ++rk) {
     pthermo->EquilibrateTP(air);
+
     if (method != "reversible") {
       for (int j = 0; j < NCLOUD; ++j) air->c[j] = 0;
-    }
-
-    for (int i = 1; i <= NVAPOR; ++i) {
-      // make a trial run to get latent heat
-      air->w[i] += 1.E-6;
-      auto rates = pthermo->TryEquilibriumTP_VaporCloud(*air, i);
-      latent[i] = pthermo->GetLatentHeatMole(i, rates, air->w[IDN]) /
-                  (Constants::Rgas * air->w[IDN]);
-      air->w[i] -= 1.E-6;
     }
 
     Real q_gas = 1., q_eps = 1.;

@@ -5,6 +5,9 @@
 #include <sstream>
 #include <string>
 
+// external
+#include <yaml-cpp/yaml.h>
+
 // canoe
 #include <configure.hpp>
 #include <impl.hpp>

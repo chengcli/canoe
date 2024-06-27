@@ -7,9 +7,6 @@
 #include <string>
 #include <vector>
 
-// external
-#include <yaml-cpp/yaml.h>
-
 // athena
 #include <athena/athena.hpp>
 
@@ -18,6 +15,9 @@
 
 class AirParcel;
 class SpectralBin;
+namespace YAML {
+class Node;
+}
 
 //! \brief base class of all absorbers
 class Absorber : public NamedGroup,

@@ -43,10 +43,12 @@ if(DISORT)
       ${PYTHON_INCLUDE_DIR}
       ${PYBIND11_INCLUDE_DIR}
       ${PYDISORT_INCLUDE_DIR}
+      ${CANTERA_INCLUDE_DIR}/cantera/ext  # for yaml-cpp
       )
 else()
   target_include_directories(${namel}_${buildl}
       PRIVATE
       ${NETCDF_INCLUDES}
+      ${CANTERA_INCLUDE_DIR}/cantera/ext  # for yaml-cpp
       )
 endif()

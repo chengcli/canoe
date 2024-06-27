@@ -32,6 +32,8 @@ vapor = H2O, NH3
 cloud = H2O(c), NH3(c), H2O(p), NH3(p)
 
 <thermodynamics>
+thermodynamics_config = jup-thermo.yaml
+
 Rd          = 3777.   # mu = 2.3175 g/mol
 eps1        = 8.18    8.18    8.18
 beta1       = 0.      24.845  24.845

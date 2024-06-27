@@ -2,6 +2,9 @@
 #include <memory>
 #include <string>
 
+// external
+#include <yaml-cpp/yaml.h>
+
 // athena
 #include <athena/hydro/hydro.hpp>
 #include <athena/mesh/mesh.hpp>

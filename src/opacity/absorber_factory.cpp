@@ -4,6 +4,7 @@
 // external
 #include <yaml-cpp/yaml.h>
 
+// application
 #include <application/exceptions.hpp>
 
 // canoe
@@ -36,7 +37,8 @@ AbsorberContainer AbsorberFactory::CreateFrom(
 
     if (atmp.empty()) {
       throw NotFoundError("AbsorberFactory", "Opacity " + name);
-    } else if (atmp.size() > 1) { // use band_name to uniquely identify the absorber
+    } else if (atmp.size() >
+               1) {  // use band_name to uniquely identify the absorber
       bool found = false;
       for (auto& ab : atmp) {
         if (ab->GetOpacityFile().find(band_name) != std::string::npos) {
@@ -47,9 +49,11 @@ AbsorberContainer AbsorberFactory::CreateFrom(
       }
 
       if (!found) {
-        throw NotFoundError("AbsorberFactory", 
-                            "There are multiple absorbers with the same name " + name + 
-                            ". Rename the `data` field in the absorber to identify the band.");
+        throw NotFoundError("AbsorberFactory",
+                            "There are multiple absorbers with the same name " +
+                                name +
+                                ". Rename the `data` field in the absorber to "
+                                "identify the band.");
       }
     } else {
       absorbers.push_back(atmp[0]);
