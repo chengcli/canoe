@@ -260,6 +260,8 @@ class Thermodynamics {
 
   void EquilibrateUV(AirParcel *qfrac) const;
 
+  void EquilibrateSP(double P) const;
+
   //! Adjust to the maximum saturation state conserving internal energy
   //! \param[in,out] ac mole fraction representation of a collection of air
   //! parcels

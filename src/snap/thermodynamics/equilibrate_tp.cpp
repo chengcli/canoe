@@ -9,7 +9,21 @@
 // snap
 #include "atm_thermodynamics.hpp"
 
-void Thermodynamics::EquilibrateTP(AirParcel* air) const {}
+void Thermodynamics::EquilibrateTP(AirParcel* air) const {
+  air->ToMassFraction();
+  Real pres = air->w[IPR];
+  for (int n = IVX; n < IVX + NCLOUD; ++n) air->w[n] = air->c[n - IVX];
+  auto& thermo = kinetics_->thermo();
+  thermo.setMassFractionsPartial(&air->w[1]);
+  thermo.setDensity(air->w[IDN]);
+  thermo.setPressure(air->w[IPR]);
+
+  EquilibrateTP();
+
+  for (int n = 0; n < NCLOUD; ++n) air->c[n] = air->w[IVX + n];
+  air->w[IPR] = pres;
+  air->ToMoleFraction();
+}
 
 void Thermodynamics::EquilibrateTP() const {
   std::static_pointer_cast<Cantera::Condensation>(kinetics_)
@@ -25,21 +39,21 @@ void Thermodynamics::EquilibrateTP() const {
   int iter = 0, max_iter = 3;
 
   while (iter++ < max_iter) {
-    std::cout << "Iteration " << iter << std::endl;
+    // std::cout << "Iteration " << iter << std::endl;
 
     // get mole fraction
     kinetics_->getActivityConcentrations(mfrac.data());
 
-    // print initial conditions
+    /* print initial conditions
     std::cout << "Mole fractions" << std::endl;
     for (size_t i = 0; i < mfrac.size(); ++i) {
       std::cout << "Mole fraction " << i << ": " << mfrac[i] << std::endl;
-    }
+    }*/
 
     kinetics_->getNetProductionRates(rates.data());
-    for (size_t i = 0; i < rates.size(); ++i) {
+    /*for (size_t i = 0; i < rates.size(); ++i) {
       std::cout << "NET Production " << i << ": " << rates[i] << std::endl;
-    }
+    }*/
 
     // update mole fraction
     for (size_t i = 1; i < rates.size(); ++i) {
@@ -50,14 +64,13 @@ void Thermodynamics::EquilibrateTP() const {
     thermo.setTemperature(temp);
     thermo.setPressure(pres);
 
-    // print again
+    /* print again
     std::cout << "After Mole fractions" << std::endl;
     for (size_t i = 0; i < mfrac.size(); ++i) {
       std::cout << "Mole fraction " << i << ": " << mfrac[i] << std::endl;
     }
-
     std::cout << "T = " << thermo.temperature() << std::endl;
     std::cout << "P = " << thermo.pressure() << std::endl;
-    std::cout << "D = " << thermo.density() << std::endl;
+    std::cout << "D = " << thermo.density() << std::endl;*/
   }
 }

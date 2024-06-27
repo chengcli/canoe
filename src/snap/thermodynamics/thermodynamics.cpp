@@ -410,28 +410,33 @@ Real Thermodynamics::RelativeHumidity(MeshBlock const* pmb, int n, int k, int j,
 void Thermodynamics::Extrapolate(AirParcel* qfrac, Real dzORdlnp,
                                  std::string method, Real grav,
                                  Real userp) const {
+  qfrac->ToMassFraction();
+
+  auto& thermo = kinetics_->thermo();
+
+  double pres = qfrac->w[IPR];
+  for (int n = IVX; n < IVX + NCLOUD; ++n) qfrac->w[n] = qfrac->c[n - IVX];
+  thermo.setMassFractionsPartial(&qfrac->w[1]);
+  thermo.setDensity(qfrac->w[IDN]);
+  thermo.setPressure(qfrac->w[IPR]);
+
+  EquilibrateTP();
+
+  thermo.getMassFractions(&qfrac->w[0]);
+
+  for (int n = 0; n < NCLOUD; ++n) {
+    qfrac->c[n] = qfrac->w[IVX + n];
+  }
+
+  qfrac->w[IPR] = pres;
+  qfrac->w[IDN] = thermo.density();
+  qfrac->w[IVX] = 0.;
+  qfrac->w[IVX] = 0.;
+  qfrac->w[IVX] = 0.;
+
   qfrac->ToMoleFraction();
 
-  /*std::array<Real, Size> rates;
-  EquilibriumTP(*qfrac);
-
-  for (int i = 1; i < Size; ++i) {
-    qfrac->w[i] += rates[i];
-  }
-
-  auto rates = TryEquilibriumTP(*qfrac);*/
-
-  // equilibrate vapor with clouds
-  for (int i = 1; i <= NVAPOR; ++i) {
-    auto rates = TryEquilibriumTP_VaporCloud(*qfrac, i);
-
-    // vapor condensation rate
-    qfrac->w[i] += rates[0];
-
-    // cloud concentration rates
-    for (int j = 1; j < rates.size(); ++j)
-      qfrac->c[cloud_index_set_[i][j - 1]] += rates[j];
-  }
+  // std::cout << *qfrac << std::endl;
 
   // RK4 integration
 #ifdef HYDROSTATIC
