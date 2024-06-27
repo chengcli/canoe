@@ -7,8 +7,8 @@
 #include <string>
 #include <vector>
 
-// cantera
-#include <cantera/base/yaml.h>
+// external
+#include <yaml-cpp/yaml.h>
 
 // eigen
 #include <Eigen/Core>
