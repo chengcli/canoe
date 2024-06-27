@@ -2,11 +2,9 @@
 #include <fstream>
 #include <vector>
 
-// cantera
-#include <cantera/base/yaml.h>
-
 // external
 #include <gtest/gtest.h>
+#include <yaml-cpp/yaml.h>
 
 class YamlReadTests : public ::testing::Test {
  protected:
