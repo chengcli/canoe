@@ -23,5 +23,4 @@ set_target_properties(${namel}_${buildl}
 target_include_directories(${namel}_${buildl}
     PRIVATE
     ${NETCDF_INCLUDES}
-    ${CANTERA_INCLUDE_DIR}/cantera/ext # for yaml-cpp
     )

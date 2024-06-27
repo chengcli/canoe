@@ -1,8 +1,8 @@
 // athena
 #include <athena/athena.hpp>
 
-// cantera
-#include <cantera/base/yaml.h>
+// external
+#include <yaml-cpp/yaml.h>
 
 // application
 #include <application/exceptions.hpp>

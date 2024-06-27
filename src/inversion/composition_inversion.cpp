@@ -2,8 +2,8 @@
 #include <memory>
 #include <string>
 
-// cantera
-#include <cantera/base/yaml.h>
+// external
+#include <yaml-cpp/yaml.h>
 
 // athena
 #include <athena/hydro/hydro.hpp>

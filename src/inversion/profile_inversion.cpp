@@ -5,8 +5,8 @@
 #include <sstream>
 #include <string>
 
-// cantera
-#include <cantera/base/yaml.h>
+// external
+#include <yaml-cpp/yaml.h>
 
 // canoe
 #include <configure.hpp>

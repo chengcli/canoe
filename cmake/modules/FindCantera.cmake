@@ -25,4 +25,28 @@ if(CANTERA_INCLUDE_DIR)
   include(FindPackageHandleStandardArgs)
   find_package_handle_standard_args(Cantera DEFAULT_MSG CANTERA_LIBRARY
                                     CANTERA_INCLUDE_DIR)
+
+  set(SOURCE_PATH "${CANTERA_INCLUDE_DIR}/cantera/ext/")
+  set(LINK_PATH "ext1")
+  if(UNIX)
+    execute_process(
+      COMMAND ln -sf ${SOURCE_PATH} ${LINK_PATH}
+      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+      RESULT_VARIABLE result)
+  elseif(WIN32)
+    execute_process(
+      COMMAND cmd.exe /c mklink /D ${LINK_PATH} ${SOURCE_PATH}
+      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+      RESULT_VARIABLE result)
+  else()
+    message(
+      FATAL_ERROR "Symbolic link creation is not supported on this platform.")
+  endif()
+
+  if(result)
+    message(FATAL_ERROR "Failed to create symbolic link: ${LINK_PATH}")
+  else()
+    message(STATUS "Symbolic link created: ${LINK_PATH} -> ${SOURCE_PATH}")
+  endif()
+  include_directories(${CMAKE_CURRENT_BINARY_DIR}/ext1)
 endif()

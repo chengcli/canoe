@@ -1,8 +1,8 @@
 // C/C++
 #include <vector>
 
-// cantera
-#include <cantera/base/yaml.h>
+// external
+#include <yaml-cpp/yaml.h>
 
 // application
 #include <application/application.hpp>
