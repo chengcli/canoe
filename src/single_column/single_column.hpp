@@ -11,6 +11,8 @@
 
 class MeshBlock;
 
+using AirColumn = std::vector<AirParcel>;
+
 class SingleColumn : public ParameterGroup {
  public:
   friend void find_tp_bottom(int n, double *x, double *f, void *arg);

@@ -3,27 +3,8 @@
 #include <cantera/kinetics/Condensation.h>
 #include <cantera/thermo.h>
 
-// canoe
-#include <air_parcel.hpp>
-
 // snap
-#include "atm_thermodynamics.hpp"
-
-void Thermodynamics::EquilibrateTP(AirParcel* air) const {
-  air->ToMassFraction();
-  Real pres = air->w[IPR];
-  for (int n = IVX; n < IVX + NCLOUD; ++n) air->w[n] = air->c[n - IVX];
-  auto& thermo = kinetics_->thermo();
-  thermo.setMassFractionsPartial(&air->w[1]);
-  thermo.setDensity(air->w[IDN]);
-  thermo.setPressure(air->w[IPR]);
-
-  EquilibrateTP();
-
-  for (int n = 0; n < NCLOUD; ++n) air->c[n] = air->w[IVX + n];
-  air->w[IPR] = pres;
-  air->ToMoleFraction();
-}
+#include "thermodynamics.hpp"
 
 void Thermodynamics::EquilibrateTP() const {
   std::static_pointer_cast<Cantera::Condensation>(kinetics_)

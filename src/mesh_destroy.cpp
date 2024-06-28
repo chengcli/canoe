@@ -12,8 +12,6 @@
 // canoe
 #include <configure.hpp>
 
-#include "index_map.hpp"
-
 // snap
 #include "snap/thermodynamics/thermodynamics.hpp"
 
@@ -70,7 +68,6 @@ void mesh_destroy(ParameterInput *&pinput, Mesh *&pmesh, int mbcnt) {
   delete pmesh;
 
   Thermodynamics::Destroy();
-  IndexMap::Destroy();
   MetadataTable::Destroy();
   // ParticleHelper::free_mpi_particle_data();
 }

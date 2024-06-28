@@ -8,7 +8,7 @@ setup_problem(robert)
 setup_problem(bryan)
 
 # 2. Compile sedimentation
-if (${NVAPOR} EQUAL 2 AND ${NCLOUD} EQUAL 4 AND ${NPHASE_LEGACY} EQUAL 3)
+if (${NVAPOR} EQUAL 2 AND ${NCLOUD} EQUAL 4)
   setup_problem(sedimentation)
   setup_problem(jvortex)
 endif()

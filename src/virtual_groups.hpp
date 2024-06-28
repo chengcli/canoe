@@ -11,7 +11,6 @@
 
 // canoe
 #include <configure.hpp>
-#include <index_map.hpp>
 
 class Mesh;
 class MeshBlock;
@@ -119,60 +118,6 @@ inline std::string ParameterGroup::GetPar<std::string>(
     std::string const &name) const {
   return params_str_.at(name);
 }
-
-class SpeciesIndexGroup {
- public:
-  virtual ~SpeciesIndexGroup() {}
-
-  //! Set species index based on species names
-  void SetSpeciesIndex(std::vector<std::string> const &species_names) {
-    auto pindex = IndexMap::GetInstance();
-
-    for (auto const &name : species_names) {
-      if (name == "vapor.dry") {
-        my_species_index_.push_back(IDN);
-      } else {
-        my_species_index_.push_back(pindex->GetSpeciesId(name));
-        my_cloud_index_.push_back(my_species_index_.back() - NHYDRO);
-        my_chemistry_index_.push_back(my_species_index_.back() - NHYDRO -
-                                      NCLOUD);
-      }
-    }
-  }
-
-  //! \return Array of species indices
-  std::vector<int> const &GetMySpeciesIndices() const {
-    return my_species_index_;
-  }
-
-  //! \return Array of cloud indices
-  std::vector<int> const &GetMyCloudIndices() const { return my_cloud_index_; }
-
-  //! \return Array of chemistry indices
-  std::vector<int> const &GetMyChemistryIndices() const {
-    return my_chemistry_index_;
-  }
-
- protected:
-  //! \return The species index of the n-th species
-  int mySpeciesId(int n) const { return my_species_index_[n]; }
-
-  //! \return The cloud index of the n-th cloud species
-  int myCloudId(int n) const { return my_cloud_index_[n]; }
-
-  //! \return The chemistry index of the n-th chemistry species
-  int myChemistryId(int n) const { return my_chemistry_index_[n]; }
-
- private:
-  //! indices of species
-  std::vector<int> my_species_index_;
-
-  //! indices of clouds
-  std::vector<int> my_cloud_index_;
-
-  //! indices of chemical species
-  std::vector<int> my_chemistry_index_;
-};
 
 class CounterGroup {
  public:

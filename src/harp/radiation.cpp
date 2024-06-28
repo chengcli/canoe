@@ -32,6 +32,8 @@
 #include "radiation_band.hpp"
 #include "rt_solvers.hpp"
 
+using AirColumn = std::vector<AirParcel>;
+
 const std::string Radiation::input_key = "radiation_config";
 
 Radiation::Radiation(MeshBlock *pmb, ParameterInput *pin) {
@@ -134,7 +136,7 @@ size_t Radiation::GetNumOutgoingRays() const {
 void Radiation::CalFlux(MeshBlock const *pmb, int k, int j) {
   auto pcoord = pmb->pcoord;
 
-  AirColumn &&ac = AirParcelHelper::gather_from_primitive(pmb, k, j);
+  AirColumn &&ac = gather_from_primitive(pmb, k, j);
 
   Real grav = -pmb->phydro->hsrc.GetG1();
   Real H0 = pmb->pcoord->GetPressureScaleHeight();
@@ -149,7 +151,7 @@ void Radiation::CalFlux(MeshBlock const *pmb, int k, int j) {
 void Radiation::CalRadiance(MeshBlock const *pmb, int k, int j) {
   auto pcoord = pmb->pcoord;
 
-  AirColumn &&ac = AirParcelHelper::gather_from_primitive(pmb, k, j);
+  AirColumn &&ac = gather_from_primitive(pmb, k, j);
 
   Real grav = -pmb->phydro->hsrc.GetG1();
   Real H0 = pmb->pcoord->GetPressureScaleHeight();

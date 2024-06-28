@@ -11,7 +11,6 @@
 #include <configure.hpp>
 
 #include "impl.hpp"
-#include "index_map.hpp"
 
 // snap
 #include "snap/thermodynamics/thermodynamics.hpp"
@@ -57,9 +56,6 @@ void mesh_setup(ParameterInput*& pinput, Mesh*& pmesh) {
     if (cli->res_flag == 1) restartfile.Close();
     throw RuntimeError("main", ex.what());
   }
-
-  // index map
-  IndexMap::InitFromAthenaInput(pinput);
 
   // thermodynamics
   Thermodynamics::InitFromAthenaInput(pinput);

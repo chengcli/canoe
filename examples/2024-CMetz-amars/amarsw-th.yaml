@@ -1,0 +1,51 @@
+phases:
+  - name: gas
+    thermo: ideal-moist
+    species: [CO2, H2O, H2O(l), H2O(s)]
+    kinetics: condensation
+
+species:
+  - name: CO2
+    composition: {C: 1, O: 2}
+    thermo:
+      model: constant-cp
+      cp0: 29.1 J/mol/K
+
+  - name: H2O
+    composition: {H: 2, O: 1}
+    thermo:
+      model: constant-cp
+      cp0: 37.4 J/mol/K
+
+  - name: H2O(l)
+    composition: {H: 2, O: 1}
+    thermo:
+      model: constant-cp
+      cp0: 75.3 J/mol/K
+      h0: -28.5 kJ/mol
+    equation-of-state:
+      model: constant-volume
+      density: 1.0 g/cm^3
+
+  - name: H2O(s)
+    composition: {H: 2, O: 1}
+    thermo:
+      model: constant-cp
+      cp0: 75.3 J/mol/K
+      h0: -40.0 kJ/mol
+    equation-of-state:
+      model: constant-volume
+      density: 0.917 g/cm^3
+
+reactions:
+  - equation: H2O <=> H2O(l)
+    type: nucleation
+    rate-constant: {formula: ideal, T3: 273.16, P3: 611.7, beta: 24.845, delta: 4.986, minT: 273.16}
+
+  - equation: H2O <=> H2O(s)
+    type: nucleation
+    rate-constant: {formula: ideal, T3: 273.16, P3: 611.7, beta: 22.98, delta: 0.52, maxT: 273.16}
+
+  - equation: H2O(l) <=> H2O(s)
+    type: freezing
+    rate-constant: {T3: 273.16}

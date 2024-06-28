@@ -11,7 +11,6 @@
 #include <athena/athena.hpp>  // Real
 
 // canoe
-#include <air_parcel.hpp>
 #include <virtual_groups.hpp>
 
 // exchanger
@@ -120,8 +119,7 @@ class RadiationBand : public NamedGroup,
   //! \param[in] gH0 grav * H0
   //! \param[in] k horizontal index
   //! \param[in] j horizontal index
-  void SetSpectralProperties(AirColumn &air, Real const *x1f, Real gH0 = 0,
-                             int k = 0, int j = 0);
+  void SetSpectralProperties(MeshBlock const *pmb, int k, int j);
 
   //! \brief Calculate band radiative fluxes
   RadiationBand const *CalBandFlux(MeshBlock const *pmb, int k, int j);

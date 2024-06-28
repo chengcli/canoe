@@ -17,7 +17,6 @@
 #include <athena/mesh/mesh.hpp>
 
 // canoe
-#include <air_parcel.hpp>
 #include <configure.hpp>
 #include <constants.hpp>
 
@@ -35,17 +34,11 @@ using IndexSet = std::vector<int>;
 using RealArray3 = std::array<Real, 3>;
 using RealArrayX = std::vector<Real>;
 
-using SatVaporPresFunc1 = Real (*)(AirParcel const &, int i, int j);
-using SatVaporPresFunc2 = Real (*)(AirParcel const &, int i, int j, int k);
-
 enum { MAX_REACTANT = 3 };
 
 using ReactionIndx = std::array<int, MAX_REACTANT>;
 using ReactionStoi = std::array<int, MAX_REACTANT>;
 using ReactionInfo = std::pair<ReactionIndx, ReactionStoi>;
-
-Real NullSatVaporPres1(AirParcel const &, int, int);
-Real NullSatVaporPres2(AirParcel const &, int, int, int);
 
 void read_thermo_property(Real var[], char const name[], int len, Real v0,
                           ParameterInput *pin);
@@ -72,8 +65,6 @@ inline Real SatVaporPresIdeal(Real t, Real p3, Real beta, Real delta) {
 
 class Thermodynamics {
  protected:
-  enum { NPHASE = NPHASE_LEGACY };
-
   //! Constructor for class sets up the initial conditions
   //! Protected ctor access thru static member function Instance
   Thermodynamics() {}
@@ -81,9 +72,6 @@ class Thermodynamics {
   static Thermodynamics *fromYAMLInput(std::string const &fname);
 
  public:
-  using SVPFunc1Container = std::vector<std::vector<SatVaporPresFunc1>>;
-  using SVPFunc2Container = std::map<IndexPair, SatVaporPresFunc2>;
-
   enum { Size = 1 + NVAPOR + NCLOUD };
 
   //! thermodynamics input key in the input file [thermodynamics_config]
@@ -150,17 +138,7 @@ class Thermodynamics {
 
   std::shared_ptr<Cantera::Kinetics> Kinetics() const { return kinetics_; }
 
-  //! \return the index of the cloud
-  //! \param[in] i the index of the vapor
-  //! \param[in] j the sequential index of the cloud
-  int GetCloudIndex(int i, int j) const { return cloud_index_set_[i][j]; }
-
-  //! \return the index set of the cloud
-  //! \param[in] i the index of the vapor
-  std::vector<int> GetCloudIndexSet(int i) const { return cloud_index_set_[i]; }
-
-  //! const pointer to cloud_index_set_
-  IndexSet const *GetCloudIndexSet() const { return cloud_index_set_.data(); }
+  size_t GetSpeciesId(std::string const &name) const;
 
   //! Reference specific heat capacity [J/(kg K)] at constant volume
   Real GetCvMassRef(int n) const {
@@ -187,88 +165,20 @@ class Thermodynamics {
     return cp_ratio_mass_[n] * cpd;
   }
 
-  //! \brief Temperature dependent specific latent energy [J/kg] of condensates
-  //! at constant volume $L_{ij}(T) = L_{ij}^r - (c_{ij} - c_{p,i})\times(T -
-  //! T^r)$
-  //!
-  //! $= L_{ij}^r - \delta_{ij}R_i(T - T^r)$
-  //! \return $L_{ij}(T)$
-  Real GetLatentEnergyMass(int n, Real temp = 0.) const {
-    return latent_energy_mass_[n] - delta_[n] * Rd_ * inv_mu_ratio_[n] * temp;
-  }
-
-  //! \brief Temperature dependent specific latent energy [J/mol] of condensates
-  //! at constant volume
-  //!
-  //! \return $L_{ij}(T)$
-  Real GetLatentEnergyMole(int n, Real temp = 0.) const {
-    return GetLatentEnergyMass(n, temp) * mu_[n];
-  }
-
-  //! const pointer to latent_energy_mole_
-  Real const *GetLatentEnergyMole() const { return &latent_energy_mole_[0]; }
-
-  Real GetLatentHeatMole(int i, std::vector<Real> const &rates,
-                         Real temp) const;
-
-  Real GetLatentHeatMass(int i, std::vector<Real> const &rates,
-                         Real temp) const {
-    return GetLatentHeatMole(i, rates, temp) * inv_mu_[i];
-  }
-
-  //! \brief Calculate the equilibrium mole transfer by cloud reaction
-  //! vapor -> cloud
-  //!
-  //! \param[in] qfrac mole fraction representation of air parcel
-  //! \param[in] ivapor the index of the vapor
-  //! \param[in] cv_hat $cv_hat$ molar heat capacity
-  //! \param[in] misty if true, there is an infinite supple of cloud
-  //! \return molar fraction change of vapor to cloud
-  RealArrayX TryEquilibriumTP_VaporCloud(AirParcel const &qfrac, int ivapor,
-                                         Real cv_hat = 0.,
-                                         bool misty = false) const;
-
-  //! \brief Calculate the equilibrium mole transfer by cloud reaction
-  //! vapor1 + vapor2 -> cloud
-  //!
-  //! \param[in] air mole fraction representation of air parcel
-  //! \param[in] ij the index pair of the vapor1 and vapor2
-  //! \param[in] cv_hat $\har{cv}$ molar heat capacity
-  //! \param[in] misty if true, there is an infinite supple of cloud
-  //! \return molar fraction change of vapor1, vapor2 and cloud
-  RealArray3 TryEquilibriumTP_VaporVaporCloud(AirParcel const &air,
-                                              IndexPair ij, Real cv_hat = 0.,
-                                              bool misty = false) const;
-
-  //! Construct an 1d atmosphere
-  //! \param[in,out] qfrac mole fraction representation of air parcel
-  //! \param[in] dzORdlnp vertical grid spacing
-  //! \param[in] method choose from [reversible, pseudo, dry, isothermal]
-  //! \param[in] grav gravitational acceleration
-  //! \param[in] userp user parameter to adjust the temperature gradient
-  void Extrapolate(AirParcel *qfrac, Real dzORdlnp, std::string method,
-                   Real grav = 0., Real userp = 0.) const;
-
   //! Thermodnamic equilibrium at current TP
   //! \param[in,out] qfrac mole fraction representation of air parcel
   void EquilibrateTP() const;
 
-  void EquilibrateTP(AirParcel *qfrac) const;
-
   //! Thermodnamic equilibrium at current UV
   void EquilibrateUV() const;
 
-  void EquilibrateUV(AirParcel *qfrac) const;
-
   void EquilibrateSP(double P) const;
 
-  //! Adjust to the maximum saturation state conserving internal energy
-  //! \param[in,out] ac mole fraction representation of a collection of air
-  //! parcels
-  void SaturationAdjustment(AirColumn &ac) const;
+  void FromPrimitive(MeshBlock const *pmb, int k, int j, int i) const;
+  void ToPrimitive(MeshBlock *pmb, int k, int j, int i) const;
 
-  void SetStateFromPrimitive(MeshBlock *pmb, int k, int j, int i) const;
-  void SetStateFromConserved(MeshBlock *pmb, int k, int j, int i) const;
+  void FromConserved(MeshBlock const *pmb, int k, int j, int i) const;
+  void ToConserved(MeshBlock *pmb, int k, int j, int i) const;
 
   //! \brief Calculate potential temperature from primitive variable
   //!
@@ -404,60 +314,12 @@ class Thermodynamics {
   //! ratio of specific heat capacities [J/mol] at constant volume
   std::array<Real, Size> cv_ratio_mass_;
 
-  //! latent energy at constant volume [J/mol]
-  std::array<Real, Size> latent_energy_mole_;
-
-  //! \brief latent energy at constant volume [J/kg]
-  //!
-  //! $L_i^r+\Delta c_{ij}T^r == \beta_{ij}\frac{R_d}{\epsilon_i}T^r$
-  std::array<Real, Size> latent_energy_mass_;
-
-  //! \brief Dimensionless latent heat
-  //!
-  //! $\beta_{ij} = \frac{\Delta U_{ij}}{R_i T^r}$
-  //! $\Delta U_{ij}$ is the difference in internal energy between the vapor $i$
-  //! and the condensate $j$ $R_i=\hat{R}/m_i=R_d/\epsilon_i$ $T^r$ is the
-  //! triple point temperature
-  //! $\beta_{ij} == \frac{L_{ij}^r + \Delta c_{ij}T^r}{R_i T^r}$
-  std::array<Real, Size> beta_;
-
-  //! \brief Dimensionless differences in specific heat capacity
-  //!
-  //! $\delta_{ij} = \frac{c_{ij} - c_{p,i}}{R_i}$
-  //! $c_{ij} - c_{p,j}$ is the difference in specific heat
-  //! capacity at constant pressure. $c_{ij}$ is the heat capacity of
-  //! condensate $j$ of vapor $i$
-  std::array<Real, Size> delta_;
-
-  //! triple point temperature [K]
-  std::array<Real, 1 + NVAPOR> t3_;
-
-  //! triple point pressure [pa]
-  std::array<Real, 1 + NVAPOR> p3_;
-
-  //! saturation vapor pressure function: Vapor -> Cloud
-  SVPFunc1Container svp_func1_;
-
-  //! cloud index set
-  std::vector<IndexSet> cloud_index_set_;
-
-  //! reaction information map
-  std::map<IndexPair, ReactionInfo> cloud_reaction_map_;
-
-  //! saturation vapor pressure function: Vapor + Vapor -> Cloud
-  SVPFunc2Container svp_func2_;
-
   //! pointer to the single Thermodynamics instance
   static Thermodynamics *mythermo_;
 
-  //! maximum saturation adjustment iterations
-  int sa_max_iter_ = 5;
-
-  //! saturation adjustment relaxation parameter
-  Real sa_relax_ = 0.8;
-
-  //! saturation adjustment temperature tolerance
-  Real sa_ftol_ = 0.01;
+ private:
+  // scratch space
+  mutable std::array<Real, Size> mixr_;
 };
 
 #endif  // SRC_SNAP_THERMODYNAMICS_THERMODYNAMICS_HPP_

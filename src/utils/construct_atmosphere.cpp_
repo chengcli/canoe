@@ -20,13 +20,15 @@
 #include <application/application.hpp>
 #include <application/exceptions.hpp>
 
+// cantera
+#include <cantera/kinetics.h>
+
 // canoe
-#include <air_parcel.hpp>
+//#include <air_parcel.hpp>
 #include <configure.hpp>
 #include <constants.hpp>
 // #include <dirty.hpp>
 #include <impl.hpp>
-#include <index_map.hpp>
 
 // climath
 #include <climath/interpolation.h>
@@ -92,9 +94,8 @@ void construct_atmosphere(MeshBlock *pmb, ParameterInput *pin, Real NH3ppmv,
   Real cp = gamma / (gamma - 1.) * Rd;
 
   // index
-  auto pindex = IndexMap::GetInstance();
-  int iH2O = pindex->GetVaporId("H2O");
-  int iNH3 = pindex->GetVaporId("NH3");
+  int iH2O = pthermo->Kinetics()->speciesIndex("H2O");
+  int iNH3 = pthermo->Kinetics()->speciesIndex("NH3");
 
   // app->Log("index of H2O", iH2O);
   // app->Log("index of NH3", iNH3);
@@ -103,7 +104,7 @@ void construct_atmosphere(MeshBlock *pmb, ParameterInput *pin, Real NH3ppmv,
   int max_iter = 200, iter = 0;
   Real dlnp = pcoord->dx1f(is) / H0;
 
-  AirParcel air(AirParcel::Type::MoleFrac);
+  //AirParcel air(AirParcel::Type::MoleFrac);
 
   // estimate surface temperature and pressure
   Real Ps = P0 * exp(-x1min / H0);
@@ -164,7 +165,7 @@ void construct_atmosphere(MeshBlock *pmb, ParameterInput *pin, Real NH3ppmv,
         Real rh = get_relative_humidity(air, iNH3);
         air.w[iNH3] *= std::min(rh_max_nh3 / rh, 1.);
 
-        AirParcelHelper::distribute_to_primitive(pmb, ks, js, i, air);
+        distribute_to_primitive(pmb, ks, js, i, air);
 
         pthermo->Extrapolate(&air, -dlnp, "dry");
 
@@ -176,14 +177,16 @@ void construct_atmosphere(MeshBlock *pmb, ParameterInput *pin, Real NH3ppmv,
       pthermo->Extrapolate(&air, dlnp, "dry");
       for (; i <= ie; ++i) {
         pthermo->Extrapolate(&air, -dlnp, "isothermal");
-        AirParcelHelper::distribute_to_primitive(pmb, ks, js, i, air);
+        distribute_to_primitive(pmb, ks, js, i, air);
       }
     }
 
   // set tracers, electron and Na
-  int ielec = pindex->GetTracerId("e-");
-  int iNa = pindex->GetTracerId("Na");
-  auto ptracer = pimpl->ptracer;
+  auto phydro = pmb->phydro;
+  auto pscalars = pmb->pscalars;
+
+  int ielec = pscalars->Kinetics()->speciesIndex("e-");
+  int iNa = pscalars->Kinetics()->speciesIndex("Na");
 
   Real xH2S = pin->GetReal("problem", "xH2S");
 
@@ -199,7 +202,6 @@ void construct_atmosphere(MeshBlock *pmb, ParameterInput *pin, Real NH3ppmv,
 
   Real xCH4 = pin->GetReal("problem", "xCH4");
 
-  auto phydro = pmb->phydro;
 
   for (int k = ks; k <= ke; ++k)
     for (int j = js; j <= je; ++j)
@@ -210,14 +212,13 @@ void construct_atmosphere(MeshBlock *pmb, ParameterInput *pin, Real NH3ppmv,
         Real svp = sat_vapor_p_Na_H2S_Visscher(temp, pH2S);
         pNa = std::min(svp, pNa);
 
-        ptracer->u(iNa, k, j, i) = pNa / (Constants::kBoltz * temp);
-        ptracer->u(ielec, k, j, i) = saha_ionization_electron_density(
-            temp, ptracer->u(iNa, k, j, i), 5.14);
+        pscalars->s(iNa, k, j, i) = pNa / (Constants::kBoltz * temp);
+        pscalars->s(ielec, k, j, i) = saha_ionization_electron_density(
+            temp, pscalars->u(iNa, k, j, i), 5.14);
       }
 
   auto peos = pmb->peos;
   auto pfield = pmb->pfield;
-  auto pscalars = pmb->pscalars;
   auto pbval = pmb->pbval;
 
   // primitive to conserved conversion (hydro)

@@ -13,11 +13,13 @@
 #include <athena/hydro/hydro.hpp>
 #include <athena/mesh/mesh.hpp>
 
+// cantera
+#include <cantera/kinetics.h>
+
 // canoe
 #include <air_parcel.hpp>
 #include <constants.hpp>
 #include <impl.hpp>
-#include <index_map.hpp>
 
 // snap
 #include <snap/thermodynamics/thermodynamics.hpp>
@@ -51,12 +53,12 @@ void modify_adlnTdlnP(MeshBlock *pmb, Real adlnTdlnP, Real pmin,
       int iend =
           find_pressure_level_lesser_pybind(pmin, phydro->w, k, j, is, ie);
 
-      auto &&air = AirParcelHelper::gather_from_primitive(pmb, k, j, ibegin);
+      auto &&air = gather_from_primitive(pmb, k, j, ibegin);
       air.ToMoleFraction();
 
       for (int i = ibegin; i < iend; ++i) {
         pthermo->Extrapolate(&air, -dlnp, "dry", 0., adlnTdlnP);
-        AirParcelHelper::distribute_to_primitive(pmb, k, j, i + 1, air);
+        distribute_to_primitive(pmb, k, j, i + 1, air);
       }
     }
   }
@@ -75,8 +77,7 @@ void modify_adlnXdlnP(MeshBlock *pmb, Real adlnXdlnP, Real pmin,
   Real dlnp = pcoord->dx1f(is) / H0;
 
   // index
-  auto pindex = IndexMap::GetInstance();
-  int iNH3 = pindex->GetVaporId("NH3");
+  int iNH3 = pthermo->Kinetics()->speciesIndex("NH3");
 
   // loop over all aircolumns
   for (int k = ks; k <= ke; ++k)
@@ -86,7 +87,7 @@ void modify_adlnXdlnP(MeshBlock *pmb, Real adlnXdlnP, Real pmin,
       int iend =
           find_pressure_level_lesser_pybind(pmin, phydro->w, k, j, is, ie);
 
-      auto &&air = AirParcelHelper::gather_from_primitive(pmb, k, j, ibegin);
+      auto &&air = gather_from_primitive(pmb, k, j, ibegin);
       air.ToMoleFraction();
 
       for (int i = ibegin; i < iend; ++i) {
@@ -94,12 +95,12 @@ void modify_adlnXdlnP(MeshBlock *pmb, Real adlnXdlnP, Real pmin,
         air.w[iNH3] += adlnXdlnP * air.w[iNH3] * dlnp;
         auto rates = pthermo->TryEquilibriumTP_VaporCloud(air, iNH3);
         air.w[iNH3] += rates[0];
-        AirParcelHelper::distribute_to_primitive(pmb, k, j, i + 1, air);
+        distribute_to_primitive(pmb, k, j, i + 1, air);
       }
     }
 };
 
-void modify_atm(MeshBlock *pmb, 
+void modify_atm(MeshBlock *pmb,
                 std::map<std::string, std::vector<Real>> const& atm)
 {
   int is = pmb->is, ie = pmb->ie;
@@ -154,6 +155,6 @@ void modify_atm(MeshBlock *pmb,
 
   for (int k = pmb->ks; k <= pmb->ke; ++k)
     for (int j = pmb->js; j <= pmb->je; ++j) {
-      AirParcelHelper::distribute_to_primitive(pmb, k, j, ac);
+      distribute_to_primitive(pmb, k, j, ac);
     }
 };

@@ -14,16 +14,16 @@
 #include "snap/decomposition/decomposition.hpp"
 #include "snap/implicit/implicit_solver.hpp"
 #include "snap/thermodynamics/thermodynamics.hpp"
-#include "snap/turbulence/turbulence_model.hpp"
+// #include "snap/turbulence/turbulence_model.hpp"
 
 // microphysics
-#include "microphysics/microphysics.hpp"
+// #include "microphysics/microphysics.hpp"
 
 // flask
-#include "flask/chemistry.hpp"
+// #include "flask/chemistry.hpp"
 
 // tracer
-#include "tracer/tracer.hpp"
+// #include "tracer/tracer.hpp"
 
 // n-body
 // #include "nbody/particles.hpp"
@@ -35,7 +35,7 @@
 #include "exo3/cubed_sphere.hpp"
 
 // single column
-#include "single_column/single_column.hpp"
+// #include "single_column/single_column.hpp"
 
 // diagnostics
 #include "diagnostics/diagnostics.hpp"
@@ -48,7 +48,6 @@
 
 // canoe
 #include "impl.hpp"
-#include "index_map.hpp"
 #include "virtual_groups.hpp"
 
 MeshBlock::Impl::Impl(MeshBlock *pmb, ParameterInput *pin) : pmy_block_(pmb) {
@@ -61,19 +60,19 @@ MeshBlock::Impl::Impl(MeshBlock *pmb, ParameterInput *pin) : pmy_block_(pmb) {
   phevi = std::make_shared<ImplicitSolver>(pmb, pin);
 
   // microphysics
-  pmicro = std::make_shared<Microphysics>(pmb, pin);
+  // pmicro = std::make_shared<Microphysics>(pmb, pin);
 
   // radiation
   prad = std::make_shared<Radiation>(pmb, pin);
 
   // chemistry
-  pchem = std::make_shared<Chemistry>(pmb, pin);
+  // pchem = std::make_shared<Chemistry>(pmb, pin);
 
   // tracer
-  ptracer = std::make_shared<Tracer>(pmb, pin);
+  // ptracer = std::make_shared<Tracer>(pmb, pin);
 
   // turbulence
-  pturb = TurbulenceFactory::Create(pmb, pin);
+  // pturb = TurbulenceFactory::Create(pmb, pin);
 
   // particle queue
   // all_particles = ParticlesFactory::Create(pmb, pin);
@@ -88,13 +87,13 @@ MeshBlock::Impl::Impl(MeshBlock *pmb, ParameterInput *pin) : pmy_block_(pmb) {
   pexo3 = std::make_shared<CubedSphere>(pmb);
 
   // single column model
-  pscm = std::make_shared<SingleColumn>(pmb, pin);
+  // pscm = std::make_shared<SingleColumn>(pmb, pin);
 
   // surface
   // psurf = std::make_shared<Surface>(pmb, pin);
 
   // scheduler
-  scheduler = SchedulerFactory::Create(pmb, pin);
+  // scheduler = SchedulerFactory::Create(pmb, pin);
 
   // planet
   planet = PlanetFactory::CreateFrom(pmb, pin);
@@ -103,5 +102,5 @@ MeshBlock::Impl::Impl(MeshBlock *pmb, ParameterInput *pin) : pmy_block_(pmb) {
 MeshBlock::Impl::~Impl() {}
 
 void MeshBlock::Impl::MapScalarsConserved(AthenaArray<Real> &s) {
-  if (NCLOUD > 0) pmicro->u.InitWithShallowSlice(s, 4, 0, NCLOUD);
+  // if (NCLOUD > 0) pmicro->u.InitWithShallowSlice(s, 4, 0, NCLOUD);
 }

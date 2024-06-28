@@ -14,7 +14,8 @@ set(patch_command
     ${CMAKE_CURRENT_SOURCE_DIR}/patches/28.bvals_cc.patch
     ${CMAKE_CURRENT_SOURCE_DIR}/patches/29.mesh.patch
     ${CMAKE_CURRENT_SOURCE_DIR}/patches/30.bvals_base.patch
-    ${CMAKE_CURRENT_SOURCE_DIR}/patches/31.task_list.patch)
+    ${CMAKE_CURRENT_SOURCE_DIR}/patches/31.task_list.patch
+    ${CMAKE_CURRENT_SOURCE_DIR}/patches/32.scalars.patch)
 
 FetchContent_Declare(
   athenapp

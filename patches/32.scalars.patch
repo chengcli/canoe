@@ -1,0 +1,33 @@
+diff --git a/src/scalars/scalars.hpp b/src/scalars/scalars.hpp
+index bb2eaba3..4eaa5f71 100644
+--- a/src/scalars/scalars.hpp
++++ b/src/scalars/scalars.hpp
+@@ -24,6 +24,10 @@
+ class MeshBlock;
+ class ParameterInput;
+ 
++namespace Cantera {
++class Kinetics;
++}
++
+ //! \class PassiveScalars
+ //! \brief
+ //!
+@@ -94,6 +98,8 @@ class PassiveScalars {
+                         AthenaArray<Real> *flx_out);
+   Real NewDiffusionDt();
+ 
++  std::shared_ptr<Cantera::Kinetics> Kinetics() const;
++
+  private:
+   MeshBlock* pmy_block;
+   // scratch space used to compute fluxes
+@@ -120,5 +126,8 @@ class PassiveScalars {
+   void AddDiffusionFluxes();
+   // TODO(felker): dedpulicate these arrays and the same named ones in HydroDiffusion
+   AthenaArray<Real> dx1_, dx2_, dx3_;
++
++ protected:
++  std::shared_ptr<Cantera::Kinetics> kinetics_;
+ };
+ #endif // SCALARS_SCALARS_HPP_

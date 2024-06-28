@@ -8,7 +8,7 @@
 #include <athena/stride_iterator.hpp>
 
 // canoe
-#include <air_parcel.hpp>
+//#include <air_parcel.hpp>
 #include <impl.hpp>
 
 // utils
@@ -56,7 +56,7 @@ void Decomposition::ChangeToBuoyancy(AthenaArray<Real> &w, int kl, int ku,
     for (int k = kl; k <= ku; ++k)
       for (int j = jl; j <= ju; ++j) {
         Real dz = pco->dx1f(ie);
-        auto &&var = AirParcelHelper::gather_from_primitive(pmb, k, j, ie);
+        auto &&var = gather_from_primitive(pmb, k, j, ie);
 
         // adiabatic extrapolation for half a grid
         pthermo->Extrapolate(&var, dz / 2., "reversible", grav);
@@ -178,7 +178,7 @@ void Decomposition::RestoreFromBuoyancy(AthenaArray<Real> &w,
 
   // adiabatic extrapolation for a grid
   Real dz = pco->dx1f(is);
-  auto &&air0 = AirParcelHelper::gather_from_primitive(pmb, k, j, is);
+  auto &&air0 = gather_from_primitive(pmb, k, j, is);
   auto air1 = air0;
   air1.ToMoleFraction();
   pthermo->Extrapolate(&air1, -dz, "reversible", grav);
@@ -199,7 +199,7 @@ void Decomposition::RestoreFromBuoyancy(AthenaArray<Real> &w,
   }
 
   // adiabatic extrapolation for a grid
-  air0 = AirParcelHelper::gather_from_primitive(pmb, k, j, ie);
+  air0 = gather_from_primitive(pmb, k, j, ie);
   air1 = air0;
   air1.ToMoleFraction();
   pthermo->Extrapolate(&air1, dz, "reversible", grav);

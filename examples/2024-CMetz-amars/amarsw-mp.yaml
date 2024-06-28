@@ -1,38 +1,47 @@
-microphysics:
-  - H2O-system
+phases:
+  - name: water
+    thermo: ideal-moist
+    species: [H2O, H2O(l), H2O(s), H2O(l,p), H2O(s,p)]
+    kinetics: bulk
 
-H2O-system:
-  scheme: Kessler94
-  dependent-species: [vapor.H2O, cloud.H2O(c), cloud.H2O(p)]
-  parameters:
-    autoconversion: 1.e-4
-    accretion: 0.0
-    evaporation: 3.e-1
-    sedimentation: -20.
+species:
+  - name: H2O(l,p)
+    composition: {H: 2, O: 1}
+    thermo:
+      model: constant-cp
+      cp0: 75.3 J/mol/K
+      h0: -28.5 kJ/mol
+    equation-of-state:
+      model: constant-volume
+      density: 1.0 g/cm^3
+    microphysics:
+      sedimentation-velocity: -20.
 
-CO2-system:
-  scheme: Kessler94
-  dependent-species: [vapor.CO2, cloud.CO2(c), cloud.CO2(p)]
-  parameters:
-    autoconversion: 1.e-4
-    accretion: 0.0
-    evaporation: 3.e-1
-    sedimentation: -20.
+  - name: H2O(s,p)
+    composition: {H: 2, O: 1}
+    thermo:
+      model: constant-cp
+      cp0: 75.3 J/mol/K
+      h0: -40.0 kJ/mol
+    equation-of-state:
+      model: constant-volume
+      density: 0.917 g/cm^3
+    microphysics:
+      sedimentation-velocity: -20.
 
-H2S-system:
-  scheme: Kessler94
-  dependent-species: [vapor.H2S, cloud.H2S(c), cloud.H2S(p)]
-  parameters:
-    autoconversion: 1.e-4
-    accretion: 0.0
-    evaporation: 3.e-1
-    sedimentation: -20.
+reactions:
+  - equation: H2O(l) => H2O(l,p)
+    type: autoconversion
+    rate-constant: {tau: 1.e4}
 
-SO2-system:
-  scheme: Kessler94
-  dependent-species: [vapor.SO2, cloud.SO2(c), cloud.SO2(p)]
-  parameters:
-    autoconversion: 1.e-4
-    accretion: 0.0
-    evaporation: 3.e-1
-    sedimentation: -20.
+  - equation: H2O(l,p) => H2O
+    type: evaporation
+    rate-constant: {tau: 1.e4}
+
+  - equation: H2O(s) => H2O(s,p)
+    type: autoconversion
+    rate-constant: {tau: 1.e4}
+
+  - equation: H2O(s,p) => H2O
+    type: evaporation
+    rate-constant: {tau: 3.}

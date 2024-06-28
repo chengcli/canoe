@@ -10,7 +10,6 @@
 #include <athena/mesh/mesh.hpp>
 
 // canoe
-#include <air_parcel.hpp>
 #include <configure.hpp>
 #include <impl.hpp>
 
@@ -18,7 +17,7 @@
 #include <snap/thermodynamics/thermodynamics.hpp>
 
 // single column
-#include <single_column/single_column.hpp>
+// #include <single_column/single_column.hpp>
 
 #ifdef ENABLE_GLOG
 #include <glog/logging.h>

@@ -30,7 +30,7 @@ if (${NVAPOR} EQUAL 0)
   endif()
 endif()
 
-if (${NVAPOR} EQUAL 1 AND ${NCLOUD} EQUAL 1 AND ${NPHASE_LEGACY} EQUAL 2)
+if (${NVAPOR} EQUAL 1 AND ${NCLOUD} EQUAL 1)
   setup_test(test_moist_adiabat)
 endif()
 

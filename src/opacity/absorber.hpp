@@ -22,7 +22,6 @@ class Node;
 //! \brief base class of all absorbers
 class Absorber : public NamedGroup,
                  public ParameterGroup,
-                 public SpeciesIndexGroup,
                  public StringReprGroup {
  public:  // constructor and destructor
   Absorber(std::string name);

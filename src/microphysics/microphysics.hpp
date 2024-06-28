@@ -10,7 +10,7 @@
 #include <athena/athena.hpp>
 
 // canoe
-#include <air_parcel.hpp>
+// #include <air_parcel.hpp>
 #include <schedulers.hpp>
 #include <virtual_groups.hpp>
 
@@ -57,7 +57,7 @@ class Microphysics {
   //! \param [in,out] ac air column to be evolved
   //! \param [in] time current simulation time
   //! \param [in] dt time step
-  void EvolveSystems(AirColumn &ac, Real time, Real dt);
+  // void EvolveSystems(AirColumn &ac, Real time, Real dt);
 
  public:  /// inbound functions
   void SetVsedFromConserved(Hydro const *phydro);

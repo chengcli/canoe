@@ -85,6 +85,7 @@ microphysics_config = amarsw-mp.yaml
 
 <thermodynamics>
 Rd          = 189.
+thermodynamics_config = amarsw-thermo.yaml
 
 #H2O
 eps1        = 0.45    0.45    0.45

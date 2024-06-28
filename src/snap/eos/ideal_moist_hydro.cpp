@@ -80,16 +80,24 @@ void EquationOfState::ConservedToPrimitive(
         Real& w_p = prim(IPR, k, j, i);
 
         Real density = 0.;
-        for (int n = 0; n <= NVAPOR; ++n) density += cons(n, k, j, i);
+        for (int n = 0; n <= NVAPOR + NCLOUD; ++n) {
+          density += cons(n, k, j, i);
+        }
         w_d = density;
         Real di = 1. / density;
 
         // mass mixing ratio
-        for (int n = 1; n <= NVAPOR; ++n)
+        for (int n = 1; n <= NVAPOR + NCLOUD; ++n)
           prim(n, k, j, i) = cons(n, k, j, i) * di;
 
         // internal energy
-        Real KE, fsig = 1., feps = 1.;
+        Real fsig = 1., feps = 1.;
+        // clouds
+        for (int n = 1 + NVAPOR; n <= NVAPOR + NCLOUD; ++n) {
+          fsig += prim(n, k, j, i) * (pthermo->GetCvRatioMass(n) - 1.);
+          feps -= prim(n, k, j, i);
+        }
+
         // vapors
         for (int n = 1; n <= NVAPOR; ++n) {
           fsig += prim(n, k, j, i) * (pthermo->GetCvRatioMass(n) - 1.);
@@ -110,8 +118,8 @@ void EquationOfState::ConservedToPrimitive(
         cs::CovariantToContravariant(prim.at(k, j, i), cos_theta);
 #endif
 
-        // internal energy
-        KE = 0.5 * (u_m1 * w_vx + u_m2 * w_vy + u_m3 * w_vz);
+        // kinetic energy
+        Real KE = 0.5 * (u_m1 * w_vx + u_m2 * w_vy + u_m3 * w_vz);
         w_p = gm1 * (u_e - KE) * feps / fsig;
       }
 
@@ -173,6 +181,12 @@ void EquationOfState::PrimitiveToConserved(const AthenaArray<Real>& prim,
         // total energy
         Real KE = 0.5 * (u_m1 * w_vx + u_m2 * w_vy + u_m3 * w_vz);
         Real fsig = 1., feps = 1.;
+        // clouds
+        for (int n = 1 + NVAPOR; n <= NVAPOR + NCLOUD; ++n) {
+          fsig += prim(n, k, j, i) * (pthermo->GetCvRatioMass(n) - 1.);
+          feps -= prim(n, k, j, i);
+        }
+
         // vapors
         for (int n = 1; n <= NVAPOR; ++n) {
           fsig += prim(n, k, j, i) * (pthermo->GetCvRatioMass(n) - 1.);
@@ -194,6 +208,12 @@ Real EquationOfState::SoundSpeed(const Real prim[NHYDRO]) {
   auto pthermo = Thermodynamics::GetInstance();
 
   Real fsig = 1., feps = 1.;
+  // clouds
+  for (int n = 1 + NVAPOR; n <= NVAPOR + NCLOUD; ++n) {
+    fsig += prim[n] * (pthermo->GetCvRatioMass(n) - 1.);
+    feps -= prim[n];
+  }
+  // vapors
   for (int n = 1; n <= NVAPOR; ++n) {
     fsig += prim[n] * (pthermo->GetCvRatioMass(n) - 1.);
     feps += prim[n] * (pthermo->GetInvMuRatio(n) - 1.);

@@ -11,7 +11,6 @@
 #include <application/exceptions.hpp>
 
 // canoe
-#include <air_parcel.hpp>
 #include <configure.hpp>
 #include <impl.hpp>
 
@@ -29,7 +28,7 @@
 #include <forcing/forcing.hpp>
 
 // scm
-#include <single_column/single_column.hpp>
+// #include <single_column/single_column.hpp>
 
 // checks
 #include <checks.hpp>
@@ -298,17 +297,16 @@ TaskStatus ImplicitHydroTasks::UpdateAllConserved(MeshBlock *pmb, int stage) {
   auto pscm = pmb->pimpl->pscm;
 
   for (int k = ks; k <= ke; k++)
-    for (int j = js; j <= je; j++) {
-      auto &&ac = AirParcelHelper::gather_from_conserved(pmb, k, j, is, ie);
+    for (int j = js; j <= je; j++)
+      for (int i = is; i <= ie; i++) {
+        // pmicro->AddFrictionalHeating(air_column);
 
-      // pmicro->AddFrictionalHeating(air_column);
+        // pmicro->EvolveSystems(ac, pmb->pmy_mesh->time, pmb->pmy_mesh->dt);
 
-      pmicro->EvolveSystems(ac, pmb->pmy_mesh->time, pmb->pmy_mesh->dt);
-
-      pthermo->SaturationAdjustment(ac);
-
-      AirParcelHelper::distribute_to_conserved(pmb, k, j, is, ie, ac);
-    }
+        pthermo->FromConserved(pmb, k, j, i);
+        pthermo->EquilibrateUV();
+        pthermo->ToConserved(pmb, k, j, i);
+      }
 
   return TaskStatus::success;
 }
