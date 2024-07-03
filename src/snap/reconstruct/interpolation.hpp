@@ -1,22 +1,25 @@
+#pragma once
+
 #define sqr(x) ((x) * (x))
+#include <torch/torch.h>
 
 namespace torch {
 
 namespace weno5coeff {
-Tensor c1 = Tensor({-1. / 6., 5. / 6., 1. / 3., 0., 0.}, kFloat32);
-Tensor c2 = Tensor({0., 1. / 3., 5. / 6., -1. / 6., 0.}, kFloat32);
-Tensor c3 = Tensor({0., 0., 11. / 6., -7. / 6., 1. / 3.}, kFloat32);
+Tensor c1 = tensor({-1. / 6., 5. / 6., 1. / 3., 0., 0.}, kFloat32);
+Tensor c2 = tensor({0., 1. / 3., 5. / 6., -1. / 6., 0.}, kFloat32);
+Tensor c3 = tensor({0., 0., 11. / 6., -7. / 6., 1. / 3.}, kFloat32);
 
-Tensor c4 = Tensor({1, -2, 1, 0, 0}, kInt);
-Tensor c5 = Tensor({1, -4, 3, 0, 0}, kInt);
+Tensor c4 = tensor({1, -2, 1, 0, 0}, kFloat32);
+Tensor c5 = tensor({1, -4, 3, 0, 0}, kFloat32);
 
-Tensor c6 = Tensor({0, 1, -2, 1, 0}, kInt);
-Tensor c7 = Tensor({0, -1, 0, 1, 0}, kInt);
+Tensor c6 = tensor({0, 1, -2, 1, 0}, kFloat32);
+Tensor c7 = tensor({0, -1, 0, 1, 0}, kFloat32);
 
-Tensor c8 = Tensor({0, 0, 1, -2, 1}, kInt);
-Tensor c9 = Tensor({0, 0, 3, -4, 1}, kInt);
+Tensor c8 = tensor({0, 0, 1, -2, 1}, kFloat32);
+Tensor c9 = tensor({0, 0, 3, -4, 1}, kFloat32);
 
-Tensor c10 = Tensor({0.3, 0.6, 0.1}, kFloat32);
+Tensor c10 = tensor({0.3, 0.6, 0.1}, kFloat32);
 }  // namespace weno5coeff
 
 inline float interp_weno5(Tensor const& phi) {
@@ -34,7 +37,7 @@ inline float interp_weno5(Tensor const& phi) {
             1. / 4. * sqr(dot(weno5coeff::c9, phi));
 
   Tensor alpha = weno5coeff::c10 / sqr(beta + 1e-10);
-  return dot(alpha, p) / sum(alpha).item<float>();
+  return (dot(alpha, p) / sum(alpha)).item<float>();
 }
 
 }  // namespace torch
