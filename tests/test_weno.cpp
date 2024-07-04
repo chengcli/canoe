@@ -31,13 +31,24 @@ TEST(interp_weno5, test_case1) {
   EXPECT_NEAR(result, expected_result, 1.E-10);
 }
 
-TEST(interp_weno5_torch, test_case1) {
+TEST(interp_weno5m_torch, test_case2) {
   for (int i = 0; i < 10; ++i) {
     torch::Tensor phi = torch::randn({5}, torch::kFloat32);
     float result1 = interp_weno5(phi[0].item<float>(), phi[1].item<float>(),
                                  phi[2].item<float>(), phi[3].item<float>(),
                                  phi[4].item<float>());
-    float result2 = torch::interp_weno5(phi);
+    float result2 = torch::interp_weno5m(phi, "i,i->").item<float>();
+    EXPECT_NEAR(result1, result2, 1.E-6);
+  }
+}
+
+TEST(interp_weno5p_torch, test_case3) {
+  for (int i = 0; i < 10; ++i) {
+    torch::Tensor phi = torch::randn({5}, torch::kFloat32);
+    float result1 = interp_weno5(phi[4].item<float>(), phi[3].item<float>(),
+                                 phi[2].item<float>(), phi[1].item<float>(),
+                                 phi[0].item<float>());
+    float result2 = torch::interp_weno5p(phi, "i,i->").item<float>();
     EXPECT_NEAR(result1, result2, 1.E-6);
   }
 }
