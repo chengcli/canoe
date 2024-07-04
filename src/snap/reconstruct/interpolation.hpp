@@ -14,8 +14,8 @@ class Interpolation {
     for (auto& c : cp_) c = c.to(dtype);
   }
 
-  virtual torch::Tensor Left(torch::Tensor const& phi, std::string pat) = 0;
-  virtual torch::Tensor Right(torch::Tensor const& phi, std::string pat) = 0;
+  virtual torch::Tensor left(torch::Tensor const& phi, std::string pat) = 0;
+  virtual torch::Tensor right(torch::Tensor const& phi, std::string pat) = 0;
 
  protected:
   std::vector<torch::Tensor> cm_;
@@ -26,14 +26,14 @@ class Center5Interp : public Interpolation {
  public:
   Center5Interp(c10::DeviceType dtype = c10::kCPU);
 
-  torch::Tensor Left(torch::Tensor const& phi, std::string pat) override;
-  torch::Tensor Right(torch::Tensor const& phi, std::string pat) override;
+  torch::Tensor left(torch::Tensor const& phi, std::string pat) override;
+  torch::Tensor right(torch::Tensor const& phi, std::string pat) override;
 };
 
 class Weno5Interp : public Interpolation {
  public:
   Weno5Interp(c10::DeviceType dtype = c10::kCPU);
 
-  torch::Tensor Left(torch::Tensor const& phi, std::string pat) override;
-  torch::Tensor Right(torch::Tensor const& phi, std::string pat) override;
+  torch::Tensor left(torch::Tensor const& phi, std::string pat) override;
+  torch::Tensor right(torch::Tensor const& phi, std::string pat) override;
 };

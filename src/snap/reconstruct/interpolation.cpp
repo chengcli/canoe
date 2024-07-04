@@ -29,11 +29,11 @@ Center5Interp::Center5Interp(c10::DeviceType dtype) {
   ToDevice(dtype);
 }
 
-Tensor Center5Interp::Left(Tensor const& phi, std::string pat) {
+Tensor Center5Interp::left(Tensor const& phi, std::string pat) {
   return einsum(pat, {phi, cm_[0]});
 }
 
-Tensor Center5Interp::Right(Tensor const& phi, std::string pat) {
+Tensor Center5Interp::right(Tensor const& phi, std::string pat) {
   return einsum(pat, {phi, cp_[0]});
 }
 
@@ -47,7 +47,7 @@ Weno5Interp::Weno5Interp(c10::DeviceType dtype) {
   ToDevice(dtype);
 }
 
-Tensor Weno5Interp::Left(Tensor const& phi, std::string pat) {
+Tensor Weno5Interp::left(Tensor const& phi, std::string pat) {
   Tensor p1 = einsum(pat, {phi, cm_[0]});
   Tensor p2 = einsum(pat, {phi, cm_[1]});
   Tensor p3 = einsum(pat, {phi, cm_[2]});
@@ -65,7 +65,7 @@ Tensor Weno5Interp::Left(Tensor const& phi, std::string pat) {
   return (alpha1 * p1 + alpha2 * p2 + alpha3 * p3) / (alpha1 + alpha2 + alpha3);
 }
 
-Tensor Weno5Interp::Right(Tensor const& phi, std::string pat) {
+Tensor Weno5Interp::right(Tensor const& phi, std::string pat) {
   Tensor p1 = einsum(pat, {phi, cp_[0]});
   Tensor p2 = einsum(pat, {phi, cp_[1]});
   Tensor p3 = einsum(pat, {phi, cp_[2]});
