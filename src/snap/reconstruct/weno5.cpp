@@ -119,7 +119,7 @@ void Reconstruction::Weno5X2(int jl, int ju, const Tensor &w, Tensor &wl,
         interp1.right(wj, "nkji,j->nki").unsqueeze(DIM2);
     wl_.narrow(DIM2, j + 1, 1) *= scale;
 
-    wr_.narrow(DIM2, j, 1) = interp1.right(wj, "nkji,j->nki").unsqueeze(DIM2);
+    wr_.narrow(DIM2, j, 1) = interp1.left(wj, "nkji,j->nki").unsqueeze(DIM2);
     wr_.narrow(DIM2, j, 1) *= scale;
 
     wj *= scale;
@@ -142,58 +142,45 @@ void Reconstruction::Weno5X2(int jl, int ju, const Tensor &w, Tensor &wl,
 
 //----------------------------------------------------------------------------------------
 //! \fn Reconstruction::Weno5X3()
-/*  \brief
+//  \brief
 
-void Reconstruction::Weno5X3(int kl, int ku,
-  const AthenaArray<Real> &w, const AthenaArray<Real> &bcc,
-  AthenaArray<Real> &wl, AthenaArray<Real> &wr)
-{
-  auto w_ = w.Tensor(DIMC, {0, IVX});
-  auto wl_ = wl.Tensor(DIMC, {0, IVX});
-  auto wr_ = wr.Tensor(DIMC, {0, IVX});
+void Reconstruction::Weno5X3(int kl, int ku, const Tensor &w, Tensor &wl,
+                             Tensor &wr) {
+  int64_t nweno = shock_capture_flag_ ? NHYDRO : IVX;
+  Weno5Interp interp1(w.device().type());
+  Center5Interp interp2(w.device().type());
 
-  for (int k=kl; k<=ku; ++k) {
-    auto &wk = w_->slice(DIM3, k-2, k+2);
-    Tensor scale = wk.sum() + 1.E-6;
-    wk /= scale.unsqueeze(DIM3);
+  auto w_ = w.slice(DIMC, 0, nweno);
+  auto wl_ = wl.slice(DIMC, 0, nweno);
+  auto wr_ = wr.slice(DIMC, 0, nweno);
 
-    wl_->narrow(DIM3, k, 1) = interp_weno5(wk, "nkji,k->nji");
-    wr_->narrow(DIM3, k, 1) *= scale;
+  for (int k = kl; k <= ku; ++k) {
+    auto wk = w_.slice(DIM3, k - 2, k + 3);
+    auto scale = wk.abs().mean(DIM3) + std::numeric_limits<float>::min();
+    scale = scale.unsqueeze(DIM3);
+    wk /= scale;
 
-    wr_->narrow(DIM3, k, 1) = interp_weno5p(wk, "nkji,k->nji");
-    wr_->narrow(DIM3, k, 1) *= scale;
+    wl_.narrow(DIM3, k + 1, 1) =
+        interp1.right(wk, "nkji,k->nji").unsqueeze(DIM3);
+    wr_.narrow(DIM3, k + 1, 1) *= scale;
 
-    wk *= scale.unsqueeze(DIM3);
+    wr_.narrow(DIM3, k, 1) = interp1.left(wk, "nkji,k->nji").unsqueeze(DIM3);
+    wr_.narrow(DIM3, k, 1) *= scale;
+
+    wk *= scale;
   }
 
-  for (int n=0; n<IVX; ++n) {
-    for (int i=il; i<=iu; ++i) {
-      Real scale = 0.;
-      for (int m = -2; m <= 2; ++m) scale += (w(n,k+m,j,i) + 1.E-16)/5.;
-      wl(n,i) = interp_weno5(w(n,k+2,j,i)/scale, w(n,k+1,j,i)/scale,
-w(n,k,j,i)/scale, w(n,k-1,j,i)/scale, w(n,k-2,j,i)/scale); wl(n,i) *= scale;
-      wr(n,i) = interp_weno5(w(n,k-2,j,i)/scale, w(n,k-1,j,i)/scale,
-w(n,k,j,i)/scale, w(n,k+1,j,i)/scale, w(n,k+2,j,i)/scale); wr(n,i) *= scale;
-    }
-  }
+  if (nweno == NHYDRO) return;
 
-  if (shock_capture_flag_) {
-    for (int n=IVX; n<NHYDRO; ++n)
-      for (int i=il; i<=iu; ++i) {
-        wl(n,i) =
-interp_weno5(w(n,k+2,j,i),w(n,k+1,j,i),w(n,k,j,i),w(n,k-1,j,i),w(n,k-2,j,i));
-        wr(n,i) =
-interp_weno5(w(n,k-2,j,i),w(n,k-1,j,i),w(n,k,j,i),w(n,k+1,j,i),w(n,k+2,j,i));
-      }
-    return;
-  }
+  // rest of the hydro variables
+  w_ = w.slice(DIMC, nweno, NHYDRO);
+  wl_ = wl.slice(DIMC, nweno, NHYDRO);
+  wr_ = wr.slice(DIMC, nweno, NHYDRO);
 
-  for (int n=IVX; n<NHYDRO; ++n) {
-    for (int i=il; i<=iu; ++i) {
-      wl(n,i) =
-interp_cp5(w(n,k+2,j,i),w(n,k+1,j,i),w(n,k,j,i),w(n,k-1,j,i),w(n,k-2,j,i));
-      wr(n,i) =
-interp_cp5(w(n,k-2,j,i),w(n,k-1,j,i),w(n,k,j,i),w(n,k+1,j,i),w(n,k+2,j,i));
-    }
+  for (int k = kl; k <= ku; ++k) {
+    auto wk = w_.slice(DIM3, k - 2, k + 3);
+    wl_.narrow(DIM3, k + 1, 1) =
+        interp2.right(wk, "nkji,k->nji").unsqueeze(DIM3);
+    wr_.narrow(DIM3, k, 1) = interp2.left(wk, "nkji,k->nji").unsqueeze(DIM3);
   }
-}*/
+}
