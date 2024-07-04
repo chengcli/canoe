@@ -8,7 +8,6 @@
 #include <athena/bvals/bvals.hpp>
 #include <athena/globals.hpp>
 #include <athena/mesh/mesh.hpp>
-#include <athena/stride_iterator.hpp>
 
 // application
 #include <application/application.hpp>
@@ -19,7 +18,9 @@
 #include <impl.hpp>
 
 // snap
-#include "../thermodynamics/thermodynamics.hpp"
+#include <snap/stride_iterator.hpp>
+#include <snap/thermodynamics/thermodynamics.hpp>
+
 #include "decomposition.hpp"
 
 Decomposition::Decomposition(MeshBlock *pmb)

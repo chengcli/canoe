@@ -128,6 +128,9 @@ TEST(interp_weno5p_torch, test_case7) {
 }
 
 TEST(interp_weno5m_torch, test_case_mps1) {
+  if (!torch::mps::is_available()) {
+    return;
+  }
   Weno5Interp interp(torch::kMPS);
 
   for (int i = 0; i < 10; ++i) {

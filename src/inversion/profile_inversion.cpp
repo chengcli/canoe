@@ -21,13 +21,13 @@
 #include <athena/globals.hpp>
 #include <athena/hydro/hydro.hpp>
 #include <athena/mesh/mesh.hpp>
-#include <athena/stride_iterator.hpp>
 
 // application
 #include <application/application.hpp>
 #include <application/exceptions.hpp>
 
 // snap
+#include <snap/stride_iterator.hpp>
 #include <snap/thermodynamics/atm_thermodynamics.hpp>
 
 // utils

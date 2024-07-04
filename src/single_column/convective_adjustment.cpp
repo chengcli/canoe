@@ -10,7 +10,6 @@
 #include <athena/coordinates/coordinates.hpp>
 #include <athena/eos/eos.hpp>
 #include <athena/hydro/hydro.hpp>
-#include <athena/stride_iterator.hpp>
 
 // canoe
 #include <configure.hpp>
@@ -19,6 +18,7 @@
 #include <climath/broyden_root.h>
 
 // snap
+#include <snap/stride_iterator.hpp>
 #include <snap/thermodynamics/thermodynamics.hpp>
 
 // scm

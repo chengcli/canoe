@@ -1,5 +1,6 @@
 #pragma once
 
+#include <c10/core/DeviceType.h>
 #include <torch/torch.h>
 
 #include <vector>
@@ -24,7 +25,7 @@ class Interpolation {
 
 class Center5Interp : public Interpolation {
  public:
-  Center5Interp(c10::DeviceType dtype = c10::kCPU);
+  explicit Center5Interp(c10::DeviceType dtype = c10::kCPU);
 
   torch::Tensor left(torch::Tensor const& phi, std::string pat) override;
   torch::Tensor right(torch::Tensor const& phi, std::string pat) override;
@@ -32,7 +33,7 @@ class Center5Interp : public Interpolation {
 
 class Weno5Interp : public Interpolation {
  public:
-  Weno5Interp(c10::DeviceType dtype = c10::kCPU);
+  explicit Weno5Interp(c10::DeviceType dtype = c10::kCPU);
 
   torch::Tensor left(torch::Tensor const& phi, std::string pat) override;
   torch::Tensor right(torch::Tensor const& phi, std::string pat) override;

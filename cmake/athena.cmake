@@ -19,7 +19,7 @@ set(patch_command
 FetchContent_Declare(
   athenapp
   GIT_REPOSITORY https://github.com/chengcli/athenapp/
-  GIT_TAG snap-mods
+  GIT_TAG cli/torch
   PATCH_COMMAND ${patch_command}
   UPDATE_DISCONNECTED TRUE)
 # DOWNLOAD_EXTRACT_TIMESTAMP TRUE URL
