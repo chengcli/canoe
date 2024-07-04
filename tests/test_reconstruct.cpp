@@ -133,15 +133,17 @@ TEST_F(TestReconstruct, test_x1) {
   wl3d.NewAthenaArray(NHYDRO, nc3, nc2, nc1);
   wr3d.NewAthenaArray(NHYDRO, nc3, nc2, nc1);
 
-  w.toDevice(torch::kCPU);
-  wl3d.toDevice(torch::kCPU);
-  wr3d.toDevice(torch::kCPU);
+  w.toDevice(torch::kMPS);
+  wl3d.toDevice(torch::kMPS);
+  wr3d.toDevice(torch::kMPS);
 
   w.tensor().normal_(0, 1);
 
   auto start = std::chrono::high_resolution_clock::now();
   if (NGHOST > 2) {
     pmb->precon->Weno5X1(pmb->is - 1, pmb->ie + 1, w.tensor(), wl3d.tensor(),
+                         wr3d.tensor());
+    pmb->precon->Weno5X2(pmb->js - 1, pmb->je + 1, w.tensor(), wl3d.tensor(),
                          wr3d.tensor());
   }
   auto end = std::chrono::high_resolution_clock::now();

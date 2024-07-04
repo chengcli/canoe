@@ -97,46 +97,52 @@ void Reconstruction::Weno5X1(int il, int iu, const Tensor &w, Tensor &wl,
 
 //----------------------------------------------------------------------------------------
 //! \fn Reconstruction::Weno5X2()
-/*  \brief
+//  \brief
 
-void Reconstruction::Weno5X2(int jl, int ju,
-  const AthenaArray<Real> &w, const AthenaArray<Real> &bcc,
-  AthenaArray<Real> &wl, AthenaArray<Real> &wr)
-{
-  int64_t nweno = shock_capture_flag_ ? IVX : NHYDRO;
+void Reconstruction::Weno5X2(int jl, int ju, const Tensor &w, Tensor &wl,
+                             Tensor &wr) {
+  int64_t nweno = shock_capture_flag_ ? NHYDRO : IVX;
+  Weno5Interp interp1(w.device().type());
+  Center5Interp interp2(w.device().type());
 
-  auto w_ = w.Tensor(DIMC, {0, nweno});
-  auto wl_ = wl.Tensor(DIMC, {0, nweno});
-  auto wr_ = wr.Tensor(DIMC, {0, nweno});
+  auto w_ = w.slice(DIMC, 0, nweno);
+  auto wl_ = wl.slice(DIMC, 0, nweno);
+  auto wr_ = wr.slice(DIMC, 0, nweno);
 
-  for (int j=jl; j<=ju; ++j) {
-    auto &wj = w_->slice(DIM2, j-2, j+2);
-    Tensor scale = wj.sum(DIM2) + 1.E-6;
+  for (int j = jl; j <= ju; ++j) {
+    auto wj = w_.slice(DIM2, j - 2, j + 3);
+    auto scale = wj.abs().mean(DIM2) + std::numeric_limits<float>::min();
+    scale = scale.unsqueeze(DIM2);
+    wj /= scale;
 
-    wj /= scale.unsqueeze(DIM2);
-    wl_->narrow(DIM2, j, 1) = interp_weno5(wj, "nkji,j->nki");
-    wl_->narrow(DIM2, j, 1) *= scale;
+    wl_.narrow(DIM2, j + 1, 1) =
+        interp1.right(wj, "nkji,j->nki").unsqueeze(DIM2);
+    wl_.narrow(DIM2, j + 1, 1) *= scale;
 
-    wr_->narrow(DIM2, j, 1) = interp_weno5p(wj, "nkji,j->nki");
-    wr_->narrow(DIM2, j, 1) *= scale;
+    wr_.narrow(DIM2, j, 1) = interp1.right(wj, "nkji,j->nki").unsqueeze(DIM2);
+    wr_.narrow(DIM2, j, 1) *= scale;
 
-    wj *= scale.unsqueeze(DIM2);
+    wj *= scale;
   }
 
-  for (int n=nweno; n<NHYDRO; ++n) {
-#pragma omp simd
-    for (int i=il; i<=iu; ++i) {
-      wl(n,i) =
-interp_cp5(w(n,k,j+2,i),w(n,k,j+1,i),w(n,k,j,i),w(n,k,j-1,i),w(n,k,j-2,i));
-      wr(n,i) =
-interp_cp5(w(n,k,j-2,i),w(n,k,j-1,i),w(n,k,j,i),w(n,k,j+1,i),w(n,k,j+2,i));
-    }
+  if (nweno == NHYDRO) return;
+
+  // rest of the hydro variables
+  w_ = w.slice(DIMC, nweno, NHYDRO);
+  wl_ = wl.slice(DIMC, nweno, NHYDRO);
+  wr_ = wr.slice(DIMC, nweno, NHYDRO);
+
+  for (int j = jl; j <= ju; ++j) {
+    auto wj = w_.slice(DIM2, j - 2, j + 3);
+    wl_.narrow(DIM2, j + 1, 1) =
+        interp2.right(wj, "nkji,j->nki").unsqueeze(DIM2);
+    wr_.narrow(DIM2, j, 1) = interp2.left(wj, "nkji,j->nki").unsqueeze(DIM2);
   }
 }
 
 //----------------------------------------------------------------------------------------
 //! \fn Reconstruction::Weno5X3()
-//  \brief
+/*  \brief
 
 void Reconstruction::Weno5X3(int kl, int ku,
   const AthenaArray<Real> &w, const AthenaArray<Real> &bcc,
