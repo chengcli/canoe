@@ -1,9 +1,11 @@
 #pragma once
 
+// C/C++
+#include <vector>
+
+// torch
 #include <c10/core/DeviceType.h>
 #include <torch/torch.h>
-
-#include <vector>
 
 class Interpolation {
  public:
@@ -15,8 +17,8 @@ class Interpolation {
     for (auto& c : cp_) c = c.to(dtype);
   }
 
-  virtual torch::Tensor left(torch::Tensor const& phi, std::string pat) = 0;
-  virtual torch::Tensor right(torch::Tensor const& phi, std::string pat) = 0;
+  virtual torch::Tensor left(torch::Tensor const& phi) const = 0;
+  virtual torch::Tensor right(torch::Tensor const& phi) const = 0;
 
  protected:
   std::vector<torch::Tensor> cm_;
@@ -27,14 +29,14 @@ class Center5Interp : public Interpolation {
  public:
   explicit Center5Interp(c10::DeviceType dtype = c10::kCPU);
 
-  torch::Tensor left(torch::Tensor const& phi, std::string pat) override;
-  torch::Tensor right(torch::Tensor const& phi, std::string pat) override;
+  torch::Tensor left(torch::Tensor const& phi) const override;
+  torch::Tensor right(torch::Tensor const& phi) const override;
 };
 
 class Weno5Interp : public Interpolation {
  public:
   explicit Weno5Interp(c10::DeviceType dtype = c10::kCPU);
 
-  torch::Tensor left(torch::Tensor const& phi, std::string pat) override;
-  torch::Tensor right(torch::Tensor const& phi, std::string pat) override;
+  torch::Tensor left(torch::Tensor const& phi) const override;
+  torch::Tensor right(torch::Tensor const& phi) const override;
 };

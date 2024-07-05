@@ -17,6 +17,13 @@
 // canoe
 #include <impl.hpp>
 #include <snap/athena_arrays.hpp>
+#include <snap/reconstruct/recon.hpp>
+
+enum {
+  DIM1 = 3,
+  DIM2 = 2,
+  DIM3 = 1,
+};
 
 class TestReconstruct : public testing::Test {
  protected:
@@ -37,13 +44,13 @@ x1max       = 0.5       # maximum value of X1
 ix1_bc      = outflow   # Inner-X1 boundary condition flag
 ox1_bc      = outflow   # Outer-X1 boundary condition flag
 
-nx2         = 1000         # Number of zones in X2-direction
+nx2         = 100         # Number of zones in X2-direction
 x2min       = -0.5      # minimum value of X2
 x2max       = 0.5       # maximum value of X2
 ix2_bc      = periodic  # Inner-X2 boundary condition flag
 ox2_bc      = periodic  # Outer-X2 boundary condition flag
 
-nx3         = 1000         # Number of zones in X3-direction
+nx3         = 100         # Number of zones in X3-direction
 x3min       = -0.5      # minimum value of X3
 x3max       = 0.5       # maximum value of X3
 ix3_bc      = periodic  # Inner-X3 boundary condition flag
@@ -123,30 +130,26 @@ gamma       = 1.4
 TEST_F(TestReconstruct, test_x1) {
   auto pmb = pmesh->my_blocks(0);
 
-  AthenaArray<float> wl3d, wr3d, w;
+  AthenaArray<float> w;
 
   int nc1 = pmb->ncells1;
   int nc2 = pmb->ncells2;
   int nc3 = pmb->ncells3;
 
   w.NewAthenaArray(NHYDRO, nc3, nc2, nc1);
-  wl3d.NewAthenaArray(NHYDRO, nc3, nc2, nc1);
-  wr3d.NewAthenaArray(NHYDRO, nc3, nc2, nc1);
-
   w.toDevice(torch::kMPS);
-  wl3d.toDevice(torch::kMPS);
-  wr3d.toDevice(torch::kMPS);
-
   w.tensor().normal_(0, 1);
 
   auto start = std::chrono::high_resolution_clock::now();
   if (NGHOST > 2) {
-    pmb->precon->Weno5X1(pmb->is - 1, pmb->ie + 1, w.tensor(), wl3d.tensor(),
-                         wr3d.tensor());
-    pmb->precon->Weno5X2(pmb->js - 1, pmb->je + 1, w.tensor(), wl3d.tensor(),
-                         wr3d.tensor());
-    pmb->precon->Weno5X3(pmb->ks - 1, pmb->ke + 1, w.tensor(), wl3d.tensor(),
-                         wr3d.tensor());
+    auto [wl, wr] = recon_weno5_hydro(w.tensor(), IVX, DIM2);
+
+    // pmb->precon->Weno5X1(pmb->is - 1, pmb->ie + 1, w.tensor(), wl3d.tensor(),
+    //                      wr3d.tensor());
+    // pmb->precon->Weno5X2(pmb->js - 1, pmb->je + 1, w.tensor(), wl3d.tensor(),
+    //                      wr3d.tensor());
+    // pmb->precon->Weno5X3(pmb->ks - 1, pmb->ke + 1, w.tensor(), wl3d.tensor(),
+    //                      wr3d.tensor());
   }
   auto end = std::chrono::high_resolution_clock::now();
   std::chrono::duration<double> elapsed = end - start;

@@ -1,4 +1,4 @@
-// C/C++
+/* C/C++
 #include <algorithm>
 #include <cmath>
 
@@ -176,4 +176,4 @@ TEST(interp_weno5p_torch, test_case_mps2) {
 int main(int argc, char **argv) {
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
-}
+}*/

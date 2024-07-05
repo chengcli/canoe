@@ -1,14 +1,7 @@
 // C/C++ header
 #include <limits>
 
-// Athena++ headers
-#include <athena/athena_arrays.hpp>
-#include <athena/mesh/mesh.hpp>
-#include <athena/reconstruct/reconstruction.hpp>
-
 // snap
-#include <snap/athena_arrays.hpp>
-
 #include "interpolation.hpp"
 
 using namespace torch;
@@ -19,85 +12,87 @@ enum {
   DIM3 = 1,
   DIM2 = 2,
   DIM1 = 3,
+  DIMX = 4,
+  NGHOST = 3,
 };
 
-void Reconstruction::Weno5X1(int il, int iu, const Tensor &w, Tensor &wl,
-                             Tensor &wr) {
-  int64_t nweno = shock_capture_flag_ ? NHYDRO : IVX;
+inline void _weno5_hydro_range(int64_t dim, int64_t il, int64_t iu,
+                               const Tensor &w, Tensor &wl, Tensor &wr,
+                               const Interpolation &interp) {
+  if (il > iu) return;
+
+  auto wu = w.slice(dim, il - NGHOST, iu + NGHOST - 1).unfold(dim, 5, 1);
+  auto scale = wu.abs().mean(DIMX) + std::numeric_limits<float>::min();
+  wu /= scale.unsqueeze(DIMX);
+
+  wl.slice(dim, il, iu + 1) = interp.right(wu) * scale;
+  wr.slice(dim, il - 1, iu) = interp.left(wu) * scale;
+}
+
+std::pair<Tensor, Tensor> recon_weno5_hydro(const Tensor &w, int64_t IVX,
+                                            int64_t dim, bool mixed,
+                                            bool is_boundary_lower,
+                                            bool is_boundary_upper) {
+  int64_t NHYDRO = w.size(DIMC);
+  int64_t nweno = mixed ? IVX : NHYDRO;
   Weno5Interp interp1(w.device().type());
   Center5Interp interp2(w.device().type());
+
+  auto wl = torch::zeros_like(w);
+  auto wr = torch::zeros_like(w);
 
   auto w_ = w.slice(DIMC, 0, nweno);
   auto wl_ = wl.slice(DIMC, 0, nweno);
   auto wr_ = wr.slice(DIMC, 0, nweno);
 
-  for (int i = il; i <= iu; ++i) {
-    auto wi = w_.slice(DIM1, i - 2, i + 3);
-    auto scale = wi.abs().mean(DIM1) + std::numeric_limits<float>::min();
-    scale = scale.unsqueeze(DIM1);
-    wi /= scale;
+  auto dim_size = w.size(dim);
+  int64_t il = NGHOST;
+  int64_t iu = dim_size - NGHOST + 1;
 
-    wl_.narrow(DIM1, i + 1, 1) =
-        interp1.right(wi, "nkji,i->nkj").unsqueeze(DIM1);
-    wl_.narrow(DIM1, i + 1, 1) *= scale;
+  _weno5_hydro_range(dim, il, iu, w_, wl_, wr_, interp1);
 
-    wr_.narrow(DIM1, i, 1) = interp1.left(wi, "nkji,i->nkj").unsqueeze(DIM1);
-    wr_.narrow(DIM1, i, 1) *= scale;
-
-    wi *= scale;
-  };
-
-  MeshBlock *pmb = pmy_block_;
-  int ng1 = pmb->pbval->isPhysicalBoundary(inner_x1) ? NGHOST : 0;
-  int ng2 = pmb->pbval->isPhysicalBoundary(outer_x1) ? NGHOST : 0;
-
-  if (nweno == NHYDRO) return;
+  if (nweno == NHYDRO) return {wl, wr};
 
   // rest of the hydro variables
   w_ = w.slice(DIMC, nweno, NHYDRO);
   wl_ = wl.slice(DIMC, nweno, NHYDRO);
   wr_ = wr.slice(DIMC, nweno, NHYDRO);
 
-  // left boundary
-  for (int i = il; i < il + ng1; ++i) {
-    auto wi = w_.slice(DIM1, i - 2, i + 3);
-    auto scale = wi.abs().mean(DIM1) + std::numeric_limits<float>::min();
-    scale = scale.unsqueeze(DIM1);
-    wi /= scale;
-    wl_.narrow(DIM1, i + 1, 1) =
-        interp1.right(wi, "nkji,i->nkj").unsqueeze(DIM1);
-    wl_.narrow(DIM1, i + 1, 1) *= scale;
-    wr_.narrow(DIM1, i, 1) = interp1.left(wi, "nkji,i->nkj").unsqueeze(DIM1);
-    wr_.narrow(DIM1, i, 1) *= scale;
-    wi *= scale;
+  // boundaries
+  if (dim_size > 2 * NGHOST) {
+    if (is_boundary_lower) {
+      _weno5_hydro_range(dim, il, il + NGHOST - 1, w_, wl_, wr_, interp1);
+      il += NGHOST;
+    } else if (is_boundary_upper) {
+      _weno5_hydro_range(dim, iu - NGHOST + 1, iu, w_, wl_, wr_, interp1);
+      iu -= NGHOST;
+    }
+  } else {
+    if (is_boundary_lower && !is_boundary_upper) {
+      _weno5_hydro_range(dim, il, il + NGHOST - 1, w_, wl_, wr_, interp1);
+      il += NGHOST;
+    } else if (!is_boundary_lower && is_boundary_upper) {
+      _weno5_hydro_range(dim, iu - NGHOST + 1, iu, w_, wl_, wr_, interp1);
+      iu -= NGHOST;
+    } else if (is_boundary_lower && is_boundary_upper) {
+      int64_t len1 = dim_size / 2;
+      int64_t len2 = dim_size - len1;
+      _weno5_hydro_range(dim, il, il + len1 - 1, w_, wl_, wr_, interp1);
+      _weno5_hydro_range(dim, iu - len2 + 1, iu, w_, wl_, wr_, interp1);
+      il += len1;
+      iu -= len2;
+    }
   }
 
   // interior
-  for (int i = il + ng1; i <= iu - ng2; ++i) {
-    auto wi = w_.slice(DIM1, i - 2, i + 3);
-    wl_.narrow(DIM1, i + 1, 1) =
-        interp2.right(wi, "nkji,i->nkj").unsqueeze(DIM1);
-    wr_.narrow(DIM1, i, 1) = interp2.left(wi, "nkji,i->nkj").unsqueeze(DIM1);
-  }
+  _weno5_hydro_range(dim, il, iu, w_, wl_, wr_, interp2);
 
-  // right boundary
-  for (int i = iu - ng2 + 1; i <= iu; ++i) {
-    auto wi = w_.slice(DIM1, i - 2, i + 3);
-    auto scale = wi.abs().mean(DIM1) + std::numeric_limits<float>::min();
-    scale = scale.unsqueeze(DIM1);
-    wi /= scale;
-    wl_.narrow(DIM1, i + 1, 1) =
-        interp1.right(wi, "nkji,i->nkj").unsqueeze(DIM1);
-    wl_.narrow(DIM1, i + 1, 1) *= scale;
-    wr_.narrow(DIM1, i, 1) = interp1.left(wi, "nkji,i->nkj").unsqueeze(DIM1);
-    wr_.narrow(DIM1, i, 1) *= scale;
-    wi *= scale;
-  }
+  return {wl, wr};
 }
 
 //----------------------------------------------------------------------------------------
 //! \fn Reconstruction::Weno5X2()
-//  \brief
+/*  \brief
 
 void Reconstruction::Weno5X2(int jl, int ju, const Tensor &w, Tensor &wl,
                              Tensor &wr) {
@@ -183,4 +178,4 @@ void Reconstruction::Weno5X3(int kl, int ku, const Tensor &w, Tensor &wl,
         interp2.right(wk, "nkji,k->nji").unsqueeze(DIM3);
     wr_.narrow(DIM3, k, 1) = interp2.left(wk, "nkji,k->nji").unsqueeze(DIM3);
   }
-}
+}*/

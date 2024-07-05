@@ -29,12 +29,12 @@ Center5Interp::Center5Interp(c10::DeviceType dtype) {
   ToDevice(dtype);
 }
 
-Tensor Center5Interp::left(Tensor const& phi, std::string pat) {
-  return einsum(pat, {phi, cm_[0]});
+Tensor Center5Interp::left(Tensor const& phi) const {
+  return matmul(phi, cm_[0]);
 }
 
-Tensor Center5Interp::right(Tensor const& phi, std::string pat) {
-  return einsum(pat, {phi, cp_[0]});
+Tensor Center5Interp::right(Tensor const& phi) const {
+  return matmul(phi, cp_[0]);
 }
 
 Weno5Interp::Weno5Interp(c10::DeviceType dtype) {
@@ -47,17 +47,17 @@ Weno5Interp::Weno5Interp(c10::DeviceType dtype) {
   ToDevice(dtype);
 }
 
-Tensor Weno5Interp::left(Tensor const& phi, std::string pat) {
-  Tensor p1 = einsum(pat, {phi, cm_[0]});
-  Tensor p2 = einsum(pat, {phi, cm_[1]});
-  Tensor p3 = einsum(pat, {phi, cm_[2]});
+Tensor Weno5Interp::left(Tensor const& phi) const {
+  Tensor p1 = matmul(phi, cm_[0]);
+  Tensor p2 = matmul(phi, cm_[1]);
+  Tensor p3 = matmul(phi, cm_[2]);
 
-  Tensor beta1 = 13. / 12. * sqr(einsum(pat, {phi, cm_[3]})) +
-                 1. / 4. * sqr(einsum(pat, {phi, cm_[4]}));
-  Tensor beta2 = 13. / 12. * sqr(einsum(pat, {phi, cm_[5]})) +
-                 1. / 4. * sqr(einsum(pat, {phi, cm_[6]}));
-  Tensor beta3 = 13. / 12. * sqr(einsum(pat, {phi, cm_[7]})) +
-                 1. / 4. * sqr(einsum(pat, {phi, cm_[8]}));
+  Tensor beta1 =
+      13. / 12. * sqr(matmul(phi, cm_[3])) + 1. / 4. * sqr(matmul(phi, cm_[4]));
+  Tensor beta2 =
+      13. / 12. * sqr(matmul(phi, cm_[5])) + 1. / 4. * sqr(matmul(phi, cm_[6]));
+  Tensor beta3 =
+      13. / 12. * sqr(matmul(phi, cm_[7])) + 1. / 4. * sqr(matmul(phi, cm_[8]));
 
   Tensor alpha1 = 0.3 / sqr(beta1 + 1e-6);
   Tensor alpha2 = 0.6 / sqr(beta2 + 1e-6);
@@ -65,17 +65,17 @@ Tensor Weno5Interp::left(Tensor const& phi, std::string pat) {
   return (alpha1 * p1 + alpha2 * p2 + alpha3 * p3) / (alpha1 + alpha2 + alpha3);
 }
 
-Tensor Weno5Interp::right(Tensor const& phi, std::string pat) {
-  Tensor p1 = einsum(pat, {phi, cp_[0]});
-  Tensor p2 = einsum(pat, {phi, cp_[1]});
-  Tensor p3 = einsum(pat, {phi, cp_[2]});
+Tensor Weno5Interp::right(Tensor const& phi) const {
+  Tensor p1 = matmul(phi, cp_[0]);
+  Tensor p2 = matmul(phi, cp_[1]);
+  Tensor p3 = matmul(phi, cp_[2]);
 
-  Tensor beta1 = 13. / 12. * sqr(einsum(pat, {phi, cp_[3]})) +
-                 1. / 4. * sqr(einsum(pat, {phi, cp_[4]}));
-  Tensor beta2 = 13. / 12. * sqr(einsum(pat, {phi, cp_[5]})) +
-                 1. / 4. * sqr(einsum(pat, {phi, cp_[6]}));
-  Tensor beta3 = 13. / 12. * sqr(einsum(pat, {phi, cp_[7]})) +
-                 1. / 4. * sqr(einsum(pat, {phi, cp_[8]}));
+  Tensor beta1 =
+      13. / 12. * sqr(matmul(phi, cp_[3])) + 1. / 4. * sqr(matmul(phi, cp_[4]));
+  Tensor beta2 =
+      13. / 12. * sqr(matmul(phi, cp_[5])) + 1. / 4. * sqr(matmul(phi, cp_[6]));
+  Tensor beta3 =
+      13. / 12. * sqr(matmul(phi, cp_[7])) + 1. / 4. * sqr(matmul(phi, cp_[8]));
 
   Tensor alpha1 = 0.3 / sqr(beta1 + 1e-6);
   Tensor alpha2 = 0.6 / sqr(beta2 + 1e-6);
