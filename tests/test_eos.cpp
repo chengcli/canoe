@@ -81,10 +81,6 @@ TEST(prim2cons_hydro_ideal, mps_case1) {
 }
 
 TEST(cons2prim_hydro_ideal, cpu_case1) {
-  if (!torch::mps::is_available()) {
-    GTEST_SKIP() << "MPS device is not available. Skipping test.";
-  }
-
   int64_t NHYDRO = 5;
   int64_t ncloud = 0;
   int64_t nvapor = NHYDRO - 5 - ncloud;
@@ -122,10 +118,6 @@ TEST(cons2prim_hydro_ideal, cpu_case1) {
 }
 
 TEST(prim2cons_hydro_ideal, cpu_case1) {
-  if (!torch::mps::is_available()) {
-    GTEST_SKIP() << "MPS device is not available. Skipping test.";
-  }
-
   int64_t NHYDRO = 14;
   int64_t ncloud = 5;
   int64_t nvapor = NHYDRO - 5 - ncloud;

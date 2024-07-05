@@ -11,6 +11,8 @@ enable_testing()
 setup_test(test_eos)
 setup_test(test_weno)
 setup_test(test_reconstruct)
+setup_test(test_riemann)
+setup_test(test_hydro)
 
 setup_test(test_glog)
 setup_test(test_absorber)

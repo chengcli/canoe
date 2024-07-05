@@ -13,34 +13,37 @@ enum {
 
 using namespace riemann::internal;
 
-torch::Tensor rs_hydro_lmars(int64_t IVX, int64_t dim, const torch::Tensor &wl,
+torch::Tensor rs_hydro_lmars(int64_t dim, const torch::Tensor &wl,
                              const torch::Tensor &wr,
                              const torch::Tensor &gammad,
                              std::optional<torch::Tensor> rmu,
                              std::optional<torch::Tensor> rcv, int64_t ncloud,
                              std::optional<torch::TensorList> cos_theta) {
-  int64_t IPR = IVX + 3;  // pressure index
+  auto IVX = wl.size(DIMC) - 4;
+  auto IPR = IVX + 3;  // pressure index
 
   // dim, ivx
   // 3, IVX
   // 2, IVX + 1
   // 1, IVX + 2
-  int64_t ivx = IPR - dim;
-  int64_t ivy = IVX + ((ivx - IVX) + 1) % 3;
-  int64_t ivz = IVX + ((ivx - IVX) + 2) % 3;
+  auto ivx = IPR - dim;
+  auto ivy = IVX + ((ivx - IVX) + 1) % 3;
+  auto ivz = IVX + ((ivx - IVX) + 2) % 3;
 
   auto fepsl = torch::ones_like(wl[0]);
   auto fepsr = torch::ones_like(wr[0]);
 
   if (rmu.has_value()) {
-    fepsl += torch::einsum("nkji,n->kji",
-                           {wl.slice(DIMC, 1, IVX - ncloud),
-                            rmu.value().slice(DIMC, 1, IVX - ncloud)}) -
+    auto wlu =
+        wl.slice(DIMC, 1, IVX - ncloud).unfold(DIMC, IVX - ncloud - 1, 1);
+    fepsl += torch::matmul(wlu, rmu.value().slice(DIMC, 0, IVX - ncloud - 1))
+                 .squeeze(DIMC) -
              wl.slice(DIMC, IVX - ncloud, IVX).sum(DIMC);
 
-    fepsr += torch::einsum("nkji,n->kji",
-                           {wr.slice(DIMC, 1, IVX - ncloud),
-                            rmu.value().slice(DIMC, 1, IVX - ncloud)}) -
+    auto wru =
+        wr.slice(DIMC, 1, IVX - ncloud).unfold(DIMC, IVX - ncloud - 1, 1);
+    fepsr += torch::matmul(wru, rmu.value().slice(DIMC, 0, IVX - ncloud - 1))
+                 .squeeze(DIMC) -
              wr.slice(DIMC, IVX - ncloud, IVX).sum(DIMC);
   }
 
@@ -48,10 +51,11 @@ torch::Tensor rs_hydro_lmars(int64_t IVX, int64_t dim, const torch::Tensor &wl,
   auto fsigr = torch::ones_like(wr[0]);
 
   if (rcv.has_value()) {
-    fsigl +=
-        torch::einsum("nkji,n->kji", {wl.slice(DIMC, 1, IVX), rcv.value()});
-    fsigr +=
-        torch::einsum("nkji,n->kji", {wr.slice(DIMC, 1, IVX), rcv.value()});
+    auto wlu = wl.slice(DIMC, 1, IVX).unfold(DIMC, IVX - 1, 1);
+    fsigl += torch::matmul(wlu, rcv.value()).squeeze(DIMC);
+
+    auto wru = wr.slice(DIMC, 1, IVX).unfold(DIMC, IVX - 1, 1);
+    fsigr += torch::matmul(wru, rcv.value()).squeeze(DIMC);
   }
 
   auto kappal = 1.f / (gammad - 1.f) * fsigl / fepsl;

@@ -27,7 +27,7 @@ void _flux2global_inplace(int64_t ivx, torch::Tensor const &w,
 }  // namespace riemann
 
 torch::Tensor rs_hydro_lmars(
-    int64_t IVX, int64_t dim, const torch::Tensor &wl, const torch::Tensor &wr,
+    int64_t dim, const torch::Tensor &wl, const torch::Tensor &wr,
     const torch::Tensor &gammad,
     std::optional<torch::Tensor> rmu = std::nullopt,
     std::optional<torch::Tensor> rcv = std::nullopt, int64_t ncloud = 0,
