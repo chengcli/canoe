@@ -8,8 +8,10 @@ configure_file(globals.cpp.in globals.cpp @ONLY)
 enable_testing()
 
 # Add test cases
+setup_test(test_eos)
 setup_test(test_weno)
 setup_test(test_reconstruct)
+
 setup_test(test_glog)
 setup_test(test_absorber)
 setup_test(test_read_stellar_flux)

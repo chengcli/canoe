@@ -15,38 +15,43 @@ enum {
 };
 
 torch::Tensor eos_cons2prim_hydro_ideal(
-    int64_t IVX, torch::Tensor &cons, const torch::Tensor &gammad,
+    torch::Tensor &cons, const torch::Tensor &gammad,
     std::optional<torch::Tensor> rmu, std::optional<torch::Tensor> rcv,
     int64_t ncloud, std::optional<torch::TensorList> cos_theta) {
+  auto IVX = cons.size(DIMC) - 4;
   auto IVY = IVX + 1;
   auto IVZ = IVX + 2;
   auto IPR = IVX + 3;
+
+  _check_dim1(IVX, ncloud, cons, gammad);
 
   _apply_conserved_limiter_inplace(cons);
 
   auto prim = torch::zeros_like(cons);
 
-  prim[IDN] = cons / cons.sum(DIMC);
-  prim.slice(DIMC, IVX, IPR) = cons.slice(DIMC, IVX, IPR) / prim[IDN];
+  prim[IDN] = cons.slice(DIMC, 0, IVX).sum(DIMC);
+  prim.slice(DIMC, 1, IPR) = cons.slice(DIMC, 1, IPR) / prim[IDN];
+
+  if (cos_theta.has_value()) {  // velocities are at an angle
+    vec_raise_inplace(prim, cos_theta.value());
+  }
 
   auto feps = torch::ones_like(cons[0]);
 
   if (rmu.has_value()) {
+    _check_dim2(IVX, rmu);
     feps += torch::einsum("nkji,n->kji",
                           {prim.slice(DIMC, 1, IVX - ncloud),
-                           rmu.value().slice(DIMC, 1, IVX - ncloud)}) -
+                           rmu.value().slice(DIMC, 0, IVX - ncloud - 1)}) -
             prim.slice(DIMC, IVX - ncloud, IVX).sum(DIMC);
   }
 
   auto fsig = torch::ones_like(cons[0]);
 
   if (rcv.has_value()) {
+    _check_dim2(IVX, rcv);
     fsig +=
         torch::einsum("nkji,n->kji", {prim.slice(DIMC, 1, IVX), rcv.value()});
-  }
-
-  if (cos_theta.has_value()) {  // velocities are at an angle
-    vec_raise_inplace(prim, cos_theta.value());
   }
 
   auto ke = 0.5 * (prim[IVX] * cons[IVX] + prim[IVY] * cons[IVY] +
@@ -60,39 +65,43 @@ torch::Tensor eos_cons2prim_hydro_ideal(
 }
 
 torch::Tensor eos_prim2cons_hydro_ideal(
-    int64_t IVX, torch::Tensor &prim, const torch::Tensor &gammad,
+    torch::Tensor &prim, const torch::Tensor &gammad,
     std::optional<torch::Tensor> rmu, std::optional<torch::Tensor> rcv,
     int64_t ncloud, std::optional<torch::TensorList> cos_theta) {
+  auto IVX = prim.size(DIMC) - 4;
   auto IVY = IVX + 1;
   auto IVZ = IVX + 2;
   auto IPR = IVX + 3;
+
+  _check_dim1(IVX, ncloud, prim, gammad);
 
   _apply_primitive_limiter_inplace(prim);
 
   auto cons = torch::zeros_like(prim);
 
-  cons[IDN] = 1. - prim.slice(DIMC, 1, IVX).sum(DIMC);
-  cons.slice(DIMC, 1, IVX) = prim.slice(DIMC, 1, IVX) * prim[IDN];
-  cons.slice(DIMC, IVX, IPR) = prim.slice(DIMC, IVX, IPR) * prim[IDN];
+  cons[IDN] = (1. - prim.slice(DIMC, 1, IVX).sum(DIMC)) * prim[IDN];
+  cons.slice(DIMC, 1, IPR) = prim.slice(DIMC, 1, IPR) * prim[IDN];
+
+  if (cos_theta.has_value()) {  // velocities are at an angle
+    vec_lower_inplace(cons, cos_theta.value());
+  }
 
   auto feps = torch::ones_like(cons[0]);
 
   if (rmu.has_value()) {
+    _check_dim2(IVX, rmu);
     feps += torch::einsum("nkji,n->kji",
                           {prim.slice(DIMC, 1, IVX - ncloud),
-                           rmu.value().slice(DIMC, 1, IVX - ncloud)}) -
+                           rmu.value().slice(DIMC, 0, IVX - ncloud - 1)}) -
             prim.slice(DIMC, IVX - ncloud, IVX).sum(DIMC);
   }
 
   auto fsig = torch::ones_like(cons[0]);
 
   if (rcv.has_value()) {
+    _check_dim2(IVX, rcv);
     fsig +=
         torch::einsum("nkji,n->kji", {prim.slice(DIMC, 1, IVX), rcv.value()});
-  }
-
-  if (cos_theta.has_value()) {  // velocities are at an angle
-    vec_lower_inplace(cons, cos_theta.value());
   }
 
   auto ke = 0.5 * (prim[IVX] * cons[IVX] + prim[IVY] * cons[IVY] +
