@@ -1,10 +1,11 @@
 // C/C++ header
 #include <limits>
 
+// torch
+#include <torch/torch.h>
+
 // snap
 #include "interpolation.hpp"
-
-using namespace torch;
 
 // C,D,H,W
 enum {
@@ -17,7 +18,8 @@ enum {
 };
 
 inline void _weno5_hydro_range(int64_t dim, int64_t il, int64_t iu,
-                               const Tensor &w, Tensor &wl, Tensor &wr,
+                               const torch::Tensor &w, const torch::Tensor &wl,
+                               const torch::Tensor &wr,
                                const Interpolation &interp) {
   if (il > iu) return;
 
@@ -29,12 +31,11 @@ inline void _weno5_hydro_range(int64_t dim, int64_t il, int64_t iu,
   wr.slice(dim, il - 1, iu) = interp.left(wu) * scale;
 }
 
-std::pair<Tensor, Tensor> recon_weno5_hydro(const Tensor &w, int64_t IVX,
-                                            int64_t dim, bool mixed,
-                                            bool is_boundary_lower,
-                                            bool is_boundary_upper) {
-  int64_t NHYDRO = w.size(DIMC);
-  int64_t nweno = mixed ? IVX : NHYDRO;
+std::pair<torch::Tensor, torch::Tensor> recon_weno5_hydro(
+    const torch::Tensor &w, int64_t IVX, int64_t dim, bool mixed,
+    bool is_boundary_lower, bool is_boundary_upper) {
+  int64_t nhydro = w.size(DIMC);
+  int64_t nweno = mixed ? IVX : nhydro;
   Weno5Interp interp1(w.device().type());
   Center5Interp interp2(w.device().type());
 
@@ -49,14 +50,18 @@ std::pair<Tensor, Tensor> recon_weno5_hydro(const Tensor &w, int64_t IVX,
   int64_t il = NGHOST;
   int64_t iu = dim_size - NGHOST + 1;
 
+  if (il > iu) {
+    AT_ERROR("recon_weno5_hydro: il > iu");
+  }
+
   _weno5_hydro_range(dim, il, iu, w_, wl_, wr_, interp1);
 
-  if (nweno == NHYDRO) return {wl, wr};
+  if (nweno == nhydro) return {wl, wr};
 
   // rest of the hydro variables
-  w_ = w.slice(DIMC, nweno, NHYDRO);
-  wl_ = wl.slice(DIMC, nweno, NHYDRO);
-  wr_ = wr.slice(DIMC, nweno, NHYDRO);
+  w_ = w.slice(DIMC, nweno, nhydro);
+  wl_ = wl.slice(DIMC, nweno, nhydro);
+  wr_ = wr.slice(DIMC, nweno, nhydro);
 
   // boundaries
   if (dim_size > 2 * NGHOST) {
@@ -87,6 +92,22 @@ std::pair<Tensor, Tensor> recon_weno5_hydro(const Tensor &w, int64_t IVX,
   // interior
   _weno5_hydro_range(dim, il, iu, w_, wl_, wr_, interp2);
 
+  return {wl, wr};
+}
+
+std::pair<torch::Tensor, torch::Tensor> recon_weno5_scalar(
+    const torch::Tensor &w, int64_t dim) {
+  auto wl = torch::zeros_like(w);
+  auto wr = torch::zeros_like(w);
+
+  int64_t il = NGHOST;
+  int64_t iu = w.size(dim) - NGHOST + 1;
+
+  if (il > iu) {
+    AT_ERROR("recon_weno5_scalar: il > iu");
+  }
+
+  _weno5_hydro_range(dim, il, iu, w, wl, wr, Weno5Interp(w.device().type()));
   return {wl, wr};
 }
 

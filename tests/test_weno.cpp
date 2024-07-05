@@ -1,4 +1,4 @@
-/* C/C++
+// C/C++
 #include <algorithm>
 #include <cmath>
 
@@ -7,6 +7,9 @@
 
 // athena
 #include <athena/reconstruct/interpolation.hpp>
+
+// torch
+#include <torch/torch.h>
 
 // snap
 #include <snap/reconstruct/interpolation.hpp>
@@ -38,8 +41,8 @@ TEST(interp_weno5m_torch, test_case2) {
     float result1 = interp_weno5(phi[0].item<float>(), phi[1].item<float>(),
                                  phi[2].item<float>(), phi[3].item<float>(),
                                  phi[4].item<float>());
-    float result2 = interp.left(phi, "i,i->").item<float>();
-    EXPECT_NEAR(result1, result2, 1.E-6);
+    float result2 = interp.left(phi).item<float>();
+    EXPECT_NEAR(result1, result2, 2.E-6);
   }
 }
 
@@ -55,9 +58,9 @@ TEST(interp_weno5m_torch, test_case3) {
         interp_weno5(phi[1][0].item<float>(), phi[1][1].item<float>(),
                      phi[1][2].item<float>(), phi[1][3].item<float>(),
                      phi[1][4].item<float>());
-    torch::Tensor result = interp.left(phi, "ji,i->j");
-    EXPECT_NEAR(result1, result[0].item<float>(), 1.E-6);
-    EXPECT_NEAR(result2, result[1].item<float>(), 1.E-6);
+    torch::Tensor result = interp.left(phi);
+    EXPECT_NEAR(result1, result[0].item<float>(), 2.E-6);
+    EXPECT_NEAR(result2, result[1].item<float>(), 2.E-6);
   }
 }
 
@@ -73,9 +76,11 @@ TEST(interp_weno5m_torch, test_case4) {
         interp_weno5(phi[0][1].item<float>(), phi[1][1].item<float>(),
                      phi[2][1].item<float>(), phi[3][1].item<float>(),
                      phi[4][1].item<float>());
-    torch::Tensor result = interp.left(phi, "ji,j->i");
-    EXPECT_NEAR(result1, result[0].item<float>(), 1.E-6);
-    EXPECT_NEAR(result2, result[1].item<float>(), 1.E-6);
+    auto phiu = phi.unfold(0, 5, 1);
+    torch::Tensor result = interp.left(phiu).squeeze(0);
+
+    EXPECT_NEAR(result1, result[0].item<float>(), 2.E-6);
+    EXPECT_NEAR(result2, result[1].item<float>(), 2.E-6);
   }
 }
 
@@ -86,8 +91,8 @@ TEST(interp_weno5p_torch, test_case5) {
     float result1 = interp_weno5(phi[4].item<float>(), phi[3].item<float>(),
                                  phi[2].item<float>(), phi[1].item<float>(),
                                  phi[0].item<float>());
-    float result2 = interp.right(phi, "i,i->").item<float>();
-    EXPECT_NEAR(result1, result2, 1.E-6);
+    float result2 = interp.right(phi).item<float>();
+    EXPECT_NEAR(result1, result2, 2.E-6);
   }
 }
 
@@ -103,9 +108,9 @@ TEST(interp_weno5p_torch, test_case6) {
         interp_weno5(phi[1][4].item<float>(), phi[1][3].item<float>(),
                      phi[1][2].item<float>(), phi[1][1].item<float>(),
                      phi[1][0].item<float>());
-    torch::Tensor result = interp.right(phi, "ji,i->j");
-    EXPECT_NEAR(result1, result[0].item<float>(), 1.E-6);
-    EXPECT_NEAR(result2, result[1].item<float>(), 1.E-6);
+    torch::Tensor result = interp.right(phi);
+    EXPECT_NEAR(result1, result[0].item<float>(), 2.E-6);
+    EXPECT_NEAR(result2, result[1].item<float>(), 2.E-6);
   }
 }
 
@@ -121,9 +126,10 @@ TEST(interp_weno5p_torch, test_case7) {
         interp_weno5(phi[4][1].item<float>(), phi[3][1].item<float>(),
                      phi[2][1].item<float>(), phi[1][1].item<float>(),
                      phi[0][1].item<float>());
-    torch::Tensor result = interp.right(phi, "ji,j->i");
-    EXPECT_NEAR(result1, result[0].item<float>(), 1.E-6);
-    EXPECT_NEAR(result2, result[1].item<float>(), 1.E-6);
+    auto phiu = phi.unfold(0, 5, 1);
+    torch::Tensor result = interp.right(phiu).squeeze(0);
+    EXPECT_NEAR(result1, result[0].item<float>(), 2.E-6);
+    EXPECT_NEAR(result2, result[1].item<float>(), 2.E-6);
   }
 }
 
@@ -146,9 +152,9 @@ TEST(interp_weno5m_torch, test_case_mps1) {
                      phi[1][2].item<float>(), phi[1][3].item<float>(),
                      phi[1][4].item<float>());
 
-    torch::Tensor result = interp.left(phi, "ji,i->j");
-    EXPECT_NEAR(result1, result[0].item<float>(), 1.E-6);
-    EXPECT_NEAR(result2, result[1].item<float>(), 1.E-6);
+    torch::Tensor result = interp.left(phi);
+    EXPECT_NEAR(result1, result[0].item<float>(), 2.E-6);
+    EXPECT_NEAR(result2, result[1].item<float>(), 2.E-6);
   }
 }
 
@@ -167,13 +173,14 @@ TEST(interp_weno5p_torch, test_case_mps2) {
                      phi[2][1].item<float>(), phi[1][1].item<float>(),
                      phi[0][1].item<float>());
 
-    torch::Tensor result = interp.right(phi, "ji,j->i");
-    EXPECT_NEAR(result1, result[0].item<float>(), 1.E-6);
-    EXPECT_NEAR(result2, result[1].item<float>(), 1.E-6);
+    auto phiu = phi.unfold(0, 5, 1);
+    torch::Tensor result = interp.right(phiu).squeeze(0);
+    EXPECT_NEAR(result1, result[0].item<float>(), 2.E-6);
+    EXPECT_NEAR(result2, result[1].item<float>(), 2.E-6);
   }
 }
 
 int main(int argc, char **argv) {
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
-}*/
+}

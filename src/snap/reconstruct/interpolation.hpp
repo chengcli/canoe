@@ -5,18 +5,21 @@
 
 // torch
 #include <c10/core/DeviceType.h>
-#include <torch/torch.h>
+
+namespace at {
+class Tensor;
+}
+
+namespace torch {
+using Tensor = at::Tensor;
+}
 
 class Interpolation {
  public:
   Interpolation() {}
   virtual ~Interpolation() {}
 
-  void ToDevice(c10::DeviceType dtype) {
-    for (auto& c : cm_) c = c.to(dtype);
-    for (auto& c : cp_) c = c.to(dtype);
-  }
-
+  void ToDevice(c10::DeviceType dtype);
   virtual torch::Tensor left(torch::Tensor const& phi) const = 0;
   virtual torch::Tensor right(torch::Tensor const& phi) const = 0;
 

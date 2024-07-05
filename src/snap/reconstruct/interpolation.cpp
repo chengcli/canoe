@@ -1,3 +1,7 @@
+// torch
+#include <torch/torch.h>
+
+// snap
 #include "interpolation.hpp"
 
 #define sqr(x) ((x) * (x))
@@ -20,6 +24,11 @@ Tensor c7m = tensor({0, -1, 0, 1, 0}, dtype(kFloat32));
 Tensor c8m = tensor({0, 0, 1, -2, 1}, dtype(kFloat32));
 Tensor c9m = tensor({0, 0, 3, -4, 1}, dtype(kFloat32));
 }  // namespace weno5coeff
+
+void Interpolation::ToDevice(c10::DeviceType dtype) {
+  for (auto& c : cm_) c = c.to(dtype);
+  for (auto& c : cp_) c = c.to(dtype);
+}
 
 Center5Interp::Center5Interp(c10::DeviceType dtype) {
   cm_ = {cp5coeff::c1m};
@@ -48,10 +57,6 @@ Weno5Interp::Weno5Interp(c10::DeviceType dtype) {
 }
 
 Tensor Weno5Interp::left(Tensor const& phi) const {
-  Tensor p1 = matmul(phi, cm_[0]);
-  Tensor p2 = matmul(phi, cm_[1]);
-  Tensor p3 = matmul(phi, cm_[2]);
-
   Tensor beta1 =
       13. / 12. * sqr(matmul(phi, cm_[3])) + 1. / 4. * sqr(matmul(phi, cm_[4]));
   Tensor beta2 =
@@ -62,14 +67,12 @@ Tensor Weno5Interp::left(Tensor const& phi) const {
   Tensor alpha1 = 0.3 / sqr(beta1 + 1e-6);
   Tensor alpha2 = 0.6 / sqr(beta2 + 1e-6);
   Tensor alpha3 = 0.1 / sqr(beta3 + 1e-6);
-  return (alpha1 * p1 + alpha2 * p2 + alpha3 * p3) / (alpha1 + alpha2 + alpha3);
+  return (alpha1 * matmul(phi, cm_[0]) + alpha2 * matmul(phi, cm_[1]) +
+          alpha3 * matmul(phi, cm_[2])) /
+         (alpha1 + alpha2 + alpha3);
 }
 
 Tensor Weno5Interp::right(Tensor const& phi) const {
-  Tensor p1 = matmul(phi, cp_[0]);
-  Tensor p2 = matmul(phi, cp_[1]);
-  Tensor p3 = matmul(phi, cp_[2]);
-
   Tensor beta1 =
       13. / 12. * sqr(matmul(phi, cp_[3])) + 1. / 4. * sqr(matmul(phi, cp_[4]));
   Tensor beta2 =
@@ -80,5 +83,7 @@ Tensor Weno5Interp::right(Tensor const& phi) const {
   Tensor alpha1 = 0.3 / sqr(beta1 + 1e-6);
   Tensor alpha2 = 0.6 / sqr(beta2 + 1e-6);
   Tensor alpha3 = 0.1 / sqr(beta3 + 1e-6);
-  return (alpha1 * p1 + alpha2 * p2 + alpha3 * p3) / (alpha1 + alpha2 + alpha3);
+  return (alpha1 * matmul(phi, cp_[0]) + alpha2 * matmul(phi, cp_[1]) +
+          alpha3 * matmul(phi, cp_[2])) /
+         (alpha1 + alpha2 + alpha3);
 }

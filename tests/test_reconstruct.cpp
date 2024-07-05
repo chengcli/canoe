@@ -44,13 +44,13 @@ x1max       = 0.5       # maximum value of X1
 ix1_bc      = outflow   # Inner-X1 boundary condition flag
 ox1_bc      = outflow   # Outer-X1 boundary condition flag
 
-nx2         = 100         # Number of zones in X2-direction
+nx2         = 200         # Number of zones in X2-direction
 x2min       = -0.5      # minimum value of X2
 x2max       = 0.5       # maximum value of X2
 ix2_bc      = periodic  # Inner-X2 boundary condition flag
 ox2_bc      = periodic  # Outer-X2 boundary condition flag
 
-nx3         = 100         # Number of zones in X3-direction
+nx3         = 200         # Number of zones in X3-direction
 x3min       = -0.5      # minimum value of X3
 x3max       = 0.5       # maximum value of X3
 ix3_bc      = periodic  # Inner-X3 boundary condition flag
@@ -100,7 +100,7 @@ gamma       = 1.4
   }
 };
 
-/*TEST_F(TestReconstruct, test1) {
+TEST_F(TestReconstruct, test1) {
   auto pmb = pmesh->my_blocks(0);
   int nc1 = pmb->ncells1;
   int nc2 = pmb->ncells2;
@@ -111,21 +111,23 @@ gamma       = 1.4
   w.tensor().normal_(0, 1);
   w.fromDevice();
 
+  std::fstream file("recon_test1.out", std::ios::out);
+
   for (int n = 0; n < NHYDRO; ++n) {
     for (int k = 0; k < nc3; ++k) {
-      std::cout << "n = " << n << ", k = " << k << std::endl;
-      std::cout << "---------" << std::endl;
+      file << "n = " << n << ", k = " << k << std::endl;
+      file << "---------" << std::endl;
       for (int j = 0; j < nc2; ++j) {
         for (int i = 0; i < nc1; ++i) {
-          std::cout << w(n, k, j, i) << ", ";
+          file << w(n, k, j, i) << ", ";
         }
-        std::cout << std::endl;
+        file << std::endl;
       }
-      std::cout << std::endl << "---------" << std::endl;
+      file << std::endl << "---------" << std::endl;
     }
-    std::cout << std::endl;
+    file << std::endl;
   }
-}*/
+}
 
 TEST_F(TestReconstruct, test_x1) {
   auto pmb = pmesh->my_blocks(0);
@@ -141,24 +143,17 @@ TEST_F(TestReconstruct, test_x1) {
   w.tensor().normal_(0, 1);
 
   auto start = std::chrono::high_resolution_clock::now();
-  if (NGHOST > 2) {
-    auto [wl, wr] = recon_weno5_hydro(w.tensor(), IVX, DIM2);
 
-    // pmb->precon->Weno5X1(pmb->is - 1, pmb->ie + 1, w.tensor(), wl3d.tensor(),
-    //                      wr3d.tensor());
-    // pmb->precon->Weno5X2(pmb->js - 1, pmb->je + 1, w.tensor(), wl3d.tensor(),
-    //                      wr3d.tensor());
-    // pmb->precon->Weno5X3(pmb->ks - 1, pmb->ke + 1, w.tensor(), wl3d.tensor(),
-    //                      wr3d.tensor());
+  if (NGHOST > 2) {
+    auto result = recon_weno5_hydro(w.tensor(), IVX, DIM1);
+    result = recon_weno5_hydro(w.tensor(), IVX, DIM2);
+    result = recon_weno5_hydro(w.tensor(), IVX, DIM2);
   }
   auto end = std::chrono::high_resolution_clock::now();
   std::chrono::duration<double> elapsed = end - start;
 
   std::cout << "Time taken by test body: " << elapsed.count() << " seconds"
             << std::endl;
-
-  // wl3d.fromDevice();
-  // wr3d.fromDevice();
 }
 
 int main(int argc, char **argv) {
