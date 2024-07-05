@@ -42,7 +42,6 @@ torch::Tensor eos_cons2prim_hydro_ideal(
     _check_dim2(IVX, rmu);
     auto primu =
         prim.slice(DIMC, 1, IVX - ncloud).unfold(DIMC, IVX - ncloud - 1, 1);
-
     feps += torch::matmul(primu, rmu.value().slice(DIMC, 0, IVX - ncloud - 1))
                 .squeeze(DIMC) -
             prim.slice(DIMC, IVX - ncloud, IVX).sum(DIMC);
@@ -53,12 +52,8 @@ torch::Tensor eos_cons2prim_hydro_ideal(
   if (rcv.has_value() && IVX > 1) {
     _check_dim2(IVX, rcv);
     auto primu = prim.slice(DIMC, 1, IVX).unfold(DIMC, IVX - 1, 1);
-
     fsig += torch::matmul(primu, rcv.value()).squeeze(DIMC);
   }
-
-  std::cout << feps.sizes() << std::endl;
-  std::cout << fsig.sizes() << std::endl;
 
   auto ke = 0.5 * (prim[IVX] * cons[IVX] + prim[IVY] * cons[IVY] +
                    prim[IVZ] * cons[IVZ]);
@@ -96,9 +91,11 @@ torch::Tensor eos_prim2cons_hydro_ideal(
 
   if (rmu.has_value()) {
     _check_dim2(IVX, rmu);
-    feps += torch::einsum("nkji,n->kji",
-                          {prim.slice(DIMC, 1, IVX - ncloud),
-                           rmu.value().slice(DIMC, 0, IVX - ncloud - 1)}) -
+    auto primu =
+        prim.slice(DIMC, 1, IVX - ncloud).unfold(DIMC, IVX - ncloud - 1, 1);
+
+    feps += torch::matmul(primu, rmu.value().slice(DIMC, 0, IVX - ncloud - 1))
+                .squeeze(DIMC) -
             prim.slice(DIMC, IVX - ncloud, IVX).sum(DIMC);
   }
 
@@ -106,8 +103,8 @@ torch::Tensor eos_prim2cons_hydro_ideal(
 
   if (rcv.has_value()) {
     _check_dim2(IVX, rcv);
-    fsig +=
-        torch::einsum("nkji,n->kji", {prim.slice(DIMC, 1, IVX), rcv.value()});
+    auto primu = prim.slice(DIMC, 1, IVX).unfold(DIMC, IVX - 1, 1);
+    fsig += torch::matmul(primu, rcv.value()).squeeze(DIMC);
   }
 
   auto ke = 0.5 * (prim[IVX] * cons[IVX] + prim[IVY] * cons[IVY] +
