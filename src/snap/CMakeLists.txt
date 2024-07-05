@@ -24,6 +24,7 @@ file(GLOB src_files
     thermodynamics/*.cpp
     decomposition/*.cpp
     riemann/${RSOLVER}.cpp
+    riemann/rs_hydro_lmars.cpp
     implicit/*.cpp
     turbulence/*.cpp
     reconstruct/*.cpp

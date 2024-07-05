@@ -37,13 +37,13 @@ x1max       = 0.5       # maximum value of X1
 ix1_bc      = outflow   # Inner-X1 boundary condition flag
 ox1_bc      = outflow   # Outer-X1 boundary condition flag
 
-nx2         = 400         # Number of zones in X2-direction
+nx2         = 1000         # Number of zones in X2-direction
 x2min       = -0.5      # minimum value of X2
 x2max       = 0.5       # maximum value of X2
 ix2_bc      = periodic  # Inner-X2 boundary condition flag
 ox2_bc      = periodic  # Outer-X2 boundary condition flag
 
-nx3         = 400         # Number of zones in X3-direction
+nx3         = 1000         # Number of zones in X3-direction
 x3min       = -0.5      # minimum value of X3
 x3max       = 0.5       # maximum value of X3
 ix3_bc      = periodic  # Inner-X3 boundary condition flag
@@ -133,9 +133,9 @@ TEST_F(TestReconstruct, test_x1) {
   wl3d.NewAthenaArray(NHYDRO, nc3, nc2, nc1);
   wr3d.NewAthenaArray(NHYDRO, nc3, nc2, nc1);
 
-  w.toDevice(torch::kCPU);
-  wl3d.toDevice(torch::kCPU);
-  wr3d.toDevice(torch::kCPU);
+  w.toDevice(torch::kMPS);
+  wl3d.toDevice(torch::kMPS);
+  wr3d.toDevice(torch::kMPS);
 
   w.tensor().normal_(0, 1);
 
