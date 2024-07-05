@@ -29,29 +29,29 @@ torch::Tensor rs_hydro_lmars(int64_t IVX, int64_t dim, const torch::Tensor &wl,
   int64_t ivy = IVX + ((ivx - IVX) + 1) % 3;
   int64_t ivz = IVX + ((ivx - IVX) + 2) % 3;
 
-  auto fepsl = torch::ones_like(wl.narrow(DIMC, 0, 1));
-  auto fepsr = torch::ones_like(wr.narrow(DIMC, 0, 1));
+  auto fepsl = torch::ones_like(wl[0]);
+  auto fepsr = torch::ones_like(wr[0]);
 
   if (rmu.has_value()) {
     fepsl += torch::einsum("nkji,n->kji",
                            {wl.slice(DIMC, 1, IVX - ncloud),
-                            rmu.value().slice(DIMC, 1, IVX - ncloud) - 1.}) -
+                            rmu.value().slice(DIMC, 1, IVX - ncloud)}) -
              wl.slice(DIMC, IVX - ncloud, IVX).sum(DIMC);
 
     fepsr += torch::einsum("nkji,n->kji",
                            {wr.slice(DIMC, 1, IVX - ncloud),
-                            rmu.value().slice(DIMC, 1, IVX - ncloud) - 1.}) -
+                            rmu.value().slice(DIMC, 1, IVX - ncloud)}) -
              wr.slice(DIMC, IVX - ncloud, IVX).sum(DIMC);
   }
 
-  auto fsigl = torch::ones_like(wl.narrow(DIMC, 0, 1));
-  auto fsigr = torch::ones_like(wr.narrow(DIMC, 0, 1));
+  auto fsigl = torch::ones_like(wl[0]);
+  auto fsigr = torch::ones_like(wr[0]);
 
   if (rcv.has_value()) {
-    fsigl += torch::einsum("nkji,n->kji",
-                           {wl.slice(DIMC, 1, IVX), rcv.value() - 1.});
-    fsigr += torch::einsum("nkji,n->kji",
-                           {wr.slice(DIMC, 1, IVX), rcv.value() - 1.});
+    fsigl +=
+        torch::einsum("nkji,n->kji", {wl.slice(DIMC, 1, IVX), rcv.value()});
+    fsigr +=
+        torch::einsum("nkji,n->kji", {wr.slice(DIMC, 1, IVX), rcv.value()});
   }
 
   auto kappal = 1.f / (gammad - 1.f) * fsigl / fepsl;
