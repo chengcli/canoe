@@ -22,7 +22,7 @@ void AthenaArray<T>::toDevice(c10::DeviceType device) {
   ptensor_ = std::make_shared<torch::Tensor>(
       torch::from_blob(pdata_, {nx4_, nx3_, nx2_, nx1_},
                        {str4, str3, str2, str1}, nullptr,
-                       torch::dtype(torch::kFloat32))
+                       torch::dtype(torch::kFloat64))
           .to(device));
 }
 
@@ -36,7 +36,7 @@ void AthenaArray<T>::fromDevice() {
   // create a temporary tensor holder
   torch::Tensor tmp = torch::from_blob(pdata_, {nx4_, nx3_, nx2_, nx1_},
                                        {str4, str3, str2, str1}, nullptr,
-                                       torch::dtype(torch::kFloat32));
+                                       torch::dtype(torch::kFloat64));
 
   tmp.copy_(*ptensor_);
 }

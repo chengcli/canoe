@@ -7,12 +7,15 @@ configure_file(globals.cpp.in globals.cpp @ONLY)
 # Enable testing functionality
 enable_testing()
 
-# Add test cases
+# torch tests
 setup_test(test_eos)
 setup_test(test_weno)
 setup_test(test_reconstruct)
 setup_test(test_riemann)
 setup_test(test_hydro)
+
+# athena tests
+setup_test(test_mesh)
 
 setup_test(test_glog)
 setup_test(test_absorber)
@@ -29,7 +32,6 @@ if (PVFMM_OPTION STREQUAL "ENABLE_PVFMM")
 endif()
 
 if (${NVAPOR} EQUAL 0)
-  setup_test(test_mesh)
   if (NOT HYDROSTATIC OR NOT DEFINED HYDROSTATIC)
     setup_test(test_convective_adjustment)
   endif()

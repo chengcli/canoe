@@ -117,6 +117,25 @@ TEST(cons2prim_hydro_ideal, cpu_case1) {
   EXPECT_TRUE(torch::allclose(cons, cons2, 1.E-5, 1.E-5));
 }
 
+TEST(cons2prim_hydro_ideal, cpu_case2) {
+  int64_t NHYDRO = 5;
+  int64_t ncloud = 0;
+  int64_t nvapor = NHYDRO - 5 - ncloud;
+
+  auto cons = torch::randn({NHYDRO, 1, 20, 20},
+                           torch::device(torch::kCPU).dtype(torch::kFloat64));
+
+  auto gammad = torch::randn({1, 20, 20},
+                             torch::device(torch::kCPU).dtype(torch::kFloat64));
+
+  gammad.normal_(0, 1);
+
+  auto prim = eos_cons2prim_hydro_ideal(cons, gammad);
+  auto cons2 = eos_prim2cons_hydro_ideal(prim, gammad);
+
+  EXPECT_TRUE(torch::allclose(cons, cons2, 1.E-5, 1.E-5));
+}
+
 TEST(prim2cons_hydro_ideal, cpu_case1) {
   int64_t NHYDRO = 14;
   int64_t ncloud = 5;
