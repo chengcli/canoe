@@ -17,6 +17,7 @@ enum {
   NGHOST = 3,
 };
 
+namespace canoe {
 inline void _weno5_hydro_range(int64_t dim, int64_t il, int64_t iu,
                                const torch::Tensor &w, const torch::Tensor &wl,
                                const torch::Tensor &wr,
@@ -110,6 +111,7 @@ std::pair<torch::Tensor, torch::Tensor> recon_weno5_scalar(
   _weno5_hydro_range(dim, il, iu, w, wl, wr, Weno5Interp(w.device().type()));
   return {wl, wr};
 }
+}  // namespace canoe
 
 //----------------------------------------------------------------------------------------
 //! \fn Reconstruction::Weno5X2()

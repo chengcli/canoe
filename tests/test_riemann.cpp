@@ -13,6 +13,8 @@ enum {
   DIM3 = 1,
 };
 
+using namespace canoe;
+
 TEST(hydro_lmars, mps_case1) {
   if (!torch::mps::is_available()) {
     GTEST_SKIP() << "MPS device is not available. Skipping test.";

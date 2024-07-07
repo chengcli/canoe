@@ -11,7 +11,8 @@ enum {
   IDN = 0,
 };
 
-using namespace riemann::internal;
+namespace canoe {
+using namespace riemann;
 
 torch::Tensor rs_hydro_lmars(int64_t dim, const torch::Tensor &wl,
                              const torch::Tensor &wr,
@@ -111,3 +112,4 @@ torch::Tensor rs_hydro_lmars(int64_t dim, const torch::Tensor &wl,
 
   return flx;
 }
+}  // namespace canoe

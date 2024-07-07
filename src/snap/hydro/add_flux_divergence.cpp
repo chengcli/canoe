@@ -4,6 +4,8 @@
 // snap
 #include "hydro.hpp"
 
+namespace canoe {
+
 enum {
   DIM1 = 3,
   DIM2 = 2,
@@ -40,3 +42,5 @@ void add_flux_divergence_inplace(double wght, torch::TensorList flux,
 
   out -= wght * dflx / vol;
 }
+
+}  // namespace canoe

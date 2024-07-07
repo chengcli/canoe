@@ -14,6 +14,8 @@
 // snap
 #include <snap/reconstruct/interpolation.hpp>
 
+using namespace canoe;
+
 TEST(interp_weno3, test_case1) {
   double phim1 = 1.0;
   double phi = 2.0;

@@ -14,17 +14,14 @@ using Tensor = at::Tensor;
 using TensorList = c10::ArrayRef<Tensor>;
 }  // namespace torch
 
+namespace canoe {
 namespace eos {
-namespace internal {
-
 void _check_dim1(int64_t IVX, int64_t ncloud, const torch::Tensor &var,
                  const torch::Tensor &gammad);
 void _check_dim2(int64_t IVX, std::optional<torch::Tensor> var);
 
 void _apply_conserved_limiter_inplace(torch::Tensor &cons);
 void _apply_primitive_limiter_inplace(torch::Tensor &prim);
-
-}  // namespace internal
 }  // namespace eos
 
 torch::Tensor eos_cons2prim_hydro_ideal(
@@ -38,3 +35,4 @@ torch::Tensor eos_prim2cons_hydro_ideal(
     std::optional<torch::Tensor> rmu = std::nullopt,
     std::optional<torch::Tensor> rcv = std::nullopt, int64_t ncloud = 0,
     std::optional<torch::TensorList> cos_theta = std::nullopt);
+}  // namespace canoe

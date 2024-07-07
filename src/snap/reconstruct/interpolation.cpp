@@ -8,6 +8,7 @@
 
 using namespace torch;
 
+namespace canoe {
 namespace cp5coeff {
 Tensor c1m = tensor({-1. / 20., 9. / 20., 47. / 60., -13. / 60., 1. / 30.},
                     dtype(kFloat32));
@@ -87,3 +88,4 @@ Tensor Weno5Interp::right(Tensor const& phi) const {
           alpha3 * matmul(phi, cp_[2])) /
          (alpha1 + alpha2 + alpha3);
 }
+}  // namespace canoe

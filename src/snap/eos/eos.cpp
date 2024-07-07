@@ -1,9 +1,7 @@
 // torch
 #include <torch/torch.h>
 
-namespace eos {
-namespace internal {
-
+namespace canoe::eos {
 void _check_dim1(int64_t IVX, int64_t ncloud, const torch::Tensor &var,
                  const torch::Tensor &gammad) {
   if (IVX < 1) {
@@ -34,6 +32,4 @@ void _apply_conserved_limiter_inplace(torch::Tensor &cons) {}
 
 //! \todo Implement this function.
 void _apply_primitive_limiter_inplace(torch::Tensor &prim) {}
-
-}  // namespace internal
-}  // namespace eos
+}  // namespace canoe::eos

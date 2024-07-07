@@ -14,6 +14,7 @@ namespace torch {
 using Tensor = at::Tensor;
 }
 
+namespace canoe {
 class Interpolation {
  public:
   Interpolation() {}
@@ -43,3 +44,4 @@ class Weno5Interp : public Interpolation {
   torch::Tensor left(torch::Tensor const& phi) const override;
   torch::Tensor right(torch::Tensor const& phi) const override;
 };
+}  // namespace canoe

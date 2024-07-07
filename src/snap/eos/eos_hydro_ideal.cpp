@@ -7,12 +7,13 @@
 // snap
 #include "eos.hpp"
 
-using namespace eos::internal;
-
 enum {
   DIMC = 0,
   IDN = 0,
 };
+
+namespace canoe {
+using namespace eos;
 
 torch::Tensor eos_cons2prim_hydro_ideal(
     torch::Tensor &cons, const torch::Tensor &gammad,
@@ -116,3 +117,4 @@ torch::Tensor eos_prim2cons_hydro_ideal(
 
   return cons;
 }
+}  // namespace canoe

@@ -7,6 +7,8 @@
 // snap
 #include <snap/hydro/hydro.hpp>
 
+using namespace canoe;
+
 TEST(add_flux_divergence, mps_case1) {
   if (!torch::mps::is_available()) {
     GTEST_SKIP() << "MPS device is not available. Skipping test.";

@@ -4,7 +4,7 @@
 // snap
 #include "riemann.hpp"
 
-namespace riemann::internal {
+namespace canoe::riemann {
 
 //! \todo Implement this function.
 void _prim2local_inplace(int64_t ivx, torch::Tensor const& w,
@@ -14,4 +14,4 @@ void _prim2local_inplace(int64_t ivx, torch::Tensor const& w,
 void _flux2global_inplace(int64_t ivx, torch::Tensor const& w,
                           torch::TensorList cos_theta) {}
 
-}  // namespace riemann::internal
+}  // namespace canoe::riemann

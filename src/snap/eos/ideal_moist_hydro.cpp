@@ -68,7 +68,7 @@ void EquationOfState::ConservedToPrimitive(
   auto gammad = torch::full_like(cons.tensor()[0], gamma_);
 
   prim.toDevice(torch::kCPU);
-  prim.tensor() = eos_cons2prim_hydro_ideal(cons.tensor(), gammad);
+  prim.tensor() = canoe::eos_cons2prim_hydro_ideal(cons.tensor(), gammad);
   prim.fromDevice();
 }
 
@@ -90,7 +90,7 @@ void EquationOfState::PrimitiveToConserved(const AthenaArray<Real>& prim,
   auto gammad = torch::full_like(primc.tensor()[0], gamma_);
 
   cons.toDevice(torch::kCPU);
-  cons.tensor() = eos_prim2cons_hydro_ideal(primc.tensor(), gammad);
+  cons.tensor() = canoe::eos_prim2cons_hydro_ideal(primc.tensor(), gammad);
   cons.fromDevice();
 }
 

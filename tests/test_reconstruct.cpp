@@ -25,6 +25,8 @@ enum {
   DIM3 = 1,
 };
 
+using namespace canoe;
+
 class TestReconstruct : public testing::Test {
  protected:
   ParameterInput *pinput;
