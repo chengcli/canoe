@@ -15,7 +15,6 @@ using TensorList = c10::ArrayRef<Tensor>;
 }  // namespace torch
 
 namespace canoe {
-void add_flux_divergence_inplace(double wght, torch::TensorList flux,
-                                 torch::TensorList area,
-                                 torch::Tensor const& vol, torch::Tensor& out);
+torch::Tensor flux_divergence(torch::TensorList flux, torch::TensorList area,
+                              torch::Tensor const& vol);
 }  // namespace canoe

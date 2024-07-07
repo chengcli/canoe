@@ -9,7 +9,7 @@
 
 using namespace canoe;
 
-TEST(add_flux_divergence, mps_case1) {
+TEST(flux_divergence, mps_case1) {
   if (!torch::mps::is_available()) {
     GTEST_SKIP() << "MPS device is not available. Skipping test.";
   }
@@ -18,8 +18,6 @@ TEST(add_flux_divergence, mps_case1) {
   std::vector<torch::Tensor> area(3);
 
   int64_t NHYDRO = 14;
-  auto out = torch::randn({NHYDRO, 1, 5, 5},
-                          torch::device(torch::kMPS).dtype(torch::kFloat32));
   auto vol = torch::randn({1, 5, 5},
                           torch::device(torch::kMPS).dtype(torch::kFloat32));
   vol = vol.abs();
@@ -33,7 +31,7 @@ TEST(add_flux_divergence, mps_case1) {
   }
 
   double wght = 1.0;
-  add_flux_divergence_inplace(wght, flux, area, vol, out);
+  auto out = flux_divergence(flux, area, vol);
 }
 
 int main(int argc, char **argv) {

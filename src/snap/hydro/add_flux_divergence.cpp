@@ -10,17 +10,18 @@ enum {
   DIM1 = 3,
   DIM2 = 2,
   DIM3 = 1,
+  DIMC = 0,
 };
 
-void add_flux_divergence_inplace(double wght, torch::TensorList flux,
-                                 torch::TensorList area,
-                                 torch::Tensor const& vol, torch::Tensor& out) {
+torch::Tensor flux_divergence(torch::TensorList flux, torch::TensorList area,
+                              torch::Tensor const& vol) {
   // vol and area are 3D
+  auto nvar = flux[0].size(DIMC);
   auto nx1 = vol.size(DIM1 - 1);
   auto nx2 = vol.size(DIM2 - 1);
   auto nx3 = vol.size(DIM3 - 1);
 
-  torch::Tensor dflx = torch::zeros_like(out);
+  torch::Tensor dflx = torch::zeros({nvar, nx3, nx2, nx1}, vol.options());
 
   if (nx1 > 1) {
     dflx.slice(DIM1, 0, nx1 - 1) +=
@@ -40,7 +41,7 @@ void add_flux_divergence_inplace(double wght, torch::TensorList flux,
         area[2].slice(DIM3 - 1, 0, nx3 - 1) * flux[2].slice(DIM3, 0, nx3 - 1);
   }
 
-  out -= wght * dflx / vol;
+  return dflx / vol;
 }
 
 }  // namespace canoe
