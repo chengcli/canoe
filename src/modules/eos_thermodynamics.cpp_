@@ -4,13 +4,15 @@
 #include <iomanip>
 #include <iostream>
 #include <mutex>
+#include <numeric>
 #include <sstream>
 #include <stdexcept>
 #include <string>
 #include <vector>  // fill
 
-// external
-#include <yaml-cpp/yaml.h>
+// cantera
+#include <cantera/kinetics.h>
+#include <cantera/thermo.h>
 
 // athena
 #include <athena/athena.hpp>
@@ -46,23 +48,58 @@ Thermodynamics::~Thermodynamics() {
   app->Log("Destroy Thermodynamics");
 }
 
-Thermodynamics* Thermodynamics::fromYAMLInput(YAML::Node const& node) {
+Thermodynamics* Thermodynamics::fromYAMLInput(std::string const& fname) {
   mythermo_ = new Thermodynamics();
 
-  // non-condensable
-  mythermo_->Rd_ = node["dry"]["Rd"].as<Real>();
-  mythermo_->gammad_ref_ = node["dry"]["gammad"].as<Real>();
+  auto thermo = Cantera::newThermo(fname, "gas");
 
-  // saturation adjustment
-  if (node["saturation_adjustment"]) {
-    mythermo_->sa_max_iter_ =
-        node["saturation_adjustment"]["max_iter"].as<int>(10);
-    mythermo_->sa_ftol_ = node["saturation_adjustment"]["ftol"].as<Real>(1e-4);
-    mythermo_->sa_relax_ = node["saturation_adjustment"]["relax"].as<Real>(0.8);
-  } else {
-    mythermo_->sa_max_iter_ = 10;
-    mythermo_->sa_ftol_ = 1e-4;
-    mythermo_->sa_relax_ = 0.8;
+  if (thermo->nSpecies() != 1 + NVAPOR + NCLOUD) {
+    throw RuntimeError("Thermodynamics",
+                       "Number of species does not match the input file");
+  }
+
+  auto& kinetics = mythermo_->kinetics_;
+  kinetics = Cantera::newKinetics({thermo}, fname);
+
+  // --------- vapor + cloud thermo ---------
+  std::vector<Real> mu(thermo->nSpecies());
+  std::vector<Real> cp_mole(thermo->nSpecies());
+
+  // g/mol
+  thermo->getMolecularWeights(mu.data());
+
+  // J/kmol/K
+  thermo->getPartialMolarCp(cp_mole.data());
+
+  mythermo_->Rd_ = Cantera::GasConstant / mu[0];
+  mythermo_->gammad_ref_ = cp_mole[0] / (cp_mole[0] - Cantera::GasConstant);
+
+  // ---------- dimensionless properties ----------
+
+  // cp ratios
+  for (size_t i = 0; i < cp_mole.size(); ++i) {
+    mythermo_->cp_ratio_mole_[i] = cp_mole[i] / cp_mole[0];
+  }
+
+  // molecular weight ratios
+  for (size_t i = 0; i < mu.size(); ++i) {
+    mythermo_->mu_ratio_[i] = mu[i] / mu[0];
+  }
+
+  // beta parameter (dimensionless internal energy)
+  for (size_t i = 0; i < thermo->nSpecies(); ++i) {
+    auto& tp = thermo->species(i)->thermo;
+    size_t n;
+    int type;
+    Real tlow, thigh, pref;
+    std::vector<Real> coeffs(tp->nCoeffs());
+    tp->reportParameters(n, type, tlow, thigh, pref, coeffs.data());
+
+    Real t0 = coeffs[0];
+    Real h0 = coeffs[1];
+    Real s0 = coeffs[2];
+    Real cp0 = coeffs[3];
+    mythermo_->beta_[i] = h0 / (Cantera::GasConstant * t0);
   }
 
   return mythermo_;
@@ -93,8 +130,8 @@ Thermodynamics* Thermodynamics::fromLegacyInput(ParameterInput* pin) {
   // Read triple point pressure
   read_thermo_property(mythermo_->p3_.data(), "Ptriple", 1, 0., pin);
 
-  mythermo_->cloud_index_set_.resize(1 + NVAPOR);
   mythermo_->svp_func1_.resize(1 + NVAPOR);
+  mythermo_->cloud_index_set_.resize(1 + NVAPOR);
 
   for (int i = 0; i <= NVAPOR; ++i) {
     mythermo_->cloud_index_set_[i].resize(NPHASE - 1);
@@ -122,7 +159,7 @@ Thermodynamics const* Thermodynamics::GetInstance() {
 }
 
 Thermodynamics const* Thermodynamics::InitFromYAMLInput(
-    YAML::Node const& node) {
+    std::string const& fname) {
   if (mythermo_ != nullptr) {
     throw RuntimeError("Thermodynamics", "Thermodynamics has been initialized");
   }
@@ -130,7 +167,7 @@ Thermodynamics const* Thermodynamics::InitFromYAMLInput(
   Application::Logger app("snap");
   app->Log("Initialize Thermodynamics");
 
-  return fromYAMLInput(node);
+  return fromYAMLInput(fname);
 }
 
 Thermodynamics const* Thermodynamics::InitFromAthenaInput(ParameterInput* pin) {
@@ -143,19 +180,10 @@ Thermodynamics const* Thermodynamics::InitFromAthenaInput(ParameterInput* pin) {
 
   if (pin->DoesParameterExist("thermodynamics", input_key)) {
     std::string filename = pin->GetString("thermodynamics", input_key);
-    std::ifstream stream(filename);
-    if (stream.good() == false) {
-      throw RuntimeError("Thermodynamics",
-                         "Cannot open thermodynamic file: " + filename);
-    }
-
-    mythermo_ = fromYAMLInput(YAML::Load(stream));
+    mythermo_ = fromYAMLInput(filename);
   } else {  // legacy input
     mythermo_ = fromLegacyInput(pin);
   }
-
-  // enroll vapor functions
-  mythermo_->enrollVaporFunctions();
 
   // alias
   auto& Rd = mythermo_->Rd_;
@@ -187,10 +215,10 @@ Thermodynamics const* Thermodynamics::InitFromAthenaInput(ParameterInput* pin) {
     inv_mu_ratio[n] = 1. / mu_ratio[n];
     mu[n] = mu[0] * mu_ratio[n];
     inv_mu[n] = 1. / mu[n];
-    cp_ratio_mole[n] = cp_ratio_mass[n] * mu_ratio[n];
+    cp_ratio_mass[n] = cp_ratio_mole[n] * inv_mu_ratio[n];
   }
 
-  // calculate latent energy = $\beta\frac{R_d}{\epsilon}T^r$
+  /* calculate latent energy = $\beta\frac{R_d}{\epsilon}T^r$
   for (int n = 0; n <= NVAPOR; ++n) {
     latent_energy_mass[n] = 0.;
     latent_energy_mole[n] = 0.;
@@ -212,36 +240,13 @@ Thermodynamics const* Thermodynamics::InitFromAthenaInput(ParameterInput* pin) {
       delta[n] = (cp_ratio_mass[n] - cp_ratio_mass[i]) * mu_ratio[i] /
                  (1. - 1. / gammad);
     }
-  }
-
-  // set up extra clouds
-  auto pindex = IndexMap::GetInstance();
-
-  for (int n = (NPHASE - 1) * NVAPOR; n < NCLOUD; ++n) {
-    Molecule mol;
-    mol.LoadThermodynamicFile(pindex->GetCloudName(n) + ".thermo");
-
-    int j = 1 + NVAPOR + n;
-    mu[j] = mol.mu();
-    inv_mu[j] = 1. / mu[j];
-
-    mu_ratio[j] = mol.mu() / mu[0];
-    inv_mu_ratio[j] = 1. / mu_ratio[j];
-
-    cp_ratio_mass[j] = mol.cp() / (mol.mu() * mythermo_->GetCpMassRef(0));
-    cp_ratio_mole[j] = cp_ratio_mass[j] * mu_ratio[j];
-
-    latent_energy_mole[j] = mol.latent();
-    latent_energy_mass[j] = mol.latent() / mol.mu();
-
-    beta[j] = mol.latent() / (Constants::Rgas * Thermodynamics::RefTemp);
-    delta[j] = 0.;
-  }
+  }*/
 
   // finally, set up cv ratio
   // calculate cv_ratio = $\sigma_i + (1. - \gamma)/\epsilon_i$
   for (int n = 0; n <= NVAPOR; ++n) {
-    cv_ratio_mass[n] = gammad * cp_ratio_mass[n] + (1. - gammad) / mu_ratio[n];
+    cv_ratio_mass[n] =
+        gammad * cp_ratio_mass[n] + (1. - gammad) * inv_mu_ratio[n];
     cv_ratio_mole[n] = cv_ratio_mass[n] * mu_ratio[n];
   }
 
@@ -405,19 +410,33 @@ Real Thermodynamics::RelativeHumidity(MeshBlock const* pmb, int n, int k, int j,
 void Thermodynamics::Extrapolate(AirParcel* qfrac, Real dzORdlnp,
                                  std::string method, Real grav,
                                  Real userp) const {
+  qfrac->ToMassFraction();
+
+  auto& thermo = kinetics_->thermo();
+
+  double pres = qfrac->w[IPR];
+  for (int n = IVX; n < IVX + NCLOUD; ++n) qfrac->w[n] = qfrac->c[n - IVX];
+  thermo.setMassFractionsPartial(&qfrac->w[1]);
+  thermo.setDensity(qfrac->w[IDN]);
+  thermo.setPressure(qfrac->w[IPR]);
+
+  EquilibrateTP();
+
+  thermo.getMassFractions(&qfrac->w[0]);
+
+  for (int n = 0; n < NCLOUD; ++n) {
+    qfrac->c[n] = qfrac->w[IVX + n];
+  }
+
+  qfrac->w[IPR] = pres;
+  qfrac->w[IDN] = thermo.density();
+  qfrac->w[IVX] = 0.;
+  qfrac->w[IVX] = 0.;
+  qfrac->w[IVX] = 0.;
+
   qfrac->ToMoleFraction();
 
-  // equilibrate vapor with clouds
-  for (int i = 1; i <= NVAPOR; ++i) {
-    auto rates = TryEquilibriumTP_VaporCloud(*qfrac, i);
-
-    // vapor condensation rate
-    qfrac->w[i] += rates[0];
-
-    // cloud concentration rates
-    for (int j = 1; j < rates.size(); ++j)
-      qfrac->c[cloud_index_set_[i][j - 1]] += rates[j];
-  }
+  // std::cout << *qfrac << std::endl;
 
   // RK4 integration
 #ifdef HYDROSTATIC
@@ -438,6 +457,34 @@ Real Thermodynamics::GetLatentHeatMole(int i, std::vector<Real> const& rates,
   }
 
   return heat / std::abs(rates[0]);
+}
+
+void Thermodynamics::SetStateFromPrimitive(MeshBlock* pmb, int k, int j,
+                                           int i) const {
+  Hydro* phydro = pmb->phydro;
+
+  auto& thermo = kinetics_->thermo();
+  size_t total_cells = pmb->ncells1 * pmb->ncells2 * pmb->ncells3;
+
+  thermo.setMassFractionsPartial(&phydro->w(1, k, j, i), total_cells);
+  thermo.setDensity(phydro->w(IDN, k, j, i));
+  thermo.setPressure(phydro->w(IPR, k, j, i));
+}
+
+void Thermodynamics::SetStateFromConserved(MeshBlock* pmb, int k, int j,
+                                           int i) const {
+  Hydro* phydro = pmb->phydro;
+
+  auto& thermo = kinetics_->thermo();
+  size_t total_cells = pmb->ncells1 * pmb->ncells2 * pmb->ncells3;
+
+  thermo.setMassFractions(&phydro->u(0, k, j, i), total_cells);
+  Real rho = 0.;
+  for (int n = 0; n < Size; ++n) {
+    rho += phydro->u(n, k, j, i);
+  }
+  thermo.setDensity(rho);
+  thermo.setPressure(GetPres(pmb, k, j, i));
 }
 
 // Eq.4.5.11 in Emanuel (1994)

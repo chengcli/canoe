@@ -16,7 +16,6 @@
 #include <athena/hydro/hydro.hpp>
 #include <athena/mesh/mesh.hpp>
 #include <athena/parameter_input.hpp>
-#include <athena/stride_iterator.hpp>
 
 // canoe
 #include <configure.hpp>
@@ -27,7 +26,9 @@
 #include <exo3/gnomonic_equiangle.hpp>
 
 // snap
-#include "../thermodynamics/thermodynamics.hpp"
+#include <snap/stride_iterator.hpp>
+#include <snap/thermodynamics/thermodynamics.hpp>
+
 #include "eos_helper.hpp"
 
 // checks

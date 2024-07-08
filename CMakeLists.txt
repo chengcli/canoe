@@ -58,12 +58,11 @@ endif()
 message(STATUS "Include ${CMAKE_CURRENT_SOURCE_DIR}/cmake/parameters.cmake")
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/parameters.cmake)
 find_package(Eigen3 REQUIRED)
-find_package(Cantera REQUIRED)
 find_package(Torch REQUIRED)
+find_package(Cantera)
 
 ## 3. set up project system libraries ##
 message(STATUS "3. Set up system libraries")
-#message(STATUS "Include ${CMAKE_SOURCE_DIR}/cmake/athena.cmake")
 if (NOT ${CANTERA_FOUND} STREQUAL "TRUE")
   include(${CMAKE_SOURCE_DIR}/cmake/yamlpp.cmake)
 endif()

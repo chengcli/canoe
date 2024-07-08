@@ -1,76 +1,35 @@
-// cantera
-#include <cantera/kinetics.h>
-#include <cantera/kinetics/Condensation.h>
-#include <cantera/thermo.h>
-
 // canoe
 #include <air_parcel.hpp>
 
 // snap
 #include "atm_thermodynamics.hpp"
 
-void Thermodynamics::EquilibrateTP(AirParcel* air) const {
-  air->ToMassFraction();
-  Real pres = air->w[IPR];
-  for (int n = IVX; n < IVX + NCLOUD; ++n) air->w[n] = air->c[n - IVX];
-  auto& thermo = kinetics_->thermo();
-  thermo.setMassFractionsPartial(&air->w[1]);
-  thermo.setDensity(air->w[IDN]);
-  thermo.setPressure(air->w[IPR]);
+void Thermodynamics::EquilibrateTP(AirParcel* qfrac) const {
+  set_total_equivalent_vapor(qfrac, cloud_index_set_.data(),
+                             cloud_reaction_map_);
 
-  EquilibrateTP();
+  // vapor <=> cloud
+  for (int i = 1; i <= NVAPOR; ++i) {
+    auto rates = TryEquilibriumTP_VaporCloud(*qfrac, i);
 
-  for (int n = 0; n < NCLOUD; ++n) air->c[n] = air->w[IVX + n];
-  air->w[IPR] = pres;
-  air->ToMoleFraction();
-}
+    // vapor condensation rate
+    qfrac->w[i] += rates[0];
 
-void Thermodynamics::EquilibrateTP() const {
-  std::static_pointer_cast<Cantera::Condensation>(kinetics_)
-      ->setQuantityMoleFraction();
+    // cloud concentration rates
+    for (int n = 1; n < rates.size(); ++n)
+      qfrac->c[cloud_index_set_[i][n - 1]] += rates[n];
+  }
 
-  std::vector<Real> rates(kinetics_->nTotalSpecies());
-  std::vector<Real> mfrac(kinetics_->nTotalSpecies());
+  // vapor + vapor <=> cloud
+  for (auto const& [ij, info] : cloud_reaction_map_) {
+    auto rates = TryEquilibriumTP_VaporVaporCloud(*qfrac, ij);
+    auto& indx = info.first;
 
-  auto& thermo = kinetics_->thermo();
-  Real temp = thermo.temperature();
-  Real pres = thermo.pressure();
+    // vapor condensation rate
+    qfrac->w[indx[0]] += rates[0];
+    qfrac->w[indx[1]] += rates[1];
 
-  int iter = 0, max_iter = 3;
-
-  while (iter++ < max_iter) {
-    // std::cout << "Iteration " << iter << std::endl;
-
-    // get mole fraction
-    kinetics_->getActivityConcentrations(mfrac.data());
-
-    /* print initial conditions
-    std::cout << "Mole fractions" << std::endl;
-    for (size_t i = 0; i < mfrac.size(); ++i) {
-      std::cout << "Mole fraction " << i << ": " << mfrac[i] << std::endl;
-    }*/
-
-    kinetics_->getNetProductionRates(rates.data());
-    /*for (size_t i = 0; i < rates.size(); ++i) {
-      std::cout << "NET Production " << i << ": " << rates[i] << std::endl;
-    }*/
-
-    // update mole fraction
-    for (size_t i = 1; i < rates.size(); ++i) {
-      mfrac[i] += rates[i];
-    }
-
-    thermo.setMoleFractions(mfrac.data());
-    thermo.setTemperature(temp);
-    thermo.setPressure(pres);
-
-    /* print again
-    std::cout << "After Mole fractions" << std::endl;
-    for (size_t i = 0; i < mfrac.size(); ++i) {
-      std::cout << "Mole fraction " << i << ": " << mfrac[i] << std::endl;
-    }
-    std::cout << "T = " << thermo.temperature() << std::endl;
-    std::cout << "P = " << thermo.pressure() << std::endl;
-    std::cout << "D = " << thermo.density() << std::endl;*/
+    // cloud concentration rates
+    qfrac->c[indx[2]] += rates[3];
   }
 }
