@@ -68,6 +68,10 @@ if (${Torch_FOUND})
 endif()
 #add_subdirectory(nbody)
 
+if(UNIX AND NOT APPLE)
+  set(EXTRA_LIBS dl stdc++fs)
+endif()
+
 set(CANOE_LIBRARY_${buildu}
   "canoe_${buildl}"
   "athenapp_${buildl}"
@@ -103,6 +107,7 @@ set(CANOE_LIBRARY_${buildu}
   ${TORCH_LIBRARY}
   ${TORCH_CPU_LIBRARY}
   ${C10_LIBRARY}
+  ${EXTRA_LIBS}
   CACHE INTERNAL "canoe library")
 
 set(CANOE_INCLUDE_DIR

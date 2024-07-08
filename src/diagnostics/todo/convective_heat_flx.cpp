@@ -8,9 +8,9 @@
 #include <athena/athena_arrays.hpp>
 #include <athena/coordinates/coordinates.hpp>
 #include <athena/reconstruct/interpolation.hpp>
-#include <athena/stride_iterator.hpp>
 
 // snap
+#include <snap/stride_iterator.hpp>
 #include <snap/thermodynamics/thermodynamics.hpp>
 
 // canoe
