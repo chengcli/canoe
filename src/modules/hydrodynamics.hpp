@@ -1,55 +1,48 @@
 #pragma once
 
-#include <torch/torch.h>
+#include <torch/arg.h>
+#include <torch/nn.h>
 
 // torch module macro is defined in
 // torch/csrc/api/include/torch/nn/pimpl.h
 
 namespace canoe {
 
+class EquationOfState;
+class Coordinates;
+
+struct HydrodynamicsOptions {
+  HydrodynamicsOptions() {}
+
+  TORCH_ARG(float, cfl) = 0.9;
+  TORCH_ARG(float, grav1) = 0.;
+};
+
 class HydrodynamicsImpl : public torch::nn::Cloneable<HydrodynamicsImpl> {
  public:
+  //! options with which this `Hydrodynamics` was constructed
+  HydrodynamicsOptions options;
+
   // Constructor to initialize the layers
-  Hydro(int64_t nhydro, int64_t nghost, int64_t nx1, int64_t nx2, int64_t nx3) {
-    gammad_ref_ = register_parameter("gammad_ref", torch::ones({1}) * 1.4);
+  explicit HydrodynamicsImpl(const HydrodynamicsOptions& options_,
+                             Coordinates coord,
+                             std::optional<EquationOfState> eos = std::nullopt);
 
-    // Construct and register two Linear submodules
-    fc1 = register_module("fc1", torch::nn::Linear(4, 5));
-    fc2 = register_module("fc2", torch::nn::Linear(5, 3));
+  void reset() override;
 
-    auto ncells1 = nx1 > 1 ? nx1 + 2 * nghost : 1;
-    auto ncells2 = nx2 > 1 ? nx2 + 2 * nghost : 1;
-    auto ncells3 = nx3 > 1 ? nx3 + 2 * nghost : 1;
+  torch::Tensor initialize() const;
 
-    register_buffer("u0", torch::empty({nhydro, nx3, nx2, nx1}));
-    register_buffer("w", torch::empty({nhydro, nx3, nx2, nx1}));
-    register_buffer("gammad", torch::empty({nx3, nx2, nx1}));
-  }
+  float max_timestep(torch::Tensor w) const;
 
   // Implement the one stage forward computation
-  torch::Tensor forward_one_stage(torch::Tensor u, double dt) {
-    auto w = eos_cons2prim_hydro_ideal(u, gammad);
-
-    if (ncells1_ > 0.) {
-      auto [wl, wr] = recon_weno5_hydro(w, IVX, 1);
-      flux = rs_hydro_lmars(DIM1, wl, wr, gammad);
-    }
-
-    return add_flux_divergence(wght, flux, area, vol);
-
-    // Use one of many tensor manipulation functions
-    auto prim = torch::relu(fc1->forward(x));
-    x = torch::dropout(x, /*p=*/0.5, /*train=*/is_training());
-    x = fc2->forward(x);
-    return torch::log_softmax(x, /*dim=*/1);
-  }
+  torch::Tensor forward(torch::Tensor u, double dt);
 
  protected:
-  // Use one of many "standard library" modules
-  torch::nn::Linear fc1{nullptr}, fc2{nullptr};
+  EquationOfState eos_;
+  Coordinates coord_;
 
-  double gammad_ref_;
-  bool is_physical_boundary_[6];
+  // Use one of many "standard library" modules
+  // torch::nn::Linear fc1{nullptr}, fc2{nullptr};
 };
 
 /// A `ModuleHolder` subclass for `HydrodynamicsImpl`.

@@ -8,16 +8,18 @@ enum {
 
 namespace canoe {
 
-std::pair<torch::Tensor, torch::Tensor, torch::Tensor> decom_obtain_anomaly(
+std::tuple<torch::Tensor, torch::Tensor, torch::Tensor> decom_obtain_anomaly(
     int64_t is, int64_t ie, torch::Tensor const& w, torch::Tensor const& dx1f,
     torch::Tensor const& grav) {
   auto sizes = w.sizes();
   auto nx1 = w.size(DIM1 + 1);
-  sizes[DIM1 + 1] = nx1 + 1;
   auto wa = torch::zeros_like(w);
 
-  auto psf = torch::zeros(sizes, w.options());
-  auto tsf = torch::zeros(sizes, w.options());
+  auto IPR = w.size(0) - 1;
+
+  auto psf =
+      torch::zeros({w.size(0), w.size(1), w.size(2), nx1 + 1}, w.options());
+  auto tsf = torch::zeros(psf.sizes(), w.options());
 
   // pressure anomaly
   auto RdTv = w[IPR].select(DIM1, ie) / w[IDN].select(DIM1, ie);
@@ -49,9 +51,11 @@ std::pair<torch::Tensor, torch::Tensor, torch::Tensor> decom_obtain_anomaly(
   return {wa, psf, tsf};
 }
 
-void decom_apply_anomaly_inplace(tensor::Tensor const& psf,
+void decom_apply_anomaly_inplace(torch::Tensor const& psf,
                                  torch::Tensor const& tsf, torch::Tensor& wl,
                                  torch::Tensor& wr) {
+  auto IPR = wl.size(0) - 1;
+
   wl[IPR] += psf;
   torch::Tensor mask = wl[IPR] < 0;
   wl[IPR] = torch::where(mask, psf, wl[IPR]);

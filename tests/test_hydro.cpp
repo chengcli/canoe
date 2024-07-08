@@ -18,19 +18,18 @@ TEST(flux_divergence, mps_case1) {
   std::vector<torch::Tensor> area(3);
 
   int64_t NHYDRO = 14;
-  auto vol = torch::randn({1, 5, 5},
+  auto vol = torch::randn({1, 1, 5, 5},
                           torch::device(torch::kMPS).dtype(torch::kFloat32));
   vol = vol.abs();
 
   for (int i = 0; i < 3; ++i) {
     flux[i] = torch::randn({NHYDRO, 1, 5, 5},
                            torch::device(torch::kMPS).dtype(torch::kFloat32));
-    area[i] = torch::randn({1, 5, 5},
+    area[i] = torch::randn({1, 1, 5, 5},
                            torch::device(torch::kMPS).dtype(torch::kFloat32));
     area[i] = area[i].abs();
   }
 
-  double wght = 1.0;
   auto out = flux_divergence(flux, area, vol);
 }
 

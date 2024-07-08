@@ -141,7 +141,7 @@ TEST_F(TestReconstruct, test_x1) {
   int nc3 = pmb->ncells3;
 
   w.NewAthenaArray(NHYDRO, nc3, nc2, nc1);
-  w.toDevice(torch::kMPS);
+  w.toDevice(torch::kCPU);
   w.tensor().normal_(0, 1);
 
   auto start = std::chrono::high_resolution_clock::now();

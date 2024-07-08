@@ -56,6 +56,7 @@ add_subdirectory(special)
 add_subdirectory(single_column)
 add_subdirectory(diagnostics)
 add_subdirectory(forcing)
+add_subdirectory(modules)
 #add_subdirectory(nbody)
 
 set(CANOE_LIBRARY_${buildu}
@@ -80,6 +81,7 @@ set(CANOE_LIBRARY_${buildu}
   "scm_${buildl}"
   "diagnostics_${buildl}"
   "forcing_${buildl}"
+  "modules_${buildl}"
   #"yaml-cpp"
   ${CPPDISORT_LIBRARY_${buildu}}
   ${PYTHON_LIBRARY_RELEASE}
