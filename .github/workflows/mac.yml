@@ -338,7 +338,7 @@ jobs:
         run: brew bundle
 
       - name: install python modules
-        run: sudo pip3 install -r requirements.txt
+        run: pip3 install -r requirements.txt
 
       - name: create build directory
         # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
