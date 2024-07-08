@@ -19,3 +19,5 @@ endif()
 
 # Where yaml-cpp's .h files can be found.
 include_directories(${yaml-cpp_SOURCE_DIR}/include)
+
+set(YAML_CPP_LIBRARIES yaml-cpp)

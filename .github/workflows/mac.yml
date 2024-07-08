@@ -375,6 +375,9 @@ jobs:
         with:
           lfs: false
 
+      - name: install python modules
+        run: pip3 install -r requirements.txt
+
       - name: check if artifact exists
         run: echo "ARTIFACT_EXISTS=$(./tools/check_artifact.sh test_blast_output.nc)" >> $GITHUB_ENV
 

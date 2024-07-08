@@ -33,6 +33,11 @@ add_library(${namel}_${buildl}
     ${src_files}
     )
 
+target_include_directories(${namel}_${buildl}
+    PRIVATE
+    ${EIGEN3_INCLUDE_DIR}
+    )
+
 set_target_properties(${namel}_${buildl}
     PROPERTIES
     COMPILE_FLAGS ${CMAKE_CXX_FLAGS_${buildu}}
@@ -82,7 +87,7 @@ set(CANOE_LIBRARY_${buildu}
   "diagnostics_${buildl}"
   "forcing_${buildl}"
   "modules_${buildl}"
-  #"yaml-cpp"
+  ${YAML_CPP_LIBRARIES}
   ${CPPDISORT_LIBRARY_${buildu}}
   ${PYTHON_LIBRARY_RELEASE}
   ${NETCDF_LIBRARIES}

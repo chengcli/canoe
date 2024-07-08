@@ -63,7 +63,8 @@ find_package(Cantera)
 
 ## 3. set up project system libraries ##
 message(STATUS "3. Set up system libraries")
-if (NOT ${CANTERA_FOUND} STREQUAL "TRUE")
+message(STATUS ${CANTERA_FOUND})
+if (NOT ${CANTERA_FOUND})
   include(${CMAKE_SOURCE_DIR}/cmake/yamlpp.cmake)
 endif()
 include(${CMAKE_SOURCE_DIR}/cmake/gtest.cmake)
