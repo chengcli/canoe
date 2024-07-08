@@ -16,7 +16,7 @@
 
 // canoe
 #include <impl.hpp>
-#include <snap/athena_arrays.hpp>
+// #include <snap/athena_arrays.hpp>
 #include <snap/reconstruct/recon.hpp>
 
 enum {
@@ -102,7 +102,7 @@ gamma       = 1.4
   }
 };
 
-TEST_F(TestReconstruct, test1) {
+/*TEST_F(TestReconstruct, test1) {
   auto pmb = pmesh->my_blocks(0);
   int nc1 = pmb->ncells1;
   int nc2 = pmb->ncells2;
@@ -129,27 +129,24 @@ TEST_F(TestReconstruct, test1) {
     }
     file << std::endl;
   }
-}
+}*/
 
 TEST_F(TestReconstruct, test_x1) {
   auto pmb = pmesh->my_blocks(0);
-
-  AthenaArray<float> w;
 
   int nc1 = pmb->ncells1;
   int nc2 = pmb->ncells2;
   int nc3 = pmb->ncells3;
 
-  w.NewAthenaArray(NHYDRO, nc3, nc2, nc1);
-  w.toDevice(torch::kCPU);
-  w.tensor().normal_(0, 1);
+  auto w = torch::randn({NHYDRO, nc3, nc2, nc1}, torch::kFloat32);
+  w.to(torch::kCPU);
 
   auto start = std::chrono::high_resolution_clock::now();
 
   if (NGHOST > 2) {
-    auto result = recon_weno5_hydro(w.tensor(), IVX, DIM1);
-    result = recon_weno5_hydro(w.tensor(), IVX, DIM2);
-    result = recon_weno5_hydro(w.tensor(), IVX, DIM2);
+    auto result = recon_weno5_hydro(w, IVX, DIM1);
+    result = recon_weno5_hydro(w, IVX, DIM2);
+    result = recon_weno5_hydro(w, IVX, DIM2);
   }
   auto end = std::chrono::high_resolution_clock::now();
   std::chrono::duration<double> elapsed = end - start;

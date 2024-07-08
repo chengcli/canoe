@@ -16,9 +16,7 @@
 #include <athena/hydro/hydro.hpp>
 #include <athena/mesh/mesh.hpp>
 #include <athena/parameter_input.hpp>
-
-// torch
-#include <torch/torch.h>
+#include <athena/stride_iterator.hpp>
 
 // canoe
 #include <configure.hpp>
@@ -29,11 +27,7 @@
 #include <exo3/gnomonic_equiangle.hpp>
 
 // snap
-#include <snap/athena_arrays.hpp>
-#include <snap/stride_iterator.hpp>
-#include <snap/thermodynamics/thermodynamics.hpp>
-
-#include "eos.hpp"
+#include "../thermodynamics/thermodynamics.hpp"
 #include "eos_helper.hpp"
 
 // checks
@@ -64,12 +58,68 @@ void EquationOfState::ConservedToPrimitive(
     AthenaArray<Real>& cons, const AthenaArray<Real>& prim_old,
     const FaceField& b, AthenaArray<Real>& prim, AthenaArray<Real>& bcc,
     Coordinates* pco, int il, int iu, int jl, int ju, int kl, int ku) {
-  cons.toDevice(torch::kCPU);
-  auto gammad = torch::full_like(cons.tensor()[0], gamma_);
+  auto pthermo = Thermodynamics::GetInstance();
+  auto pmb = pmy_block_;
 
-  prim.toDevice(torch::kCPU);
-  prim.tensor() = canoe::eos_cons2prim_hydro_ideal(cons.tensor(), gammad);
-  prim.fromDevice();
+  apply_vapor_limiter(&cons, pmy_block_);
+
+  Real gm1 = GetGamma() - 1.0;
+  for (int k = kl; k <= ku; ++k)
+    for (int j = jl; j <= ju; ++j) {
+      for (int i = il; i <= iu; ++i) {
+        Real& u_d = cons(IDN, k, j, i);
+        Real& u_m1 = cons(IM1, k, j, i);
+        Real& u_m2 = cons(IM2, k, j, i);
+        Real& u_m3 = cons(IM3, k, j, i);
+        Real& u_e = cons(IEN, k, j, i);
+
+        Real& w_d = prim(IDN, k, j, i);
+        Real& w_vx = prim(IVX, k, j, i);
+        Real& w_vy = prim(IVY, k, j, i);
+        Real& w_vz = prim(IVZ, k, j, i);
+        Real& w_p = prim(IPR, k, j, i);
+
+        Real density = 0.;
+        for (int n = 0; n <= NVAPOR; ++n) density += cons(n, k, j, i);
+        w_d = density;
+        Real di = 1. / density;
+
+        // mass mixing ratio
+        for (int n = 1; n <= NVAPOR; ++n)
+          prim(n, k, j, i) = cons(n, k, j, i) * di;
+
+        // internal energy
+        Real KE, fsig = 1., feps = 1.;
+        // vapors
+        for (int n = 1; n <= NVAPOR; ++n) {
+          fsig += prim(n, k, j, i) * (pthermo->GetCvRatioMass(n) - 1.);
+          feps += prim(n, k, j, i) * (pthermo->GetInvMuRatio(n) - 1.);
+        }
+
+#ifdef CUBED_SPHERE
+        Real cos_theta =
+            static_cast<GnomonicEquiangle*>(pco)->GetCosineCell(k, j);
+#endif
+
+        // Real di = 1.0/u_d;
+        w_vx = u_m1 * di;
+        w_vy = u_m2 * di;
+        w_vz = u_m3 * di;
+
+#ifdef CUBED_SPHERE
+        cs::CovariantToContravariant(prim.at(k, j, i), cos_theta);
+#endif
+
+        // internal energy
+        KE = 0.5 * (u_m1 * w_vx + u_m2 * w_vy + u_m3 * w_vz);
+        w_p = gm1 * (u_e - KE) * feps / fsig;
+      }
+
+      fix_eos_cons2prim(pmb, prim, cons, k, j, il, iu);
+      check_eos_cons2prim(prim, k, j, il, iu);
+    }
+
+  PrimitiveToConserved(prim, bcc, cons, pco, il, iu, jl, ju, kl, ku);
 }
 
 //----------------------------------------------------------------------------------------
@@ -84,14 +134,56 @@ void EquationOfState::PrimitiveToConserved(const AthenaArray<Real>& prim,
                                            AthenaArray<Real>& cons,
                                            Coordinates* pco, int il, int iu,
                                            int jl, int ju, int kl, int ku) {
-  auto primc = const_cast<AthenaArray<Real>&>(prim);
+  Real igm1 = 1.0 / (GetGamma() - 1.0);
+  auto pthermo = Thermodynamics::GetInstance();
 
-  primc.toDevice(torch::kCPU);
-  auto gammad = torch::full_like(primc.tensor()[0], gamma_);
+  for (int k = kl; k <= ku; ++k) {
+    for (int j = jl; j <= ju; ++j) {
+      for (int i = il; i <= iu; ++i) {
+        Real& u_d = cons(IDN, k, j, i);
+        Real& u_m1 = cons(IM1, k, j, i);
+        Real& u_m2 = cons(IM2, k, j, i);
+        Real& u_m3 = cons(IM3, k, j, i);
+        Real& u_e = cons(IEN, k, j, i);
 
-  cons.toDevice(torch::kCPU);
-  cons.tensor() = canoe::eos_prim2cons_hydro_ideal(primc.tensor(), gammad);
-  cons.fromDevice();
+        const Real& w_d = prim(IDN, k, j, i);
+        const Real& w_vx = prim(IVX, k, j, i);
+        const Real& w_vy = prim(IVY, k, j, i);
+        const Real& w_vz = prim(IVZ, k, j, i);
+        const Real& w_p = prim(IPR, k, j, i);
+
+        // density
+        u_d = w_d;
+        for (int n = 1; n <= NVAPOR; ++n) {
+          cons(n, k, j, i) = prim(n, k, j, i) * w_d;
+          cons(IDN, k, j, i) -= cons(n, k, j, i);
+        }
+
+        // momentum
+        u_m1 = w_vx * w_d;
+        u_m2 = w_vy * w_d;
+        u_m3 = w_vz * w_d;
+
+#ifdef CUBED_SPHERE
+        cs::ContravariantToCovariant(
+            cons.at(k, j, i),
+            static_cast<GnomonicEquiangle*>(pco)->GetCosineCell(k, j));
+#endif
+
+        // total energy
+        Real KE = 0.5 * (u_m1 * w_vx + u_m2 * w_vy + u_m3 * w_vz);
+        Real fsig = 1., feps = 1.;
+        // vapors
+        for (int n = 1; n <= NVAPOR; ++n) {
+          fsig += prim(n, k, j, i) * (pthermo->GetCvRatioMass(n) - 1.);
+          feps += prim(n, k, j, i) * (pthermo->GetInvMuRatio(n) - 1.);
+        }
+        u_e = igm1 * w_p * fsig / feps + KE;
+      }
+    }
+  }
+
+  return;
 }
 
 //----------------------------------------------------------------------------------------
