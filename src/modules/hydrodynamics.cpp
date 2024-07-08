@@ -8,10 +8,6 @@
 #include <snap/reconstruct/recon.hpp>
 #include <snap/riemann/riemann.hpp>
 
-#include "coordinates.hpp"
-#include "equation_of_state.hpp"
-#include "thermodynamics.hpp"
-
 enum { DIM1 = 3, DIM2 = 2, DIM3 = 1 };
 
 namespace canoe {
@@ -24,7 +20,7 @@ HydrodynamicsImpl::HydrodynamicsImpl(const HydrodynamicsOptions& options_,
   if (eos.has_value()) {
     eos_ = register_module("eos", eos.value());
   } else {
-    eos_ = register_module("eos", EquationOfState());
+    eos_ = register_module("eos", EquationOfState(EquationOfStateOptions()));
   }
 
   reset();
@@ -44,6 +40,8 @@ void HydrodynamicsImpl::reset() {
                                      coord_->ncells2(), coord_->ncells1()}));
 }
 
+float HydrodynamicsImpl::cfl() const { return options.cfl(); }
+
 torch::Tensor HydrodynamicsImpl::forward(torch::Tensor u, double dt) {
   auto buf = named_buffers();
   auto gammad = eos_->gammad(u);
@@ -62,7 +60,7 @@ torch::Tensor HydrodynamicsImpl::forward(torch::Tensor u, double dt) {
 
   // auto dt = max_timestep(w);
 
-  return u - options.cfl() * dt *
+  return u - cfl() * dt *
                  flux_divergence({buf["flux1"], buf["flux2"], buf["flux3"]},
                                  coord_->areas(), coord_->vol());
 

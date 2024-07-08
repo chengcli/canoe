@@ -4,8 +4,6 @@
 
 namespace canoe {
 
-CoordinatesImpl::CoordinatesImpl() : options(CoordinatesOptions()) { reset(); }
-
 CoordinatesImpl::CoordinatesImpl(const CoordinatesOptions& options_)
     : options(options_) {
   reset();

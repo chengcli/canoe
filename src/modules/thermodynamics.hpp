@@ -20,7 +20,6 @@ class ThermodynamicsImpl : public torch::nn::Cloneable<ThermodynamicsImpl> {
   ThermodynamicsOptions options;
 
   // Constructor to initialize the layers
-  ThermodynamicsImpl();
   explicit ThermodynamicsImpl(const ThermodynamicsOptions& options_);
 
   void reset() override;

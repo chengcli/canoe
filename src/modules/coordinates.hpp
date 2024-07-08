@@ -19,8 +19,6 @@ class CoordinatesImpl : public torch::nn::Cloneable<CoordinatesImpl> {
   //! options with which this `Coordinates` was constructed
   CoordinatesOptions options;
 
-  CoordinatesImpl();
-
   // Constructor to initialize the layers
   explicit CoordinatesImpl(const CoordinatesOptions& options_);
 

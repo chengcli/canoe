@@ -3,6 +3,9 @@
 #include <torch/arg.h>
 #include <torch/nn.h>
 
+#include "coordinates.hpp"
+#include "equation_of_state.hpp"
+
 // torch module macro is defined in
 // torch/csrc/api/include/torch/nn/pimpl.h
 
@@ -32,14 +35,16 @@ class HydrodynamicsImpl : public torch::nn::Cloneable<HydrodynamicsImpl> {
 
   torch::Tensor initialize() const;
 
+  float cfl() const;
+
   float max_timestep(torch::Tensor w) const;
 
   // Implement the one stage forward computation
   torch::Tensor forward(torch::Tensor u, double dt);
 
  protected:
-  EquationOfState eos_;
-  Coordinates coord_;
+  EquationOfState eos_ = nullptr;
+  Coordinates coord_ = nullptr;
 
   // Use one of many "standard library" modules
   // torch::nn::Linear fc1{nullptr}, fc2{nullptr};

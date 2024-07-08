@@ -3,6 +3,8 @@
 #include <torch/arg.h>
 #include <torch/nn.h>
 
+#include "thermodynamics.hpp"
+
 namespace canoe {
 
 class Thermodynamics;
@@ -20,8 +22,6 @@ class EquationOfStateImpl : public torch::nn::Cloneable<EquationOfStateImpl> {
   int64_t IVX = 1;
   int64_t IPR = 4;
   int64_t NHYDRO = 5;
-
-  EquationOfStateImpl();
 
   // Constructor to initialize the layers
   explicit EquationOfStateImpl(

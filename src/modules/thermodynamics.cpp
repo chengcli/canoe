@@ -4,10 +4,6 @@
 
 namespace canoe {
 
-ThermodynamicsImpl::ThermodynamicsImpl() : options(ThermodynamicsOptions()) {
-  reset();
-}
-
 ThermodynamicsImpl::ThermodynamicsImpl(const ThermodynamicsOptions& options_)
     : options(options_) {
   reset();
@@ -15,7 +11,7 @@ ThermodynamicsImpl::ThermodynamicsImpl(const ThermodynamicsOptions& options_)
 
 void ThermodynamicsImpl::reset() {
   // Do nothing
-  register_buffer("cv_ratio_mass", torch::empty({1 + nvapor() + ncloud()}));
+  register_buffer("cv_ratio", torch::empty({1 + nvapor() + ncloud()}));
   register_buffer("mu_ratio", torch::empty({1 + nvapor() + ncloud()}));
 }
 
@@ -28,9 +24,9 @@ torch::Tensor ThermodynamicsImpl::mu_ratio() const {
   return buf["mu_ratio"];
 }
 
-torch::Tensor ThermodynamicsImpl::cv_ratio_mass() const {
+torch::Tensor ThermodynamicsImpl::cv_ratio() const {
   auto buf = named_buffers(/*recurse=*/false);
-  return buf["cv_ratio_mass"];
+  return buf["cv_ratio"];
 }
 
 torch::Tensor ThermodynamicsImpl::gammad(torch::Tensor const& hydro_u) const {

@@ -2,13 +2,7 @@
 
 #include <torch/torch.h>
 
-#include "thermodynamics.hpp"
-
 namespace canoe {
-
-EquationOfStateImpl::EquationOfStateImpl() : options(EquationOfStateOptions()) {
-  reset();
-}
 
 EquationOfStateImpl::EquationOfStateImpl(const EquationOfStateOptions& options_,
                                          std::optional<Thermodynamics> thermo)
@@ -16,7 +10,8 @@ EquationOfStateImpl::EquationOfStateImpl(const EquationOfStateOptions& options_,
   if (thermo.has_value()) {
     thermo_ = register_module("thermo", thermo.value());
   } else {
-    thermo_ = register_module("thermo", Thermodynamics());
+    thermo_ =
+        register_module("thermo", Thermodynamics(ThermodynamicsOptions()));
   }
 
   reset();
@@ -35,8 +30,8 @@ void EquationOfStateImpl::reset() {
 void EquationOfStateImpl::update_thermo(torch::Tensor const& hydro_u) const {
   auto buf = named_buffers(/*recurse=*/false);
 
-  buf["rcv"] = (thermo_->cv_ratio_mass() - 1.).slice(0, 1, IVX);
-  buf["mu_ratio"] = (1. / thermo_->mu_ratio()).slice(0, 1, IVX);
+  buf["rcv"] = (thermo_->cv_ratio() - 1.).slice(0, 1, IVX);
+  buf["rmu"] = (1. / thermo_->mu_ratio()).slice(0, 1, IVX);
   buf["gammad"] = thermo_->gammad(hydro_u);
 }
 
