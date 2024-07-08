@@ -61,12 +61,6 @@ find_package(Eigen3 REQUIRED)
 find_package(Torch REQUIRED)
 find_package(Cantera)
 
-if (NOT ${CANTERA_FOUND} STREQUAL "TRUE")
-  message(STATUS "Not using Cantera library")
-  set(CANTERA_INCLUDE_DIR "")
-  set(CANTERA_LIBRARY "")
-endif()
-
 ## 3. set up project system libraries ##
 message(STATUS "3. Set up system libraries")
 if (NOT ${CANTERA_FOUND} STREQUAL "TRUE")
