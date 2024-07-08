@@ -8,11 +8,13 @@ configure_file(globals.cpp.in globals.cpp @ONLY)
 enable_testing()
 
 # torch tests
-setup_test(test_eos)
-setup_test(test_weno)
-setup_test(test_reconstruct)
-setup_test(test_riemann)
-setup_test(test_hydro)
+if (${Torch_FOUND})
+  setup_test(test_eos)
+  setup_test(test_weno)
+  setup_test(test_reconstruct)
+  setup_test(test_riemann)
+  setup_test(test_hydro)
+endif()
 
 # athena tests
 setup_test(test_mesh)
