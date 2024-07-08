@@ -23,8 +23,12 @@ macro(setup_test namel)
             ${PNETCDF_INCLUDE_DIR}
             ${OpenMP_CXX_INCLUDE_DIR}
             ${FFTW_INCLUDE_DIRS}
+            SYSTEM
             ${CANTERA_INCLUDE_DIR}
-            ${CANTERA_INCLUDE_DIR}/cantera/ext) # for yaml-cpp
+            SYSTEM
+            ${TORCH_INCLUDE_DIR}
+            SYSTEM
+            ${TORCH_API_INCLUDE_DIR})
 
   target_link_libraries(
     ${namel}.${buildl} gtest_main $<$<BOOL:${PVFMM}>:pvfmmStatic>

@@ -22,12 +22,12 @@
 #include <athena/hydro/hydro.hpp>
 #include <athena/mesh/mesh.hpp>
 #include <athena/parameter_input.hpp>
-#include <athena/stride_iterator.hpp>
 
 // canoe
 #include <impl.hpp>
 
 // snap
+#include <snap/stride_iterator.hpp>
 #include <snap/thermodynamics/thermodynamics.hpp>
 
 // @sect3{Preamble}

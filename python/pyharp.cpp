@@ -3,6 +3,9 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
+// external
+#include <yaml-cpp/yaml.h>
+
 // athena
 #include <athena/athena.hpp>
 #include <athena/globals.hpp>
@@ -36,19 +39,16 @@ void init_harp(py::module &parent) {
       .def("get_num_bands", &Radiation::GetNumBands)
       .def("get_band", &Radiation::GetBand)
 
-      .def("cal_flux", 
-          [](Radiation &rad, MeshBlock const *pmb) {
-            for (int k = pmb->ks; k <= pmb->ke; ++k)
-              for (int j = pmb->js; j <= pmb->je; ++j)
-                rad.CalFlux(pmb, k, j);
-          })
+      .def("cal_flux",
+           [](Radiation &rad, MeshBlock const *pmb) {
+             for (int k = pmb->ks; k <= pmb->ke; ++k)
+               for (int j = pmb->js; j <= pmb->je; ++j) rad.CalFlux(pmb, k, j);
+           })
 
-      .def("cal_radiance",
-          [](Radiation &rad, MeshBlock const *pmb) {
-            for (int k = pmb->ks; k <= pmb->ke; ++k)
-              for (int j = pmb->js; j <= pmb->je; ++j)
-                rad.CalRadiance(pmb, k, j);
-          });
+      .def("cal_radiance", [](Radiation &rad, MeshBlock const *pmb) {
+        for (int k = pmb->ks; k <= pmb->ke; ++k)
+          for (int j = pmb->js; j <= pmb->je; ++j) rad.CalRadiance(pmb, k, j);
+      });
 
   // RadiationBand
   py::class_<RadiationBand, RadiationBandPtr>(m, "radiation_band")

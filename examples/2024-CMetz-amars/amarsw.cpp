@@ -164,16 +164,16 @@ void MeshBlock::UserWorkInLoop() {
     for (int i = 1; i <= NVAPOR; ++i) {
       std::vector<Real> rates(1 + pthermo->GetCloudIndexSet(i).size(), 0.);
       //(cmetz) check this value of CDE, see Hartmann pg 117
-      rates = pthermo->CalcSurfEvapRates(air, i, lH2Oamd(j), ts(j), dTs, cSurf,
-                                         dt, 3e-3, Mbar);
+      /*rates = pthermo->CalcSurfEvapRates(air, i, lH2Oamd(j), ts(j), dTs,
+         cSurf, dt, 3e-3, Mbar);*/
       std::cout << "liquid rates: " << rates[0] << std::endl;
       lH2Oamd(j) += -rates[0];
       this->phydro->w(i, ks, j, is) += rates[0] * (Mbar / pthermo->GetMu(i)) /
                                        (this->phydro->w(IDN, ks, j, is) * dz);
       if (this->phydro->w(i, ks, j, is) < 0) this->phydro->w(i, ks, j, is) = 0;
 
-      rates = pthermo->CalcSurfEvapRates(air, i, sH2Oamd(j), ts(j), dTs, cSurf,
-                                         dt, 3e-3, Mbar);
+      /*rates = pthermo->CalcSurfEvapRates(air, i, sH2Oamd(j), ts(j), dTs,
+         cSurf, dt, 3e-3, Mbar);*/
       std::cout << "solid rates: " << rates[0] << std::endl;
       sH2Oamd(js) += -rates[0];
       this->phydro->w(i, ks, j, is) += rates[0] * (Mbar / pthermo->GetMu(i)) /
@@ -371,6 +371,6 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
       peos->ConservedToPrimitive(phydro->u, phydro->w, pfield->b, phydro->w,
                                  pfield->bcc, pcoord, is, ie, j, j, k, k);
 
-      pimpl->prad->CalFlux(this, k, j, is, ie + 1);
+      pimpl->prad->CalFlux(this, k, j);
     }
 }

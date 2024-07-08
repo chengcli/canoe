@@ -11,12 +11,13 @@
 include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}
   ${CMAKE_BINARY_DIR}
-  ${NETCDF_INCLUDES}
-  ${CFITSIO_INCLUDE_DIR}
   ${MPI_CXX_INCLUDE_PATH}
   ${MPI_CXX_HEADER_DIR}
+  ${NETCDF_INCLUDES}
   ${PNETCDF_INCLUDE_DIR}
-  ${CANTERA_INCLUDE_DIR}
+  SYSTEM ${CANTERA_INCLUDE_DIR}
+  SYSTEM ${TORCH_API_INCLUDE_DIR}
+  SYSTEM ${TORCH_INCLUDE_DIR}
   )
 
 set(namel canoe)
@@ -37,11 +38,6 @@ set_target_properties(${namel}_${buildl}
     COMPILE_FLAGS ${CMAKE_CXX_FLAGS_${buildu}}
     )
 
-target_include_directories(${namel}_${buildl}
-    PRIVATE
-    ${CANTERA_INCLUDE_DIR}/cantera/ext  # for yaml-cpp
-    )
-
 add_subdirectory(climath)
 add_subdirectory(astro)
 add_subdirectory(utils)
@@ -60,6 +56,7 @@ add_subdirectory(special)
 add_subdirectory(single_column)
 add_subdirectory(diagnostics)
 add_subdirectory(forcing)
+add_subdirectory(modules)
 #add_subdirectory(nbody)
 
 set(CANOE_LIBRARY_${buildu}
@@ -84,16 +81,19 @@ set(CANOE_LIBRARY_${buildu}
   "scm_${buildl}"
   "diagnostics_${buildl}"
   "forcing_${buildl}"
+  "modules_${buildl}"
   #"yaml-cpp"
   ${CPPDISORT_LIBRARY_${buildu}}
   ${PYTHON_LIBRARY_RELEASE}
   ${NETCDF_LIBRARIES}
   ${PNETCDF_LIBRARY}
-  ${CFITSIO_LIBRARY}
   ${MPI_CXX_LIBRARIES}
   ${GLOG_LIBRARIES}
   ${OpenMP_libomp_LIBRARY}
   ${CANTERA_LIBRARY}
+  ${TORCH_LIBRARY}
+  ${TORCH_CPU_LIBRARY}
+  ${C10_LIBRARY}
   CACHE INTERNAL "canoe library")
 
 set(CANOE_INCLUDE_DIR

@@ -7,7 +7,6 @@
 #include <athena/mesh/mesh.hpp>
 #include <athena/reconstruct/interpolation.hpp>
 #include <athena/scalars/scalars.hpp>
-#include <athena/stride_iterator.hpp>
 
 // canoe
 #include <air_parcel.hpp>
@@ -15,6 +14,7 @@
 #include <impl.hpp>
 
 // snap
+#include <snap/stride_iterator.hpp>
 #include <snap/thermodynamics/atm_thermodynamics.hpp>
 
 // opacity

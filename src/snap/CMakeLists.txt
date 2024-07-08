@@ -20,12 +20,18 @@ string(TOUPPER ${namel} nameu)
 file(GLOB src_files
     eos/apply_vapor_limiter.cpp
 		eos/check_hydro_variables.cpp
+		eos/eos.cpp
+		eos/eos_hydro_ideal.cpp
 		eos/${EQUATION_OF_STATE}_hydro.cpp
     thermodynamics/*.cpp
     decomposition/*.cpp
     riemann/${RSOLVER}.cpp
+    riemann/riemann.cpp
+    riemann/rs_hydro_lmars.cpp
+    hydro/*.cpp
     implicit/*.cpp
     turbulence/*.cpp
+    reconstruct/*.cpp
     )
 
 string(TOLOWER ${CMAKE_BUILD_TYPE} buildl)
