@@ -5,6 +5,10 @@
 
 #include "thermodynamics.hpp"
 
+namespace Cantera {
+class Kinetics;
+}  // namespace Cantera
+
 namespace canoe {
 
 class Thermodynamics;
@@ -39,6 +43,7 @@ class EquationOfStateImpl : public torch::nn::Cloneable<EquationOfStateImpl> {
 
  protected:
   Thermodynamics thermo_ = nullptr;
+  std::shared_ptr<Cantera::Kinetics> kinetics_;
 };
 
 TORCH_MODULE(EquationOfState);

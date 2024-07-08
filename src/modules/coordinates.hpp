@@ -8,9 +8,17 @@ namespace canoe {
 struct CoordinatesOptions {
   CoordinatesOptions() {}
 
+  TORCH_ARG(float, x1min) = 0;
+  TORCH_ARG(float, x1max) = 1;
+  TORCH_ARG(float, x2min) = 0;
+  TORCH_ARG(float, x2max) = 1;
+  TORCH_ARG(float, x3min) = 0;
+  TORCH_ARG(float, x3max) = 1;
+
   TORCH_ARG(int64_t, nx1) = 1;
   TORCH_ARG(int64_t, nx2) = 1;
   TORCH_ARG(int64_t, nx3) = 1;
+
   TORCH_ARG(int64_t, nghost) = 0;
 };
 

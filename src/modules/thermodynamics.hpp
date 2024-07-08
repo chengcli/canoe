@@ -28,7 +28,7 @@ class ThermodynamicsImpl : public torch::nn::Cloneable<ThermodynamicsImpl> {
   int64_t ncloud() const;
 
   torch::Tensor mu_ratio() const;
-  torch::Tensor cv_ratio_mass() const;
+  torch::Tensor cv_ratio() const;
   torch::Tensor gammad(torch::Tensor const& hydro_u) const;
 
   // Implement the one stage forward computation

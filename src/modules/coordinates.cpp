@@ -14,9 +14,41 @@ void CoordinatesImpl::reset() {
   auto nc2 = options.nx2() > 1 ? options.nx2() + 2 * options.nghost() : 1;
   auto nc3 = options.nx3() > 1 ? options.nx3() + 2 * options.nghost() : 1;
 
-  register_buffer("area1", torch::empty({1, nc3, nc2, nc1 + 1}));
+  // dimension 1
+  auto x1f = register_buffer("x1f", torch::empty({nc1 + 1}));
+  x1f = torch::linspace(options.x1min(), options.x1max(), nc1);
+
+  auto dx1f = register_buffer("dx1f", torch::empty({nc1 + 1}));
+  dx1f = x1f.slice(0, 1, nc1 + 1) - x1f.slice(0, 0, nc1);
+
+  auto x1v = register_buffer("x1v", torch::empty({nc1}));
+  x1v = 0.5 * (x1f.slice(0, 0, nc1) + x1f.slice(0, 1, nc1 + 1));
+
+  // dimension 2
+  auto x2f = register_buffer("x2f", torch::empty({nc2 + 1}));
+  x2f = torch::linspace(options.x2min(), options.x2max(), nc2);
+
+  auto dx2f = register_buffer("dx2f", torch::empty({nc2 + 1}));
+  dx2f = x2f.slice(0, 1, nc2 + 1) - x2f.slice(0, 0, nc2);
+
+  auto x2v = register_buffer("x2v", torch::empty({nc2}));
+  x2v = 0.5 * (x2f.slice(0, 0, nc2) + x2f.slice(0, 1, nc2 + 1));
+
+  // dimension 3
+  auto x3f = register_buffer("x3f", torch::empty({nc3 + 1}));
+  x3f = torch::linspace(options.x3min(), options.x3max(), nc3);
+
+  auto dx3f = register_buffer("dx3f", torch::empty({nc3 + 1}));
+  dx3f = x3f.slice(0, 1, nc3 + 1) - x3f.slice(0, 0, nc3);
+
+  auto x3v = register_buffer("x3v", torch::empty({nc3}));
+  x3v = 0.5 * (x3f.slice(0, 0, nc3) + x3f.slice(0, 1, nc3 + 1));
+
+  auto area1 = register_buffer("area1", torch::empty({1, nc3, nc2, nc1 + 1}));
+
   register_buffer("area2", torch::empty({1, nc3, nc2 + 1, nc1}));
   register_buffer("area3", torch::empty({1, nc3 + 1, nc2, nc1}));
+
   register_buffer("vol", torch::empty({1, nc3, nc2, nc1}));
 }
 
