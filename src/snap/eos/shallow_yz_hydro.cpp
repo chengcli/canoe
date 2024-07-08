@@ -12,10 +12,10 @@
 #include <athena/hydro/hydro.hpp>
 #include <athena/mesh/mesh.hpp>
 #include <athena/parameter_input.hpp>
-#include <athena/stride_iterator.hpp>
 
 // canoe
 #include <configure.hpp>
+#include <snap/stride_iterator.hpp>
 
 // exo3
 #include <exo3/cubed_sphere_utility.hpp>

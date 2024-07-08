@@ -14,7 +14,6 @@
 #include <athena/outputs/outputs.hpp>
 #include <athena/parameter_input.hpp>
 #include <athena/scalars/scalars.hpp>
-#include <athena/stride_iterator.hpp>
 
 // application
 #include <application/application.hpp>
@@ -32,6 +31,7 @@
 #include <climath/interpolation.h>
 
 // snap
+#include <snap/stride_iterator.hpp>
 #include <snap/thermodynamics/molecules.hpp>
 #include <snap/thermodynamics/thermodynamics.hpp>
 #include <snap/thermodynamics/vapors/sodium_vapors.hpp>

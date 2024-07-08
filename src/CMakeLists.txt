@@ -33,6 +33,11 @@ add_library(${namel}_${buildl}
     ${src_files}
     )
 
+target_include_directories(${namel}_${buildl}
+    PRIVATE
+    ${EIGEN3_INCLUDE_DIR}
+    )
+
 set_target_properties(${namel}_${buildl}
     PROPERTIES
     COMPILE_FLAGS ${CMAKE_CXX_FLAGS_${buildu}}
@@ -56,8 +61,16 @@ add_subdirectory(special)
 add_subdirectory(single_column)
 add_subdirectory(diagnostics)
 add_subdirectory(forcing)
-add_subdirectory(modules)
+
+if (${Torch_FOUND})
+  add_subdirectory(torch)
+  add_subdirectory(modules)
+endif()
 #add_subdirectory(nbody)
+
+if(UNIX AND NOT APPLE)
+  set(EXTRA_LIBS dl stdc++fs)
+endif()
 
 set(CANOE_LIBRARY_${buildu}
   "canoe_${buildl}"
@@ -81,8 +94,8 @@ set(CANOE_LIBRARY_${buildu}
   "scm_${buildl}"
   "diagnostics_${buildl}"
   "forcing_${buildl}"
-  "modules_${buildl}"
-  #"yaml-cpp"
+  #"modules_${buildl}"
+  ${YAML_CPP_LIBRARIES}
   ${CPPDISORT_LIBRARY_${buildu}}
   ${PYTHON_LIBRARY_RELEASE}
   ${NETCDF_LIBRARIES}
@@ -94,6 +107,7 @@ set(CANOE_LIBRARY_${buildu}
   ${TORCH_LIBRARY}
   ${TORCH_CPU_LIBRARY}
   ${C10_LIBRARY}
+  ${EXTRA_LIBS}
   CACHE INTERNAL "canoe library")
 
 set(CANOE_INCLUDE_DIR

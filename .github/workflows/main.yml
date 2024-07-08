@@ -25,7 +25,7 @@ jobs:
       - run: echo "🖥️ The workspace, ${{ github.workspace }}, is now ready to test your code on the runner."
 
       - name: Install cpplint
-        run: sudo pip install cpplint
+        run: pip install cpplint
 
       - uses: actions/checkout@v3
         with:
@@ -48,6 +48,9 @@ jobs:
       - uses: actions/checkout@v3
         with:
           lfs: false
+
+      - name: install python modules
+        run: pip install -r requirements.txt
 
       - name: create build directory
         # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
@@ -72,6 +75,9 @@ jobs:
       - uses: actions/checkout@v3
         with:
           lfs: false
+
+      - name: install python modules
+        run: pip install -r requirements.txt
 
       - name: create build directory
         # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
@@ -99,6 +105,9 @@ jobs:
       - uses: actions/checkout@v3
         with:
           lfs: false
+
+      - name: install python modules
+        run: pip install -r requirements.txt
 
       - name: create build directory
         # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
@@ -146,7 +155,7 @@ jobs:
           lfs: false
 
       - name: install python modules
-        run: sudo pip install -r requirements.txt
+        run: pip install -r requirements.txt
 
       - name: create build directory
         # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
@@ -193,6 +202,9 @@ jobs:
       - uses: actions/checkout@v3
         with:
           lfs: false
+
+      - name: install python modules
+        run: pip install -r requirements.txt
 
       - name: create build directory
         # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
@@ -241,6 +253,9 @@ jobs:
         with:
           lfs: false
 
+      - name: install python modules
+        run: pip install -r requirements.txt
+
       - name: create build directory
         # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
         # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
@@ -287,6 +302,9 @@ jobs:
       - uses: actions/checkout@v3
         with:
           lfs: false
+
+      - name: install python modules
+        run: pip install -r requirements.txt
 
       - name: create build directory
         # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
@@ -335,7 +353,7 @@ jobs:
           lfs: false
 
       - name: install python modules
-        run: sudo pip install -r requirements.txt
+        run: pip install -r requirements.txt
 
       - name: create build directory
         # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
@@ -367,6 +385,9 @@ jobs:
         with:
           lfs: false
 
+      - name: install python modules
+        run: pip install -r requirements.txt
+
       - name: check if artifact exists
         run: echo "ARTIFACT_EXISTS=$(./tools/check_artifact.sh robert_output.nc)" >> $GITHUB_ENV
 
@@ -379,9 +400,6 @@ jobs:
       - name: fetch the needed lfs file if the artifact does not exist
         if: env.ARTIFACT_EXISTS == 'false'
         run: git lfs pull -I examples/2019-Li-snap/straka_output.nc
-
-      - name: set up python libraries
-        run: pip3 install -r requirements.txt
 
       - name: create build directory
         run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DTASK=straka
@@ -685,7 +703,7 @@ jobs:
           lfs: false
 
       - name: install python modules
-        run: sudo pip3 install -r requirements.txt
+        run: pip3 install -r requirements.txt
 
       - name: create build directory
         # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
@@ -716,6 +734,9 @@ jobs:
       - uses: actions/checkout@v3
         with:
           lfs: false
+
+      - name: install python modules
+        run: pip3 install -r requirements.txt
 
       - name: check if artifact exists
         run: echo "ARTIFACT_EXISTS=$(./tools/check_artifact.sh test_blast_output.nc)" >> $GITHUB_ENV

@@ -11,9 +11,6 @@
 #include <utility>
 #include <vector>
 
-// external
-#include <yaml-cpp/yaml.h>
-
 // athena
 #include <athena/athena.hpp>
 #include <athena/hydro/hydro.hpp>
@@ -27,6 +24,11 @@
 class MeshBlock;
 class ParameterInput;
 
+namespace Cantera {
+class ThermoPhase;
+class Kinetics;
+}  // namespace Cantera
+
 using IndexPair = std::pair<int, int>;
 using IndexSet = std::vector<int>;
 
@@ -36,8 +38,8 @@ using RealArrayX = std::vector<Real>;
 using SatVaporPresFunc1 = Real (*)(AirParcel const &, int i, int j);
 using SatVaporPresFunc2 = Real (*)(AirParcel const &, int i, int j, int k);
 
-//! \todo(CLI): move to configure.hpp
 enum { MAX_REACTANT = 3 };
+
 using ReactionIndx = std::array<int, MAX_REACTANT>;
 using ReactionStoi = std::array<int, MAX_REACTANT>;
 using ReactionInfo = std::pair<ReactionIndx, ReactionStoi>;
@@ -76,16 +78,13 @@ class Thermodynamics {
   //! Protected ctor access thru static member function Instance
   Thermodynamics() {}
   static Thermodynamics *fromLegacyInput(ParameterInput *pin);
-  static Thermodynamics *fromYAMLInput(YAML::Node const &node);
+  static Thermodynamics *fromYAMLInput(std::string const &fname);
 
  public:
   using SVPFunc1Container = std::vector<std::vector<SatVaporPresFunc1>>;
   using SVPFunc2Container = std::map<IndexPair, SatVaporPresFunc2>;
 
   enum { Size = 1 + NVAPOR + NCLOUD };
-
-  static constexpr Real RefTemp = 300.;
-  static constexpr Real RefPres = 1.e5;
 
   //! thermodynamics input key in the input file [thermodynamics_config]
   static const std::string input_key;
@@ -96,7 +95,7 @@ class Thermodynamics {
   //! Return a pointer to the one and only instance of Thermodynamics
   static Thermodynamics const *GetInstance();
 
-  static Thermodynamics const *InitFromYAMLInput(YAML::Node const &node);
+  static Thermodynamics const *InitFromYAMLInput(std::string const &fname);
 
   static Thermodynamics const *InitFromAthenaInput(ParameterInput *pin);
 
@@ -148,6 +147,8 @@ class Thermodynamics {
 
   //! const pointer to cv_ratio_mole_
   Real const *GetCvRatioMole() const { return cv_ratio_mole_.data(); }
+
+  std::shared_ptr<Cantera::Kinetics> Kinetics() const { return kinetics_; }
 
   //! \return the index of the cloud
   //! \param[in] i the index of the vapor
@@ -215,10 +216,6 @@ class Thermodynamics {
     return GetLatentHeatMole(i, rates, temp) * inv_mu_[i];
   }
 
-  RealArrayX CalcSurfEvapRates(AirParcel const &qfrac, int i, Real &amd,
-                               Real btemp, Real dTs, Real cSurf, Real dt,
-                               Real Cde, Real Mbar) const;
-
   //! \brief Calculate the equilibrium mole transfer by cloud reaction
   //! vapor -> cloud
   //!
@@ -254,12 +251,24 @@ class Thermodynamics {
 
   //! Thermodnamic equilibrium at current TP
   //! \param[in,out] qfrac mole fraction representation of air parcel
+  void EquilibrateTP() const;
+
   void EquilibrateTP(AirParcel *qfrac) const;
+
+  //! Thermodnamic equilibrium at current UV
+  void EquilibrateUV() const;
+
+  void EquilibrateUV(AirParcel *qfrac) const;
+
+  void EquilibrateSP(double P) const;
 
   //! Adjust to the maximum saturation state conserving internal energy
   //! \param[in,out] ac mole fraction representation of a collection of air
   //! parcels
   void SaturationAdjustment(AirColumn &ac) const;
+
+  void SetStateFromPrimitive(MeshBlock *pmb, int k, int j, int i) const;
+  void SetStateFromConserved(MeshBlock *pmb, int k, int j, int i) const;
 
   //! \brief Calculate potential temperature from primitive variable
   //!
@@ -363,6 +372,8 @@ class Thermodynamics {
   void enrollVaporFunctions();
 
  protected:
+  std::shared_ptr<Cantera::Kinetics> kinetics_;
+
   //! ideal gas constant of dry air in J/kg
   Real Rd_;
 
@@ -430,11 +441,11 @@ class Thermodynamics {
   //! cloud index set
   std::vector<IndexSet> cloud_index_set_;
 
-  //! saturation vapor pressure function: Vapor + Vapor -> Cloud
-  SVPFunc2Container svp_func2_;
-
   //! reaction information map
   std::map<IndexPair, ReactionInfo> cloud_reaction_map_;
+
+  //! saturation vapor pressure function: Vapor + Vapor -> Cloud
+  SVPFunc2Container svp_func2_;
 
   //! pointer to the single Thermodynamics instance
   static Thermodynamics *mythermo_;
