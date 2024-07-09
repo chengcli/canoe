@@ -5,7 +5,7 @@
 #include <torch/torch.h>
 
 // snap
-#include <snap/hydro/hydro.hpp>
+#include <torch/hydro/hydro.hpp>
 
 using namespace canoe;
 

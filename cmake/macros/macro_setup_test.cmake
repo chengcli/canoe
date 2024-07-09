@@ -32,7 +32,7 @@ macro(setup_test namel)
 
   target_link_libraries(
     ${namel}.${buildl} gtest_main $<$<BOOL:${PVFMM}>:pvfmmStatic>
-    ${CANOE_LIBRARY_${buildu}})
+    $<$<BOOL:${Torch_FOUND}>:torch_${buildl}> ${CANOE_LIBRARY_${buildu}})
 
   add_test(NAME ${namel}.${buildl} COMMAND ${namel}.${buildl})
 endmacro()

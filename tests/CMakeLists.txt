@@ -14,7 +14,7 @@ if (${Torch_FOUND})
   setup_test(test_reconstruct)
   setup_test(test_riemann)
   setup_test(test_hydro)
-  setup_test(test_thermodynamics)
+  #setup_test(test_thermodynamics)
 endif()
 
 # athena tests

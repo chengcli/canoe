@@ -5,7 +5,7 @@
 #include <torch/torch.h>
 
 // snap
-#include <snap/eos/eos.hpp>
+#include <torch/eos/eos.hpp>
 
 using namespace canoe;
 

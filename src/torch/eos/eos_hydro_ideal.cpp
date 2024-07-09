@@ -2,7 +2,7 @@
 #include <torch/torch.h>
 
 // exo3
-#include <exo3/exo3.hpp>  // vec_raise_inplace
+#include <torch/exo3/exo3.hpp>  // vec_raise_inplace
 
 // snap
 #include "eos.hpp"

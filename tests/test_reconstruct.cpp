@@ -16,8 +16,7 @@
 
 // canoe
 #include <impl.hpp>
-// #include <snap/athena_arrays.hpp>
-#include <snap/reconstruct/recon.hpp>
+#include <torch/recon/recon.hpp>
 
 enum {
   DIM1 = 3,
@@ -139,7 +138,7 @@ TEST_F(TestReconstruct, test_x1) {
   int nc3 = pmb->ncells3;
 
   auto w = torch::randn({NHYDRO, nc3, nc2, nc1}, torch::kFloat32);
-  w.to(torch::kCPU);
+  w.to(torch::kMPS);
 
   auto start = std::chrono::high_resolution_clock::now();
 

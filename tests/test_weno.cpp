@@ -12,7 +12,7 @@
 #include <torch/torch.h>
 
 // snap
-#include <snap/reconstruct/interpolation.hpp>
+#include <torch/recon/interpolation.hpp>
 
 using namespace canoe;
 

@@ -61,12 +61,12 @@ add_subdirectory(special)
 add_subdirectory(single_column)
 add_subdirectory(diagnostics)
 add_subdirectory(forcing)
+#add_subdirectory(nbody)
 
 if (${Torch_FOUND})
   add_subdirectory(torch)
   add_subdirectory(modules)
 endif()
-#add_subdirectory(nbody)
 
 if(UNIX AND NOT APPLE)
   set(EXTRA_LIBS dl stdc++fs)
@@ -94,7 +94,7 @@ set(CANOE_LIBRARY_${buildu}
   "scm_${buildl}"
   "diagnostics_${buildl}"
   "forcing_${buildl}"
-  #"modules_${buildl}"
+  "modules_${buildl}"
   ${YAML_CPP_LIBRARIES}
   ${CPPDISORT_LIBRARY_${buildu}}
   ${PYTHON_LIBRARY_RELEASE}

@@ -3,10 +3,10 @@
 
 #include <torch/torch.h>
 
-#include <snap/eos/eos.hpp>
-#include <snap/hydro/hydro.hpp>
-#include <snap/reconstruct/recon.hpp>
-#include <snap/riemann/riemann.hpp>
+#include <torch/eos/eos.hpp>
+#include <torch/hydro/hydro.hpp>
+#include <torch/recon/recon.hpp>
+#include <torch/riemann/riemann.hpp>
 
 enum { DIM1 = 3, DIM2 = 2, DIM3 = 1 };
 

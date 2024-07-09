@@ -5,7 +5,7 @@
 #include <torch/torch.h>
 
 // snap
-#include <snap/riemann/riemann.hpp>
+#include <torch/riemann/riemann.hpp>
 
 enum {
   DIM1 = 3,

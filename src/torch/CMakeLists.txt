@@ -7,6 +7,7 @@ file(GLOB src_files
     riemann/*.cpp
     recon/*.cpp
     column/*.cpp
+    exo3/*.cpp
     )
 
 string(TOLOWER ${CMAKE_BUILD_TYPE} buildl)
