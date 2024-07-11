@@ -1,0 +1,14 @@
+diff --git a/src/bvals/cc/bvals_cc.hpp b/src/bvals/cc/bvals_cc.hpp
+index d167d729..ce2f8dcc 100644
+--- a/src/bvals/cc/bvals_cc.hpp
++++ b/src/bvals/cc/bvals_cc.hpp
+@@ -39,6 +39,9 @@ class CellCenteredBoundaryVariable : public BoundaryVariable {
+                                AthenaArray<Real> *var_flux, bool fflux, int flag);
+   ~CellCenteredBoundaryVariable();
+ 
++  // Type information
++  int TypeFlag = 2; // Hydro by default
++
+   //! \note
+   //! may want to rebind var_cc to u,u1,u2,w,w1, etc. registers for time integrator logic.
+   //! Also, derived class HydroBoundaryVariable needs to keep switching var and coarse_var

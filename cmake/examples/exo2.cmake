@@ -8,6 +8,7 @@ endmacro()
 
 # athena variables
 set_if_empty(NUMBER_GHOST_CELLS 3)
+set_if_empty (NTRACER 3)
 
 # canoe configure
 set(CUBED_SPHERE ON)
