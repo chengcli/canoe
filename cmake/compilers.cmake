@@ -5,14 +5,16 @@
 
 # General setup for GCC and compilers sufficiently close to GCC:
 #
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
   set(CMAKE_CXX_FLAGS_RELEASE
-      "-O3 -funroll-loops -funroll-all-loops -fstrict-aliasing -fPIC")
+      "-O3 -funroll-loops -funroll-all-loops -fstrict-aliasing")
   set(CMAKE_C_FLAGS_RELEASE
-      "-O3 -funroll-loops -funroll-all-loops -fstrict-aliasing -fPIC")
+      "-O3 -funroll-loops -funroll-all-loops -fstrict-aliasing")
 
-  set(CMAKE_CXX_FLAGS_DEBUG "-g3 -fPIC")
-  set(CMAKE_C_FLAGS_DEBUG "-g3 -fPIC")
+  set(CMAKE_CXX_FLAGS_DEBUG "-g3")
+  set(CMAKE_C_FLAGS_DEBUG "-g3")
 
   # set(CMAKE_Fortran_FLAGS_RELEASE "-O3" )
   set(KNOWN_COMPILER TRUE)
@@ -35,8 +37,10 @@ endif()
 if(CMAKE_CXX_COMPILER_ID MATCHES "Intel")
   add_link_options("-fuse-ld=lld")
   set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
-  set(CMAKE_CXX_FLAGS_RELEASE "-O3")
-  set(CMAKE_C_FLAGS_RELEASE "-O3")
+  set(CMAKE_CXX_FLAGS_RELEASE
+      "-O3 -lstdc++")
+  set(CMAKE_C_FLAGS_RELEASE
+      "-O3 -lstdc++")
 
   set(CMAKE_CXX_FLAGS_DEBUG "-g3")
   set(CMAKE_C_FLAGS_DEBUG "-g3")

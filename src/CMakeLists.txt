@@ -94,6 +94,7 @@ set(CANOE_LIBRARY_${buildu}
   "scm_${buildl}"
   "diagnostics_${buildl}"
   "forcing_${buildl}"
+  $<$<BOOL:${MINICHEM}>:minichem::minichem++>
   #"modules_${buildl}"
   ${YAML_CPP_LIBRARIES}
   ${CPPDISORT_LIBRARY_${buildu}}
