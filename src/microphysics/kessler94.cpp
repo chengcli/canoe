@@ -8,6 +8,8 @@
 #include <snap/thermodynamics/thermodynamics.hpp>
 
 // microphysics
+#include <snap/thermodynamics/vapors/water_vapors.hpp>
+
 #include "microphysical_schemes.hpp"
 
 Kessler94::Kessler94(std::string name, YAML::Node const &node)
@@ -81,7 +83,70 @@ void Kessler94::EvolveOneStep(AirParcel *air, Real time, Real dt) {
 
   air->c[jbuf] += sol(0);
   for (int n = 1; n < Size; ++n) air->w[mySpeciesId(n)] += sol(n);
+
+  // boiling condition xiz 2024
+  //  get indices
+  int iv = mySpeciesId(0);
+  int ic = mySpeciesId(1);
+  int ip = mySpeciesId(2);
+
+  AirParcel airmole = *air;   // Copy the air object
+  airmole.ToMoleFraction();   // Modify the copy
+  Real tem = airmole.w[IDN];  // Extract the temperature or other property
+
+  Real xs = pthermo->svp_func1_[iv][0](airmole, iv, 0) / airmole.w[IPR];
+  if (xs > 1.) {  // boiling
+    //     std::cout << "boiling: " <<pthermo->svp_func1_[iv][0](airmole, iv, 0)
+    //     <<" P:"<< airmole.w[IPR] << std::endl;
+    air->w[iv] += air->w[ip];
+    air->w[ip] = 0.;
+  }
 }
+/*
+for (int n = 0; n < pthermo->cloud_index_set_[iv].size(); ++n) {
+//int j = pthermo->GetCloudIndex(iv,n);
+//  Real xs = pthermo->getSVPFunc1(*air, iv, j, n) / air->w[IPR];
+int j = pthermo->cloud_index_set_[iv][n];
+Real xs = pthermo->svp_func1_[iv][0](*air, iv, j) / air->w[IPR];
+
+//std::cout << "iv=:" << iv << " bpres=:" << pthermo->getSVPFunc1(*air, iv, 0)
+<< std::endl;
+//std::cout << "iv=:" << iv << "ic=:" << ic<< "ip=:" << ip<< " j= "<<j<<"
+bpres=:" << pthermo->svp_func1_[iv][0](*air, iv, j) << std::endl;
+//std::cout << "iv=:" << iv << " j= "<<j<<" bpres=:" <<
+pthermo->svp_func1_[iv][0](*air, iv, j) << std::endl;
+
+if (xs > 0.) { // test
+   //std::cout << "svp nonzero: " <<pthermo->getSVPFunc1(*air, iv, j, n)<<"
+P:"<< air->w[IPR]<<" T:"<< tem << " Bsvp:" <<sat_vapor_p_H2O_BriggsS(tem) <<
+std::endl;
+   //std::cout << "svp nonzero: " <<pthermo->svp_func1_[iv][n](*air, iv, j)<<"
+P:"<< air->w[IPR]<<" T:"<< tem << " Bsvp:" <<sat_vapor_p_H2O_BriggsS(tem) <<
+std::endl;
+//     std::cout << "iv=:" << iv << " j= "<<j<< " n= "<<n<<" bpres=:" <<
+pthermo->svp_func1_[iv][0](*air, iv, j) << std::endl;
+   //std::cout << "svp nonzero: " <<pthermo->svp_func1_[iv][n](*air, iv, n)<<"
+P:"<< air->w[IPR]<<" T:"<< tem << " Bsvp:" <<sat_vapor_p_H2O_BriggsS(tem) <<
+std::endl; std::cout << "svp nonzero: " <<pthermo->svp_func1_[iv][0](airmole, 0,
+0)<<" P:"<< air->w[IPR]<<" T:"<< tem << " Bsvp:" <<sat_vapor_p_H2O_BriggsS(tem)
+<< std::endl;
+   //std::cout << "svp nonzero: " <<pthermo->svp_func1_[1][1](*air, iv, n)<<"
+P:"<< air->w[IPR]<<" T:"<< tem << " Bsvp:" <<sat_vapor_p_H2O_BriggsS(tem) <<
+std::endl;
+}
+
+if (xs > 1.) { // boiling
+   //std::cout << "boiling: " <<pthermo->getSVPFunc1(*air, iv, j, n)<<
+std::endl;
+//     std::cout << "boiling: " <<pthermo->svp_func1_[iv][n](*air, iv, j)<<
+std::endl;
+
+   air->w[iv] += air->w[ip];
+   air->w[ip] = 0.;
+  }
+}
+}
+*/
 
 void Kessler94::SetVsedFromConserved(AthenaArray<Real> vsed[3],
                                      Hydro const *phydro, int kl, int ku,

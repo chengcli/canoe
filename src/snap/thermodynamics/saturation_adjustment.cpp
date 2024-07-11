@@ -47,11 +47,12 @@ void Thermodynamics::SaturationAdjustment(AirColumn& air_column) const {
 
       for (int i = 1; i <= NVAPOR; ++i) {
         Real qv = air.w[i];
-        if (qv < 0) {
-          isNeg = true;
-          std::cout << "gas " << i << " is negative: " << qv << std::endl;
-          std::cout << "Temp is " << air.w[IDN] << std::endl;
-        }
+        //        if (qv < 0) {
+        //          isNeg = true;
+        //          std::cout << "gas " << i << " is negative: " << qv <<
+        //          std::endl; std::cout << "Temp is " << air.w[IDN] <<
+        //          std::endl;
+        //        }
 
 #pragma omp simd reduction(+ : qv)
         for (auto j : cloud_index_set_[i]) qv += air.c[j];
@@ -65,10 +66,10 @@ void Thermodynamics::SaturationAdjustment(AirColumn& air_column) const {
 
         // vapor condensation rate
         air.w[i] += rates[0];
-        if (isNeg && i == 1) {
-          std::cout << "new qv: " << air.w[i] << std::endl;
-          std::cout << "rate: " << rates[0] << std::endl;
-        }
+        //        if (isNeg && i == 1) {
+        //          std::cout << "new qv: " << air.w[i] << std::endl;
+        //          std::cout << "rate: " << rates[0] << std::endl;
+        //        }
         // cloud concentration rates
         for (int j = 1; j < rates.size(); ++j) {
           air.c[cloud_index_set_[i][j - 1]] += rates[j];
