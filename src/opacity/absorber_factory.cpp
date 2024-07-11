@@ -4,6 +4,7 @@
 // external
 #include <yaml-cpp/yaml.h>
 
+// application
 #include <application/exceptions.hpp>
 
 // canoe
@@ -26,17 +27,36 @@ AbsorberContainer AbsorberFactory::CreateFrom(
   AbsorberContainer absorbers;
 
   for (auto& name : names) {
-    bool found = false;
+    AbsorberContainer atmp;
+
     for (auto& my : rad["opacity-sources"]) {
       if (name == my["name"].as<std::string>()) {
-        absorbers.push_back(AbsorberFactory::CreateFrom(my, band_name));
-        found = true;
-        break;
+        atmp.push_back(AbsorberFactory::CreateFrom(my, band_name));
       }
     }
 
-    if (!found) {
+    if (atmp.empty()) {
       throw NotFoundError("AbsorberFactory", "Opacity " + name);
+    } else if (atmp.size() >
+               1) {  // use band_name to uniquely identify the absorber
+      bool found = false;
+      for (auto& ab : atmp) {
+        if (ab->GetOpacityFile().find(band_name) != std::string::npos) {
+          absorbers.push_back(ab);
+          found = true;
+          break;
+        }
+      }
+
+      if (!found) {
+        throw NotFoundError("AbsorberFactory",
+                            "There are multiple absorbers with the same name " +
+                                name +
+                                ". Rename the `data` field in the absorber to "
+                                "identify the band.");
+      }
+    } else {
+      absorbers.push_back(atmp[0]);
     }
   }
 
@@ -91,6 +111,8 @@ AbsorberPtr AbsorberFactory::createAbsorberPartial(std::string name,
     ab = std::make_shared<XizH2HeCIA>();
   } else if (type == "Hitran") {
     ab = std::make_shared<HitranAbsorber>(name);
+  } else if (type == "HitranCK") {
+    ab = std::make_shared<HitranAbsorberCK>(name);
   } else if (type == "FreedmanSimple") {
     ab = std::make_shared<FreedmanSimple>(name);
   } else if (type == "FreedmanSimple2") {

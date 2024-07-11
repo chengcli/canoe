@@ -17,3 +17,8 @@ set_target_properties(${namel}_${buildl}
     PROPERTIES
     COMPILE_FLAGS ${CMAKE_CXX_FLAGS_${buildu}}
     )
+
+target_include_directories(${namel}_${buildl}
+    PRIVATE
+    ${EIGEN3_INCLUDE_DIR}
+    )

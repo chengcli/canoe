@@ -1,7 +1,6 @@
 // athena
 #include <athena/hydro/hydro.hpp>
 #include <athena/mesh/mesh.hpp>
-#include <athena/stride_iterator.hpp>
 
 // application
 #include <application/exceptions.hpp>
@@ -14,6 +13,8 @@
 #include <exo3/gnomonic_equiangle.hpp>
 
 // snap
+#include <snap/stride_iterator.hpp>
+
 #include "implicit_solver.hpp"
 
 #ifdef CUBED_SPHERE

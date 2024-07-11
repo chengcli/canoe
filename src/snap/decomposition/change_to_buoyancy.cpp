@@ -5,7 +5,6 @@
 // athena
 #include <athena/coordinates/coordinates.hpp>
 #include <athena/hydro/hydro.hpp>
-#include <athena/stride_iterator.hpp>
 
 // canoe
 #include <air_parcel.hpp>
@@ -15,7 +14,9 @@
 #include <utils/ndarrays.hpp>
 
 // snap
-#include "../thermodynamics/thermodynamics.hpp"
+#include <snap/stride_iterator.hpp>
+#include <snap/thermodynamics/thermodynamics.hpp>
+
 #include "decomposition.hpp"
 
 inline void IntegrateDownwards(AthenaArray<Real> &psf,

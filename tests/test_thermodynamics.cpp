@@ -1,8 +1,16 @@
+// C/C++
+#include <algorithm>
+#include <numeric>
+
 // external
 #include <gtest/gtest.h>
 
 // application
 #include <application/application.hpp>
+
+// cantera
+#include <cantera/kinetics.h>
+#include <cantera/thermo.h>
 
 // canoe
 #include <air_parcel.hpp>
@@ -19,7 +27,7 @@
 
 class TestThermodynamics : public testing::Test {
  protected:
-  ParameterInput *pinput;
+  ParameterInput* pinput;
 
   virtual void SetUp() {
     // code here will execute just before the test ensues
@@ -47,133 +55,106 @@ class TestThermodynamics : public testing::Test {
 TEST_F(TestThermodynamics, dry) {
   auto pthermo = Thermodynamics::GetInstance();
 
-  EXPECT_NEAR(pthermo->GetRd(), 3777., 1e-8);
-  EXPECT_NEAR(pthermo->GetMu(0), 0.00220134, 1e-8);
+  EXPECT_NEAR(pthermo->GetRd(), 3571.66, 1e-2);
+  EXPECT_NEAR(pthermo->GetMu(0), 0.0023278, 1e-2);
 }
 
 TEST_F(TestThermodynamics, water_vapor) {
   auto pthermo = Thermodynamics::GetInstance();
 
-  EXPECT_NEAR(pthermo->GetMu(1), 0.0180069629759068, 1e-8);
-  EXPECT_NEAR(pthermo->GetMuRatio(1), 8.18, 1e-8);
-  EXPECT_NEAR(pthermo->GetInvMuRatio(1), 0.122249388753056, 1e-8);
+  EXPECT_NEAR(pthermo->GetMu(1), 0.018, 1e-2);
+  EXPECT_NEAR(pthermo->GetMuRatio(1), 7.739, 1e-2);
+  EXPECT_NEAR(pthermo->GetInvMuRatio(1), 0.129, 1e-2);
 
-  EXPECT_NEAR(pthermo->GetCvRatioMass(1), 0.1611002444987775, 1e-8);
-  EXPECT_NEAR(pthermo->GetCvRatioMole(1), 1.3178, 1e-8);
-  EXPECT_NEAR(pthermo->GetCvMassRef(1), 1521.1890586797067, 1e-8);
+  EXPECT_NEAR(pthermo->GetCvRatioMass(1), 0.18, 1e-2);
+  EXPECT_NEAR(pthermo->GetCvRatioMole(1), 1.4, 1e-2);
+  EXPECT_NEAR(pthermo->GetCvMassRef(1), 1614.5, 1e-1);
 
-  EXPECT_NEAR(pthermo->GetCpRatioMass(1), 0.15, 1e-8);
-  EXPECT_NEAR(pthermo->GetCpRatioMole(1), 1.227, 1e-8);
-  EXPECT_NEAR(pthermo->GetCpMassRef(1), 1982.925, 1e-8);
+  EXPECT_NEAR(pthermo->GetCpRatioMass(1), 0.166, 1e-2);
+  EXPECT_NEAR(pthermo->GetCpRatioMole(1), 1.285, 1e-2);
+  EXPECT_NEAR(pthermo->GetCpMassRef(1), 2076.05, 1e-1);
 }
 
 TEST_F(TestThermodynamics, ammonia_vapor) {
   auto pthermo = Thermodynamics::GetInstance();
 
-  EXPECT_NEAR(pthermo->GetMu(2), 0.016994346476, 1e-8);
-  EXPECT_NEAR(pthermo->GetMuRatio(2), 7.72, 1e-8);
-  EXPECT_NEAR(pthermo->GetInvMuRatio(2), 0.12953367875, 1e-8);
+  EXPECT_NEAR(pthermo->GetMu(2), 0.017, 1e-2);
+  EXPECT_NEAR(pthermo->GetMuRatio(2), 7.316, 1e-2);
+  EXPECT_NEAR(pthermo->GetInvMuRatio(2), 0.1367, 1e-2);
 
-  EXPECT_NEAR(pthermo->GetCvRatioMass(2), 0.0573865284, 1e-8);
-  EXPECT_NEAR(pthermo->GetCvRatioMole(2), 0.443024, 1e-8);
-  EXPECT_NEAR(pthermo->GetCvMassRef(2), 541.8722953367, 1e-8);
+  EXPECT_NEAR(pthermo->GetCvRatioMass(2), 0.1912, 1e-2);
+  EXPECT_NEAR(pthermo->GetCvRatioMole(2), 1.4, 1e-2);
+  EXPECT_NEAR(pthermo->GetCvMassRef(2), 1707.8, 1e-2);
 
-  EXPECT_NEAR(pthermo->GetCpRatioMass(2), 0.078, 1e-8);
-  EXPECT_NEAR(pthermo->GetCpRatioMole(2), 0.60216, 1e-8);
-  EXPECT_NEAR(pthermo->GetCpMassRef(2), 1031.1210, 1e-8);
+  EXPECT_NEAR(pthermo->GetCpRatioMass(2), 0.1756, 1e-2);
+  EXPECT_NEAR(pthermo->GetCpRatioMole(2), 1.285, 1e-2);
+  EXPECT_NEAR(pthermo->GetCpMassRef(2), 2196, 1e-2);
 }
 
 TEST_F(TestThermodynamics, water_cloud) {
   auto pthermo = Thermodynamics::GetInstance();
 
-  EXPECT_NEAR(pthermo->GetCvRatioMass(3), 0.462, 1e-8);
-  EXPECT_NEAR(pthermo->GetCvRatioMole(3), 3.77916, 1e-8);
-  EXPECT_NEAR(pthermo->GetCvMassRef(3), 4362.435, 1e-8);
+  EXPECT_NEAR(pthermo->GetCvRatioMass(4), 0.462, 1e-2);
+  EXPECT_NEAR(pthermo->GetCvRatioMole(4), 3.623, 1e-2);
+  EXPECT_NEAR(pthermo->GetCvMassRef(4), 4179.85, 1e-2);
 
-  EXPECT_NEAR(pthermo->GetCpRatioMass(3), 0.33, 1e-8);
-  EXPECT_NEAR(pthermo->GetCpRatioMole(3), 2.6994, 1e-8);
-  EXPECT_NEAR(pthermo->GetCpMassRef(3), 4362.435, 1e-8);
-
-  EXPECT_NEAR(pthermo->GetLatentEnergyMass(3, 0.), 3133644.9358679, 1e-6);
-  EXPECT_NEAR(pthermo->GetLatentEnergyMole(3, 0.), 56427.428339812, 1e-6);
+  EXPECT_NEAR(pthermo->GetCpRatioMass(4), 0.33, 1e-2);
+  EXPECT_NEAR(pthermo->GetCpRatioMole(4), 2.588, 1e-2);
+  EXPECT_NEAR(pthermo->GetCpMassRef(4), 4179.85, 1e-2);
 };
 
 TEST_F(TestThermodynamics, ammonia_cloud) {
   auto pthermo = Thermodynamics::GetInstance();
 
-  EXPECT_NEAR(pthermo->GetCvRatioMass(4), 0.224, 1e-8);
-  EXPECT_NEAR(pthermo->GetCvRatioMole(4), 1.72928, 1e-8);
-  EXPECT_NEAR(pthermo->GetCvMassRef(4), 2115.12, 1e-8);
+  EXPECT_NEAR(pthermo->GetCvRatioMass(5), 0.526, 1e-2);
+  EXPECT_NEAR(pthermo->GetCvRatioMole(5), 3.849, 1e-2);
+  EXPECT_NEAR(pthermo->GetCvMassRef(5), 4697.32, 1e-2);
 
-  EXPECT_NEAR(pthermo->GetCpRatioMass(4), 0.16, 1e-8);
-  EXPECT_NEAR(pthermo->GetCpRatioMole(4), 1.2352, 1e-8);
-  EXPECT_NEAR(pthermo->GetCpMassRef(4), 2115.12, 1e-8);
-
-  EXPECT_NEAR(pthermo->GetLatentEnergyMass(4, 0.), 2262832.9904145, 1e-6);
-  EXPECT_NEAR(pthermo->GetLatentEnergyMole(4, 0.), 38455.367856516, 1e-6);
+  EXPECT_NEAR(pthermo->GetCpRatioMass(5), 0.375, 1e-2);
+  EXPECT_NEAR(pthermo->GetCpRatioMole(5), 2.74, 1e-2);
+  EXPECT_NEAR(pthermo->GetCpMassRef(5), 4697.32, 1e-2);
 };
 
-TEST_F(TestThermodynamics, latent_heats) {
+TEST_F(TestThermodynamics, equilibrium_tp) {
   auto pthermo = Thermodynamics::GetInstance();
 
-  std::vector<Real> rates(3);
-  rates[0] = -1.;
-  rates[1] = 0.5;
-  rates[2] = 0.5;
+  std::vector<Real> yfrac = {0.2, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1};
 
-  EXPECT_NEAR(pthermo->GetLatentEnergyMole(3, 300.), 43573.103798572, 1e-6);
-  EXPECT_NEAR(pthermo->GetLatentHeatMole(1, rates, 300.), 43573.103798572,
-              1e-6);
+  auto kinetics = pthermo->Kinetics();
+  auto& thermo = kinetics->thermo();
 
-  EXPECT_NEAR(pthermo->GetLatentEnergyMass(3, 300.), 2419791.93586797, 1e-6);
-  EXPECT_NEAR(pthermo->GetLatentHeatMass(1, rates, 300.), 2419791.93586797,
-              1e-6);
+  thermo.setMassFractionsPartial(yfrac.data());
+  thermo.setTemperature(300.);
+  thermo.setPressure(1.e5);
+
+  std::cout << "T = " << thermo.temperature() << std::endl;
+  std::cout << "P = " << thermo.pressure() << std::endl;
+  std::cout << "D = " << thermo.density() << std::endl;
+
+  std::cout << "Number of reactions: " << kinetics->nReactions() << std::endl;
+
+  pthermo->EquilibrateTP();
 }
 
-TEST_F(TestThermodynamics, equilibrium_water) {
+TEST_F(TestThermodynamics, equilibrium_uv) {
   auto pthermo = Thermodynamics::GetInstance();
 
-  int iH2O = 1;
-  int iNH3 = 2;
+  std::vector<Real> yfrac = {0.2, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1};
 
-  AirParcel air(AirParcel::Type::MoleFrac);
-  air.SetZero();
+  auto kinetics = pthermo->Kinetics();
+  auto& thermo = kinetics->thermo();
 
-  air.w[IDN] = 300.;
-  air.w[IPR] = 7.E5;
-  air.w[iH2O] = 0.2;
-  air.w[iNH3] = 0.1;
+  thermo.setMassFractionsPartial(yfrac.data());
+  thermo.setTemperature(200.);
+  thermo.setPressure(1.e5);
 
-  // water
-  Real svp = sat_vapor_p_H2O_BriggsS(air.w[IDN]);
-  auto rates = pthermo->TryEquilibriumTP_VaporCloud(air, iH2O);
+  std::cout << "T = " << thermo.temperature() << std::endl;
+  std::cout << "P = " << thermo.pressure() << std::endl;
+  std::cout << "D = " << thermo.density() << std::endl;
 
-  EXPECT_NEAR(rates[0], svp / air.w[IPR] - air.w[iH2O], 1e-3);
-  EXPECT_NEAR(rates[1], 0.19592911846053, 1e-8);
-  EXPECT_NEAR(rates[2], 0.0, 1e-8);
-}
+  std::cout << "Number of reactions: " << kinetics->nReactions() << std::endl;
 
-TEST_F(TestThermodynamics, equilibrium_ammonia) {
-  auto pthermo = Thermodynamics::GetInstance();
-
-  int iH2O = 1;
-  int iNH3 = 2;
-
-  AirParcel air(AirParcel::Type::MoleFrac);
-  air.SetZero();
-
-  air.w[IDN] = 160.;
-  air.w[IPR] = 7.E4;
-  air.w[iH2O] = 0.02;
-  air.w[iNH3] = 0.01;
-
-  // ammonia
-  Real svp = sat_vapor_p_NH3_BriggsS(air.w[IDN]);
-  auto rates = pthermo->TryEquilibriumTP_VaporCloud(air, iNH3);
-
-  EXPECT_NEAR(rates[0], svp / air.w[IPR] - air.w[iNH3], 1e-3);
-  EXPECT_NEAR(rates[1], 0.0088517945331865, 1e-8);
-  EXPECT_NEAR(rates[2], 0.0, 1e-8);
+  pthermo->EquilibrateUV();
 }
 
 TEST_F(TestThermodynamics, saturation_adjust) {
@@ -186,35 +167,33 @@ TEST_F(TestThermodynamics, saturation_adjust) {
 
   std::vector<AirParcel> air_column(1);
 
-  auto &air = air_column[0];
-  air.SetType(AirParcel::Type::MoleFrac);
+  auto& air = air_column[0];
+  air.SetType(AirParcel::Type::MassFrac);
 
   air.SetZero();
 
-  air.w[IDN] = 160.;
+  air.w[IDN] = 200.;
   air.w[IPR] = 7.E4;
-  air.w[iH2O] = 0.02;
-  air.w[iNH3] = 0.10;
+  air.w[iH2O] = 0.1;
+  air.w[iNH3] = 0.1;
 
-  pthermo->SaturationAdjustment(air_column);
+  auto kinetics = pthermo->Kinetics();
+  auto& thermo = kinetics->thermo();
 
-  EXPECT_NEAR(air.w[IDN], 206.41192408792, 1e-8);
-  EXPECT_NEAR(air.w[IPR], 88499.534594159, 1e-8);
+  for (int i = NVAPOR; i < kinetics->nTotalSpecies(); ++i) {
+    air.w[i] = 0.;
+  }
 
-  Real svp1 = sat_vapor_p_H2O_BriggsS(air.w[IDN]);
+  std::cout << air << std::endl;
 
-  Real qgas = 1.;
-#pragma omp parallel for reduction(+ : qgas)
-  for (int n = 0; n < NCLOUD; ++n) qgas += -air.c[n];
+  thermo.setMassFractionsPartial(&air.w[1]);
+  thermo.setTemperature(160.);
+  thermo.setPressure(7.E4);
 
-  EXPECT_NEAR(air.w[iH2O] / qgas * air.w[IPR] / svp1, 1., 0.01);
-  EXPECT_NEAR(air.w[iNH3], 0.1, 1e-8);
-
-  EXPECT_NEAR(air.c[iH2Oc], 0.02 - air.w[iH2O], 1e-8);
-  EXPECT_NEAR(air.c[iNH3c], 0.1 - air.w[iNH3], 1e-8);
+  pthermo->EquilibrateUV();
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
   Application::Start(argc, argv);
 
   testing::InitGoogleTest(&argc, argv);

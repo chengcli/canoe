@@ -114,7 +114,7 @@ else()
   set(MPI_OPTION "MPI_PARALLEL")
   find_package(
     MPI
-    COMPONENTS C CXX
+    COMPONENTS C
     REQUIRED)
 endif()
 

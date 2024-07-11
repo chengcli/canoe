@@ -1,0 +1,172 @@
+opacity-sources:
+  - name: H2O
+    class: Hitran
+    data: amars-ktable_B1.nc
+    dependent-species: [vapor.H2O]
+
+  - name: CO2
+    class: Hitran
+    data: amars-ktable_B2.nc
+    dependent-species: [vapor.dry]
+
+  - name: cloud
+    class: SimpleCloud
+    dependent-species: [cloud.H2O(c), cloud.H2O(p)]
+    parameters: {qext: 1., ssa: 0.01, asymf: 0.01}
+
+bands: [B1, B2]
+
+B1:
+  units: cm-1
+  grid-type: regular
+  wavenumber-range: [1., 500.]
+  resolution: 0.1
+  opacity: [H2O]
+  rt-solver: Disort
+  flags: [thermal_emission]
+  albedo: 0.01
+
+B2:
+  units: cm-1
+  grid-type: regular
+  wavenumber-range: [500., 1200.]
+  resolution: 0.1
+  opacity: [CO2]
+  rt-solver: Disort
+  flags: [thermal_emission]
+  albedo: 0.01
+
+B3:
+  units: cm-1
+  grid-type: regular
+  wavenumber-range: [150., 400.]
+  resolution: 0.1
+  opacity: [H2O,CO2]
+  rt-solver: Disort
+  flags: [thermal_emission]
+  albedo: 0.01
+
+B4:
+  units: cm-1
+  grid-type: regular
+  wavenumber-range: [400., 500.]
+  resolution: 0.1
+  opacity: [H2O,CO2]
+  rt-solver: Disort
+  flags: [thermal_emission]
+  albedo: 0.01
+
+B5:
+  units: cm-1
+  grid-type: regular
+  wavenumber-range: [500., 650.]
+  resolution: 0.1
+  opacity: [H2O,CO2]
+  rt-solver: Disort
+  flags: [thermal_emission]
+  albedo: 0.01
+
+B6:
+  units: cm-1
+  grid-type: regular
+  wavenumber-range: [650., 850.]
+  resolution: 0.1
+  opacity: [H2O,CO2]
+  rt-solver: Disort
+  flags: [thermal_emission]
+  albedo: 0.01
+
+B7:
+  units: cm-1
+  grid-type: regular
+  wavenumber-range: [850., 1000.]
+  resolution: 0.1
+  opacity: [H2O,CO2]
+  rt-solver: Disort
+  flags: [thermal_emission]
+  albedo: 0.01
+
+B8:
+  units: cm-1
+  grid-type: regular
+  wavenumber-range: [1000., 2000.]
+  resolution: 0.1
+  opacity: [H2O,CO2]
+  rt-solver: Disort
+  flags: [thermal_emission]
+  albedo: 0.01
+
+vis:
+  units: cm-1
+  grid-type: regular
+  wavenumber-range: [10000., 50000.]
+  num-bins: 1
+  opacity: [H2-vis, cloud]
+  rt-solver: Disort
+  parameters: {temp0: 265., umu0: 1., phi0: 0.}
+  flags: [broad_band]
+
+Disort-flags:
+  ibcnd: false
+  usrtau: false
+  usrang: false
+  lamber: true
+  onlyfl: true
+  spher: false
+  intensity_correction: true
+  old_intensity_correction: false
+  general_source: false
+  output_uum: false
+  quiet: true
+  print-input: false
+  print-fluxes: false
+  print-intensity: false
+  print-transmissivity: false
+  print-phase-function: true
+
+thermodynamics:
+  non-condensable:
+    Rd: 189.
+    gammad_ref: 1.3
+    #Rd: 207.85
+    #gammad_ref: 1.66
+
+
+microphysics:
+  - H2O-system
+
+H2O-system:
+  scheme: Kessler94
+  dependent-species: [vapor.H2O, cloud.H2O(c), cloud.H2O(p)]
+  parameters:
+    autoconversion: 1.e-4
+    accretion: 0.0
+    evaporation: 3.e-1
+    sedimentation: -20.
+
+CO2-system:
+  scheme: Kessler94
+  dependent-species: [vapor.CO2, cloud.CO2(c), cloud.CO2(p)]
+  parameters:
+    autoconversion: 1.e-4
+    accretion: 0.0
+    evaporation: 3.e-1
+    sedimentation: -20.
+
+H2S-system:
+  scheme: Kessler94
+  dependent-species: [vapor.H2S, cloud.H2S(c), cloud.H2S(p)]
+  parameters:
+    autoconversion: 1.e-4
+    accretion: 0.0
+    evaporation: 3.e-1
+    sedimentation: -20.
+
+SO2-system:
+  scheme: Kessler94
+  dependent-species: [vapor.SO2, cloud.SO2(c), cloud.SO2(p)]
+  parameters:
+    autoconversion: 1.e-4
+    accretion: 0.0
+    evaporation: 3.e-1
+    sedimentation: -20.

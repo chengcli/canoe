@@ -8,13 +8,13 @@
 #include <athena/hydro/hydro.hpp>
 #include <athena/hydro/srcterms/hydro_srcterms.hpp>
 #include <athena/mesh/mesh.hpp>
-#include <athena/stride_iterator.hpp>
 
 // application
 #include <application/application.hpp>
 
 // snap
-#include "../thermodynamics/thermodynamics.hpp"
+#include <snap/stride_iterator.hpp>
+#include <snap/thermodynamics/thermodynamics.hpp>
 
 void check_hydro_variables(MeshBlock *pmb) {
   Application::Logger app("snap");

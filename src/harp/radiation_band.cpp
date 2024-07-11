@@ -4,6 +4,9 @@
 #include <type_traits>
 #include <vector>
 
+// external
+#include <yaml-cpp/yaml.h>
+
 // athena
 #include <athena/mesh/mesh.hpp>
 #include <athena/outputs/outputs.hpp>
@@ -76,6 +79,7 @@ RadiationBand::RadiationBand(std::string myname, YAML::Node const &rad,
     if (load_opacity) {
       for (auto &ab : absorbers_) {
         ab->LoadOpacity(RadiationBandsFactory::GetBandId(myname));
+        // Correlated-k absorbers need to modify the spectral grid
         ab->ModifySpectralGrid(pgrid_->spec);
       }
     }

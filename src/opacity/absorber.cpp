@@ -2,6 +2,9 @@
 #include <sstream>
 #include <string>
 
+// external
+#include <yaml-cpp/yaml.h>
+
 // application
 #include <application/application.hpp>
 #include <application/exceptions.hpp>

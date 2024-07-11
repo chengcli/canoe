@@ -10,8 +10,9 @@
 // athena
 #include <athena/athena.hpp>
 
-// external
-#include <yaml-cpp/yaml.h>
+namespace YAML {
+class Node;
+}
 
 //! radiation direction
 struct Direction {

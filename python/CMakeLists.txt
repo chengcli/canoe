@@ -36,6 +36,7 @@ target_include_directories(${namel}
   ${PYTHON_INCLUDE_DIR}
   ${PYBIND11_INCLUDE_DIR}
   ${MPI_CXX_INCLUDE_PATH}
+  ${MPI_CXX_HEADER_DIR}
   )
 
 target_link_libraries(${namel} PRIVATE

@@ -1,6 +1,9 @@
 // C/C++
 #include <vector>
 
+// external
+#include <yaml-cpp/yaml.h>
+
 // application
 #include <application/application.hpp>
 #include <application/exceptions.hpp>

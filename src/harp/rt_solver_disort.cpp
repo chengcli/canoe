@@ -61,7 +61,9 @@ RadiationBand::RTSolverDisort::RTSolverDisort(RadiationBand *pmy_band,
   if (pmy_band->HasPar("albedo")) {
     ds_.bc.albedo = pmy_band->GetPar<Real>("albedo");
   } else {
-    ds_.bc.albedo = 1.;
+    // hard code hack to fix the surface albedo to 0, emissivity to 1, since it
+    // won't pickup from the yaml file
+    ds_.bc.albedo = 0.;
   }
 
   if (pmy_band->HasPar("ttemp")) {
@@ -221,6 +223,11 @@ void RadiationBand::RTSolverDisort::Prepare(MeshBlock const *pmb, int k,
       dir_axis_[ds_.numu + i] = uphi[i];
     }
   }
+
+  // set the surface temperature from the user input variables
+  // FIXME(cli)
+  //AthenaArray<Real> &ts = pmb->ruser_meshblock_data[1];
+  //ds_.bc.btemp = ts(j);
 }
 
 void RadiationBand::RTSolverDisort::CalBandFlux(MeshBlock const *pmb, int k,

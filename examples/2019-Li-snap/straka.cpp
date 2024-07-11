@@ -21,7 +21,6 @@
 // Then the basic multi-dimension array that stores fluid dynamic data is
 // declared in the AthenaArray class.
 #include <athena/athena_arrays.hpp>
-#include <athena/stride_iterator.hpp>
 // The model executes according to the parameters specified in an input file.
 // The input file and the parameters within are managed by the ParameterInput
 // class.
@@ -49,6 +48,7 @@
 // Finally, the Thermodynamics class works with thermodynamic aspects of the
 // problem such as the temperature, potential temperature, condensation of
 // vapor, etc.
+#include <snap/stride_iterator.hpp>
 #include <snap/thermodynamics/thermodynamics.hpp>
 
 // Functions in the math library are protected by a specific namespace because

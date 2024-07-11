@@ -11,11 +11,13 @@
 include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}
   ${CMAKE_BINARY_DIR}
-  ${EIGEN3_INCLUDE_DIR}
-  ${NETCDF_INCLUDES}
-  ${CFITSIO_INCLUDE_DIR}
   ${MPI_CXX_INCLUDE_PATH}
+  ${MPI_CXX_HEADER_DIR}
+  ${NETCDF_INCLUDES}
   ${PNETCDF_INCLUDE_DIR}
+  SYSTEM ${CANTERA_INCLUDE_DIR}
+  SYSTEM ${TORCH_API_INCLUDE_DIR}
+  SYSTEM ${TORCH_INCLUDE_DIR}
   )
 
 set(namel canoe)
@@ -29,6 +31,11 @@ file(GLOB src_files *.cpp)
 add_library(${namel}_${buildl}
     OBJECT
     ${src_files}
+    )
+
+target_include_directories(${namel}_${buildl}
+    PRIVATE
+    ${EIGEN3_INCLUDE_DIR}
     )
 
 set_target_properties(${namel}_${buildl}
@@ -45,7 +52,7 @@ add_subdirectory(inversion)
 add_subdirectory(outputs)
 add_subdirectory(opacity)
 add_subdirectory(microphysics)
-add_subdirectory(c3m)
+add_subdirectory(flask)
 add_subdirectory(tracer)
 add_subdirectory(tasklist)
 add_subdirectory(exo3)
@@ -54,7 +61,16 @@ add_subdirectory(special)
 add_subdirectory(single_column)
 add_subdirectory(diagnostics)
 add_subdirectory(forcing)
+
+if (${Torch_FOUND})
+  add_subdirectory(torch)
+  add_subdirectory(modules)
+endif()
 #add_subdirectory(nbody)
+
+if(UNIX AND NOT APPLE)
+  set(EXTRA_LIBS dl stdc++fs)
+endif()
 
 set(CANOE_LIBRARY_${buildu}
   "canoe_${buildl}"
@@ -69,7 +85,7 @@ set(CANOE_LIBRARY_${buildu}
   "outputs_${buildl}"
   "opacity_${buildl}"
   "dusts_${buildl}"
-  "c3m_${buildl}"
+  "flask_${buildl}"
   "tracer_${buildl}"
   "tasklist_${buildl}"
   "exo3_${buildl}"
@@ -78,16 +94,21 @@ set(CANOE_LIBRARY_${buildu}
   "scm_${buildl}"
   "diagnostics_${buildl}"
   "forcing_${buildl}"
-  "yaml-cpp"
   $<$<BOOL:${MINICHEM}>:minichem::minichem++>
+  #"modules_${buildl}"
+  ${YAML_CPP_LIBRARIES}
   ${CPPDISORT_LIBRARY_${buildu}}
   ${PYTHON_LIBRARY_RELEASE}
   ${NETCDF_LIBRARIES}
   ${PNETCDF_LIBRARY}
-  ${CFITSIO_LIBRARY}
   ${MPI_CXX_LIBRARIES}
   ${GLOG_LIBRARIES}
   ${OpenMP_libomp_LIBRARY}
+  ${CANTERA_LIBRARY}
+  ${TORCH_LIBRARY}
+  ${TORCH_CPU_LIBRARY}
+  ${C10_LIBRARY}
+  ${EXTRA_LIBS}
   CACHE INTERNAL "canoe library")
 
 set(CANOE_INCLUDE_DIR

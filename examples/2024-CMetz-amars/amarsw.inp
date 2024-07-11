@@ -1,0 +1,130 @@
+<comment>
+problem   = Cloud radiative dynamics + Hydrogen Atm + Ocean below
+configure = -Dpnetcdf_path=/home/cometz/canoe/external/pnetcdf-1.12.3
+
+<job>
+problem_id  = amarsw   # problem ID: basename of output filenames
+tasklist    = ImplicitHydroTasks
+
+<output0>
+file_type   = rst
+dt          = 1.E2
+
+<output1>
+file_type   = hst       # History data dump
+dt          = 1.E2      # time increment between outputs
+
+<output2>
+file_type   = pnetcdf    # Binary data dump
+variable    = prim      # variables to be output
+dt          = 1.E2       # time increment between outputs
+
+<output3>
+file_type   = pnetcdf
+variable    = uov
+dt          = 1.E2
+
+<output4>
+file_type   = pnetcdf
+variable    = diag
+dt          = 1.E2
+
+<output5>
+file_type   = pnetcdf
+variable    = rad
+dt          = 1.E2
+
+<time>
+cfl_number  = 0.9           # The Courant, Friedrichs, & Lewy (CFL) Number
+nlim        = 1            # cycle limit
+tlim        = 1.E7         # time limit
+xorder      = 5             # horizontal reconstruction order
+integrator  = rk3           # integration method
+
+<mesh>
+nx1         = 128           # Number of zones in X1-direction
+x1min       = 0.            # minimum value of X1
+x1max       = 20.E3         # maximum value of X1
+ix1_bc      = reflecting    # inner-X1 boundary flag
+ox1_bc      = reflecting    # outer-X1 boundary flag
+
+nx2         = 1            # Number of zones in X2-direction
+x2min       = 0            # minimum value of X2
+x2max       = 64.E3        # maximum value of X2
+ix2_bc      = periodic      # Inner-X2 boundary condition flag
+ox2_bc      = periodic      # Outer-X2 boundary condition flag
+
+nx3         = 1          # Number of zones in X3-direction
+x3min       = -0.5       # minimum value of X3
+x3max       = 0.5         # maximum value of X3
+ix3_bc      = periodic    # Inner-X3 boundary condition flag
+ox3_bc      = periodic    # Outer-X3 boundary condition flag
+
+#<meshblock>
+#nx1         = 128
+#nx2         = 16
+#nx3         = 1
+
+<hydro>
+gamma           = 1.66    # gamma = C_p/C_v general, for Argon gamma = 1.6597
+grav_acc1       = -3.71
+#OmegaZ        = 2.424E-5
+implicit_flag 	= 1
+
+<forcing>
+packages = bot_heating, top_cooling
+bot_heating.flux = 0.
+top_cooling.flux = 0.
+
+<species>
+vapor = H2O
+cloud = H2O(c), H2O(p)
+
+<chemistry>
+microphysics_config = amarsw-mp.yaml
+
+<thermodynamics>
+Rd          = 189.
+
+#H2O
+eps1        = 0.45    0.45    0.45
+beta1       = 0.      17.9    17.9
+rcp1        = 8.0455  8.05    8.05
+Ttriple1    = 273.16
+Ptriple1    = 611.7
+
+sa.relax    = 1.0
+sa.max_iter = 40
+sa.ftol     = 0.1
+
+<astronomy>
+planet        = Mars
+HJ.parent     = Sun
+HJ.re         = 3.39E3      # km
+HJ.rp         = 3.39E3      # km
+HJ.obliq      = 0.        # deg
+HJ.spinp      = 1.026      # day
+HJ.orbit_a    = 1.523    # au
+HJ.orbit_e    = 0.
+HJ.orbit_i    = 0.        # deg
+HJ.orbit_p    = 687.        # day
+HJ.grav_eq    = 3.71.       # m/s^2
+HJ.equinox    = 0.
+
+#Sun.spec_file = ../src/radiation/spectra/sun.spec
+
+<radiation>
+dt            = 40.
+radiation_config = amarsw-ck.yaml
+nstr          = 4
+
+<problem>
+P0            = 0.5E5
+T0            = 200.
+Tmin          = 178.
+qRelaxT       = 1.E-4
+distance_au   = 1.523
+
+qH2O.ppmv     = 10000.
+
+diagnostics   = div, curl, b, mean, div_h, tempa, presa, hydroflux

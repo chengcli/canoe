@@ -7,6 +7,8 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 project(canoe
   LANGUAGES CXX C Fortran
 	)
+# search for <Package>_ROOT
+cmake_policy(SET CMP0074 NEW)
 
 message(STATUS "")
 message(STATUS "== Setting up canoe library ==")
@@ -56,12 +58,15 @@ endif()
 message(STATUS "Include ${CMAKE_CURRENT_SOURCE_DIR}/cmake/parameters.cmake")
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/parameters.cmake)
 find_package(Eigen3 REQUIRED)
+find_package(Cantera)
+#find_package(Torch)
 
 ## 3. set up project system libraries ##
 message(STATUS "3. Set up system libraries")
-#message(STATUS "Include ${CMAKE_SOURCE_DIR}/cmake/athena.cmake")
-#include(${CMAKE_SOURCE_DIR}/cmake/eigen.cmake)
-include(${CMAKE_SOURCE_DIR}/cmake/yamlpp.cmake)
+if (NOT ${CANTERA_FOUND})
+  include(${CMAKE_SOURCE_DIR}/cmake/yamlpp.cmake)
+endif()
+include(${CMAKE_SOURCE_DIR}/cmake/gtest.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/athena.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/application.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/rfm.cmake)
@@ -70,7 +75,7 @@ include(${CMAKE_SOURCE_DIR}/cmake/rrtmg.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/pvfmm.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/minichem.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/pybind11.cmake)
-include(${CMAKE_SOURCE_DIR}/cmake/gtest.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/c3m.cmake)
 
 ## 4. set up project configure file and library ##
 message(STATUS "4. Set up project libraries")

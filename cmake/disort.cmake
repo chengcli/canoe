@@ -1,13 +1,6 @@
 # Fetch disort and build
 include(FetchContent)
-
 set(FETCHCONTENT_QUIET FALSE)
-
-macro(set_if_empty _variable)
-  if("${${_variable}}" STREQUAL "")
-    set(${_variable} ${ARGN})
-  endif()
-endmacro()
 
 set_if_empty(ACCOUNT $ENV{GH_ACCOUNT})
 set_if_empty(TOKEN $ENV{GH_TOKEN})

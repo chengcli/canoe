@@ -7,24 +7,34 @@ configure_file(globals.cpp.in globals.cpp @ONLY)
 # Enable testing functionality
 enable_testing()
 
-# Add test cases
-setup_test(test_weno)
+# torch tests
+if (${Torch_FOUND})
+  setup_test(test_eos)
+  setup_test(test_weno)
+  setup_test(test_reconstruct)
+  setup_test(test_riemann)
+  setup_test(test_hydro)
+  setup_test(test_thermodynamics)
+endif()
+
+# athena tests
+setup_test(test_mesh)
+
 setup_test(test_glog)
 setup_test(test_absorber)
-
 setup_test(test_read_stellar_flux)
 setup_test(test_read_cia_ff)
 setup_test(test_read_rayleigh)
 setup_test(test_read_yaml)
 setup_test(test_helios_ck_read)
 setup_test(test_cs_velocity_rotation)
+#setup_test(test_rad_unit)
 
 if (PVFMM_OPTION STREQUAL "ENABLE_PVFMM")
   setup_test(test_nbody)
 endif()
 
 if (${NVAPOR} EQUAL 0)
-  setup_test(test_mesh)
   if (NOT HYDROSTATIC OR NOT DEFINED HYDROSTATIC)
     setup_test(test_convective_adjustment)
   endif()
@@ -40,7 +50,6 @@ if (${NVAPOR} EQUAL 2)
     setup_test(test_air_parcel)
     setup_test(test_radiation)
     setup_test(test_microwave_opacity)
-    setup_test(test_thermodynamics)
     setup_test(test_microphysics)
   elseif (${NCLOUD} EQUAL 5)
     setup_test(test_ammonium_hydrosulfide)

@@ -19,8 +19,8 @@
 // microphysics
 #include "microphysics/microphysics.hpp"
 
-// c3m
-#include "c3m/chemistry.hpp"
+// flask
+#include "flask/chemistry.hpp"
 
 // tracer
 #include "tracer/tracer.hpp"
@@ -42,6 +42,9 @@
 
 // forcing
 #include "forcing/forcing.hpp"
+
+// surface
+// #include "surface/surface.hpp"
 
 // canoe
 #include "impl.hpp"
@@ -86,6 +89,9 @@ MeshBlock::Impl::Impl(MeshBlock *pmb, ParameterInput *pin) : pmy_block_(pmb) {
 
   // single column model
   pscm = std::make_shared<SingleColumn>(pmb, pin);
+
+  // surface
+  // psurf = std::make_shared<Surface>(pmb, pin);
 
   // scheduler
   scheduler = SchedulerFactory::Create(pmb, pin);
