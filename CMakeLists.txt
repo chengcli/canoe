@@ -73,6 +73,7 @@ include(${CMAKE_SOURCE_DIR}/cmake/rfm.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/disort.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/rrtmg.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/pvfmm.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/minichem.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/pybind11.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/c3m.cmake)
 

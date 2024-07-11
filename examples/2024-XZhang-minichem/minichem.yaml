@@ -26,8 +26,10 @@ vis:
   num-bins: 1
   opacity: [H2-vis]
   rt-solver: Disort
-  parameters: {S0: 469.046729369, umu0: 1., phi0: 0.}
-  flags: [broad_band, time_dependent]
+  parameters: {S0: 469.046729369, dist_au: 0.03106, umu0: 1., phi0: 0.}
+  flags: [broad_band]
+#  parameters: {S0: 469.046729369, umu0: 1., phi0: 0.}
+#  flags: [broad_band, time_dependent]
 
 Disort-flags:
   ibcnd: false
