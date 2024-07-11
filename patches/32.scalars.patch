@@ -1,0 +1,12 @@
+diff --git a/src/scalars/scalars.cpp b/src/scalars/scalars.cpp
+index 8471fb20..2f3ad1ce 100644
+--- a/src/scalars/scalars.cpp
++++ b/src/scalars/scalars.cpp
+@@ -84,6 +84,7 @@ PassiveScalars::PassiveScalars(MeshBlock *pmb, ParameterInput *pin)  :
+ 
+   // enroll CellCenteredBoundaryVariable object
+   sbvar.bvar_index = pmb->pbval->bvars.size();
++  sbvar.TypeFlag = 1; // PassiveScalars
+   pmb->pbval->bvars.push_back(&sbvar);
+   pmb->pbval->bvars_main_int.push_back(&sbvar);
+   if (STS_ENABLED) {

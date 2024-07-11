@@ -15,3 +15,5 @@ set(NETCDF ON)
 set(MPI ON)
 set(PNETCDF ON)
 set(RSOLVER hllc_transform)
+
+set (NTRACER 3)

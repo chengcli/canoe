@@ -99,7 +99,7 @@ Real CalculateInterpLocations(int loc_n, int N_blk, int k, bool GhostZone) {
 void InteprolateX2(const AthenaArray<Real> &src, AthenaArray<Real> &tgt,
                    LogicalLocation const &loc, int DirInv, int TgtSide,
                    int TgtID, int sn, int en, int si, int ei, int sj, int ej,
-                   int sk, int ek) {
+                   int sk, int ek, int TypeFlag) {
   // Interpolation along X2 (j) axis, used before sending data to X3 (k) axis
   // Get the local indices
   int lv2_lx2 = loc.lx2 >> (loc.level - 2);
@@ -159,7 +159,7 @@ void InteprolateX2(const AthenaArray<Real> &src, AthenaArray<Real> &tgt,
           Real y1 = src_x2[src_pointer];
           Real y2 = src_x2[src_pointer + 1];
           Real yq = tgt_x2[j - sj];
-          if (n == IVY || n == IVZ) {
+          if ((n == IVY || n == IVZ) && (TypeFlag == 2)) {
             // Projection needed, find the tgt locations first
             Real v1y =
                 src(IVY, k, src_pointer - n_start - N_blk / 2 + sj,
@@ -230,7 +230,7 @@ void InteprolateX2(const AthenaArray<Real> &src, AthenaArray<Real> &tgt,
 void InteprolateX3(const AthenaArray<Real> &src, AthenaArray<Real> &tgt,
                    LogicalLocation const &loc, int DirInv, int TgtSide,
                    int TgtID, int sn, int en, int si, int ei, int sj, int ej,
-                   int sk, int ek) {
+                   int sk, int ek, int TypeFlag) {
   // Interpolation along X3 (k) axis, used before sending data to ghost zone in
   // X2 (j) direction Get the local indices
   int lv2_lx2 = loc.lx2 >> (loc.level - 2);
@@ -288,7 +288,7 @@ void InteprolateX3(const AthenaArray<Real> &src, AthenaArray<Real> &tgt,
           Real y1 = src_x3[src_pointer];
           Real y2 = src_x3[src_pointer + 1];
           Real yq = tgt_x3[k - sk];
-          if (n == IVY || n == IVZ) {
+          if ((n == IVY || n == IVZ) && (TypeFlag == 2)){
             // Projection needed, find the tgt locations first
             Real v1y = src(IVY, src_pointer - n_start - N_blk / 2 + sk, j, i);
             Real v1z = src(IVZ, src_pointer - n_start - N_blk / 2 + sk, j, i);
@@ -377,7 +377,7 @@ void InteprolateX3(const AthenaArray<Real> &src, AthenaArray<Real> &tgt,
 
 void PackData(const AthenaArray<Real> &src, Real *buf, int sn, int en, int si,
               int ei, int sj, int ej, int sk, int ek, int &offset, int ox1,
-              int ox2, int ox3, LogicalLocation const &loc) {
+              int ox2, int ox3, LogicalLocation const &loc, int TypeFlag) {
   // Find the block ID
   int blockID = CubedSphere::FindBlockID(loc);
 
@@ -419,7 +419,7 @@ void PackData(const AthenaArray<Real> &src, Real *buf, int sn, int en, int si,
       if (ox3 == 1 && local_lx3 == bound_lim) {
         InteprolateX2(src, interpolatedSrc, loc, dinv[blockID - 1][3],
                       tgside[blockID - 1][3], tgbid[blockID - 1][3], sn, en, si,
-                      ei, sj, ej, sk, ek);
+                      ei, sj, ej, sk, ek, TypeFlag);
         PackDataR1(interpolatedSrc, buf, 0, en - sn, 0, ei - si, 0, ej - sj, 0,
                    ek - sk, offset);
         return;
@@ -427,7 +427,7 @@ void PackData(const AthenaArray<Real> &src, Real *buf, int sn, int en, int si,
       if (ox2 == 1 && local_lx2 == bound_lim) {
         InteprolateX3(src, interpolatedSrc, loc, dinv[blockID - 1][1],
                       tgside[blockID - 1][1], tgbid[blockID - 1][1], sn, en, si,
-                      ei, sj, ej, sk, ek);
+                      ei, sj, ej, sk, ek, TypeFlag);
         PackDataR0(interpolatedSrc, buf, 0, en - sn, 0, ei - si, 0, ej - sj, 0,
                    ek - sk, offset);
         return;
@@ -435,7 +435,7 @@ void PackData(const AthenaArray<Real> &src, Real *buf, int sn, int en, int si,
       if (ox2 == -1 && local_lx2 == 0) {
         InteprolateX3(src, interpolatedSrc, loc, dinv[blockID - 1][0],
                       tgside[blockID - 1][0], tgbid[blockID - 1][0], sn, en, si,
-                      ei, sj, ej, sk, ek);
+                      ei, sj, ej, sk, ek, TypeFlag);
         PackDataR2(interpolatedSrc, buf, 0, en - sn, 0, ei - si, 0, ej - sj, 0,
                    ek - sk, offset);
         return;
@@ -443,7 +443,7 @@ void PackData(const AthenaArray<Real> &src, Real *buf, int sn, int en, int si,
       if (ox3 == -1 && local_lx3 == 0) {
         InteprolateX2(src, interpolatedSrc, loc, dinv[blockID - 1][2],
                       tgside[blockID - 1][2], tgbid[blockID - 1][2], sn, en, si,
-                      ei, sj, ej, sk, ek);
+                      ei, sj, ej, sk, ek, TypeFlag);
         PackDataR3(interpolatedSrc, buf, 0, en - sn, 0, ei - si, 0, ej - sj, 0,
                    ek - sk, offset);
         return;
@@ -453,7 +453,7 @@ void PackData(const AthenaArray<Real> &src, Real *buf, int sn, int en, int si,
       if (ox3 == 1 && local_lx3 == bound_lim) {
         InteprolateX2(src, interpolatedSrc, loc, dinv[blockID - 1][3],
                       tgside[blockID - 1][3], tgbid[blockID - 1][3], sn, en, si,
-                      ei, sj, ej, sk, ek);
+                      ei, sj, ej, sk, ek, TypeFlag);
         PackDataR0(interpolatedSrc, buf, 0, en - sn, 0, ei - si, 0, ej - sj, 0,
                    ek - sk, offset);
         return;
@@ -461,7 +461,7 @@ void PackData(const AthenaArray<Real> &src, Real *buf, int sn, int en, int si,
       if (ox2 == 1 && local_lx2 == bound_lim) {
         InteprolateX3(src, interpolatedSrc, loc, dinv[blockID - 1][1],
                       tgside[blockID - 1][1], tgbid[blockID - 1][1], sn, en, si,
-                      ei, sj, ej, sk, ek);
+                      ei, sj, ej, sk, ek, TypeFlag);
         PackDataR0(interpolatedSrc, buf, 0, en - sn, 0, ei - si, 0, ej - sj, 0,
                    ek - sk, offset);
         return;
@@ -469,7 +469,7 @@ void PackData(const AthenaArray<Real> &src, Real *buf, int sn, int en, int si,
       if (ox2 == -1 && local_lx2 == 0) {
         InteprolateX3(src, interpolatedSrc, loc, dinv[blockID - 1][0],
                       tgside[blockID - 1][0], tgbid[blockID - 1][0], sn, en, si,
-                      ei, sj, ej, sk, ek);
+                      ei, sj, ej, sk, ek, TypeFlag);
         PackDataR0(interpolatedSrc, buf, 0, en - sn, 0, ei - si, 0, ej - sj, 0,
                    ek - sk, offset);
         return;
@@ -477,7 +477,7 @@ void PackData(const AthenaArray<Real> &src, Real *buf, int sn, int en, int si,
       if (ox3 == -1 && local_lx3 == 0) {
         InteprolateX2(src, interpolatedSrc, loc, dinv[blockID - 1][2],
                       tgside[blockID - 1][2], tgbid[blockID - 1][2], sn, en, si,
-                      ei, sj, ej, sk, ek);
+                      ei, sj, ej, sk, ek, TypeFlag);
         PackDataR0(interpolatedSrc, buf, 0, en - sn, 0, ei - si, 0, ej - sj, 0,
                    ek - sk, offset);
         return;
@@ -487,7 +487,7 @@ void PackData(const AthenaArray<Real> &src, Real *buf, int sn, int en, int si,
       if (ox2 == 1 && local_lx2 == bound_lim) {
         InteprolateX3(src, interpolatedSrc, loc, dinv[blockID - 1][1],
                       tgside[blockID - 1][1], tgbid[blockID - 1][1], sn, en, si,
-                      ei, sj, ej, sk, ek);
+                      ei, sj, ej, sk, ek, TypeFlag);
         PackDataR3(interpolatedSrc, buf, 0, en - sn, 0, ei - si, 0, ej - sj, 0,
                    ek - sk, offset);
         return;
@@ -495,7 +495,7 @@ void PackData(const AthenaArray<Real> &src, Real *buf, int sn, int en, int si,
       if (ox2 == -1 && local_lx2 == 0) {
         InteprolateX3(src, interpolatedSrc, loc, dinv[blockID - 1][0],
                       tgside[blockID - 1][0], tgbid[blockID - 1][0], sn, en, si,
-                      ei, sj, ej, sk, ek);
+                      ei, sj, ej, sk, ek, TypeFlag);
         PackDataR1(interpolatedSrc, buf, 0, en - sn, 0, ei - si, 0, ej - sj, 0,
                    ek - sk, offset);
         return;
@@ -503,7 +503,7 @@ void PackData(const AthenaArray<Real> &src, Real *buf, int sn, int en, int si,
       if (ox3 == 1 && local_lx3 == bound_lim) {
         InteprolateX2(src, interpolatedSrc, loc, dinv[blockID - 1][3],
                       tgside[blockID - 1][3], tgbid[blockID - 1][3], sn, en, si,
-                      ei, sj, ej, sk, ek);
+                      ei, sj, ej, sk, ek, TypeFlag);
         PackDataR0(interpolatedSrc, buf, 0, en - sn, 0, ei - si, 0, ej - sj, 0,
                    ek - sk, offset);
         return;
@@ -511,7 +511,7 @@ void PackData(const AthenaArray<Real> &src, Real *buf, int sn, int en, int si,
       if (ox3 == -1 && local_lx3 == 0) {
         InteprolateX2(src, interpolatedSrc, loc, dinv[blockID - 1][2],
                       tgside[blockID - 1][2], tgbid[blockID - 1][2], sn, en, si,
-                      ei, sj, ej, sk, ek);
+                      ei, sj, ej, sk, ek, TypeFlag);
         PackDataR0(interpolatedSrc, buf, 0, en - sn, 0, ei - si, 0, ej - sj, 0,
                    ek - sk, offset);
         return;
@@ -521,7 +521,7 @@ void PackData(const AthenaArray<Real> &src, Real *buf, int sn, int en, int si,
       if (ox2 == 1 && local_lx2 == bound_lim) {
         InteprolateX3(src, interpolatedSrc, loc, dinv[blockID - 1][1],
                       tgside[blockID - 1][1], tgbid[blockID - 1][1], sn, en, si,
-                      ei, sj, ej, sk, ek);
+                      ei, sj, ej, sk, ek, TypeFlag);
         PackDataR1(interpolatedSrc, buf, 0, en - sn, 0, ei - si, 0, ej - sj, 0,
                    ek - sk, offset);
         return;
@@ -529,7 +529,7 @@ void PackData(const AthenaArray<Real> &src, Real *buf, int sn, int en, int si,
       if (ox2 == -1 && local_lx2 == 0) {
         InteprolateX3(src, interpolatedSrc, loc, dinv[blockID - 1][0],
                       tgside[blockID - 1][0], tgbid[blockID - 1][0], sn, en, si,
-                      ei, sj, ej, sk, ek);
+                      ei, sj, ej, sk, ek, TypeFlag);
         PackDataR3(interpolatedSrc, buf, 0, en - sn, 0, ei - si, 0, ej - sj, 0,
                    ek - sk, offset);
         return;
@@ -537,7 +537,7 @@ void PackData(const AthenaArray<Real> &src, Real *buf, int sn, int en, int si,
       if (ox3 == 1 && local_lx3 == bound_lim) {
         InteprolateX2(src, interpolatedSrc, loc, dinv[blockID - 1][3],
                       tgside[blockID - 1][3], tgbid[blockID - 1][3], sn, en, si,
-                      ei, sj, ej, sk, ek);
+                      ei, sj, ej, sk, ek, TypeFlag);
         PackDataR0(interpolatedSrc, buf, 0, en - sn, 0, ei - si, 0, ej - sj, 0,
                    ek - sk, offset);
         return;
@@ -545,7 +545,7 @@ void PackData(const AthenaArray<Real> &src, Real *buf, int sn, int en, int si,
       if (ox3 == -1 && local_lx3 == 0) {
         InteprolateX2(src, interpolatedSrc, loc, dinv[blockID - 1][2],
                       tgside[blockID - 1][2], tgbid[blockID - 1][2], sn, en, si,
-                      ei, sj, ej, sk, ek);
+                      ei, sj, ej, sk, ek, TypeFlag);
         PackDataR0(interpolatedSrc, buf, 0, en - sn, 0, ei - si, 0, ej - sj, 0,
                    ek - sk, offset);
         return;
@@ -555,7 +555,7 @@ void PackData(const AthenaArray<Real> &src, Real *buf, int sn, int en, int si,
       if (ox3 == 1 && local_lx3 == bound_lim) {
         InteprolateX2(src, interpolatedSrc, loc, dinv[blockID - 1][3],
                       tgside[blockID - 1][3], tgbid[blockID - 1][3], sn, en, si,
-                      ei, sj, ej, sk, ek);
+                      ei, sj, ej, sk, ek, TypeFlag);
         PackDataR3(interpolatedSrc, buf, 0, en - sn, 0, ei - si, 0, ej - sj, 0,
                    ek - sk, offset);
         return;
@@ -563,7 +563,7 @@ void PackData(const AthenaArray<Real> &src, Real *buf, int sn, int en, int si,
       if (ox2 == 1 && local_lx2 == bound_lim) {
         InteprolateX3(src, interpolatedSrc, loc, dinv[blockID - 1][1],
                       tgside[blockID - 1][1], tgbid[blockID - 1][1], sn, en, si,
-                      ei, sj, ej, sk, ek);
+                      ei, sj, ej, sk, ek, TypeFlag);
         PackDataR2(interpolatedSrc, buf, 0, en - sn, 0, ei - si, 0, ej - sj, 0,
                    ek - sk, offset);
         return;
@@ -571,7 +571,7 @@ void PackData(const AthenaArray<Real> &src, Real *buf, int sn, int en, int si,
       if (ox3 == -1 && local_lx3 == 0) {
         InteprolateX2(src, interpolatedSrc, loc, dinv[blockID - 1][2],
                       tgside[blockID - 1][2], tgbid[blockID - 1][2], sn, en, si,
-                      ei, sj, ej, sk, ek);
+                      ei, sj, ej, sk, ek, TypeFlag);
         PackDataR1(interpolatedSrc, buf, 0, en - sn, 0, ei - si, 0, ej - sj, 0,
                    ek - sk, offset);
         return;
@@ -579,7 +579,7 @@ void PackData(const AthenaArray<Real> &src, Real *buf, int sn, int en, int si,
       if (ox2 == -1 && local_lx2 == 0) {
         InteprolateX3(src, interpolatedSrc, loc, dinv[blockID - 1][0],
                       tgside[blockID - 1][0], tgbid[blockID - 1][0], sn, en, si,
-                      ei, sj, ej, sk, ek);
+                      ei, sj, ej, sk, ek, TypeFlag);
         PackDataR0(interpolatedSrc, buf, 0, en - sn, 0, ei - si, 0, ej - sj, 0,
                    ek - sk, offset);
         return;
@@ -589,7 +589,7 @@ void PackData(const AthenaArray<Real> &src, Real *buf, int sn, int en, int si,
       if (ox2 == 1 && local_lx2 == bound_lim) {
         InteprolateX3(src, interpolatedSrc, loc, dinv[blockID - 1][1],
                       tgside[blockID - 1][1], tgbid[blockID - 1][1], sn, en, si,
-                      ei, sj, ej, sk, ek);
+                      ei, sj, ej, sk, ek, TypeFlag);
         PackDataR2(interpolatedSrc, buf, 0, en - sn, 0, ei - si, 0, ej - sj, 0,
                    ek - sk, offset);
         return;
@@ -597,7 +597,7 @@ void PackData(const AthenaArray<Real> &src, Real *buf, int sn, int en, int si,
       if (ox2 == -1 && local_lx2 == 0) {
         InteprolateX3(src, interpolatedSrc, loc, dinv[blockID - 1][0],
                       tgside[blockID - 1][0], tgbid[blockID - 1][0], sn, en, si,
-                      ei, sj, ej, sk, ek);
+                      ei, sj, ej, sk, ek, TypeFlag);
         PackDataR2(interpolatedSrc, buf, 0, en - sn, 0, ei - si, 0, ej - sj, 0,
                    ek - sk, offset);
         return;
@@ -605,7 +605,7 @@ void PackData(const AthenaArray<Real> &src, Real *buf, int sn, int en, int si,
       if (ox3 == 1 && local_lx3 == bound_lim) {
         InteprolateX2(src, interpolatedSrc, loc, dinv[blockID - 1][3],
                       tgside[blockID - 1][3], tgbid[blockID - 1][3], sn, en, si,
-                      ei, sj, ej, sk, ek);
+                      ei, sj, ej, sk, ek, TypeFlag);
         PackDataR0(interpolatedSrc, buf, 0, en - sn, 0, ei - si, 0, ej - sj, 0,
                    ek - sk, offset);
         return;
@@ -613,7 +613,7 @@ void PackData(const AthenaArray<Real> &src, Real *buf, int sn, int en, int si,
       if (ox3 == -1 && local_lx3 == 0) {
         InteprolateX2(src, interpolatedSrc, loc, dinv[blockID - 1][2],
                       tgside[blockID - 1][2], tgbid[blockID - 1][2], sn, en, si,
-                      ei, sj, ej, sk, ek);
+                      ei, sj, ej, sk, ek, TypeFlag);
         PackDataR0(interpolatedSrc, buf, 0, en - sn, 0, ei - si, 0, ej - sj, 0,
                    ek - sk, offset);
         return;
