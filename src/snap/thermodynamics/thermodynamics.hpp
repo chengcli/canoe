@@ -167,6 +167,13 @@ class Thermodynamics {
     return cv_ratio_mass_[n] * cvd;
   }
 
+  // xiz add svp_func1_1 and cloud_index_set_ to public 2024
+  //! saturation vapor pressure function: Vapor -> Cloud
+  SVPFunc1Container svp_func1_;
+
+  //! cloud index set
+  std::vector<IndexSet> cloud_index_set_;
+
   //! Ratio of specific heat capacity [J/(kg K)] at constant pressure
   //! \return $c_{p,i}/c_{p,d}$
   Real GetCpRatioMass(int n) const { return cp_ratio_mass_[n]; }
@@ -438,10 +445,10 @@ class Thermodynamics {
   std::array<Real, 1 + NVAPOR> p3_;
 
   //! saturation vapor pressure function: Vapor -> Cloud
-  SVPFunc1Container svp_func1_;
+  //  SVPFunc1Container svp_func1_;
 
   //! cloud index set
-  std::vector<IndexSet> cloud_index_set_;
+  //  std::vector<IndexSet> cloud_index_set_;
 
   //! saturation vapor pressure function: Vapor + Vapor -> Cloud
   SVPFunc2Container svp_func2_;
