@@ -9,7 +9,7 @@ namespace CubedSphereUtility {
 
 void PackData(const AthenaArray<Real> &src, Real *buf, int sn, int en, int si,
               int ei, int sj, int ej, int sk, int ek, int &offset, int ox1,
-              int ox2, int ox3, LogicalLocation const &loc);
+              int ox2, int ox3, LogicalLocation const &loc, int TypeFlag);
 
 // Helper functions adapted from Paul
 void VecTransABPFromRLL(Real X, Real Y, int blockID, Real U, Real V, Real *V2,

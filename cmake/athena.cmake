@@ -11,10 +11,12 @@ set(patch_command
     ${CMAKE_CURRENT_SOURCE_DIR}/patches/26.scalars_flux.patch
     ${CMAKE_CURRENT_SOURCE_DIR}/patches/26.adiabatic_hydro.patch
     ${CMAKE_CURRENT_SOURCE_DIR}/patches/27.coordinates.patch
-    ${CMAKE_CURRENT_SOURCE_DIR}/patches/28.bvals_cc.patch
     ${CMAKE_CURRENT_SOURCE_DIR}/patches/29.mesh.patch
     ${CMAKE_CURRENT_SOURCE_DIR}/patches/30.bvals_base.patch
-    ${CMAKE_CURRENT_SOURCE_DIR}/patches/31.task_list.patch)
+    ${CMAKE_CURRENT_SOURCE_DIR}/patches/31.task_list.patch
+    ${CMAKE_CURRENT_SOURCE_DIR}/patches/32.scalars.patch
+    ${CMAKE_CURRENT_SOURCE_DIR}/patches/33.bvals_cc_cpp.patch
+    ${CMAKE_CURRENT_SOURCE_DIR}/patches/34.bvals_cc_hpp.patch)
 
 FetchContent_Declare(
   athenapp

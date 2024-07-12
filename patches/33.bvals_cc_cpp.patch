@@ -1,24 +1,24 @@
 diff --git a/src/bvals/cc/bvals_cc.cpp b/src/bvals/cc/bvals_cc.cpp
-index eb6f6039..d8b328b0 100644
+index 223962de..74b3ab79 100644
 --- a/src/bvals/cc/bvals_cc.cpp
 +++ b/src/bvals/cc/bvals_cc.cpp
-@@ -30,6 +30,9 @@
- #include "../../utils/buffer_utils.hpp"
+@@ -31,6 +31,9 @@
  #include "../bvals.hpp"
  #include "bvals_cc.hpp"
-+
+ 
 +#include <configure.hpp>
 +#include <exo3/cubed_sphere_utility.hpp>
- 
++
  // MPI header
  #ifdef MPI_PARALLEL
-@@ -297,7 +298,12 @@ int CellCenteredBoundaryVariable::LoadBoundaryBufferSameLevel(Real *buf,
+ #include <mpi.h>
+@@ -297,7 +300,12 @@ int CellCenteredBoundaryVariable::LoadBoundaryBufferSameLevel(Real *buf,
    ek = (nb.ni.ox3 < 0) ? (pmb->ks + NGHOST - 1) : pmb->ke;
    int p = 0;
    AthenaArray<Real> &var = *var_cc;
 +#ifdef CUBED_SPHERE
 +// nl_, nu_, after buf var
-+  CubedSphereUtility::PackData(var, buf, nl_, nu_, si, ei, sj, ej, sk, ek, p, nb.ni.ox1, nb.ni.ox2, nb.ni.ox3, pmb->loc);
++  CubedSphereUtility::PackData(var, buf, nl_, nu_, si, ei, sj, ej, sk, ek, p, nb.ni.ox1, nb.ni.ox2, nb.ni.ox3, pmb->loc, TypeFlag);
 +#else
    BufferUtility::PackData(var, buf, nl_, nu_, si, ei, sj, ej, sk, ek, p);
 +#endif

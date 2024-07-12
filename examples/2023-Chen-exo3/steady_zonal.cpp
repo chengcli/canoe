@@ -4,6 +4,7 @@
 #include <athena/hydro/hydro.hpp>
 #include <athena/mesh/mesh.hpp>
 #include <athena/parameter_input.hpp>
+#include <athena/scalars/scalars.hpp>
 
 // application
 #include <application/application.hpp>
@@ -80,6 +81,11 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
         pexo3->GetLatLon(&lat, &lon, k, j, i);
         phydro->w(IDN, k, j, i) =
             g * h0 - (a * om_earth * u0 + u0 * u0 / 2) * sin(lat) * sin(lat);
+        if ((lat > PI / 2.0 * 0.9) && (lat < PI / 2.0))
+            pscalars->s(2, k, j, i) = 1.0;
+        if ((lat > PI / 2.0 * 0.5) && (lat < PI / 2.0 * 0.6))
+            pscalars->s(1, k, j, i) = 1.0;
+        
         Real U = u0 * cos(lat);
         Real V = 0.0;
         Real Vy, Vz;
@@ -118,16 +124,20 @@ void MeshBlock::UserWorkBeforeOutput(ParameterInput *pin) {
         user_out_var(2, k, j, i) = U;
         user_out_var(3, k, j, i) = V;
         user_out_var(4, k, j, i) = delta / (C * D);
+        user_out_var(5, k, j, i) = pscalars->s(1, k, j, i);
+        user_out_var(6, k, j, i) = pscalars->s(2, k, j, i);
       }
 }
 
 void MeshBlock::InitUserMeshBlockData(ParameterInput *pin) {
-  AllocateUserOutputVariables(5);
+  AllocateUserOutputVariables(7);
   SetUserOutputVariableName(0, "lat");
   SetUserOutputVariableName(1, "lon");
   SetUserOutputVariableName(2, "U");
   SetUserOutputVariableName(3, "V");
   SetUserOutputVariableName(4, "sqrtg");
+  SetUserOutputVariableName(5, "s1");
+  SetUserOutputVariableName(6, "s2");
 }
 
 void Mesh::InitUserMeshData(ParameterInput *pin) {
