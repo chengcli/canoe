@@ -24,3 +24,6 @@ external/*.tar.gz
 
 # vscode
 .vscode
+
+# cache
+.cache/

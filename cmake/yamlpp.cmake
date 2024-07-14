@@ -1,6 +1,9 @@
 include(FetchContent)
-
 set(FETCHCONTENT_QUIET TRUE)
+
+if(CANTERA_FOUND)
+  return()
+endif()
 
 FetchContent_Declare(
   yaml-cpp

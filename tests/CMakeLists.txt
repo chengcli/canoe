@@ -2,6 +2,7 @@
 # A collection of unit tests
 # ==========================
 
+include("${CMAKE_SOURCE_DIR}/cmake/macros/macro_setup_test.cmake")
 configure_file(globals.cpp.in globals.cpp @ONLY)
 
 # Enable testing functionality

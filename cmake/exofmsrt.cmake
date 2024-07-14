@@ -1,15 +1,7 @@
 include(FetchContent)
-
 set(FETCHCONTENT_QUIET FALSE)
 
-option(EXOFMSRT "Build exofms-ck" OFF)
-
-if(EXOFMSRT)
-  FetchContent_Declare(
-    exofms-ck
-    GIT_REPOSITORY https://github.com/chengcli/Exo-FMS_column_ck
-    GIT_TAG main)
-  FetchContent_MakeAvailable(exofms-ck)
-
-  include_directories(${exofmsck_SOURCE_DIR})
-endif()
+set(PACKAGE_NAME exofmsrt)
+set(REPO_URL "https://github.com/chengcli/Exo-FMS_column_ck")
+set(REPO_TAG "36ba9fad0f87339c3c7b83dd9bf2b53eaba8223f")
+add_package(${PACKAGE_NAME} ${REPO_URL} ${REPO_TAG} OFF)
