@@ -23,6 +23,7 @@
 #include <athena/hydro/hydro.hpp>
 #include <athena/mesh/mesh.hpp>
 #include <athena/parameter_input.hpp>
+#include <athena/scalars/scalars.hpp>
 
 // application
 #include <application/application.hpp>
@@ -281,6 +282,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
         // add noise
         air.w[IVY] = 10. * distribution(generator);
         air.w[IVZ] = 10. * distribution(generator);
+	pscalars->s(1, k, j, i) = 1.0 - (pcoord->x1v(i) - Rp)/z_iso;
       }
 
       // construct isothermal atmosphere
@@ -292,7 +294,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
 }
 
 void MeshBlock::InitUserMeshBlockData(ParameterInput *pin) {
-  AllocateUserOutputVariables(9);
+  AllocateUserOutputVariables(10);
   SetUserOutputVariableName(0, "temp");
   SetUserOutputVariableName(1, "theta");
   SetUserOutputVariableName(2, "lat");
@@ -302,6 +304,7 @@ void MeshBlock::InitUserMeshBlockData(ParameterInput *pin) {
   SetUserOutputVariableName(6, "Teq");
   SetUserOutputVariableName(7, "Kv");
   SetUserOutputVariableName(8, "Kt");
+  SetUserOutputVariableName(9, "s1");
 }
 
 // \brif Output distributions of temperature and potential temperature.
@@ -344,5 +347,6 @@ void MeshBlock::UserWorkBeforeOutput(ParameterInput *pin) {
         sigma_p = (sigma_p < 0.0) ? 0.0 : sigma_p * _qur(cos(lat));
         Real Kt = Ka + (Ks - Ka) * sigma_p;
         user_out_var(8, k, j, i) = Kt;
+	user_out_var(9, k, j, i) = pscalars->s(1, k, j, i);
       }
 }

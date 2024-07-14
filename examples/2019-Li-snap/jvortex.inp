@@ -3,36 +3,37 @@ problem   = Jupiter 3d box model
 
 <job>
 problem_id  = vortex  # problem ID: basename of output filenames
+tasklist    = ImplicitHydroTasks
 
 <output0>
 file_type   = rst
-dt          = 1.E5
+dt          = 86400
 
 <output1>
 file_type   = hst
 dt          = 5.E3
 
 <output2>
-file_type   = pnetcdf     # Tabular data dump
+file_type   = netcdf     # Tabular data dump
 variable    = prim        # variables to be output
-dt          = 5.E3        # time increment between outputs
+dt          = 86400        # time increment between outputs
 
 <output3>
-file_type   = pnetcdf
+file_type   = netcdf
 variable    = uov
-dt          = 5.E3
+dt          = 86400
 
 <output4>
-file_type   = pnetcdf
+file_type   = netcdf
 variable    = diag
-dt          = 5.E3
+dt          = 86400
 
 <time>
 cfl_number  = 1.          # The Courant, Friedrichs, & Lewy (CFL) Number
 nlim        = -1          # cycle limit
 xorder      = 5
 integrator  = rk3
-tlim        = 10.E5       # time limit
+tlim        = 8.64E7       # time limit
 
 <mesh>
 nx1         = 48          # Number of zones in X1-direction
@@ -55,8 +56,8 @@ ox3_bc      = periodic    # Outer-X3 boundary condition flag
 
 <meshblock>
 nx1         = 48
-nx2         = 64
-nx3         = 32
+nx2         = 8
+nx3         = 8
 
 <hydro>
 gamma           = 1.42    # gamma = C_p/C_v
