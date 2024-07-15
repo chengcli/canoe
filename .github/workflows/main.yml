@@ -7,6 +7,8 @@ on:
     branches:
       - main
     types: [opened, synchronize, reopened, ready_for_review]
+  schedule: # run build job at 6am UTC every other week on Saturday
+    - cron: '0 6 */14 * 6'
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
@@ -459,8 +461,6 @@ jobs:
         run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} -- -j8
 
       - name: run simulation
-        env:
-          PATH: $PATH:/usr/lib64/mpich/bin
         working-directory: ${{github.workspace}}/build/bin
         run: mpiexec -n 8 ./robert.release -i robert2d.inp
 
@@ -512,8 +512,6 @@ jobs:
         run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} -- -j8
 
       - name: run simulation
-        env:
-          PATH: $PATH:/usr/lib64/mpich/bin
         working-directory: ${{github.workspace}}/build/bin
         run: mpiexec -n 8 ./robert.release -i robert3d.inp
 
@@ -667,8 +665,6 @@ jobs:
         run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} -- -j8
 
       - name: run simulation
-        env:
-          PATH: $PATH:/usr/lib64/mpich/bin
         working-directory: ${{github.workspace}}/build/bin
         run: mpiexec -n 12 ./polar_vortex.release -i fig_g_intruder.inp
 
