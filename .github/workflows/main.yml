@@ -462,7 +462,7 @@ jobs:
 
       - name: run simulation
         env:
-          PATH: $PATH:/usr/lib64/mpich/bin
+          PATH: $PATH:/usr/bin
         working-directory: ${{github.workspace}}/build/bin
         run: mpiexec -n 8 ./robert.release -i robert2d.inp
 
@@ -515,7 +515,7 @@ jobs:
 
       - name: run simulation
         env:
-          PATH: $PATH:/usr/lib64/mpich/bin
+          PATH: $PATH:/usr/bin
         working-directory: ${{github.workspace}}/build/bin
         run: mpiexec -n 8 ./robert.release -i robert3d.inp
 
@@ -567,6 +567,8 @@ jobs:
         run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} -- -j4
 
       - name: run simulation
+        env:
+          PATH: $PATH:/usr/bin
         working-directory: ${{github.workspace}}/build/bin
         run: mpiexec -n 4 ./bryan.release -i bryan.inp
 
@@ -618,6 +620,8 @@ jobs:
         run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} -- -j4
 
       - name: run simulation
+        env:
+          PATH: $PATH:/usr/bin
         working-directory: ${{github.workspace}}/build/bin
         run: mpiexec -n 4 ./shallow_xy.release -i shallow_water.inp
 
@@ -670,7 +674,7 @@ jobs:
 
       - name: run simulation
         env:
-          PATH: $PATH:/usr/lib64/mpich/bin
+          PATH: $PATH:/usr/bin
         working-directory: ${{github.workspace}}/build/bin
         run: mpiexec -n 12 ./polar_vortex.release -i fig_g_intruder.inp
 
@@ -763,6 +767,8 @@ jobs:
         run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} -- -j4
 
       - name: run simulation
+        env:
+          PATH: $PATH:/usr/bin
         working-directory: ${{github.workspace}}/build/bin
         run: mpiexec -n 6 ./test_blast.release -i test_blast.inp
 
