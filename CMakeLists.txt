@@ -10,35 +10,37 @@ project(canoe
 # search for <Package>_ROOT
 cmake_policy(SET CMP0074 NEW)
 
+string(ASCII 27 Esc)
+set(ColorReset "${Esc}[m")
+set(Green      "${Esc}[32m")
+
 message(STATUS "")
-message(STATUS "== Setting up canoe library ==")
+message(STATUS "${Green}==== ${PROJECT_NAME} configure begin ====${ColorReset}")
 
 if (NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
-  message(STATUS "Default Build Type = Release")
-  message(STATUS "")
+  message(STATUS "Build Type = Release")
 else()
   message(STATUS "Build Type = ${CMAKE_BUILD_TYPE}")
-  message(STATUS "")
 endif()
 
 # load all modules
 LIST(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules/)
 
 # load all macros
-FILE(GLOB _macro_files "${CMAKE_SOURCE_DIR}/cmake/macros/*.cmake")
-FOREACH(_file ${_macro_files})
+file(GLOB _macro_files "${CMAKE_SOURCE_DIR}/cmake/macros/*.cmake")
+foreach(_file ${_macro_files})
   MESSAGE(STATUS "Include ${_file}")
-  INCLUDE(${_file})
-ENDFOREACH()
+  include(${_file})
+endforeach()
 
 ## 1. set up compiler flags ##
-message(STATUS "1. Set up project compiler flags ...")
+message(STATUS "${PROJECT_NAME}-1. Setting up project compiler flags ...")
 message(STATUS "Include ${CMAKE_SOURCE_DIR}/cmake/compilers.cmake")
 include(${CMAKE_SOURCE_DIR}/cmake/compilers.cmake)
 
 ## 2. set up project specific configuration ##
-message(STATUS "2. Set up project parameters ...")
+message(STATUS "${PROJECT_NAME}-2. Setting up project parameters ...")
 
 # load custom task
 message(STATUS "Load custom task = ${TASK}")
@@ -57,15 +59,14 @@ endif()
 
 message(STATUS "Include ${CMAKE_CURRENT_SOURCE_DIR}/cmake/parameters.cmake")
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/parameters.cmake)
+
+## 3. set up project system libraries ##
+message(STATUS "${PROJECT_NAME}-3. Setting up system libraries")
 find_package(Eigen3 REQUIRED)
 find_package(Cantera)
 #find_package(Torch)
 
-## 3. set up project system libraries ##
-message(STATUS "3. Set up system libraries")
-if (NOT ${CANTERA_FOUND})
-  include(${CMAKE_SOURCE_DIR}/cmake/yamlpp.cmake)
-endif()
+include(${CMAKE_SOURCE_DIR}/cmake/yamlpp.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/gtest.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/athena.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/application.cmake)
@@ -74,26 +75,25 @@ include(${CMAKE_SOURCE_DIR}/cmake/disort.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/rrtmg.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/pvfmm.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/minichem.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/exofmsrt.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/pybind11.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/c3m.cmake)
 
 ## 4. set up project configure file and library ##
-message(STATUS "4. Set up project libraries")
+message(STATUS "${PROJECT_NAME}-4. Setting up project libraries")
 configure_file(${CMAKE_SOURCE_DIR}/configure.hpp.in configure.hpp @ONLY)
 add_subdirectory(src)
 add_subdirectory(tools)
 add_subdirectory(data)
 
 ## 5. set up examples and tests
-message(STATUS "6. Set up unit tests")
+message(STATUS "${PROJECT_NAME}-5. Setting up unit tests")
 
 add_subdirectory(examples)
 add_subdirectory(tests)
 
 ## 6. set up python binding ##
-if (PYTHON_BINDINGS)
-  add_subdirectory(python)
-endif()
+add_subdirectory(python)
 
 ## 7. add uninstall targets ##
 configure_file(
@@ -103,3 +103,6 @@ configure_file(
 
 add_custom_target(canoe_uninstall
     COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
+
+message(STATUS "${Green}==== ${PROJECT_NAME} configure done ====${ColorReset}")
+message(STATUS "")

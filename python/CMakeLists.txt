@@ -1,6 +1,9 @@
 # =========================================
 # Wrap all C++ libraries and bind to Python
 # =========================================
+if (NOT PYTHON_BINDINGS)
+  return()
+endif()
 
 string(TOUPPER ${CMAKE_BUILD_TYPE} buildu)
 

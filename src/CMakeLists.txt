@@ -95,6 +95,7 @@ set(CANOE_LIBRARY_${buildu}
   "diagnostics_${buildl}"
   "forcing_${buildl}"
   $<$<BOOL:${MINICHEM}>:minichem::minichem++>
+  $<$<BOOL:${EXOFMSRT}>:exofmsrt::exofmsrt++>
   #"modules_${buildl}"
   ${YAML_CPP_LIBRARIES}
   ${CPPDISORT_LIBRARY_${buildu}}
