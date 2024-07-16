@@ -1,5 +1,5 @@
 # ===============================================
-# Examples published in Cheng et al. (2023), ApJS
+# Examples published in Chen et al. (2023), ApJS
 # ===============================================
 
 # 1. Compile dam_break.cpp
@@ -17,6 +17,10 @@ else()
   setup_problem(hot_jupiter)
   setup_problem(polar_dry)
 endif()
+
+if (${RSOLVER} STREQUAL "lmars")
+  setup_problem(jupiter_crm)
+endif( )
 
 # 2. Copy input file to run directory
 file(GLOB inputs *.inp *.dat)

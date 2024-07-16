@@ -108,65 +108,6 @@ void Forcing(MeshBlock *pmb, Real const time, Real const dt,
         du(IM3, k, j, i) += dt * acc3;
       }
 
-  Real kappa;  // Rd/Cp
-  kappa = Rd / cp;
-  Real iso_temp = Ts + grav * z_iso / cp;
-
-  // Newtonian cooling and Rayleigh drag
-  for (int k = pmb->ks; k <= pmb->ke; ++k)
-    for (int j = pmb->js; j <= pmb->je; ++j)
-      for (int i = pmb->is; i <= pmb->ie; ++i) {
-        // Load latitude
-        Real lat, lon;
-        pexo3->GetLatLon(&lat, &lon, k, j, i);
-        // Momentum damping coefficient, Kv
-        Real p0_now =
-            w(IPR, k, j, 0) + w(IDN, k, j, 0) * grav *
-                                  (pmb->pcoord->x1v(0) - pmb->pcoord->x1f(0));
-        Real scaled_z = w(IPR, k, j, i) / p0;
-        Real sigma = w(IPR, k, j, i) / p0;  // pmb->phydro->pbot(k,j);
-        Real sigma_p = (sigma - sigmab) / (1. - sigmab);
-        Real Kv = (sigma_p < 0.0) ? 0.0 : sigma_p * Kf;
-
-        // Temperature (energy) damping coefficient
-        // Temperature difference, T - Teq
-        Real Teq_p =
-            Ts - dT * _sqr(sin(lat)) - dtheta * log(scaled_z) * _sqr(cos(lat));
-        Teq_p *= pow(scaled_z, kappa);
-        Real Teq = (Teq_p > 200.) ? Teq_p : 200.;
-        Real temp = w(IPR, k, j, i) / w(IDN, k, j, i) / Rd;
-        // Temperature damping coefficient, Kt
-        sigma_p = (sigma_p < 0.0) ? 0.0 : sigma_p * _qur(cos(lat));
-        Real Kt = Ka + (Ks - Ka) * sigma_p;
-
-        // Momentum and energy damping
-        Real m1 = w(IDN, k, j, i) * w(IVX, k, j, i);
-        Real m2 = w(IDN, k, j, i) * w(IVY, k, j, i);
-        Real m3 = w(IDN, k, j, i) * w(IVZ, k, j, i);
-
-        pexo3->ContravariantVectorToCovariant(j, k, m2, m3, &m2, &m3);
-
-        du(IM1, k, j, i) += -dt * Kv * m1;
-        du(IM2, k, j, i) += -dt * Kv * m2;
-        du(IM3, k, j, i) += -dt * Kv * m3;
-        du(IEN, k, j, i) +=
-            -dt * (cp - Rd) * w(IDN, k, j, i) * Kt * (temp - Teq);
-      }
-
-  /* Sponge Layer
-  for (int k = pmb->ks; k <= pmb->ke; ++k) {
-    for (int j = pmb->js; j <= pmb->je; ++j) {
-      for (int i = pmb->is; i <= pmb->ie; ++i) {
-        Real pres = w(IPR, k, j, i);
-        if (pres < piso) {  // sponge layer at top
-          Real tau = sponge_tau * pow(pres / piso, 2);
-          u(IVX, k, j, i) = u(IVX, k, j, i) / (1 + dt / tau);
-          u(IVY, k, j, i) = u(IVY, k, j, i) / (1 + dt / tau);
-          u(IVZ, k, j, i) = u(IVZ, k, j, i) / (1 + dt / tau);
-        }
-      }
-    }
-  }*/
 }
 
 Real AngularMomentum(MeshBlock *pmb, int iout) {
@@ -279,8 +220,8 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
         AirParcelHelper::distribute_to_conserved(this, k, j, i, air);
         pthermo->Extrapolate(&air, pcoord->dx1f(i), "dry", grav, 0.001);
         // add noise
-        air.w[IVY] = 10. * distribution(generator);
-        air.w[IVZ] = 10. * distribution(generator);
+        air.w[IVY] = 0. * distribution(generator);
+        air.w[IVZ] = 0. * distribution(generator);
       }
 
       // construct isothermal atmosphere
