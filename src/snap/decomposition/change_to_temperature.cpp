@@ -135,7 +135,9 @@ void Decomposition::ChangeToTemperature(AthenaArray<Real> &w, int kl, int ku,
     }
 
   // finish send top pressure
-  pexv->ClearBuffer();
+  if (pbot != nullptr) {
+    pexv->ClearBuffer();
+  }
 }
 
 void Decomposition::RestoreFromTemperature(AthenaArray<Real> &w,
