@@ -59,6 +59,12 @@ cd external
 cd ..
 ```
 
+### Notes on using openmpi
+Some system, especially conda, uses openmpi by default.
+It is know that openmpi sometimes causes trouble in the simulation and mpich works
+better with canoe. If you have to use openmpi and the run fails immediately after
+execution, try to run with a single core first and then multi-core.
+
 ## Install python libraries
 The minimum python version is 3.8.
 All needed python libraries are collected in `requirements.txt`. We suggest using a
@@ -81,6 +87,17 @@ Register your `pre-commit` hooks using
 pre-commit install
 ```
 The contributor's guide explains the meaning of `pre-commit`.
+
+## Environment variables
+These following environment variables are important for the system to find the
+appropriate MPI:
+
+```
+export PATH=$PATH:/usr/lib64/mpich/bin
+export LD_LIBRARY_PATH=/usr/lib64/mpich/lib:$LD_LIBRARY_PATH
+export MPICC=/usr/lib64/mpich/bin/mpicc
+export MPICXX=/usr/lib64/mpich/bin/mpicxx
+```
 
 ## How to build and test
 After you completed the installation steps, you can build the canoe library.

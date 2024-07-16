@@ -20,7 +20,8 @@ NC_LIB=${NETCDF_ROOT}/lib
 
 # Configure, make and install
 #FFLAGS="-fPIC -g -O2" FCFLAGS="-fPIC -g -O2" CFLAGS="-fPIC -g -O3" CXXFLAGS="-fPIC -g -O2" ./configure --prefix="$DESTDIR"
-CPPFLAGS="-I${MPI_ROOT}/include" LDFLAGS="-L${MPI_ROOT}/lib" ./configure --prefix="$DESTDIR" --with-netcdf4=${NC_ROOT} --with-pic
+#CPPFLAGS="-I${MPI_ROOT}/include" LDFLAGS="-L${MPI_ROOT}/lib" ./configure --prefix="$DESTDIR" --with-netcdf4=${NC_ROOT} --with-pic
+CPPFLAGS="-I${MPI_ROOT}/include" LDFLAGS="-L${MPI_ROOT}/lib" ./configure --prefix="$DESTDIR" --with-pic
 make -j4
 make install
 
