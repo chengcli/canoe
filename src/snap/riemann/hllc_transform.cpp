@@ -15,6 +15,9 @@
 // exo3
 #include <exo3/cubed_sphere.hpp>
 
+// snap
+#include <snap/thermodynamics/thermodynamics.hpp>
+
 // checks
 #include <checks.hpp>
 
@@ -27,6 +30,7 @@ void Hydro::RiemannSolver(const int k, const int j, const int il, const int iu,
                           const int ivx, AthenaArray<Real> &wl,
                           AthenaArray<Real> &wr, AthenaArray<Real> &flx,
                           const AthenaArray<Real> &dxw) {
+  auto pthermo = Thermodynamics::GetInstance();
   int ivy = IVX + ((ivx - IVX) + 1) % 3;
   int ivz = IVX + ((ivx - IVX) + 2) % 3;
   auto pcoord = pmy_block->pcoord;
@@ -69,6 +73,30 @@ void Hydro::RiemannSolver(const int k, const int j, const int il, const int iu,
     wri[IVZ] = wr(ivz, i);
     wri[IPR] = wr(IPR, i);
 
+    for (int n = 1; n <= NVAPOR; ++n) {
+      wli[n] = wl(n, i);
+      wri[n] = wr(n, i);
+    }
+
+    // correction for gamma
+    // left
+    Real fsig = 1., feps = 1.;
+    for (int n = 1; n <= NVAPOR; ++n) {
+      fsig += wli[n] * (pthermo->GetCvRatioMass(n) - 1.);
+      feps += wli[n] * (1. / pthermo->GetMuRatio(n) - 1.);
+    }
+    Real kappal = 1. / (gamma - 1.) * fsig / feps;
+    Real gammal = 1. / kappal + 1.;
+
+    // right
+    fsig = 1., feps = 1.;
+    for (int n = 1; n <= NVAPOR; ++n) {
+      fsig += wri[n] * (pthermo->GetCvRatioMass(n) - 1.);
+      feps += wri[n] * (1. / pthermo->GetMuRatio(n) - 1.);
+    }
+    Real kappar = 1. / (gamma - 1.) * fsig / feps;
+    Real gammar = 1. / kappar + 1.;
+
     //--- Step 2.  Compute middle state estimates with PVRS (Toro 10.5.2)
 
     Real al, ar, el, er, vy, vz, KE_l, KE_r;
@@ -96,8 +124,8 @@ void Hydro::RiemannSolver(const int k, const int j, const int il, const int iu,
       el = pmy_block->peos->EgasFromRhoP(wli[IDN], wli[IPR]) + KE_l;
       er = pmy_block->peos->EgasFromRhoP(wri[IDN], wri[IPR]) + KE_r;
     } else {
-      el = wli[IPR] * igm1 + KE_l;
-      er = wri[IPR] * igm1 + KE_r;
+      el = wli[IPR] * kappal + KE_l;
+      er = wri[IPR] * kappar + KE_r;
     }
     Real rhoa = .5 * (wli[IDN] + wri[IDN]);  // average density
     Real ca = .5 * (cl + cr);                // average sound speed
@@ -121,10 +149,10 @@ void Hydro::RiemannSolver(const int k, const int j, const int il, const int iu,
                : std::sqrt(1.0 + (gr + 1) / (2 * gr) * (pmid / wri[IPR] - 1.0));
     } else {
       ql = (pmid <= wli[IPR]) ? 1.0
-                              : std::sqrt(1.0 + (gamma + 1) / (2 * gamma) *
+                              : std::sqrt(1.0 + (gammal + 1) / (2 * gammal) *
                                                     (pmid / wli[IPR] - 1.0));
       qr = (pmid <= wri[IPR]) ? 1.0
-                              : std::sqrt(1.0 + (gamma + 1) / (2 * gamma) *
+                              : std::sqrt(1.0 + (gammar + 1) / (2 * gammar) *
                                                     (pmid / wri[IPR] - 1.0));
     }
 
@@ -160,8 +188,19 @@ void Hydro::RiemannSolver(const int k, const int j, const int il, const int iu,
     vxl = wli[IVX] - bm;
     vxr = wri[IVX] - bp;
 
-    fl[IDN] = wli[IDN] * vxl;
-    fr[IDN] = wri[IDN] * vxr;
+    Real rdl = 1., rdr = 1.;
+    for (int n = 1; n <= NVAPOR; ++n) {
+      rdl -= wli[n];
+      rdr -= wri[n];
+    }
+
+    fl[IDN] = wli[IDN] * vxl * rdl;
+    fr[IDN] = wri[IDN] * vxr * rdr;
+
+    for (int n = 1; n <= NVAPOR; ++n) {
+      fl[n] = wli[IDN] * wli[n] * vxl;
+      fr[n] = wri[IDN] * wri[n] * vxr;
+    }
 
     fl[IVX] = wli[IDN] * wli[IVX] * vxl + wli[IPR];
     fr[IVX] = wri[IDN] * wri[IVX] * vxr + wri[IPR];
@@ -192,13 +231,13 @@ void Hydro::RiemannSolver(const int k, const int j, const int il, const int iu,
     // contribution
     // of the flux along the contact
 
-    flxi[IDN] = sl * fl[IDN] + sr * fr[IDN];
+    for (int n = 0; n <= NVAPOR; ++n) flxi[n] = sl * fl[n] + sr * fr[n];
     flxi[IVX] = sl * fl[IVX] + sr * fr[IVX] + sm * cp;
     flxi[IVY] = sl * fl[IVY] + sr * fr[IVY];
     flxi[IVZ] = sl * fl[IVZ] + sr * fr[IVZ];
     flxi[IEN] = sl * fl[IEN] + sr * fr[IEN] + sm * cp * am;
 
-    flx(IDN, k, j, i) = flxi[IDN];
+    for (int n = 0; n <= NVAPOR; ++n) flx(n, k, j, i) = flxi[n];
     flx(ivx, k, j, i) = flxi[IVX];
     flx(ivy, k, j, i) = flxi[IVY];
     flx(ivz, k, j, i) = flxi[IVZ];
