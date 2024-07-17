@@ -18,6 +18,9 @@
 // snap
 #include <snap/thermodynamics/thermodynamics.hpp>
 
+// microphysics
+#include <microphysics/microphysics.hpp>
+
 // checks
 #include <checks.hpp>
 
@@ -31,8 +34,11 @@ void Hydro::RiemannSolver(const int k, const int j, const int il, const int iu,
                           AthenaArray<Real> &wr, AthenaArray<Real> &flx,
                           const AthenaArray<Real> &dxw) {
   auto pthermo = Thermodynamics::GetInstance();
+  auto pmicro = pmy_block->pimpl->pmicro;
+
   int ivy = IVX + ((ivx - IVX) + 1) % 3;
   int ivz = IVX + ((ivx - IVX) + 2) % 3;
+  int dir = ivx - IVX;
   auto pcoord = pmy_block->pcoord;
 
   Real wli[(NHYDRO)], wri[(NHYDRO)];
@@ -242,6 +248,16 @@ void Hydro::RiemannSolver(const int k, const int j, const int il, const int iu,
     flx(ivy, k, j, i) = flxi[IVY];
     flx(ivz, k, j, i) = flxi[IVZ];
     flx(IEN, k, j, i) = flxi[IEN];
+
+    // tracer flux
+    Real tfl[(NCLOUD)], tfr[(NCLOUD)], tflxi[(NCLOUD)];
+    for (int n = 0; n < NCLOUD; ++n) {
+      Real vsed = pmicro->vsedf[dir](n, k, j, i);
+      tfl[n] = wli[IDN] * rdl * (vxl + vsed);
+      tfr[n] = wri[IDN] * rdr * (vxr + vsed);
+      tflxi[n] = sl * tfl[n] + sr * tfr[n];
+      pmicro->mass_flux[dir](n, k, j, i) = tflxi[n];
+    }
   }
 
 #if defined(AFFINE) || defined(CUBED_SPHERE)  // need of deprojection
