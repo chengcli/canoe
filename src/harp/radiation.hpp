@@ -131,6 +131,7 @@ Direction parse_radiation_direction(std::string_view str);
 std::vector<Direction> parse_radiation_directions(std::string str);
 uint64_t parse_radiation_flags(std::string str);
 void get_phase_momentum(Real *pmom, int iphas, Real gg, int npmom);
+void get_phase_momentumDHG(Real *pmom, int iphas, Real ff, Real gg1, Real gg2, int npmom);
 
 //! \brief Parse the unit of the spectral grid
 //!

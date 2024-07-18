@@ -362,4 +362,21 @@ void get_phase_momentum(Real *pmom, int iphas, Real gg, int npmom) {
   }
 }
 
+void get_phase_momentumDHG(Real *pmom, int iphas, Real ff, Real gg1, Real gg2, int npmom)
+{
+  pmom[0] = 1.;
+  for (int k =1; k <npmom; k++) pmom[k] = 0.;
+
+  switch(iphas){
+    case 0:   // HENYEY_GREENSTEIN
+      for (int k = 1; k <= npmom; k++)
+        pmom[k] = ff*pow(gg1,(Real)k) + (1.-ff)*pow(gg2,(Real)k);
+      break;
+
+    case 1:   // RAYLEIGH
+      pmom[2] = 0.1;
+      break;
+  }
+}
+
 }  // namespace RadiationHelper

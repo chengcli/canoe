@@ -1,0 +1,10 @@
+#!/bin/bash
+
+#PBS -q devel
+#PBS -N shj
+#PBS -l select=5:ncpus=20:mpiprocs=20:model=ivy
+#PBS -l walltime=2:00:00
+#PBS -W group_list=s2429
+
+mpiexec -np 96  ./hjupiter.release -t 2:00:00 -i hjupiter.inp > shj.log
+

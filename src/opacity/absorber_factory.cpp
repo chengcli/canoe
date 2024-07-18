@@ -12,7 +12,7 @@
 #include <index_map.hpp>
 
 // opacity
-#include "Giants/freedman.hpp"
+#include "Giants/grey_gas.hpp"
 #include "Giants/hydrogen_cia.hpp"
 #include "Giants/microwave/mwr_absorbers.hpp"
 #include "absorber_ck.hpp"
@@ -113,14 +113,14 @@ AbsorberPtr AbsorberFactory::createAbsorberPartial(std::string name,
     ab = std::make_shared<HitranAbsorber>(name);
   } else if (type == "HitranCK") {
     ab = std::make_shared<HitranAbsorberCK>(name);
-  } else if (type == "FreedmanSimple") {
-    ab = std::make_shared<FreedmanSimple>(name);
-  } else if (type == "FreedmanSimple2") {
-    ab = std::make_shared<FreedmanSimple2>(name);
+  } else if (type == "SimpleGrey") {
+    ab = std::make_shared<SimpleGrey>(name);
   } else if (type == "FreedmanMean") {
     ab = std::make_shared<FreedmanMean>(name);
-  } else if (type == "FreedmanMean2") {
-    ab = std::make_shared<FreedmanMean2>(name);
+  } else if (type == "JupGasv") {
+    ab = std::make_shared<JupGasv>(name);
+  } else if (type == "JupGasir") {
+    ab = std::make_shared<JupGasir>(name);
   } else if (type == "HeliosCK") {
     ab = std::make_shared<HeliosCK>(name);
   } else if (type == "SimpleCloud") {
