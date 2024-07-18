@@ -15,7 +15,7 @@ set(PNETCDF ON)
 set(MPI ON)
 set(DISORT ON)
 set(PYTHON_BINDINGS ON)
-set(NCHEMISTRY 1)
+#set(NCHEMISTRY 1)
 set_if_empty(RSOLVER hllc_transform)
 # set(GLOG ON)
 
