@@ -51,6 +51,8 @@ Real FreedmanMean::GetAttenuation(Real wave1, Real wave2,
     c12 = -0.0414;
   }
   Real logp = log10(p * 10.);  // Pa to dyn/cm2
+  if (p < 5e1) logp = log10(5.e2); //extrapolation
+
   Real logT = log10(T);
   Real met = GetPar<Real>("met");
   Real scale = GetPar<Real>("scale");
@@ -66,8 +68,5 @@ Real FreedmanMean::GetAttenuation(Real wave1, Real wave2,
   auto pthermo = Thermodynamics::GetInstance();
   Real dens = p / (pthermo->GetRd() * T);  // kg/m^3
 
-  if (p > 5e1)
-    return scale * 0.1 * dens * result;  // -> 1/m
-  else
-    return 0.;
+  return scale * 0.1 * dens * result;  // -> 1/m
 }
