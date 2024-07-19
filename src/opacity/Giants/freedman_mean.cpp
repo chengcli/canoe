@@ -51,7 +51,7 @@ Real FreedmanMean::GetAttenuation(Real wave1, Real wave2,
     c12 = -0.0414;
   }
   Real logp = log10(p * 10.);  // Pa to dyn/cm2
-  if (p < 5e1) logp = log10(5.e2); //extrapolation
+  if (p < 0.1) logp = 0.; //1 microbar to 300 bar from Freedman
 
   Real logT = log10(T);
   Real met = GetPar<Real>("met");

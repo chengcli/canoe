@@ -1,11 +1,12 @@
 opacity-sources:
   - name: H2-vis
-    class: FreedmanSimple2
-    parameters: {scale: 0.55}
+    class: FreedmanMean
+    parameters: {scale: 0.5, met: 1.7}
+#    parameters: {kappa_a: 5.5e-4, kappa_b: 0.}
 
   - name: H2-ir
-    class: FreedmanSimple2
-    parameters: {scale: 1.}
+    class: FreedmanMean
+    parameters: {scale: 1., met: 1.7}
 
 bands: [ir, vis]
 
@@ -26,7 +27,7 @@ vis:
   num-bins: 1
   opacity: [H2-vis]
   rt-solver: Disort
-  parameters: {S0: 469.046729369, umu0: 1., phi0: 0.}
+  parameters: {temp0: 768., umu0: 1., phi0: 0.}
   flags: [broad_band, time_dependent]
 
 Disort-flags:

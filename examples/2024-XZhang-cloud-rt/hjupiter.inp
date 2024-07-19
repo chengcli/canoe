@@ -18,17 +18,17 @@ dt         = 1.728E5      # time increment between outputs
 <output2>
 file_type  = pnetcdf      # Binary data dump
 variable   = prim         # variables to be output
-dt         = 1.728E6      # time increment between outputs
+dt         = 1.728E5      # time increment between outputs
 
 <output3>
 file_type  = pnetcdf
 variable   = uov
-dt         = 1.728E6
+dt         = 1.728E5
 
 <output4>
 file_type  = pnetcdf
 variable   = rad
-dt         = 1.728E6
+dt         = 1.728E5
 
 #<output5>
 #file_type  = dbg
@@ -43,9 +43,9 @@ integrator = rk3          # integration method
 shock_capture = true
 
 <mesh>
-nx1        = 64          # Number of zones in X1-direction
-x1min      = 8.E7         # minimum value of X1
-x1max      = 8.45E7       # maximum value of X1
+nx1        = 100          # Number of zones in X1-direction
+x1min      = 3.6E7         # minimum value of X1
+x1max      = 5.E7       # maximum value of X1
 ix1_bc     = reflecting   # inner-X1 boundary flag
 ox1_bc     = reflecting   # outer-X1 boundary flag
 
@@ -61,51 +61,50 @@ x3max      = 1.E3      # maximum value of X3
 ix3_bc     = periodic     # inner-X3 boundary flag
 ox3_bc     = periodic     # outer-X3 boundary flag
 
-ReferencePressure = 0.    # not used
-PressureScaleHeight = 0.  # not used
-
 <meshblock>
-nx1        = 64
-nx2        = 64
+nx1        = 100
+nx2        = 4
 nx3        = 4
 
 <hydro>
-grav_acc1   = -23.1
+grav_acc1   = -1.6667
 gamma       = 1.4         # gamma = C_p/C_v
 implicit_flag = 9
 
 <thermodynamics>
-Rd          = 3714.       # Gas constant
+Rd          = 2188.       # Gas constant
 
 <astronomy>
 planet        = HJ
 HJ.parent     = Sun
-HJ.re         = 8.E4      # km
-HJ.rp         = 8.E4      # km
+HJ.re         = 4.37E4      # km
+HJ.rp         = 4.37E4      # km
 HJ.obliq      = 0.        # deg
-HJ.spinp      = 2.218577        # day
-HJ.orbit_a    = 0.03106      # au
+HJ.spinp      = 45.154        # day
+HJ.orbit_a    = 0.1        # au
 HJ.orbit_e    = 0.
 HJ.orbit_i    = 0.        # deg
-HJ.orbit_p    = 2.218577        # day
-HJ.grav_eq    = 23.1       # m/s^2
+HJ.orbit_p    = 45.154        # day
+HJ.grav_eq    = 1.6667       # m/s^2
 HJ.equinox    = 0.
 
 <radiation>
-dt            = 200.
+dt            = 100.
 nstr          = 4
 radiation_config = hjupiter.yaml
-relax_time    = 1.E4
+relax_time    = 1.E2
 
 <forcing>
-packages = top_sponge_lyr, relax_bot_temp
-top_sponge_lyr.tau     = 1.E4
-top_sponge_lyr.width   = 6.E5
-relax_bot_temp.tem     = 2500.
+packages = top_sponge_lyr, bot_sponge_lyr, relax_bot_temp
+top_sponge_lyr.tau     = 1.E3
+top_sponge_lyr.width   = 2.E6
+bot_sponge_lyr.tau     = 1.E3
+bot_sponge_lyr.width   = 1.E6
+relax_bot_temp.tem     = 1955.7
 relax_bot_temp.tau     = 1.E3
 
 <problem>
-Ts         = 2500.            # Surface temperature, K
-Ps         = 2.E7             # Surface pressure, Pa
-Omega      = 3.277869E-5       # Rotational frequency
-Tmin       = 1400.
+Ts         = 1955.7            # Surface temperature, K
+Ps         = 1.E7             # Surface pressure, Pa
+Omega      = 1.61E-6       # Rotational frequency
+Tmin       = 450.

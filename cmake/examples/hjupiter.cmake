@@ -10,6 +10,7 @@ endmacro()
 set_if_empty(NUMBER_GHOST_CELLS 3)
 
 set(CUBED_SPHERE ON)
+#set(COORDINATE_SYSTEM "spherical_polar")
 set(NETCDF OFF)
 set(PNETCDF ON)
 set(MPI ON)
