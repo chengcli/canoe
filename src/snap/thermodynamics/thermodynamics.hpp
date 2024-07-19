@@ -17,7 +17,6 @@
 #include <athena/mesh/mesh.hpp>
 
 // canoe
-#include <air_parcel.hpp>
 #include <configure.hpp>
 #include <constants.hpp>
 
@@ -81,18 +80,14 @@ class Thermodynamics {
   //! \return $c_{p,i}/c_{p,d}$
   Real GetCpRatio(int n) const { return cp_ratio_[n]; }
 
-  Real GetLatent(int n, Real temp = 0.) const {
-    return latent_[n] - delta_[n] * Rd_ * inv_mu_ratio_[n] * temp;
-  }
-
-  //! \brief Temperature dependent specific latent energy [J/kg] of condensates
-  //! at constant volume $L_{ij}(T) = L_{ij}^r - (c_{ij} - c_{p,i})\times(T -
-  //! T^r)$
+  //! Latent heat
   //!
-  //! $= L_{ij}^r - \delta_{ij}R_i(T - T^r)$
-  //! \return $L_{ij}(T)$
-  Real GetLatentEnergyMass(int n, Real temp = 0.) const {
-    return latent_energy_mass_[n] - delta_[n] * Rd_ * inv_mu_ratio_[n] * temp;
+  //! Enthalpy difference between the vapor and the condensate
+  //! Eq.10 in Li2019
+  Real GetLatent_RT(int i, int j) const {
+    auto &buf = buffer_["enthalpy_rt"];
+    kinetics_->thermo()->getEnthalpy_RT(buf.data());
+    return buf[i] - buf[j];
   }
 
   //! Construct an 1d atmosphere
@@ -121,13 +116,15 @@ class Thermodynamics {
  public:
   //! \brief Inverse of the mean molecular weight
   //!
+  //! Eq.16 in Li2019
   //! $ \frac{R}{R_d} = \frac{\mu_d}{\mu}$
   //! \return $1/\mu$
-  //! Eq.16 in Li2019
   template <typename T>
   Real RovRd(T w) const;
 
-  //! \brief adiabatic index
+  //! \brief Effective adiabatic index
+  //!
+  //! Eq.71 in Li2019
   template <typename T>
   Real GetChi(T w) const;
 
@@ -161,20 +158,15 @@ class Thermodynamics {
   //! $\theta_e = T(\frac{p}{p_d})^{Rd/(cpd + cl r_t} \exp(\frac{L_v q_v}{c_p
   //! T})$
   template <typename T>
-  Real EquivalentPotentialTemp(T w);
+  Real EquivalentPotentialTemp(T w) const;
 
-  //! \brief Polytropic index
+  //! \brief Effective polytropic index
   //!
+  //! Eq.63 in Li2019
   //! $\gamma = \frac{c_p}{c_v}$
   //! \return $\gamma$
-  Real GetGamma(MeshBlock const *pmb, int k, int j, int i) const;
-
-  //! \brief specific enthalpy [J/kg] of the air parcel
-  //!
-  //! $h = c_{p,d}*T*(1 + \sum_i (q_i*(\hat{c}_{p,i} - 1.)))$
-  //! $  = \gamma_d/(\gamma_d - 1.)*R_d*T*(1 + \sum_i (q_i*(\hat{c}_{pi}
-  //! - 1.)))$
-  Real GetEnthalpyMass(MeshBlock const *pmb, int k, int j, int i) const;
+  template <typename T>
+  Real GetGamma(T w) const;
 
   //! \brief Moist static energy
   //!
@@ -187,7 +179,7 @@ class Thermodynamics {
   std::vector<Real> SaturationSurplus(T w);
 
  protected:
-  std::shared_ptr<Cantera::Kinetics> kinetics_;
+  std::shared_ptr<Cantera::Condensation> kinetics_;
 
   //! polytropic index of dry air
   Real gammad_;
@@ -203,6 +195,9 @@ class Thermodynamics {
 
   //! pointer to the single Thermodynamics instance
   static Thermodynamics *mythermo_;
+
+ private:
+  std::unordered_map<std::string, std::array<Real, Size>> buf_;
 };
 
 #endif  // SRC_SNAP_THERMODYNAMICS_THERMODYNAMICS_HPP_
