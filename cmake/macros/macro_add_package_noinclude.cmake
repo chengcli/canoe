@@ -22,19 +22,12 @@ macro(add_package_noinclude name url tag patch option)
       FetchContent_Declare(${name} DOWNLOAD_COMMAND tar -xzf ${CACHE_FILE} -C
                                                     ${CMAKE_BINARY_DIR}/_deps)
     else()
-      if(${patch} STREQUAL "None")
-        FetchContent_Declare(
-          ${name}
-          GIT_REPOSITORY ${url}
-          GIT_TAG ${tag})
-      else()
-        FetchContent_Declare(
-          ${name}
-          GIT_REPOSITORY ${url}
-          GIT_TAG ${tag}
-          PATCH_COMMAND ${patch}
-          UPDATE_DISCONNECTED TRUE)
-      endif()
+      FetchContent_Declare(
+        ${name}
+        GIT_REPOSITORY ${url}
+        GIT_TAG ${tag}
+        PATCH_COMMAND ${patch}
+        UPDATE_DISCONNECTED TRUE)
     endif()
 
     FetchContent_MakeAvailable(${name})
