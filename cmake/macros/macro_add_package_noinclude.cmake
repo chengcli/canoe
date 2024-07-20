@@ -1,4 +1,4 @@
-macro(add_package name url tag patch option)
+macro(add_package_noinclude name url tag patch option)
   string(ASCII 27 Esc)
   set(ColorReset "${Esc}[m")
   set(Yellow "${Esc}[33m")
@@ -31,7 +31,6 @@ macro(add_package name url tag patch option)
     endif()
 
     FetchContent_MakeAvailable(${name})
-    include_directories(${${name}_SOURCE_DIR})
 
     if(NOT EXISTS ${CACHE_FILE})
       message(

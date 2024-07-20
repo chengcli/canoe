@@ -1,5 +1,4 @@
 include(FetchContent)
-
 set(FETCHCONTENT_QUIET FALSE)
 
 option(PYTHON_BINDINGS "Build Python Bindings" OFF)

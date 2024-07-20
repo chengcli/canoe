@@ -1,12 +1,7 @@
 include(FetchContent)
-
 set(FETCHCONTENT_QUIET FALSE)
 
-FetchContent_Declare(
-  application
-  DOWNLOAD_EXTRACT_TIMESTAMP TRUE
-  URL https://github.com/chengcli/application/archive/refs/tags/v0.7.tar.gz)
-
-FetchContent_MakeAvailable(application)
-
-include_directories(${application_SOURCE_DIR})
+set(PACKAGE_NAME application)
+set(REPO_URL "https://github.com/chengcli/application")
+set(REPO_TAG "v0.7")
+add_package(${PACKAGE_NAME} ${REPO_URL} ${REPO_TAG} "" ON)
