@@ -142,6 +142,34 @@ Real Thermodynamics::EquivalentPotentialTemp(T w) {
 #endif
 }
 
+//! Eq.66
+template <typename T>
+Real Thermodynamics::MoistEnthalpy(T w) const {
+  Real temp = GetTemp(pmb, k, j, i);
+  Real qsig = 1.;
+  for (int n = 1; n <= Size; ++n) {
+    qsig += w[n] * (cp_ratio_[n] - 1.);
+  }
+
+  Real enthalpy = gammad_ / (gammad_ = 1.) * Rd_ * qsig * temp;
+  Real LE = 0.;
+
+  for (size_t i = 1 + NVAPOR; i < Size; ++i) {
+    auto& tp = thermo.species(i)->thermo;
+    size_t n;
+    int type;
+    Real tlow, thigh, pref;
+    std::vector<Real> coeffs(tp->nCoeffs());
+    tp->reportParameters(n, type, tlow, thigh, pref, coeffs.data());
+    // coeff[0] -> t0
+    // coeff[1] -> h0
+    // coeff[2] -> s0
+    // coeff[3] -> cp0
+    LE += h0 * w[n];
+  }
+  return enthalpy + LE
+}
+
 template <typename T>
 std::vector<Real> Thermodynamics::SaturationSurplus(T w) {
   std::array<Real, 1 + NVAPOR> dq;
@@ -181,4 +209,25 @@ std::vector<Real> Thermodynamics::SaturationSurplus(T w) {
   }
 
   return dq;
+}
+
+template <typename T>
+void Thermodynamics::Extrapolate_inplace(T w, Real dzORdlnp, std::string method,
+                                         Real grav, Real userp) const {
+  auto thermo = kinetics_->thermo();
+
+  thermo.setMassFractionsPartial(w);
+  thermo.setDensity(w[IDN]);
+  thermo.setPressure(w[IPR]);
+
+  // RK4 integration
+  if (grav == 0.) {  // hydrostatic
+    _rk4_integrate_lnp(dzORdlnp, method, userp);
+  } else {  // non-hydrostatic
+    _rk4_integrate_z(dzORdlnp, method, grav, userp);
+  }
+
+  thermo.getMassFractions(w);
+  w[IDN] = thermo.density();
+  w[IPR] = thermo.pressure();
 }

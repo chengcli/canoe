@@ -25,7 +25,7 @@ class ParameterInput;
 
 namespace Cantera {
 class ThermoPhase;
-class Kinetics;
+class Condensation;
 }  // namespace Cantera
 
 // Thermodynamic variables are ordered in the array as the following
@@ -54,10 +54,12 @@ class Thermodynamics {
 
   static Thermodynamics const *InitFromYAMLInput(std::string const &fname);
 
+  static Thermodynamics const *InitFromAthenaInput(ParameterInput *pin);
+
   //! Destroy the one and only instance of Thermodynamics
   static void Destroy();
 
-  std::shared_ptr<Cantera::Kinetics> Kinetics() const { return kinetics_; }
+  void UpdateThermoProperties(ThermoPhase &thermo);
 
   //! Ideal gas constant of dry air in [J/(kg K)]
   //! \return $R_d=\hat{R}/\mu_d$
@@ -65,30 +67,6 @@ class Thermodynamics {
 
   //! reference adiabatic index of dry air [1]
   Real GetGammad() const { return gammad_; }
-
-  //! Ratio of molecular weights [1]
-  //! \param[in] n the index of the thermodynamic species
-  //! \return $\epsilon_i^{-1} =\mu_d/\mu_i$
-  Real GetInvMuRatio(int n) const { return inv_mu_ratio_[n]; }
-
-  //! Ratio of specific heat capacity [J/(kg K)] at constant volume [1]
-  //! \param[in] n the index of the thermodynamic species
-  //! \return $c_{v,i}/c_{v,d}$
-  Real GetCvRatio(int n) const { return cv_ratio_[n]; }
-
-  //! Ratio of specific heat capacity [J/(kg K)] at constant pressure
-  //! \return $c_{p,i}/c_{p,d}$
-  Real GetCpRatio(int n) const { return cp_ratio_[n]; }
-
-  //! Latent heat
-  //!
-  //! Enthalpy difference between the vapor and the condensate
-  //! Eq.10 in Li2019
-  Real GetLatent_RT(int i, int j) const {
-    auto &buf = buffer_["enthalpy_rt"];
-    kinetics_->thermo()->getEnthalpy_RT(buf.data());
-    return buf[i] - buf[j];
-  }
 
   //! Construct an 1d atmosphere
   //! \param[in,out] qfrac mole fraction representation of air parcel
@@ -152,14 +130,6 @@ class Thermodynamics {
     return GetTemp(w) * pow(p0 / w[IPR], GetChi(w));
   }
 
-  //! \brief Calculate equivalent potential temperature from primitive variable
-  //!
-  //! Eq.4.5.11 in Emanuel (1994)
-  //! $\theta_e = T(\frac{p}{p_d})^{Rd/(cpd + cl r_t} \exp(\frac{L_v q_v}{c_p
-  //! T})$
-  template <typename T>
-  Real EquivalentPotentialTemp(T w) const;
-
   //! \brief Effective polytropic index
   //!
   //! Eq.63 in Li2019
@@ -168,15 +138,30 @@ class Thermodynamics {
   template <typename T>
   Real GetGamma(T w) const;
 
-  //! \brief Moist static energy
+  //! \brief Calculate equivalent potential temperature from primitive variable
   //!
-  //! $h_s = c_{pd}T + gz + L_vq_v + L_s\sum_i q_i$
+  //! Eq.4.5.11 in Emanuel (1994)
+  //! $\theta_e = T(\frac{p}{p_d})^{Rd/(cpd + cl r_t} \exp(\frac{L_v q_v}{c_p
+  //! T})$
+  template <typename T>
+  Real MoistEntropy(T w) const;
+
+  //! \brief Moist enthalpy
+  //!
+  //! Eq.66 in Li2019
+  //! $h_s = c_{pd}T +  L_vq_v + L_s\sum_i q_i$
   //! \return $h_s$
   template <typename T>
-  Real MoistStaticEnergy(A w, Real gz) const;
+  Real MoistEnthalpy(T w) const;
 
   template <typename T>
   std::vector<Real> SaturationSurplus(T w);
+
+ protected:
+  void _rk4_integrate_lnp(Real dlnp, std::string method, Real adlnTdlnP);
+
+  void _rk4_integrate_z(Real dlnp, std::string method, Real grav,
+                        Real adlnTdlnP);
 
  protected:
   std::shared_ptr<Cantera::Condensation> kinetics_;
@@ -195,9 +180,13 @@ class Thermodynamics {
 
   //! pointer to the single Thermodynamics instance
   static Thermodynamics *mythermo_;
-
- private:
-  std::unordered_map<std::string, std::array<Real, Size>> buf_;
 };
+
+//! \brief Calculate moist adiabatic temperature gradient
+//!
+//! $\Gamma_m = (\frac{d\ln T}{d\ln P})_m$
+//! \return $\Gamma_m$
+Real cal_dlnT_dlnP(AirParcel const &qfrac, Real const *cp_ratio_mole,
+                   Real const *latent);
 
 #endif  // SRC_SNAP_THERMODYNAMICS_THERMODYNAMICS_HPP_
