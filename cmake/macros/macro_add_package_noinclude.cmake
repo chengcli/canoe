@@ -15,16 +15,12 @@ macro(add_package_noinclude name url tag patch option)
         file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/_deps)
       endif()
 
-      if(NOT EXISTS ${CMAKE_BINARY_DIR}/_deps/${name}-src)
-        message(
-          STATUS
-            "${Yellow}Found cached library ${name}-${tag}.tar.gz${ColorReset}")
-        execute_process(COMMAND tar -xzf ${CACHE_FILE} -C
-                                ${CMAKE_BINARY_DIR}/_deps)
-      endif()
+      message(
+        STATUS
+          "${Yellow}Using cached library ${name}-${tag}.tar.gz${ColorReset}")
 
-      FetchContent_Declare(${name} SOURCE_DIR
-                                   ${CMAKE_BINARY_DIR}/_deps/${name}-src)
+      FetchContent_Declare(${name} DOWNLOAD_COMMAND tar -xzf ${CACHE_FILE} -C
+                                                    ${CMAKE_BINARY_DIR}/_deps)
     else()
       if(${patch} STREQUAL "None")
         FetchContent_Declare(
