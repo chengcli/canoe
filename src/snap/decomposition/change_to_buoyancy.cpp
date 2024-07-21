@@ -7,7 +7,6 @@
 #include <athena/hydro/hydro.hpp>
 
 // canoe
-#include <air_parcel.hpp>
 #include <impl.hpp>
 
 // utils
@@ -36,7 +35,6 @@ void Decomposition::ChangeToBuoyancy(AthenaArray<Real> &w, int kl, int ku,
   auto pthermo = Thermodynamics::GetInstance();
 
   Real grav = -pmb->phydro->hsrc.GetG1();  // positive downward pointing
-
   int is = pmb->is, ie = pmb->ie;
 
   if (grav == 0.) return;
@@ -57,13 +55,12 @@ void Decomposition::ChangeToBuoyancy(AthenaArray<Real> &w, int kl, int ku,
     for (int k = kl; k <= ku; ++k)
       for (int j = jl; j <= ju; ++j) {
         Real dz = pco->dx1f(ie);
-        auto &w = pmb->phydro->w;
 
         // adiabatic extrapolation for half a grid
-        auto var =
-            pthermo->Extrapolate(w.at(k, j, ie), dz / 2., "reversible", grav);
+        pthermo->SetPrimitive(w.at(k, j, ie));
+        pthermo->Extrapolate_inplace(dz / 2., "reversible", grav);
 
-        psf_(k, j, ie + 1) = var[IPR];
+        psf_(k, j, ie + 1) = pthermo->GetPres();
       }
   }
   IntegrateDownwards(psf_, w, pco, grav, kl, ku, jl, ju, is, ie);
@@ -180,12 +177,10 @@ void Decomposition::RestoreFromBuoyancy(AthenaArray<Real> &w,
 
   // adiabatic extrapolation for a grid
   Real dz = pco->dx1f(is);
-  auto &&air0 = AirParcelHelper::gather_from_primitive(pmb, k, j, is);
-  // auto air1 = air0;
-  // air1.ToMoleFraction();
-  auto air1 = pthermo->Extrapolate<Real>(air0.w, -dz, "reversible", grav);
+  pthermo->SetPrimitive(w.at(k, j, is));
+  pthermo->Extrapolate_inplace(-dz, "reversible", grav);
 
-  mdpdz = (air1[IPR] - air0.w[IPR]) / dz;
+  mdpdz = (pthermo->GetPres() - w(IPR, k, j, is)) / dz;
   if (pmb->pbval->block_bcs[inner_x1] == BoundaryFlag::reflect) {
     for (int i = il + 1; i < is; ++i) {
       wl(IDN, i) = wl(IDN, 2 * is - i);
@@ -201,10 +196,10 @@ void Decomposition::RestoreFromBuoyancy(AthenaArray<Real> &w,
   }
 
   // adiabatic extrapolation for a grid
-  air0 = AirParcelHelper::gather_from_primitive(pmb, k, j, ie);
-  air1 = pthermo->Extrapolate<Real>(air0.w, dz, "reversible", grav);
+  pthermo->SetPrimitive(w.at(k, j, ie));
+  pthermo->Extrapolate_inplace(dz, "reversible", grav);
 
-  mdpdz = (air0.w[IPR] - air1[IPR]) / dz;
+  mdpdz = (w(IPR, k, j, ie) - pthermo->GetPres()) / dz;
   if (pmb->pbval->block_bcs[outer_x1] == BoundaryFlag::reflect) {
     for (int i = ie + 2; i <= iu + 1; ++i) {
       wl(IDN, i) = wl(IDN, 2 * ie - i + 2);

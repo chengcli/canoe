@@ -1,5 +1,7 @@
 #pragma once
 
+#include <air_parcel.hpp>
+
 // cantera
 #include <cantera/kinetics.h>
 #include <cantera/kinetics/Condensation.h>
@@ -9,11 +11,40 @@
 
 template <typename T>
 std::array<Real, 3> vec_raise(StrideIterator<T*> w, StrideIterator<T*> m) {
-  std::array<Real, 3> v;
-  for (int i = 0; i < 3; ++i) {
-    v[i] = w[i] / w[IDN] + m[i];
-  }
+  std::array<Real, 3> v{w[IVX], w[IVY], w[IVZ]};
   return v;
+}
+
+template <typename T>
+Real Thermodynamics::GetMu(T w) const {
+  auto& thermo = kinetics_->thermo();
+  thermo.setMassFractionsPartial(&w[1], /*stride=*/w.stride());
+  return thermo.meanMolecularWeight();
+}
+
+template <>
+inline Real Thermodynamics::GetMu(AirParcel air) const {
+  auto& thermo = kinetics_->thermo();
+  thermo.setMassFractionsPartial(air.w + 1);
+  return thermo.meanMolecularWeight();
+}
+
+template <typename T>
+Real Thermodynamics::GetCv(T w) const {
+  auto& thermo = kinetics_->thermo();
+  thermo.setMassFractionsPartial(&w[1], /*stride=*/w.stride());
+  thermo.setDensity(w[IDN]);
+  thermo.setPressure(w[IPR]);
+  return thermo.cv_mass();
+}
+
+template <>
+inline Real Thermodynamics::GetCv(AirParcel air) const {
+  auto& thermo = kinetics_->thermo();
+  thermo.setMassFractionsPartial(air.w + 1);
+  thermo.setDensity(air.w[IDN]);
+  thermo.setPressure(air.w[IPR]);
+  return thermo.cv_mass();
 }
 
 template <typename T>
@@ -35,6 +66,18 @@ void Thermodynamics::SetConserved(StrideIterator<T*> u,
   for (int n = 0; n < Size; ++n) rho += u[n];
   thermo.setDensity(rho);
   thermo.setPressure(GetPres(u, /*cos_theta=*/m));
+}
+
+template <typename T>
+void Thermodynamics::GetPrimitive(StrideIterator<T*> w) const {
+  auto& thermo = kinetics_->thermo();
+  thermo.getMassFractionsPartial(&w[1], /*stride=*/w.stride());
+}
+
+template <typename T>
+void Thermodynamics::GetConserved(StrideIterator<T*> u) const {
+  auto& thermo = kinetics_->thermo();
+  thermo.getDensities(&u[0], /*stride=*/u.stride());
 }
 
 template <typename T>
@@ -229,28 +272,12 @@ std::vector<Real> Thermodynamics::SaturationSurplus(T w) {
   return dq;
 }
 
-template <typename T>
-std::vector<T> Thermodynamics::Extrapolate(StrideIterator<T*> w, Real dzORdlnp,
-                                           std::string method, Real grav,
-                                           Real userp) const {
-  auto& thermo = kinetics_->thermo();
-
-  thermo.setMassFractionsPartial(&w[1], /*stride=*/w.stride());
-  thermo.setDensity(w[IDN]);
-  thermo.setPressure(w[IPR]);
-
+void Thermodynamics::Extrapolate_inplace(Real dzORdlnp, std::string method,
+                                         Real grav, Real userp) const {
   // RK4 integration
   if (grav == 0.) {  // hydrostatic
     _rk4_integrate_lnp(dzORdlnp, method, userp);
   } else {  // non-hydrostatic
     _rk4_integrate_z(dzORdlnp, method, grav, userp);
   }
-
-  std::vector<T> w1(NHYDRO);
-
-  thermo.getMassFractions(w1.data());
-  w1[IDN] = thermo.density();
-  w1[IPR] = thermo.pressure();
-
-  return w1;
 }

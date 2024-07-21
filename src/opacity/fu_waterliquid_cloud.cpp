@@ -116,7 +116,8 @@ Real FuWaterLiquidCloud::getAttenuation1(Real wave,
 
   Real result = 0.;
   Real k = (1.0 / re[j + 1] - 1.0 / re[j]) / (1.0 / pre - 1.0 / re[j]);
-  Real dens = pthermo->GetDensity(qfrac);
+  // FIXME(cli)
+  Real dens = 0.;  // pthermo->GetDensity(qfrac);
 
   result = bz[iband - 1][j] / fl[j] +
            (bz[iband - 1][j + 1] / fl[j + 1] - bz[iband - 1][j] / fl[j]) / k;

@@ -138,4 +138,36 @@ void Thermodynamics::Destroy() {
   }
 }
 
+Real Thermodynamics::GetTemp() const {
+  return kinetics_->thermo().temperature();
+}
+
+Real Thermodynamics::GetPres() const { return kinetics_->thermo().pressure(); }
+
+Real Thermodynamics::GetDensity() const {
+  return kinetics_->thermo().density();
+}
+
+Real Thermodynamics::RovRd() const {
+  std::array<Real, Size> w;
+  kinetics_->thermo().getMassFractions(w.data());
+
+  Real feps = 1.;
+  for (int n = 1 + NVAPOR; n <= Size; ++n) feps -= w[n];
+  for (int n = 1; n <= NVAPOR; ++n) feps += w[n] * (inv_mu_ratio_[n] - 1.);
+  return feps;
+}
+
+void Thermodynamics::SetTemperature(Real temp) const {
+  kinetics_->thermo().setTemperature(temp);
+}
+
+void Thermodynamics::SetPressure(Real pres) const {
+  kinetics_->thermo().setTemperature(pres);
+}
+
+void Thermodynamics::SetDensity(Real dens) const {
+  kinetics_->thermo().setDensity(dens);
+}
+
 Thermodynamics* Thermodynamics::mythermo_ = nullptr;

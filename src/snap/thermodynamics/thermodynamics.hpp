@@ -78,10 +78,6 @@ class Thermodynamics {
   template <typename T>
   Real GetCv(T w) const;
 
-  //! density in [kg/m^3]
-  template <typename T>
-  Real GetDensity(T w) const;
-
   //! Ratio of molecular weights [1]
   //! \param[in] n the index of the thermodynamic species
   //! \return $\epsilon_i^{-1} =\mu_d/\mu_i$
@@ -98,10 +94,8 @@ class Thermodynamics {
   //! \param[in] method choose from [reversible, pseudo, dry, isothermal]
   //! \param[in] grav gravitational acceleration
   //! \param[in] userp user parameter to adjust the temperature gradient
-  template <typename T>
-  std::vector<T> Extrapolate(StrideIterator<T *> w, Real dzORdlnp,
-                             std::string method, Real grav = 0.,
-                             Real userp = 0.) const;
+  void Extrapolate_inplace(Real dzORdlnp, std::string method, Real grav = 0.,
+                           Real userp = 0.) const;
 
   //! Thermodnamic equilibrium at current TP
   //! \param[in,out] qfrac mole fraction representation of air parcel
@@ -109,6 +103,12 @@ class Thermodynamics {
 
   //! Thermodnamic equilibrium at current UV
   void EquilibrateUV() const;
+
+  void SetTemperature(Real temp) const;
+
+  void SetPressure(Real pres) const;
+
+  void SetDensity(Real dens) const;
 
   template <typename T>
   void SetPrimitive(StrideIterator<T *> w) const;
@@ -131,6 +131,8 @@ class Thermodynamics {
   template <typename T>
   Real RovRd(T w) const;
 
+  Real RovRd() const;
+
   //! \brief Effective adiabatic index
   //!
   //! Eq.71 in Li2019
@@ -146,10 +148,16 @@ class Thermodynamics {
     return w[IPR] / (w[IDN] * Rd_ * RovRd(w));
   }
 
+  Real GetTemp() const;
+
   //! Pressure from conserved variables
   //! \return $p$
   template <typename T>
   Real GetPres(StrideIterator<T *> u, StrideIterator<T *> m) const;
+
+  Real GetPres() const;
+
+  Real GetDensity() const;
 
   //! \brief Calculate potential temperature from primitive variable
   //!

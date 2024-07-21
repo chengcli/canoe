@@ -305,10 +305,11 @@ TaskStatus ImplicitHydroTasks::UpdateAllConserved(MeshBlock *pmb, int stage) {
       for (int i = is; i <= ie; i++) {
         // pmicro->AddFrictionalHeating(air_column);
 
-        pmicro->SetConserved(u.at(k, j, i), s.at(k, j, i));
-        pmicro->Evolve(pmb->pmy_mesh->time, pmb->pmy_mesh->dt);
-        pmicro->GetConserved(u.at(k, j, i), s.at(k, j, i));
+        // pmicro->SetConserved(u.at(k, j, i), s.at(k, j, i));
+        // pmicro->Evolve(pmb->pmy_mesh->time, pmb->pmy_mesh->dt);
+        // pmicro->GetConserved(u.at(k, j, i), s.at(k, j, i));
 
+        // pthermo->SetConserved(u.at(k, j, i), m.at(k, j, i));
         pthermo->SetConserved(u.at(k, j, i), m.at(k, j, i));
         pthermo->EquilibrateUV();
         pthermo->GetConserved(u.at(k, j, i));

@@ -121,7 +121,8 @@ Real FuWaterIceCloud::getAttenuation1(Real wave, AirParcel const& qfrac) const {
   }
   fw1 = pde;
   fw2 = fw1 * pde;
-  Real dens = pthermo->GetDensity(qfrac);
+  // FIXME(cli)
+  Real dens = 0.;  // pthermo->GetDensity(qfrac);
 
   result = ap[iband - 1][0] + ap[iband - 1][1] / fw1 + ap[iband - 1][2] / fw2;
 

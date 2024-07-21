@@ -1,19 +1,28 @@
 diff --git a/src/coordinates/coordinates.cpp b/src/coordinates/coordinates.cpp
-index c11dd078..d594699e 100644
+index e1018851..d69fa8f3 100644
 --- a/src/coordinates/coordinates.cpp
 +++ b/src/coordinates/coordinates.cpp
-@@ -20,6 +20,10 @@
- #include "../nr_radiation/radiation.hpp"
+@@ -21,6 +21,10 @@
  #include "../parameter_input.hpp"
  #include "coordinates.hpp"
-+
+ 
 +#include <configure.hpp>
 +#include <impl.hpp>
 +#include <exo3/cubed_sphere.hpp>
- 
++
  //----------------------------------------------------------------------------------------
  //! Coordinates constructor: sets coordinates and coordinate spacing of cell FACES
-@@ -207,10 +209,18 @@ Coordinates::Coordinates(MeshBlock *pmb, ParameterInput *pin, bool flag) :
+ 
+@@ -57,6 +61,8 @@ Coordinates::Coordinates(MeshBlock *pmb, ParameterInput *pin, bool flag) :
+   x1f.NewAthenaArray(nc1+1);
+   x2f.NewAthenaArray(nc2+1);
+   x3f.NewAthenaArray(nc3+1);
++  m.NewAthenaArray(3, nc3, nc2, nc1);
++  m.ZeroClear();
+ 
+   // allocate arrays for volume- and face-centered geometry coefficients of cells
+   // (only for spherical-polar, cylindrical, cartesian coordinates, for now)
+@@ -207,10 +213,18 @@ Coordinates::Coordinates(MeshBlock *pmb, ParameterInput *pin, bool flag) :
            noffset = static_cast<std::int64_t>((j-jl)*2 + lx2*block_size.nx2);
          }
          Real rx = ComputeMeshGeneratorX(noffset, nrootmesh, true);
@@ -32,7 +41,7 @@ index c11dd078..d594699e 100644
  
        for (int j=jl-ng; j<=ju+ng; ++j) {
          dx2f(j) = dx;
-@@ -288,10 +298,18 @@ Coordinates::Coordinates(MeshBlock *pmb, ParameterInput *pin, bool flag) :
+@@ -288,10 +302,18 @@ Coordinates::Coordinates(MeshBlock *pmb, ParameterInput *pin, bool flag) :
            noffset = static_cast<std::int64_t>((k-kl)*2 + lx3*block_size.nx3);
          }
          Real rx = ComputeMeshGeneratorX(noffset, nrootmesh, true);
@@ -51,3 +60,15 @@ index c11dd078..d594699e 100644
  
        for (int k=kl-ng; k<=ku+ng; ++k) {
          dx3f(k) = dx;
+diff --git a/src/coordinates/coordinates.hpp b/src/coordinates/coordinates.hpp
+index 5a00b13b..8df11926 100644
+--- a/src/coordinates/coordinates.hpp
++++ b/src/coordinates/coordinates.hpp
+@@ -45,6 +45,7 @@ class Coordinates {
+   // geometry coefficients (only used in SphericalPolar, Cylindrical, Cartesian)
+   AthenaArray<Real> h2f, dh2fd1, h31f, h32f, dh31fd1, dh32fd2;
+   AthenaArray<Real> h2v, dh2vd1, h31v, h32v, dh31vd1, dh32vd2;
++  AthenaArray<Real> m;  // cos(theta) between coordinate lines
+ 
+   // functions...
+   // ...to compute length of edges
