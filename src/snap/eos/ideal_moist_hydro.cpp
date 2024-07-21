@@ -81,12 +81,7 @@ void EquationOfState::ConservedToPrimitive(
         Real& w_p = prim(IPR, k, j, i);
 
         Real density = 0.;
-        for (int n = 0; n <= NVAPOR; ++n) {
-          if (cons(n, k, j, i) < 0.) {
-            cons(n, k, j, i) = 0.;
-          }
-          density += cons(n, k, j, i);
-        }
+        for (int n = 0; n <= NVAPOR; ++n) density += cons(n, k, j, i);
         w_d = density;
         Real di = 1. / density;
 
