@@ -11,7 +11,7 @@
 #include "thermodynamics.hpp"
 
 void Thermodynamics::_rk4_integrate_lnp(Real dlnp, std::string method,
-                                        Real adlnTdlnP) {
+                                        Real adlnTdlnP) const {
   auto& thermo = kinetics_->thermo();
 
   Real step[] = {0.5, 0.5, 1.};

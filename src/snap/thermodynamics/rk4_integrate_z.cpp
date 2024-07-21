@@ -12,7 +12,7 @@
 #include "thermodynamics.hpp"
 
 void Thermodynamics::_rk4_integrate_z(Real dz, std::string method, Real grav,
-                                      Real adTdz) {
+                                      Real adTdz) const {
   auto& thermo = kinetics_->thermo();
 
   Real step[] = {0.5, 0.5, 1.};

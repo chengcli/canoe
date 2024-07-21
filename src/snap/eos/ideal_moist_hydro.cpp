@@ -62,7 +62,7 @@ void EquationOfState::ConservedToPrimitive(
   auto pthermo = Thermodynamics::GetInstance();
   auto pmb = pmy_block_;
 
-  apply_vapor_limiter(&cons, pmy_block_);
+  // apply_vapor_limiter(&cons, pmy_block_);
 
   Real gm1 = GetGamma() - 1.0;
   for (int k = kl; k <= ku; ++k)

@@ -298,6 +298,7 @@ TaskStatus ImplicitHydroTasks::UpdateAllConserved(MeshBlock *pmb, int stage) {
 
   auto &u = pmb->phydro->u;
   auto &s = pmb->pscalars->s;
+  auto &m = pmb->pcoord->m;
 
   for (int k = ks; k <= ke; k++)
     for (int j = js; j <= je; j++)
@@ -308,7 +309,7 @@ TaskStatus ImplicitHydroTasks::UpdateAllConserved(MeshBlock *pmb, int stage) {
         pmicro->Evolve(pmb->pmy_mesh->time, pmb->pmy_mesh->dt);
         pmicro->GetConserved(u.at(k, j, i), s.at(k, j, i));
 
-        pthermo->SetConserved(u.at(k, j, i));
+        pthermo->SetConserved(u.at(k, j, i), m.at(k, j, i));
         pthermo->EquilibrateUV();
         pthermo->GetConserved(u.at(k, j, i));
       }

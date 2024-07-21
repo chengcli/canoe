@@ -58,7 +58,7 @@ add_subdirectory(tasklist)
 add_subdirectory(exo3)
 add_subdirectory(exchanger)
 add_subdirectory(special)
-add_subdirectory(single_column)
+#add_subdirectory(single_column)
 add_subdirectory(diagnostics)
 add_subdirectory(forcing)
 
@@ -81,7 +81,7 @@ set(CANOE_LIBRARY_${buildu}
   "utils_${buildl}"
   "snap_${buildl}"
   "harp_${buildl}"
-  "inversion_${buildl}"
+  #"inversion_${buildl}"
   "outputs_${buildl}"
   "opacity_${buildl}"
   "dusts_${buildl}"
@@ -91,7 +91,7 @@ set(CANOE_LIBRARY_${buildu}
   "exo3_${buildl}"
   "exchanger_${buildl}"
   #"nbody_${buildl}"
-  "scm_${buildl}"
+  #"scm_${buildl}"
   "diagnostics_${buildl}"
   "forcing_${buildl}"
   $<$<BOOL:${MINICHEM}>:minichem::minichem++>

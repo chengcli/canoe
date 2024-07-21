@@ -1,12 +1,46 @@
 #pragma once
 
+// cantera
+#include <cantera/kinetics.h>
+#include <cantera/kinetics/Condensation.h>
+#include <cantera/thermo.h>
+
 #include "thermodynamics.hpp"
+
+template <typename T>
+std::array<Real, 3> vec_raise(StrideIterator<T*> w, StrideIterator<T*> m) {
+  std::array<Real, 3> v;
+  for (int i = 0; i < 3; ++i) {
+    v[i] = w[i] / w[IDN] + m[i];
+  }
+  return v;
+}
+
+template <typename T>
+void Thermodynamics::SetPrimitive(StrideIterator<T*> w) const {
+  auto& thermo = kinetics_->thermo();
+
+  thermo.setMassFractionsPartial(&w[1], /*stride=*/w.stride());
+  thermo.setDensity(w[IDN]);
+  thermo.setPressure(w[IPR]);
+}
+
+template <typename T>
+void Thermodynamics::SetConserved(StrideIterator<T*> u,
+                                  StrideIterator<T*> m) const {
+  auto& thermo = kinetics_->thermo();
+
+  thermo.setMassFractions(&u[0], /*stride=*/u.stride());
+  Real rho = 0.;
+  for (int n = 0; n < Size; ++n) rho += u[n];
+  thermo.setDensity(rho);
+  thermo.setPressure(GetPres(u, /*cos_theta=*/m));
+}
 
 template <typename T>
 Real Thermodynamics::RovRd(T w) const {
   Real feps = 1.;
   for (int n = 1 + NVAPOR; n <= Size; ++n) feps -= w[n];
-
   for (int n = 1; n <= NVAPOR; ++n) feps += w[n] * (inv_mu_ratio_[n] - 1.);
   return feps;
 }
@@ -36,7 +70,7 @@ Real Thermodynamics::GetGamma(T w) const {
   }
 
   for (int n = 1 + NVAPOR; n < Size; ++n) {
-    fsig += w[n] * (cv_ratio[n] - 1.);
+    fsig += w[n] * (cv_ratio_[n] - 1.);
     feps += -w[n];
   }
 
@@ -44,7 +78,7 @@ Real Thermodynamics::GetGamma(T w) const {
 }
 
 template <typename T>
-Real Thermodynamics::GetPres(T u, std::vector<Real> cos_theta) const {
+Real Thermodynamics::GetPres(StrideIterator<T*> u, StrideIterator<T*> m) const {
   Real igm1 = 1. / (gammad_ - 1.);
 
   Real rho = 0.;
@@ -63,33 +97,13 @@ Real Thermodynamics::GetPres(T u, std::vector<Real> cos_theta) const {
     feps += u[n] * (inv_mu_ratio_[n] - 1.);
   }
 
-  auto w = vec_raise(u, cos_theta);
+  auto w = vec_raise(u, m);
 
   Real KE = 0.5 * (u[IM1] * w[0] + u[IM2] * w[1] + u[IM3] * w[2]) / rho;
   return igm1 * (u[IEN] - KE) * feps / fsig;
 }
 
-template <typename T>
-void Thermodynamics::SetStateFromPrimitive(T w) const {
-  auto thermo = kinetics_->thermo();
-
-  thermo.setMassFractionsPartial(w);
-  thermo.setDensity(w[IDN]);
-  thermo.setPressure(w[IPR]);
-}
-
-template <typename T>
-void Thermodynamics::SetStateFromConserved(T u) const {
-  auto thermo = kinetics_->thermo();
-
-  thermo.setMassFractions(u);
-  Real rho = 0.;
-  for (int n = 0; n < Size; ++n) rho += u[n];
-  thermo.setDensity(rho);
-  thermo.setPressure(GetPres(u));
-}
-
-template <typename T>
+/*template <typename T>
 Real Thermodynamics::EquivalentPotentialTemp(T w) {
 #if (NVAPOR > 0)
   Real cpd = GetRd() * gammad_ / (gammad_ - 1.);
@@ -115,7 +129,7 @@ Real Thermodynamics::EquivalentPotentialTemp(T w) {
   for (int n = 1 + NVAPOR; n < Size; ++n) {
     int ng = 1 + (n - 1) % NVAPOR;
     Real ratio = (w[n] + 1.0E-10) / qc[ng];
-    st += (w[n] + w[ng] * ratio) * (cp_ratio_(n) - 1.);
+    st += (w[n] + w[ng] * ratio) * (cp_ratio_[n] - 1.);
   }
   Real lv_ov_cpt = lv / (cpd * st * temp);
 
@@ -142,18 +156,20 @@ Real Thermodynamics::EquivalentPotentialTemp(T w) {
 #else
   return PotentialTemp(w, p0);
 #endif
-}
+}*/
 
 //! Eq.66
 template <typename T>
 Real Thermodynamics::MoistEnthalpy(T w) const {
-  Real temp = GetTemp(pmb, k, j, i);
+  auto& thermo = kinetics_->thermo();
+
+  Real temp = GetTemp(w);
   Real qsig = 1.;
   for (int n = 1; n <= Size; ++n) {
     qsig += w[n] * (cp_ratio_[n] - 1.);
   }
 
-  Real enthalpy = gammad_ / (gammad_ = 1.) * Rd_ * qsig * temp;
+  Real enthalpy = gammad_ / (gammad_ - 1.) * Rd_ * qsig * temp;
   Real LE = 0.;
 
   for (size_t i = 1 + NVAPOR; i < Size; ++i) {
@@ -163,18 +179,18 @@ Real Thermodynamics::MoistEnthalpy(T w) const {
     Real tlow, thigh, pref;
     std::vector<Real> coeffs(tp->nCoeffs());
     tp->reportParameters(n, type, tlow, thigh, pref, coeffs.data());
-    // coeff[0] -> t0
-    // coeff[1] -> h0
-    // coeff[2] -> s0
-    // coeff[3] -> cp0
-    LE += h0 * w[n];
+    // coeffs[0] -> t0
+    // coeffs[1] -> h0
+    // coeffs[2] -> s0
+    // coeffs[3] -> cp0
+    LE += coeffs[1] * w[n];
   }
-  return enthalpy + LE
+  return enthalpy + LE;
 }
 
 template <typename T>
 std::vector<Real> Thermodynamics::SaturationSurplus(T w) {
-  std::array<Real, 1 + NVAPOR> dq;
+  std::vector<Real> dq(1 + NVAPOR, 0.);
   Real temp = GetTemp(w);
 
   // mass to molar mixing ratio
@@ -201,7 +217,7 @@ std::vector<Real> Thermodynamics::SaturationSurplus(T w) {
     Real yy = q / (1. - q);
     dq[n] = -1.0E10;
 
-    Real svp = kfwd[j] * Cantera::GasConstant * temp;
+    Real svp = kfwd[n] * Cantera::GasConstant * temp;
     Real xs = svp / w[IPR];
     // default to boilding (evaporate all)
     if (xs < 1.) {
@@ -214,11 +230,12 @@ std::vector<Real> Thermodynamics::SaturationSurplus(T w) {
 }
 
 template <typename T>
-void Thermodynamics::Extrapolate_inplace(T w, Real dzORdlnp, std::string method,
-                                         Real grav, Real userp) const {
-  auto thermo = kinetics_->thermo();
+std::vector<T> Thermodynamics::Extrapolate(StrideIterator<T*> w, Real dzORdlnp,
+                                           std::string method, Real grav,
+                                           Real userp) const {
+  auto& thermo = kinetics_->thermo();
 
-  thermo.setMassFractionsPartial(w);
+  thermo.setMassFractionsPartial(&w[1], /*stride=*/w.stride());
   thermo.setDensity(w[IDN]);
   thermo.setPressure(w[IPR]);
 
@@ -229,7 +246,11 @@ void Thermodynamics::Extrapolate_inplace(T w, Real dzORdlnp, std::string method,
     _rk4_integrate_z(dzORdlnp, method, grav, userp);
   }
 
-  thermo.getMassFractions(w);
-  w[IDN] = thermo.density();
-  w[IPR] = thermo.pressure();
+  std::vector<T> w1(NHYDRO);
+
+  thermo.getMassFractions(w1.data());
+  w1[IDN] = thermo.density();
+  w1[IPR] = thermo.pressure();
+
+  return w1;
 }

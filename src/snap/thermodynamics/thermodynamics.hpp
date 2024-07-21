@@ -19,6 +19,9 @@
 #include <configure.hpp>
 #include <constants.hpp>
 
+// snap
+#include <snap/stride_iterator.hpp>
+
 class MeshBlock;
 class ParameterInput;
 
@@ -96,8 +99,9 @@ class Thermodynamics {
   //! \param[in] grav gravitational acceleration
   //! \param[in] userp user parameter to adjust the temperature gradient
   template <typename T>
-  T Extrapolate(T w, Real dzORdlnp, std::string method, Real grav = 0.,
-                Real userp = 0.) const;
+  std::vector<T> Extrapolate(StrideIterator<T *> w, Real dzORdlnp,
+                             std::string method, Real grav = 0.,
+                             Real userp = 0.) const;
 
   //! Thermodnamic equilibrium at current TP
   //! \param[in,out] qfrac mole fraction representation of air parcel
@@ -107,16 +111,16 @@ class Thermodynamics {
   void EquilibrateUV() const;
 
   template <typename T>
-  void SetPrimitive(T w) const;
+  void SetPrimitive(StrideIterator<T *> w) const;
 
   template <typename T>
-  void GetPrimitive(T w) const;
+  void GetPrimitive(StrideIterator<T *> w) const;
 
   template <typename T>
-  void SetConserved(T u) const;
+  void SetConserved(StrideIterator<T *> u, StrideIterator<T *> m) const;
 
   template <typename T>
-  void GetConserved(T u) const;
+  void GetConserved(StrideIterator<T *> u) const;
 
  public:
   //! \brief Inverse of the mean molecular weight
@@ -145,7 +149,7 @@ class Thermodynamics {
   //! Pressure from conserved variables
   //! \return $p$
   template <typename T>
-  Real GetPres(T u, std::vector<Real> cos_theta) const;
+  Real GetPres(StrideIterator<T *> u, StrideIterator<T *> m) const;
 
   //! \brief Calculate potential temperature from primitive variable
   //!
@@ -183,11 +187,18 @@ class Thermodynamics {
   template <typename T>
   std::vector<Real> SaturationSurplus(T w);
 
+ public:  // air parcel deprecated functions
+  Real GetCvRatioMole(int n) const { return 0.; }
+  Real GetCpRatioMole(int n) const { return 0.; }
+  Real GetLatentEnergyMole(int n) const { return 0.; }
+  Real GetCvMassRef(int n) const { return 0.; }
+  Real GetInvMu(int n) const { return 0.; }
+
  protected:
-  void _rk4_integrate_lnp(Real dlnp, std::string method, Real adlnTdlnP);
+  void _rk4_integrate_lnp(Real dlnp, std::string method, Real adlnTdlnP) const;
 
   void _rk4_integrate_z(Real dlnp, std::string method, Real grav,
-                        Real adlnTdlnP);
+                        Real adlnTdlnP) const;
 
  protected:
   std::shared_ptr<Cantera::Condensation> kinetics_;
@@ -218,3 +229,5 @@ class Thermodynamics {
 //! \return $\Gamma_m$
 Real cal_dlnT_dlnP(Real const *xfrac, Real gammad, Real const *cp_ratio_mole,
                    Real const *latent);
+
+#include "thermodynamics_athena.hpp"

@@ -36,7 +36,8 @@
 #include <climath/root.hpp>
 
 // snap
-#include <snap/thermodynamics/atm_thermodynamics.hpp>
+#include <snap/stride_iterator.hpp>
+#include <snap/thermodynamics/thermodynamics.hpp>
 
 // special includes
 #include "bryan_vapor_functions.hpp"
@@ -57,12 +58,13 @@ void MeshBlock::InitUserMeshBlockData(ParameterInput *pin) {
 
 void MeshBlock::UserWorkBeforeOutput(ParameterInput *pin) {
   auto pthermo = Thermodynamics::GetInstance();
+  auto &w = phydro->w;
 
   for (int k = ks; k <= ke; ++k)
     for (int j = js; j <= je; ++j)
       for (int i = is; i <= ie; ++i) {
-        user_out_var(0, k, j, i) = pthermo->GetTemp(this, k, j, i);
-        user_out_var(1, k, j, i) = pthermo->PotentialTemp(this, p0, k, j, i);
+        user_out_var(0, k, j, i) = pthermo->GetTemp(w.at(k, j, i));
+        user_out_var(1, k, j, i) = pthermo->PotentialTemp(w.at(k, j, i), p0);
         // theta_v
         user_out_var(2, k, j, i) =
             user_out_var(1, j, i) * pthermo->RovRd(this, k, j, i);
