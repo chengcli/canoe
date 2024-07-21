@@ -16,7 +16,6 @@
 #include <athena/hydro/hydro.hpp>
 #include <athena/mesh/mesh.hpp>
 #include <athena/parameter_input.hpp>
-#include <athena/stride_iterator.hpp>
 
 // canoe
 #include <configure.hpp>
@@ -27,7 +26,9 @@
 #include <exo3/gnomonic_equiangle.hpp>
 
 // snap
-#include "../thermodynamics/thermodynamics.hpp"
+#include <snap/stride_iterator.hpp>
+#include <snap/thermodynamics/thermodynamics.hpp>
+
 #include "eos_helper.hpp"
 
 // checks
@@ -80,7 +81,12 @@ void EquationOfState::ConservedToPrimitive(
         Real& w_p = prim(IPR, k, j, i);
 
         Real density = 0.;
-        for (int n = 0; n <= NVAPOR; ++n) density += cons(n, k, j, i);
+        for (int n = 0; n <= NVAPOR; ++n) {
+          if (cons(n, k, j, i) < 0.) {
+            cons(n, k, j, i) = 0.;
+          }
+          density += cons(n, k, j, i);
+        }
         w_d = density;
         Real di = 1. / density;
 
