@@ -1,5 +1,4 @@
 
-//! Eq.XX in Li2019
 Real cal_dlnT_dlnP(Real const* xfrac, Real gammad, Real const* cp_ratio_mole,
                    Real const* latent) {
   Real q_gas = 1.;

@@ -184,6 +184,7 @@ class Thermodynamics {
 
 //! \brief Calculate moist adiabatic temperature gradient
 //!
+//! Eq.68 in Li2019
 //! $\Gamma_m = (\frac{d\ln T}{d\ln P})_m$
 //! \return $\Gamma_m$
 Real cal_dlnT_dlnP(AirParcel const &qfrac, Real const *cp_ratio_mole,
