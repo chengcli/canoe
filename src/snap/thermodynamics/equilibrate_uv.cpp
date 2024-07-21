@@ -1,40 +1,23 @@
+// Eigen
+#include <Eigen/Core>
+
 // cantera
 #include <cantera/kinetics.h>
 #include <cantera/kinetics/Condensation.h>
 #include <cantera/thermo.h>
 
-// canoe
-#include <air_parcel.hpp>
-
 // snap
-#include "atm_thermodynamics.hpp"
-
-void Thermodynamics::EquilibrateUV(AirParcel* air) const {
-  air->ToMassFraction();
-  Real pres = air->w[IPR];
-  for (int n = IVX; n < IVX + NCLOUD; ++n) air->w[n] = air->c[n - IVX];
-  auto& thermo = kinetics_->thermo();
-  thermo.setMassFractionsPartial(&air->w[1]);
-  thermo.setDensity(air->w[IDN]);
-  thermo.setPressure(air->w[IPR]);
-
-  EquilibrateUV();
-
-  for (int n = 0; n < NCLOUD; ++n) air->c[n] = air->w[IVX + n];
-  air->w[IPR] = pres;
-  air->ToMoleFraction();
-}
+#include "thermodynamics.hpp"
 
 void Thermodynamics::EquilibrateUV() const {
-  auto kin = std::static_pointer_cast<Cantera::Condensation>(kinetics_);
-  kin->setQuantityConcentration();
+  kinetics_->setQuantityConcentration();
 
-  Eigen::VectorXd rates(kin->nTotalSpecies());
-  Eigen::VectorXd conc(kin->nTotalSpecies());
-  Eigen::VectorXd intEng(kin->nTotalSpecies());
-  Eigen::VectorXd cv(kin->nTotalSpecies());
+  Eigen::VectorXd rates(Size);
+  Eigen::VectorXd conc(Size);
+  Eigen::VectorXd intEng(Size);
+  Eigen::VectorXd cv(Size);
 
-  auto& thermo = kin->thermo();
+  auto thermo = kin->thermo();
 
   int iter = 0, max_iter = 3;
   while (iter++ < max_iter) {
