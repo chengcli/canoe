@@ -16,6 +16,7 @@
 #include <athena/hydro/hydro.hpp>
 #include <athena/mesh/mesh.hpp>
 #include <athena/parameter_input.hpp>
+#include <athena/stride_iterator.hpp>
 
 // canoe
 #include <configure.hpp>
@@ -26,8 +27,7 @@
 #include <exo3/gnomonic_equiangle.hpp>
 
 // snap
-#include <snap/stride_iterator.hpp>
-
+#include "../thermodynamics/thermodynamics.hpp"
 #include "eos_helper.hpp"
 
 // checks
@@ -58,6 +58,7 @@ void EquationOfState::ConservedToPrimitive(
     AthenaArray<Real>& cons, const AthenaArray<Real>& prim_old,
     const FaceField& b, AthenaArray<Real>& prim, AthenaArray<Real>& bcc,
     Coordinates* pco, int il, int iu, int jl, int ju, int kl, int ku) {
+  auto pthermo = Thermodynamics::GetInstance();
   auto pmb = pmy_block_;
 
   apply_vapor_limiter(&cons, pmy_block_);
@@ -79,24 +80,20 @@ void EquationOfState::ConservedToPrimitive(
         Real& w_p = prim(IPR, k, j, i);
 
         Real density = 0.;
-        for (int n = 0; n < IVX; ++n) density += cons(n, k, j, i);
+        for (int n = 0; n <= NVAPOR; ++n) density += cons(n, k, j, i);
         w_d = density;
         Real di = 1. / density;
 
         // mass mixing ratio
-        for (int n = 1; n < IVX; ++n) prim(n, k, j, i) = cons(n, k, j, i) * di;
+        for (int n = 1; n <= NVAPOR; ++n)
+          prim(n, k, j, i) = cons(n, k, j, i) * di;
 
         // internal energy
         Real KE, fsig = 1., feps = 1.;
-        // clouds
-        for (int n = 1 + NVAPOR; n < IVX; ++n) {
-          fsig += prim(n, k, j, i) * (cv_ratio_mass_[n] - 1.);
-          feps -= prim(n, k, j, i);
-        }
         // vapors
         for (int n = 1; n <= NVAPOR; ++n) {
-          fsig += prim(n, k, j, i) * (cv_ratio_mass_[n] - 1.);
-          feps += prim(n, k, j, i) * (inv_mu_ratio_[n] - 1.);
+          fsig += prim(n, k, j, i) * (pthermo->GetCvRatioMass(n) - 1.);
+          feps += prim(n, k, j, i) * (pthermo->GetInvMuRatio(n) - 1.);
         }
 
 #ifdef CUBED_SPHERE
@@ -138,6 +135,7 @@ void EquationOfState::PrimitiveToConserved(const AthenaArray<Real>& prim,
                                            Coordinates* pco, int il, int iu,
                                            int jl, int ju, int kl, int ku) {
   Real igm1 = 1.0 / (GetGamma() - 1.0);
+  auto pthermo = Thermodynamics::GetInstance();
 
   for (int k = kl; k <= ku; ++k) {
     for (int j = jl; j <= ju; ++j) {
@@ -156,7 +154,7 @@ void EquationOfState::PrimitiveToConserved(const AthenaArray<Real>& prim,
 
         // density
         u_d = w_d;
-        for (int n = 1; n < IVX; ++n) {
+        for (int n = 1; n <= NVAPOR; ++n) {
           cons(n, k, j, i) = prim(n, k, j, i) * w_d;
           cons(IDN, k, j, i) -= cons(n, k, j, i);
         }
@@ -175,15 +173,10 @@ void EquationOfState::PrimitiveToConserved(const AthenaArray<Real>& prim,
         // total energy
         Real KE = 0.5 * (u_m1 * w_vx + u_m2 * w_vy + u_m3 * w_vz);
         Real fsig = 1., feps = 1.;
-        // clouds
-        for (int n = 1 + NVAPOR; n < IVX; ++n) {
-          fsig += prim(n, k, j, i) * (cv_ratio_mass_[n] - 1.);
-          feps -= prim(n, k, j, i);
-        }
         // vapors
         for (int n = 1; n <= NVAPOR; ++n) {
-          fsig += prim(n, k, j, i) * (cv_ratio_mass_[n] - 1.);
-          feps += prim(n, k, j, i) * (inv_mu_ratio[n] - 1.);
+          fsig += prim(n, k, j, i) * (pthermo->GetCvRatioMass(n) - 1.);
+          feps += prim(n, k, j, i) * (pthermo->GetInvMuRatio(n) - 1.);
         }
         u_e = igm1 * w_p * fsig / feps + KE;
       }
@@ -198,10 +191,12 @@ void EquationOfState::PrimitiveToConserved(const AthenaArray<Real>& prim,
 // \brief returns adiabatic sound speed given vector of primitive variables
 #pragma omp declare simd simdlen(SIMD_WIDTH) uniform(this)
 Real EquationOfState::SoundSpeed(const Real prim[NHYDRO]) {
+  auto pthermo = Thermodynamics::GetInstance();
+
   Real fsig = 1., feps = 1.;
   for (int n = 1; n <= NVAPOR; ++n) {
-    fsig += prim[n] * (cv_ratio_mass_[n] - 1.);
-    feps += prim[n] * (inv_mu_ratio[n] - 1.);
+    fsig += prim[n] * (pthermo->GetCvRatioMass(n) - 1.);
+    feps += prim[n] * (pthermo->GetInvMuRatio(n) - 1.);
   }
 
   return std::sqrt((1. + (gamma_ - 1) * feps / fsig) * prim[IPR] / prim[IDN]);
