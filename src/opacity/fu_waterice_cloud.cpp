@@ -12,7 +12,7 @@
 #include <climath/interpolation.h>
 
 // snap
-#include <snap/thermodynamics/atm_thermodynamics.hpp>
+#include <snap/thermodynamics/thermodynamics.hpp>
 
 // harp
 #include <harp/radiation.hpp>
@@ -121,8 +121,7 @@ Real FuWaterIceCloud::getAttenuation1(Real wave, AirParcel const& qfrac) const {
   }
   fw1 = pde;
   fw2 = fw1 * pde;
-  Real rovrd = get_rovrd(qfrac, pthermo->GetMuRatio());
-  Real dens = qfrac.w[IPR] / (pthermo->GetRd() * qfrac.w[IDN] * rovrd);
+  Real dens = pthermo->GetDensity(qfrac);
 
   result = ap[iband - 1][0] + ap[iband - 1][1] / fw1 + ap[iband - 1][2] / fw2;
 

@@ -6,13 +6,14 @@
 // snap
 #include "thermodynamics.hpp"
 
-void Thermodynamics::EquilibrateTP() {
+void Thermodynamics::EquilibrateTP() const {
   kinetics_->setQuantityMoleFraction();
 
   std::vector<Real> rates(Size);
   std::vector<Real> xfrac(Size);
 
-  auto thermo = kinetics_->thermo();
+  auto& thermo = kinetics_->thermo();
+
   Real temp = thermo.temperature();
   Real pres = thermo.pressure();
 

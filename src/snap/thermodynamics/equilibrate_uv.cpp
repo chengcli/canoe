@@ -17,7 +17,7 @@ void Thermodynamics::EquilibrateUV() const {
   Eigen::VectorXd intEng(Size);
   Eigen::VectorXd cv(Size);
 
-  auto thermo = kin->thermo();
+  auto& thermo = kinetics_->thermo();
 
   int iter = 0, max_iter = 3;
   while (iter++ < max_iter) {
@@ -28,7 +28,7 @@ void Thermodynamics::EquilibrateUV() const {
     // Real pres = thermo.pressure();
 
     // get concentration
-    kin->getActivityConcentrations(conc.data());
+    kinetics_->getActivityConcentrations(conc.data());
     thermo.getIntEnergy_RT(intEng.data());
     thermo.getCv_R(cv.data());
 
@@ -43,7 +43,7 @@ void Thermodynamics::EquilibrateUV() const {
       std::cout << "Concentration" << i << ": " << conc[i] << std::endl;
     }*/
 
-    kin->getNetProductionRates(rates.data());
+    kinetics_->getNetProductionRates(rates.data());
     // std::cout << "rates = " << rates << std::endl;
 
     // update concentrations

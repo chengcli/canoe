@@ -2,12 +2,17 @@
 #include <algorithm>
 #include <iostream>
 
+// cantera
+#include <cantera/kinetics.h>
+#include <cantera/kinetics/Condensation.h>
+#include <cantera/thermo.h>
+
 // thermodynamics
 #include "thermodynamics.hpp"
 
 void Thermodynamics::_rk4_integrate_lnp(Real dlnp, std::string method,
                                         Real adlnTdlnP) {
-  auto thermo = kinetics_->thermo();
+  auto& thermo = kinetics_->thermo();
 
   Real step[] = {0.5, 0.5, 1.};
   Real chi[4];
@@ -49,10 +54,10 @@ void Thermodynamics::_rk4_integrate_lnp(Real dlnp, std::string method,
 
     // calculate tendency
     if (method == "reversible" || method == "pseudo") {
-      chi[rk] = cal_dlnT_dlnP(xfrac, gammad_, cp_ratio_mole, latent);
+      chi[rk] = cal_dlnT_dlnP(xfrac.data(), gammad_, cp_ratio_mole, latent);
     } else if (method == "dry") {
       for (int i = 1; i <= NVAPOR; ++i) latent[i] = 0;
-      chi[rk] = cal_dlnT_dlnP(xfrac, gammad_, cp_ratio_mole, latent);
+      chi[rk] = cal_dlnT_dlnP(xfrac.data(), gammad_, cp_ratio_mole, latent);
     } else {  // isothermal
       chi[rk] = 0.;
     }
@@ -72,7 +77,7 @@ void Thermodynamics::_rk4_integrate_lnp(Real dlnp, std::string method,
   // recondensation
   EquilibrateTP();
   thermo.getMoleFractions(xfrac.data());
-  pres = thermo.pressure();
+  Real pres = thermo.pressure();
   if (method != "reversible") {
     for (int j = 1 + NVAPOR; j < Size; ++j) xfrac[j] = 0;
   }

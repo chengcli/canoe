@@ -1,3 +1,5 @@
+#pragma once
+
 #include "thermodynamics.hpp"
 
 template <typename T>

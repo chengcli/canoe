@@ -1,5 +1,4 @@
-#ifndef SRC_SNAP_THERMODYNAMICS_THERMODYNAMICS_HPP_
-#define SRC_SNAP_THERMODYNAMICS_THERMODYNAMICS_HPP_
+#pragma once
 
 // C/C++
 #include <array>
@@ -59,7 +58,7 @@ class Thermodynamics {
   //! Destroy the one and only instance of Thermodynamics
   static void Destroy();
 
-  void UpdateThermoProperties(ThermoPhase &thermo);
+  void UpdateThermoProperties();
 
   //! Ideal gas constant of dry air in [J/(kg K)]
   //! \return $R_d=\hat{R}/\mu_d$
@@ -68,6 +67,28 @@ class Thermodynamics {
   //! reference adiabatic index of dry air [1]
   Real GetGammad() const { return gammad_; }
 
+  //! mean molecular weight in [kg/mol]
+  template <typename T>
+  Real GetMu(T w) const;
+
+  //! mean heat capacity in [J/(kg.K)]
+  template <typename T>
+  Real GetCv(T w) const;
+
+  //! density in [kg/m^3]
+  template <typename T>
+  Real GetDensity(T w) const;
+
+  //! Ratio of molecular weights [1]
+  //! \param[in] n the index of the thermodynamic species
+  //! \return $\epsilon_i^{-1} =\mu_d/\mu_i$
+  Real GetInvMuRatio(int n) const { return inv_mu_ratio_[n]; }
+
+  //! Ratio of specific heat capacity [J/(kg K)] at constant volume [1]
+  //! \param[in] n the index of the thermodynamic species
+  //! \return $c_{v,i}/c_{v,d}$
+  Real GetCvRatio(int n) const { return cv_ratio_[n]; }
+
   //! Construct an 1d atmosphere
   //! \param[in,out] qfrac mole fraction representation of air parcel
   //! \param[in] dzORdlnp vertical grid spacing
@@ -75,8 +96,8 @@ class Thermodynamics {
   //! \param[in] grav gravitational acceleration
   //! \param[in] userp user parameter to adjust the temperature gradient
   template <typename T>
-  void Extrapolate_inplace(T w, Real dzORdlnp, std::string method,
-                           Real grav = 0., Real userp = 0.) const;
+  T Extrapolate(T w, Real dzORdlnp, std::string method, Real grav = 0.,
+                Real userp = 0.) const;
 
   //! Thermodnamic equilibrium at current TP
   //! \param[in,out] qfrac mole fraction representation of air parcel
@@ -86,10 +107,16 @@ class Thermodynamics {
   void EquilibrateUV() const;
 
   template <typename T>
-  void SetStateFromPrimitive(T w) const;
+  void SetPrimitive(T w) const;
 
   template <typename T>
-  void SetStateFromConserved(T u) const;
+  void GetPrimitive(T w) const;
+
+  template <typename T>
+  void SetConserved(T u) const;
+
+  template <typename T>
+  void GetConserved(T u) const;
 
  public:
   //! \brief Inverse of the mean molecular weight
@@ -112,7 +139,6 @@ class Thermodynamics {
   //! \return $T$
   template <typename T>
   Real GetTemp(T w) const {
-    auto &w = pmb->phydro->w;
     return w[IPR] / (w[IDN] * Rd_ * RovRd(w));
   }
 
@@ -126,7 +152,7 @@ class Thermodynamics {
   //! $\theta = T(\frac{p_0}{p})^{\chi}$
   //! \return $\theta$
   template <typename T>
-  Real PotentialTemp(T w) const {
+  Real PotentialTemp(T w, Real p0) const {
     return GetTemp(w) * pow(p0 / w[IPR], GetChi(w));
   }
 
@@ -166,6 +192,9 @@ class Thermodynamics {
  protected:
   std::shared_ptr<Cantera::Condensation> kinetics_;
 
+  //! Gas constant of dry air in [J/(kg K)]
+  Real Rd_;
+
   //! polytropic index of dry air
   Real gammad_;
 
@@ -187,7 +216,5 @@ class Thermodynamics {
 //! Eq.68 in Li2019
 //! $\Gamma_m = (\frac{d\ln T}{d\ln P})_m$
 //! \return $\Gamma_m$
-Real cal_dlnT_dlnP(AirParcel const &qfrac, Real const *cp_ratio_mole,
+Real cal_dlnT_dlnP(Real const *xfrac, Real gammad, Real const *cp_ratio_mole,
                    Real const *latent);
-
-#endif  // SRC_SNAP_THERMODYNAMICS_THERMODYNAMICS_HPP_

@@ -5,6 +5,7 @@
 
 // cantera
 #include <cantera/kinetics.h>
+#include <cantera/kinetics/Condensation.h>
 #include <cantera/thermo.h>
 
 // thermodynamics
@@ -12,7 +13,7 @@
 
 void Thermodynamics::_rk4_integrate_z(Real dz, std::string method, Real grav,
                                       Real adTdz) {
-  auto thermo = kinetics_->thermo();
+  auto& thermo = kinetics_->thermo();
 
   Real step[] = {0.5, 0.5, 1.};
   Real dTdz[4], chi[4];
@@ -31,8 +32,7 @@ void Thermodynamics::_rk4_integrate_z(Real dz, std::string method, Real grav,
 
   for (int i = 1; i <= NVAPOR; ++i) {
     if (rates[i] > 0.) {
-      latent[i] =
-          (enthalpy[i] - enthalpy[i + NVAPOR]) * temperature * Constants::Rgas;
+      latent[i] = (enthalpy[i] - enthalpy[i + NVAPOR]) * temp * Constants::Rgas;
     } else {
       latent[i] = 0.;
     }
@@ -63,10 +63,10 @@ void Thermodynamics::_rk4_integrate_z(Real dz, std::string method, Real grav,
     Real R_ov_Rd = q_gas / q_eps;
 
     if (method == "reversible" || method == "pseudo") {
-      chi[rk] = cal_dlnT_dlnP(xfrac, gammad_, cp_ratio_mole, latent);
+      chi[rk] = cal_dlnT_dlnP(xfrac.data(), gammad_, cp_ratio_mole, latent);
     } else if (method == "dry") {
       for (int i = 1; i <= NVAPOR; ++i) latent[i] = 0;
-      chi[rk] = cal_dlnT_dlnP(xfrac, gammad_, cp_ratio_mole, latent);
+      chi[rk] = cal_dlnT_dlnP(xfrac.data(), gammad_, cp_ratio_mole, latent);
     } else {  // isothermal
       chi[rk] = 0.;
     }

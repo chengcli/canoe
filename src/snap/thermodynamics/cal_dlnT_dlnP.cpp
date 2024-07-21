@@ -1,3 +1,4 @@
+#include "thermodynamics.hpp"
 
 Real cal_dlnT_dlnP(Real const* xfrac, Real gammad, Real const* cp_ratio_mole,
                    Real const* latent) {

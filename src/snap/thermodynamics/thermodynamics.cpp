@@ -12,6 +12,7 @@
 
 // cantera
 #include <cantera/kinetics.h>
+#include <cantera/kinetics/Condensation.h>
 #include <cantera/thermo.h>
 
 // athena
@@ -28,7 +29,7 @@
 #include <impl.hpp>
 
 // snap
-#include "atm_thermodynamics.hpp"
+#include "thermodynamics.hpp"
 
 static std::mutex thermo_mutex;
 
@@ -39,7 +40,9 @@ Thermodynamics::~Thermodynamics() {
   app->Log("Destroy Thermodynamics");
 }
 
-void Thermodynamics::UpdateThermoProperties(ThermoPhase& thermo) {
+void Thermodynamics::UpdateThermoProperties() {
+  auto& thermo = kinetics_->thermo();
+
   // --------- vapor + cloud thermo ---------
   std::vector<Real> mu(thermo.nSpecies());
   std::vector<Real> cp_mole(thermo.nSpecies());
@@ -66,11 +69,11 @@ void Thermodynamics::UpdateThermoProperties(ThermoPhase& thermo) {
 
   // calculate cv_ratio = $\sigma_i + (1. - \gamma)/\epsilon_i$
   for (int n = 0; n <= NVAPOR; ++n) {
-    cv_ratio_[n] = gammad * cp_ratio_[n] + (1. - gammad) * inv_mu_ratio_[n];
+    cv_ratio_[n] = gammad_ * cp_ratio_[n] + (1. - gammad_) * inv_mu_ratio_[n];
   }
 
   for (int n = 1 + NVAPOR; n < Size; ++n) {
-    cv_ratio_[n] = gammad * cp_ratio_[n];
+    cv_ratio_[n] = gammad_ * cp_ratio_[n];
   }
 }
 
@@ -85,8 +88,9 @@ Thermodynamics* Thermodynamics::fromYAMLInput(std::string const& fname) {
   }
 
   auto& kinetics = mythermo_->kinetics_;
-  kinetics = Cantera::newKinetics({thermo}, fname);
-  UpdateThermoProperty(kinetics->thermo());
+  kinetics = std::static_pointer_cast<Cantera::Condensation>(
+      Cantera::newKinetics({thermo}, fname));
+  mythermo_->UpdateThermoProperties();
 
   return mythermo_;
 }

@@ -107,8 +107,8 @@ void Decomposition::ChangeToAnomaly(AthenaArray<Real> &w, int kl, int ku,
       // calculate local polytropic index
       Real fsig = 1., feps = 1.;
       for (int n = 1; n <= NVAPOR; ++n) {
-        fsig += w(n, k, j, is) * (pthermo->GetCvRatioMass(n) - 1.);
-        feps += w(n, k, j, is) * (1. / pthermo->GetMuRatio(n) - 1.);
+        fsig += w(n, k, j, is) * (pthermo->GetCvRatio(n) - 1.);
+        feps += w(n, k, j, is) * (pthermo->GetInvMuRatio(n) - 1.);
       }
       Real gammas = 1. + (gammad - 1.) * feps / fsig;
       dsf_(k, j, is) = w(IDN, k, j, is) *
