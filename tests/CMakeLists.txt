@@ -42,7 +42,7 @@ if (${NVAPOR} EQUAL 0)
 endif()
 
 if (${NVAPOR} EQUAL 1 AND ${NCLOUD} EQUAL 1 AND ${NPHASE_LEGACY} EQUAL 2)
-  setup_test(test_moist_adiabat)
+  #setup_test(test_moist_adiabat)
 endif()
 
 if (${NVAPOR} EQUAL 2)

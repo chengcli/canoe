@@ -170,4 +170,14 @@ void Thermodynamics::SetDensity(Real dens) const {
   kinetics_->thermo().setDensity(dens);
 }
 
+void Thermodynamics::Extrapolate_inplace(Real dzORdlnp, std::string method,
+                                         Real grav, Real userp) const {
+  // RK4 integration
+  if (grav == 0.) {  // hydrostatic
+    _rk4_integrate_lnp(dzORdlnp, method, userp);
+  } else {  // non-hydrostatic
+    _rk4_integrate_z(dzORdlnp, method, grav, userp);
+  }
+}
+
 Thermodynamics* Thermodynamics::mythermo_ = nullptr;
