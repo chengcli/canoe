@@ -191,12 +191,14 @@ void Diffusion(MeshBlock *pmb, Real const time, Real const dt,
 // first and then it instantiates all MeshBlocks inside it. Therefore, this
 // subroutine runs before any MeshBlock.
 void Mesh::InitUserMeshData(ParameterInput *pin) {
+  auto pthermo = Thermodynamics::GetInstance();
+
   // The program specific forcing parameters are set here.
   // They come from the input file, which is parsed by the ParameterInput class
   Real gamma = pin->GetReal("hydro", "gamma");
   K = pin->GetReal("problem", "K");
   p0 = pin->GetReal("problem", "p0");
-  Rd = pin->GetReal("thermodynamics", "Rd");
+  Rd = pthermo->GetRd();
   cp = gamma / (gamma - 1.) * Rd;
 
   // This line code enrolls the forcing function we wrote in

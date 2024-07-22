@@ -126,7 +126,7 @@ Thermodynamics const* Thermodynamics::InitFromAthenaInput(ParameterInput* pin) {
   Application::Logger app("snap");
   app->Log("Initialize Thermodynamics");
 
-  return fromYAMLInput(pin->GetString("thermodynamics", input_key));
+  return fromYAMLInput(pin->GetString("problem", input_key));
 }
 
 void Thermodynamics::Destroy() {
