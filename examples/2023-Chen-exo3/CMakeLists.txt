@@ -18,7 +18,7 @@ else()
   setup_problem(polar_dry)
 endif()
 
-if (${RSOLVER} STREQUAL "lmars")
+if (${RSOLVER} STREQUAL "hllc_transform")
   setup_problem(jupiter_crm)
 endif( )
 
