@@ -2,8 +2,6 @@
 # 1. Compile hywater
 if (${NVAPOR} EQUAL 1 AND ${NCLOUD} EQUAL 2 AND ${NPHASE_LEGACY} EQUAL 3)
   setup_problem(hywater)
-elseif(${COORDINATE_SYSTEM} STREQUAL "spherical_polar")
-  setup_problem(hjupiter_sphr) # Setup for hjupiter_sphr if using spherical polar coordinates
 else()
   # Compile hjupiter if none of the above conditions are met
   setup_problem(hjupiter)

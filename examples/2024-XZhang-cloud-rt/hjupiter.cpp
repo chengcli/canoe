@@ -14,9 +14,9 @@
 
 // canoe
 #include <air_parcel.hpp>
+#include <athena/coordinates/coordinates.hpp>
 #include <configure.hpp>
 #include <impl.hpp>
-#include <athena/coordinates/coordinates.hpp>
 
 // climath
 #include <climath/core.h>
@@ -83,10 +83,11 @@ void Forcing(MeshBlock *pmb, Real const time, Real const dt,
              AthenaArray<Real> const &w, const AthenaArray<Real> &prim_scalar,
              AthenaArray<Real> const &bcc, AthenaArray<Real> &du,
              AthenaArray<Real> &cons_scalar) {
-  auto pexo3 = pmb->pimpl->pexo3;
   auto pthermo = Thermodynamics::GetInstance();
   auto prad = pmb->pimpl->prad;
 
+#ifdef CUBED_SPHERE
+  auto pexo3 = pmb->pimpl->pexo3;
   for (int k = pmb->ks; k <= pmb->ke; ++k)
     for (int j = pmb->js; j <= pmb->je; ++j)
       for (int i = pmb->is; i <= pmb->ie; ++i) {
@@ -112,6 +113,7 @@ void Forcing(MeshBlock *pmb, Real const time, Real const dt,
         du(IM2, k, j, i) += dt * acc2;
         du(IM3, k, j, i) += dt * acc3;
       }
+#endif
 }
 
 Real TimeStep(MeshBlock *pmb) {
@@ -137,7 +139,7 @@ void Mesh::InitUserMeshData(ParameterInput *pin) {
   Tmin = pin->GetReal("problem", "Tmin");
 
   // forcing function
-  EnrollUserExplicitSourceFunction(Forcing);
+  // EnrollUserExplicitSourceFunction(Forcing);
   // EnrollUserTimeStepFunction(TimeStep);
 }
 
@@ -176,6 +178,5 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
         AirParcelHelper::distribute_to_conserved(this, k, j, i, air);
         pthermo->Extrapolate(&air, pcoord->dx1f(i), "isothermal", grav);
       }
-
     }
 }
