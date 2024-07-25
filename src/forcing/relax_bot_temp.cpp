@@ -8,6 +8,7 @@
 #include <athena/mesh/mesh.hpp>
 
 // snap
+#include <snap/stride_iterator.hpp>
 #include <snap/thermodynamics/thermodynamics.hpp>
 
 // forcing
@@ -24,10 +25,11 @@ RelaxBotTemp::RelaxBotTemp(MeshBlock *pmb, ParameterInput *pin)
 
 void RelaxBotTemp::Initialize(MeshBlock *pmb) {
   auto pthermo = Thermodynamics::GetInstance();
+  auto &w = pmb->phydro->w;
 
   for (int k = pmb->ks; k <= pmb->ke; ++k)
     for (int j = pmb->js; j <= pmb->je; ++j) {
-      Real tem = pthermo->GetTemp(pmb, k, j, pmb->is);
+      Real tem = pthermo->GetTemp(w.at(k, j, pmb->is));
       bot_data_(k, j) = tem;
     }
 }
@@ -46,16 +48,16 @@ void RelaxBotTemp::Apply(AthenaArray<Real> &du, MeshBlock *pmb, Real time,
   if (btem < 0.) {  // negative means use the initial condition
     for (int k = ks; k <= ke; ++k)
       for (int j = js; j <= je; ++j) {
-        Real cv = pthermo->GetCvMass(pmb, k, j, is);
-        Real tem = pthermo->GetTemp(pmb, k, j, is);
+        Real cv = pthermo->GetCv(w.at(k, j, is));
+        Real tem = pthermo->GetTemp(w.at(k, j, is));
         Real rho = w(IDN, k, j, is);
         du(IEN, k, j, is) += dt / btau * (bot_data_(k, j) - tem) * cv * rho;
       }
   } else {
     for (int k = ks; k <= ke; ++k)
       for (int j = js; j <= je; ++j) {
-        Real cv = pthermo->GetCvMass(pmb, k, j, is);
-        Real tem = pthermo->GetTemp(pmb, k, j, is);
+        Real cv = pthermo->GetCv(w.at(k, j, is));
+        Real tem = pthermo->GetTemp(w.at(k, j, is));
         Real rho = w(IDN, k, j, is);
         du(IEN, k, j, is) += dt / btau * (btem - tem) * cv * rho;
       }

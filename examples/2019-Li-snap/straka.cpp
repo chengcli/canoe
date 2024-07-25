@@ -90,6 +90,7 @@ void MeshBlock::InitUserMeshBlockData(ParameterInput *pin) {
 // access all physics in the simulation.
 void MeshBlock::UserWorkBeforeOutput(ParameterInput *pin) {
   auto pthermo = Thermodynamics::GetInstance();
+  auto &w = phydro->w;
 
   // Loop over the grids. <code>js,je,is,ie</code> are members of the MeshBlock
   // class. They are integer values representing the start index and the end
@@ -101,8 +102,8 @@ void MeshBlock::UserWorkBeforeOutput(ParameterInput *pin) {
       // <code>phydro</code> is a pointer to the Hydro class, which has a member
       // <code>w</code> that stores density, pressure, and velocities at each
       // grid.
-      user_out_var(0, j, i) = pthermo->GetTemp(this, k, j, i);
-      user_out_var(1, j, i) = pthermo->PotentialTemp(this, p0, k, j, i);
+      user_out_var(0, j, i) = pthermo->GetTemp(w.at(k, j, i));
+      user_out_var(1, j, i) = pthermo->PotentialTemp(w.at(k, j, i), p0);
     }
 }
 
@@ -139,16 +140,16 @@ void Diffusion(MeshBlock *pmb, Real const time, Real const dt,
       // Similar to what we have done in MeshBlock::UserWorkBeforeOutput, we use
       // the Thermodynamics class to calculate temperature and potential
       // temperature.
-      Real temp = pthermo->GetTemp(pmb, pmb->ks, j, i);
-      Real theta = pthermo->PotentialTemp(pmb, p0, pmb->ks, j, i);
+      Real temp = pthermo->GetTemp(w.at(pmb->ks, j, i));
+      Real theta = pthermo->PotentialTemp(w.at(pmb->ks, j, i), p0);
 
       // The thermal diffusion is applied to the potential temperature field,
       // which is not exactly correct. But this is the setting of the test
       // program.
-      Real theta_ip1_j = pthermo->PotentialTemp(pmb, p0, k, j + 1, i);
-      Real theta_im1_j = pthermo->PotentialTemp(pmb, p0, k, j - 1, i);
-      Real theta_i_jp1 = pthermo->PotentialTemp(pmb, p0, k, j, i + 1);
-      Real theta_i_jm1 = pthermo->PotentialTemp(pmb, p0, k, j, i - 1);
+      Real theta_ip1_j = pthermo->PotentialTemp(w.at(k, j + 1, i), p0);
+      Real theta_im1_j = pthermo->PotentialTemp(w.at(k, j - 1, i), p0);
+      Real theta_i_jp1 = pthermo->PotentialTemp(w.at(k, j, i + 1), p0);
+      Real theta_i_jm1 = pthermo->PotentialTemp(w.at(k, j, i - 1), p0);
 
       // Add viscous dissipation to the velocities. Now you encounter another
       // variable called <code>u</code>. <code>u</code> stands for `conserved
@@ -190,12 +191,14 @@ void Diffusion(MeshBlock *pmb, Real const time, Real const dt,
 // first and then it instantiates all MeshBlocks inside it. Therefore, this
 // subroutine runs before any MeshBlock.
 void Mesh::InitUserMeshData(ParameterInput *pin) {
+  auto pthermo = Thermodynamics::GetInstance();
+
   // The program specific forcing parameters are set here.
   // They come from the input file, which is parsed by the ParameterInput class
   Real gamma = pin->GetReal("hydro", "gamma");
   K = pin->GetReal("problem", "K");
   p0 = pin->GetReal("problem", "p0");
-  Rd = pin->GetReal("thermodynamics", "Rd");
+  Rd = pthermo->GetRd();
   cp = gamma / (gamma - 1.) * Rd;
 
   // This line code enrolls the forcing function we wrote in
