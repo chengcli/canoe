@@ -1,35 +1,36 @@
-// canoe
-#include <air_parcel.hpp>
+// cantera
+#include <cantera/kinetics.h>
+#include <cantera/kinetics/Condensation.h>
+#include <cantera/thermo.h>
 
 // snap
-#include "atm_thermodynamics.hpp"
+#include "thermodynamics.hpp"
 
-void Thermodynamics::EquilibrateTP(AirParcel* qfrac) const {
-  set_total_equivalent_vapor(qfrac, cloud_index_set_.data(),
-                             cloud_reaction_map_);
+void Thermodynamics::EquilibrateTP() const {
+  kinetics_->setQuantityMoleFraction();
 
-  // vapor <=> cloud
-  for (int i = 1; i <= NVAPOR; ++i) {
-    auto rates = TryEquilibriumTP_VaporCloud(*qfrac, i);
+  std::vector<Real> rates(Size);
+  std::vector<Real> xfrac(Size);
 
-    // vapor condensation rate
-    qfrac->w[i] += rates[0];
+  auto& thermo = kinetics_->thermo();
 
-    // cloud concentration rates
-    for (int n = 1; n < rates.size(); ++n)
-      qfrac->c[cloud_index_set_[i][n - 1]] += rates[n];
-  }
+  Real temp = thermo.temperature();
+  Real pres = thermo.pressure();
 
-  // vapor + vapor <=> cloud
-  for (auto const& [ij, info] : cloud_reaction_map_) {
-    auto rates = TryEquilibriumTP_VaporVaporCloud(*qfrac, ij);
-    auto& indx = info.first;
+  int iter = 0, max_iter = 3;
 
-    // vapor condensation rate
-    qfrac->w[indx[0]] += rates[0];
-    qfrac->w[indx[1]] += rates[1];
+  while (iter++ < max_iter) {
+    // get mole fraction
+    kinetics_->getActivityConcentrations(xfrac.data());
+    kinetics_->getNetProductionRates(rates.data());
 
-    // cloud concentration rates
-    qfrac->c[indx[2]] += rates[3];
+    // update mole fraction
+    for (size_t i = 1; i < rates.size(); ++i) {
+      xfrac[i] += rates[i];
+    }
+
+    thermo.setMoleFractions(xfrac.data());
+    thermo.setTemperature(temp);
+    thermo.setPressure(pres);
   }
 }

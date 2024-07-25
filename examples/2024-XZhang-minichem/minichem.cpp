@@ -27,14 +27,17 @@
 #include <athena/mesh/mesh.hpp>
 #include <athena/parameter_input.hpp>
 #include <athena/scalars/scalars.hpp>
+#include <athena/stride_iterator.hpp>
 
 // application
 #include <application/application.hpp>
 #include <application/exceptions.hpp>
 
 // canoe
+#include <air_parcel.hpp>
+#include <athena/coordinates/coordinates.hpp>
+#include <configure.hpp>
 #include <impl.hpp>
-#include <index_map.hpp>
 
 // climath
 #include <climath/core.h>

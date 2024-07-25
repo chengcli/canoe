@@ -3,6 +3,7 @@
 #include <athena/hydro/hydro.hpp>
 
 // snap
+#include <snap/stride_iterator.hpp>
 #include <snap/thermodynamics/thermodynamics.hpp>
 
 // exchanger
@@ -49,7 +50,7 @@ void Anomaly::Finalize(MeshBlock *pmb) {
         // density anomaly
         mean_[i] += vol_(i) * w(IDN, k, j, i);
         // temperature anomaly
-        mean_[ncells1_ + i] += vol_(i) * pthermo->GetTemp(pmb, k, j, i);
+        mean_[ncells1_ + i] += vol_(i) * pthermo->GetTemp(w.at(k, j, i));
         // vertical velocity anomaly
         mean_[2 * ncells1_ + i] += vol_(i) * w(IVX, k, j, i);
         // pressure anomaly
@@ -69,7 +70,7 @@ void Anomaly::Finalize(MeshBlock *pmb) {
         // density anomaly
         data(0, k, j, i) = w(IDN, k, j, i) - mean_[i] / total_vol_[i];
         // temperature anomaly
-        data(1, k, j, i) = pthermo->GetTemp(pmb, k, j, i) -
+        data(1, k, j, i) = pthermo->GetTemp(w.at(k, j, i)) -
                            mean_[ncells1_ + i] / total_vol_[i];
         // vertical velocity anomaly
         data(2, k, j, i) =

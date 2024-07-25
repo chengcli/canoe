@@ -88,8 +88,8 @@ void Hydro::RiemannSolver(const int k, const int j, const int il, const int iu,
     // left
     Real fsig = 1., feps = 1.;
     for (int n = 1; n <= NVAPOR; ++n) {
-      fsig += wli[n] * (pthermo->GetCvRatioMass(n) - 1.);
-      feps += wli[n] * (1. / pthermo->GetMuRatio(n) - 1.);
+      fsig += wli[n] * (pthermo->GetCvRatio(n) - 1.);
+      feps += wli[n] * (pthermo->GetInvMuRatio(n) - 1.);
     }
     Real kappal = 1. / (gamma - 1.) * fsig / feps;
     Real gammal = 1. / kappal + 1.;
@@ -97,8 +97,8 @@ void Hydro::RiemannSolver(const int k, const int j, const int il, const int iu,
     // right
     fsig = 1., feps = 1.;
     for (int n = 1; n <= NVAPOR; ++n) {
-      fsig += wri[n] * (pthermo->GetCvRatioMass(n) - 1.);
-      feps += wri[n] * (1. / pthermo->GetMuRatio(n) - 1.);
+      fsig += wri[n] * (pthermo->GetCvRatio(n) - 1.);
+      feps += wri[n] * (pthermo->GetInvMuRatio(n) - 1.);
     }
     Real kappar = 1. / (gamma - 1.) * fsig / feps;
     Real gammar = 1. / kappar + 1.;

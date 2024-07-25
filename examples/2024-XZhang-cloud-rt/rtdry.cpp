@@ -77,6 +77,9 @@ void MeshBlock::UserWorkBeforeOutput(ParameterInput *pin) {
   for (int k = ks; k <= ke; ++k)
     for (int j = js; j <= je; ++j)
       for (int i = is; i <= ie; ++i) {
+        user_out_var(0, k, j, i) = pthermo->GetTemp(w.at(k, j, i));
+        user_out_var(1, k, j, i) = pthermo->PotentialTemp(w.at(k, j, i), Ps);
+
         pexo3->GetLatLon(&lat, &lon, k, j, i);
         pexo3->GetUV(&U, &V, phydro->w(IVY, k, j, i), phydro->w(IVZ, k, j, i),
                      k, j, i);
