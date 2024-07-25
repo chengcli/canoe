@@ -7,13 +7,10 @@
 #include <cantera/kinetics/Condensation.h>
 #include <cantera/thermo.h>
 
-#include "thermodynamics.hpp"
+// exo3
+#include <exo3/exo3.hpp>
 
-template <typename T>
-std::array<Real, 3> vec_raise(StrideIterator<T*> w, StrideIterator<T*> m) {
-  std::array<Real, 3> v{w[IVX], w[IVY], w[IVZ]};
-  return v;
-}
+#include "thermodynamics.hpp"
 
 template <typename T>
 Real Thermodynamics::GetMu(T w) const {
