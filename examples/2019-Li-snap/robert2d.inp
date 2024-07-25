@@ -49,7 +49,7 @@ ix3_bc     = periodic     # inner-X3 boundary flag
 ox3_bc     = periodic     # outer-X3 boundary flag
 
 <meshblock>
-nx1        = 300
+nx1        = 150
 nx2        = 50
 nx3        = 1
 
