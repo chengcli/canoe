@@ -22,8 +22,7 @@
 #include <impl.hpp>
 
 // exo3
-#include <exo3/cubed_sphere_utility.hpp>
-#include <exo3/gnomonic_equiangle.hpp>
+#include <exo3/exo3.hpp>
 
 // snap
 #include <snap/stride_iterator.hpp>
@@ -34,8 +33,6 @@
 // checks
 #include <checks.hpp>
 
-namespace cs = CubedSphereUtility;
-
 // EquationOfState constructor
 
 EquationOfState::EquationOfState(MeshBlock* pmb, ParameterInput* pin)
@@ -45,8 +42,7 @@ EquationOfState::EquationOfState(MeshBlock* pmb, ParameterInput* pin)
           pin->GetOrAddReal("hydro", "dfloor", std::sqrt(1024 * float_min))},
       pressure_floor_{
           pin->GetOrAddReal("hydro", "pfloor", std::sqrt(1024 * float_min))},
-      scalar_floor_{
-          pin->GetOrAddReal("hydro", "sfloor", std::sqrt(1024 * float_min))} {}
+      scalar_floor_{pin->GetOrAddReal("hydro", "sfloor", 0.)} {}
 
 //----------------------------------------------------------------------------------------
 // \!fn void EquationOfState::ConservedToPrimitive(AthenaArray<Real> &cons,
@@ -81,13 +77,16 @@ void EquationOfState::ConservedToPrimitive(
         Real& w_p = prim(IPR, k, j, i);
 
         Real density = 0.;
-        for (int n = 0; n <= NVAPOR; ++n) density += cons(n, k, j, i);
-        w_d = density;
+        for (int n = 0; n <= NVAPOR + NCLOUD; ++n) {
+          density += cons(n, k, j, i);
+        }
+        // total density
+        w_d = std::max(density_floor_, density);
         Real di = 1. / density;
 
         // mass mixing ratio
-        for (int n = 1; n <= NVAPOR; ++n)
-          prim(n, k, j, i) = cons(n, k, j, i) * di;
+        for (int n = 1; n <= NVAPOR + NCLOUD; ++n)
+          prim(n, k, j, i) = std::max(scalar_floor_, cons(n, k, j, i) * di);
 
         // internal energy
         Real KE, fsig = 1., feps = 1.;
@@ -96,31 +95,30 @@ void EquationOfState::ConservedToPrimitive(
           fsig += prim(n, k, j, i) * (pthermo->GetCvRatio(n) - 1.);
           feps += prim(n, k, j, i) * (pthermo->GetInvMuRatio(n) - 1.);
         }
+        // clouds
+        for (int n = 1 + NVAPOR; n <= NVAPOR + NCLOUD; ++n) {
+          fsig += prim(n, k, j, i) * (pthermo->GetCvRatio(n) - 1.);
+          feps -= prim(n, k, j, i);
+        }
 
-#ifdef CUBED_SPHERE
-        Real cos_theta =
-            static_cast<GnomonicEquiangle*>(pco)->GetCosineCell(k, j);
-#endif
-
-        // Real di = 1.0/u_d;
         w_vx = u_m1 * di;
         w_vy = u_m2 * di;
         w_vz = u_m3 * di;
 
-#ifdef CUBED_SPHERE
-        cs::CovariantToContravariant(prim.at(k, j, i), cos_theta);
-#endif
+        // covariant to contravariant
+        vec_raise_inplace(prim.at(k, j, i), pco->m.at(k, j, i));
 
         // internal energy
         KE = 0.5 * (u_m1 * w_vx + u_m2 * w_vy + u_m3 * w_vz);
         w_p = gm1 * (u_e - KE) * feps / fsig;
+
+        // apply pressure floor, correct total energy
+        u_e = (w_p > pressure_floor_)
+                  ? u_e
+                  : (pressure_floor_ / gm1 * fsig / feps) + KE;
+        w_p = (w_p > pressure_floor_) ? w_p : pressure_floor_;
       }
-
-      fix_eos_cons2prim(pmb, prim, cons, k, j, il, iu);
-      check_eos_cons2prim(prim, k, j, il, iu);
     }
-
-  PrimitiveToConserved(prim, bcc, cons, pco, il, iu, jl, ju, kl, ku);
 }
 
 //----------------------------------------------------------------------------------------
@@ -155,7 +153,7 @@ void EquationOfState::PrimitiveToConserved(const AthenaArray<Real>& prim,
 
         // density
         u_d = w_d;
-        for (int n = 1; n <= NVAPOR; ++n) {
+        for (int n = 1; n <= NVAPOR + NCLOUD; ++n) {
           cons(n, k, j, i) = prim(n, k, j, i) * w_d;
           cons(IDN, k, j, i) -= cons(n, k, j, i);
         }
@@ -165,11 +163,8 @@ void EquationOfState::PrimitiveToConserved(const AthenaArray<Real>& prim,
         u_m2 = w_vy * w_d;
         u_m3 = w_vz * w_d;
 
-#ifdef CUBED_SPHERE
-        cs::ContravariantToCovariant(
-            cons.at(k, j, i),
-            static_cast<GnomonicEquiangle*>(pco)->GetCosineCell(k, j));
-#endif
+        // contravariant to covariant
+        vec_lower_inplace(cons.at(k, j, i), pco->m.at(k, j, i));
 
         // total energy
         Real KE = 0.5 * (u_m1 * w_vx + u_m2 * w_vy + u_m3 * w_vz);
@@ -178,6 +173,11 @@ void EquationOfState::PrimitiveToConserved(const AthenaArray<Real>& prim,
         for (int n = 1; n <= NVAPOR; ++n) {
           fsig += prim(n, k, j, i) * (pthermo->GetCvRatio(n) - 1.);
           feps += prim(n, k, j, i) * (pthermo->GetInvMuRatio(n) - 1.);
+        }
+        // clouds
+        for (int n = 1 + NVAPOR; n <= NVAPOR + NCLOUD; ++n) {
+          fsig += prim(n, k, j, i) * (pthermo->GetCvRatio(n) - 1.);
+          feps -= prim(n, k, j, i);
         }
         u_e = igm1 * w_p * fsig / feps + KE;
       }
@@ -195,9 +195,15 @@ Real EquationOfState::SoundSpeed(const Real prim[NHYDRO]) {
   auto pthermo = Thermodynamics::GetInstance();
 
   Real fsig = 1., feps = 1.;
+  // vapors
   for (int n = 1; n <= NVAPOR; ++n) {
     fsig += prim[n] * (pthermo->GetCvRatio(n) - 1.);
     feps += prim[n] * (pthermo->GetInvMuRatio(n) - 1.);
+  }
+  // clouds
+  for (int n = 1 + NVAPOR; n <= NVAPOR + NCLOUD; ++n) {
+    fsig += prim[n] * (pthermo->GetCvRatio(n) - 1.);
+    feps -= prim[n];
   }
 
   return std::sqrt((1. + (gamma_ - 1) * feps / fsig) * prim[IPR] / prim[IDN]);
@@ -216,6 +222,10 @@ void EquationOfState::ApplyPrimitiveFloors(AthenaArray<Real>& prim, int k,
 
   // apply (prim) density floor
   w_d = (w_d > density_floor_) ? w_d : density_floor_;
+  // apply composition floors
+  for (int n = 1; n <= NVAPOR + NCLOUD; ++n) {
+    prim(n, i) = std::max(scalar_floor_, prim(n, i));
+  }
   // apply pressure floor
   w_p = (w_p > pressure_floor_) ? w_p : pressure_floor_;
 
@@ -232,22 +242,47 @@ void EquationOfState::ApplyPrimitiveConservedFloors(AthenaArray<Real>& prim,
                                                     AthenaArray<Real>& cons,
                                                     AthenaArray<Real>& bcc,
                                                     int k, int j, int i) {
+  auto pthermo = Thermodynamics::GetInstance();
   Real gm1 = GetGamma() - 1.0;
   Real& w_d = prim(IDN, k, j, i);
   Real& w_p = prim(IPR, k, j, i);
 
   Real& u_d = cons(IDN, k, j, i);
   Real& u_e = cons(IEN, k, j, i);
+
   // apply (prim) density floor, without changing momentum or energy
   w_d = (w_d > density_floor_) ? w_d : density_floor_;
   // ensure cons density matches
   u_d = w_d;
 
+  // apply composition floors
+  for (int n = 1; n <= NVAPOR + NCLOUD; ++n) {
+    prim(n, k, j, i) = std::max(scalar_floor_, prim(n, k, j, i));
+    cons(n, k, j, i) = prim(n, k, j, i) * w_d;
+    u_d -= cons(n, k, j, i);
+  }
+
+  auto vl = vec_lower(prim.at(k, j, i), pmy_block_->pcoord->m.at(k, j, i));
+
   Real e_k = 0.5 * w_d *
-             (SQR(prim(IVX, k, j, i)) + SQR(prim(IVY, k, j, i)) +
-              SQR(prim(IVZ, k, j, i)));
+             (prim(IVX, k, j, i) * vl[IVX] + prim(IVY, k, j, i) * vl[IVY] +
+              prim(IVZ, k, j, i) * vl[IVZ]);
+
+  Real fsig = 1., feps = 1.;
+  // vapors
+  for (int n = 1; n <= NVAPOR; ++n) {
+    fsig += prim(n, k, j, i) * (pthermo->GetCvRatio(n) - 1.);
+    feps += prim(n, k, j, i) * (pthermo->GetInvMuRatio(n) - 1.);
+  }
+  // clouds
+  for (int n = 1 + NVAPOR; n <= NVAPOR + NCLOUD; ++n) {
+    fsig += prim(n, k, j, i) * (pthermo->GetCvRatio(n) - 1.);
+    feps -= prim(n, k, j, i);
+  }
+
   // apply pressure floor, correct total energy
-  u_e = (w_p > pressure_floor_) ? u_e : ((pressure_floor_ / gm1) + e_k);
+  u_e = (w_p > pressure_floor_) ? u_e
+                                : (pressure_floor_ / gm1 * fsig / feps) + e_k;
   w_p = (w_p > pressure_floor_) ? w_p : pressure_floor_;
 
   return;

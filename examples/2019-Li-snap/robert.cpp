@@ -67,11 +67,13 @@ void Mesh::InitUserMeshData(ParameterInput *pin) {
 // We do not need forcings other than gravity in this problem,
 // so we go directly to the initial condition.
 void MeshBlock::ProblemGenerator(ParameterInput *pin) {
+  auto pthermo = Thermodynamics::GetInstance();
+
   // Similar to @ref straka, read variables in the input file
   Real gamma = pin->GetReal("hydro", "gamma");
   Real grav = -phydro->hsrc.GetG1();
   Real Ts = pin->GetReal("problem", "Ts");
-  Real Rd = pin->GetReal("thermodynamics", "Rd");
+  Real Rd = pthermo->GetRd();
   Real cp = gamma / (gamma - 1.) * Rd;
 
   Real xc = pin->GetReal("problem", "xc");
