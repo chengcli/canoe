@@ -25,13 +25,13 @@ index c43e04f7..3afbadcf 100644
 -          Real src = dt*prim(IDN,k,j,i)*g1_;
 +          Real qd = 1.;
 +#pragma omp simd reduction(+ : qd)
-+          for (int n = 1; n <= NVAPOR; ++n) qd += -prim(n,k,j,i);
++          for (int n = 1; n < IVX; ++n) qd += -prim(n,k,j,i);
 +
 +          Real rho_dry = prim(IDN,k,j,i) * qd;
 +          Real rho = prim(IDN,k,j,i);
 +
 +#pragma omp simd reduction(+ : rho)
-+          for (int n = 0; n < NCLOUD; ++n)
++          for (int n = 0; n < NMASS; ++n)
 +            rho += rho_dry * pmb->pscalars->r(n, k, j, i);
 +
 +          Real src = dt*rho*g1_;
@@ -47,13 +47,13 @@ index c43e04f7..3afbadcf 100644
 -          Real src = dt*prim(IDN,k,j,i)*g2_;
 +          Real qd = 1.;
 +#pragma omp simd reduction(+ : qd)
-+          for (int n = 1; n <= NVAPOR; ++n) qd += -prim(n,k,j,i);
++          for (int n = 1; n < IVX; ++n) qd += -prim(n,k,j,i);
 +
 +          Real rho_dry = prim(IDN,k,j,i) * qd;
 +          Real rho = prim(IDN,k,j,i);
 +
 +#pragma omp simd reduction(+ : rho)
-+          for (int n = 0; n < NCLOUD; ++n)
++          for (int n = 0; n < NMASS; ++n)
 +            rho += rho_dry * pmb->pscalars->r(n, k, j, i);
 +
 +          Real src = dt*rho*g2_;
@@ -69,13 +69,13 @@ index c43e04f7..3afbadcf 100644
 -          Real src = dt*prim(IDN,k,j,i)*g3_;
 +          Real qd = 1.;
 +#pragma omp simd reduction(+ : qd)
-+          for (int n = 1; n <= NVAPOR; ++n) qd += -prim(n,k,j,i);
++          for (int n = 1; n < IVX; ++n) qd += -prim(n,k,j,i);
 +
 +          Real rho_dry = prim(IDN,k,j,i) * qd;
 +          Real rho = prim(IDN,k,j,i);
 +
 +#pragma omp simd reduction(+ : rho)
-+          for (int n = 0; n < NCLOUD; ++n)
++          for (int n = 0; n < NMASS; ++n)
 +            rho += rho_dry * pmb->pscalars->r(n, k, j, i);
 +
 +          Real src = dt*rho*g3_;

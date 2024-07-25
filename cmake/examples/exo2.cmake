@@ -1,18 +1,14 @@
 # configuration for shallow water model on cubed sphere
 
-macro(SET_IF_EMPTY _variable)
-  if("${${_variable}}" STREQUAL "")
-    set(${_variable} ${ARGN})
-  endif()
-endmacro()
-
 # athena variables
-set_if_empty(NUMBER_GHOST_CELLS 3)
-set_if_empty (NTRACER 3)
+set(NUMBER_GHOST_CELLS 3)
+set(NTRACER 3)
+set(EQUATION_OF_STATE shallow_yz)
+set(NON_BAROTROPIC_EOS 0)
+set(RSOLVER roe_shallow_yz)
 
-# canoe configure
+# canoe variables
 set(CUBED_SPHERE ON)
-set(EOS "shallow_yz")
 set(HYDROSTATIC ON)
 set(NETCDF ON)
 set(MPI ON)

@@ -58,10 +58,9 @@ grav_acc1   = -9.8
 gamma       = 1.4         # gamma = C_p/C_v
 implicit_flag   = 1
 
-<thermodynamics>
-Rd          = 287.
-
 <problem>
+thermodynamics_config = earth-dry.yaml
+
 dT    = 5.
 xc    = 500.
 yc    = 500.
