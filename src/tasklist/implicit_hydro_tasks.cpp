@@ -310,9 +310,9 @@ TaskStatus ImplicitHydroTasks::UpdateAllConserved(MeshBlock *pmb, int stage) {
         // pmicro->GetConserved(u.at(k, j, i), s.at(k, j, i));
 
         // pthermo->SetConserved(u.at(k, j, i), m.at(k, j, i));
-        pthermo->SetConserved(u.at(k, j, i), m.at(k, j, i));
-        pthermo->EquilibrateUV();
-        pthermo->GetConserved(u.at(k, j, i));
+        // pthermo->SetConserved(u.at(k, j, i), m.at(k, j, i));
+        // pthermo->EquilibrateUV();
+        // pthermo->GetConserved(u.at(k, j, i));
       }
 
   return TaskStatus::success;

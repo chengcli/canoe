@@ -8,6 +8,7 @@ enum {
   // air-parcle data
   //NVAPOR = @NVAPOR@,
   NCLOUD = @NCLOUD@,
+  NMASS = @NMASS@,
   NCHEMISTRY = @NCHEMISTRY@,
   NTRACER = @NTRACER@,
   NTURBULENCE = @NTURBULENCE@,
