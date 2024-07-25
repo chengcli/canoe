@@ -3,6 +3,7 @@
 #include <athena/reconstruct/interpolation.hpp>
 
 // snap
+#include <snap/stride_iterator.hpp>
 #include <snap/thermodynamics/thermodynamics.hpp>
 
 // canoe
@@ -46,7 +47,7 @@ void HydroMean::Progress(MeshBlock *pmb) {
   for (int k = ks; k <= ke; ++k)
     for (int j = js; j <= je; ++j)
       for (int i = is; i <= ie; ++i) {
-        data(IPR, k, j, i) += pthermo->GetTemp(pmb, k, j, i);
+        data(IPR, k, j, i) += pthermo->GetTemp(w.at(k, j, i));
       }
 
   ncycle_++;
@@ -80,7 +81,7 @@ void HydroMean::Finalize(MeshBlock *pmb) {
     for (int k = ks; k <= ke; ++k)
       for (int j = js; j <= je; ++j)
         for (int i = is; i <= ie; ++i) {
-          data(IPR, k, j, i) = pthermo->GetTemp(pmb, k, j, i);
+          data(IPR, k, j, i) = pthermo->GetTemp(w.at(k, j, i));
         }
   }
 
