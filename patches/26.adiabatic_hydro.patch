@@ -42,7 +42,7 @@ index e61ff205..c0e9d960 100644
 +#endif
 +
 +        // total energy
-+        Real u_e = w_p*igm1 + 0.5 * (u_m1 * w_vx + u_m2 * w_vy + u_m3 * w_vz);
++        u_e = w_p*igm1 + 0.5 * (u_m1 * w_vx + u_m2 * w_vy + u_m3 * w_vz);
 +        u_d = w_d;
        }
      }
