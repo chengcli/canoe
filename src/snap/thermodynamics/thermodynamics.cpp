@@ -153,8 +153,8 @@ Real Thermodynamics::RovRd() const {
   kinetics_->thermo().getMassFractions(w.data());
 
   Real feps = 1.;
-  for (int n = 1 + NVAPOR; n <= Size; ++n) feps -= w[n];
   for (int n = 1; n <= NVAPOR; ++n) feps += w[n] * (inv_mu_ratio_[n] - 1.);
+  for (int n = 1 + NVAPOR; n < Size; ++n) feps -= w[n];
   return feps;
 }
 

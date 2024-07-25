@@ -83,15 +83,15 @@ void Thermodynamics::GetConserved(StrideIterator<T*> u) const {
 template <typename T>
 Real Thermodynamics::RovRd(T w) const {
   Real feps = 1.;
-  for (int n = 1 + NVAPOR; n <= Size; ++n) feps -= w[n];
   for (int n = 1; n <= NVAPOR; ++n) feps += w[n] * (inv_mu_ratio_[n] - 1.);
+  for (int n = 1 + NVAPOR; n < Size; ++n) feps -= w[n];
   return feps;
 }
 
 template <typename T>
 Real Thermodynamics::GetChi(T w) const {
   Real qsig = 1., feps = 1.;
-  for (int n = 1 + NVAPOR; n <= Size; ++n) {
+  for (int n = 1 + NVAPOR; n < Size; ++n) {
     feps -= w[n];
     qsig += w[n] * (cp_ratio_[n] - 1.);
   }
