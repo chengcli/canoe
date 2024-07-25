@@ -40,8 +40,8 @@ void MeshBlock::UserWorkBeforeOutput(ParameterInput *pin) {
   for (int k = ks; k <= ke; ++k)
     for (int j = js; j <= je; ++j)
       for (int i = is; i <= ie; ++i) {
-        user_out_var(0, k, j, i) = pthermo->GetTemp(this, k, j, i);
-        user_out_var(1, k, j, i) = pthermo->PotentialTemp(this, Ps, k, j, i);
+        user_out_var(0, k, j, i) = pthermo->GetTemp(w.at(k, j, i));
+        user_out_var(1, k, j, i) = pthermo->PotentialTemp(w.at(k, j, i), Ps);
         // msv
         user_out_var(2, k, j, i) =
             pthermo->MoistStaticEnergy(this, grav * pcoord->x1v(i), k, j, i);

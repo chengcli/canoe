@@ -39,8 +39,9 @@ AllMicrophysicalSchemes MicrophysicalSchemesFactory::Create(
       std::string name = sys.as<std::string>();
       std::string scheme = node[name]["scheme"].as<std::string>();
       if (scheme == "Kessler94") {
-        auto p = std::make_shared<Kessler94>(name, node[name]);
-        systems.push_back(p);
+        // FIXME(cli)
+        // auto p = std::make_shared<Kessler94>(name, node[name]);
+        // systems.push_back(p);
       } else {
         throw NotFoundError("Microphysics", scheme);
       }

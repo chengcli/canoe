@@ -15,7 +15,7 @@
 
 // snap
 #include <snap/stride_iterator.hpp>
-#include <snap/thermodynamics/atm_thermodynamics.hpp>
+#include <snap/thermodynamics/thermodynamics.hpp>
 
 // opacity
 #include <opacity/absorber.hpp>
@@ -99,15 +99,17 @@ void RadiationBand::SetSpectralProperties(AirColumn& ac, Real const* x1f,
         pmom_(m, i, 0) = 1.;
         for (int p = 1; p <= npmom; ++p) pmom_(m, i, p) = 0.;
       }
-#ifdef HYDROSTATIC
+
       auto pthermo = Thermodynamics::GetInstance();
-      Real Rgas = get_rovrd(ac[i], pthermo->GetMuRatio()) * pthermo->GetRd();
+      // Real Rgas = get_rovrd(ac[i], pthermo->GetMuRatio()) * pthermo->GetRd();
       // TODO(cli) check this
-      // \delta z = \delt Z * (R T)/(g H0)
-      tau_(m, i) *= (x1f[i + 1] - x1f[i]) * (Rgas * tem_[i]) / (gH0);
-#else
-      tau_(m, i) *= x1f[i + 1] - x1f[i];
-#endif
+      // \delta z = \delt Z * (R T) / (\mu g H0)
+      if (gH0 != 0.) {  // hydrostatic
+        tau_(m, i) *= (x1f[i + 1] - x1f[i]) * (Constants::Rgas * tem_[i]) /
+                      (pthermo->GetMu(ac[i]) * gH0);
+      } else {  // non-hydrostatic
+        tau_(m, i) *= x1f[i + 1] - x1f[i];
+      }
     }
   }
 

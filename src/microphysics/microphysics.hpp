@@ -59,6 +59,14 @@ class Microphysics {
   //! \param [in] dt time step
   void EvolveSystems(AirColumn &ac, Real time, Real dt);
 
+  void Evolve(Real time, Real dt);
+
+  template <typename T>
+  void SetConserved(T u, T s);
+
+  template <typename T>
+  void GetConserved(T u, T s);
+
  public:  /// inbound functions
   void SetVsedFromConserved(Hydro const *phydro);
 

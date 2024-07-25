@@ -11,12 +11,12 @@
 #include <application/exceptions.hpp>
 
 // canoe
-#include <air_parcel.hpp>
 #include <configure.hpp>
 #include <impl.hpp>
 
 // snap
 #include <snap/implicit/implicit_solver.hpp>
+#include <snap/stride_iterator.hpp>
 #include <snap/thermodynamics/thermodynamics.hpp>
 
 // harp
@@ -295,20 +295,25 @@ TaskStatus ImplicitHydroTasks::UpdateAllConserved(MeshBlock *pmb, int stage) {
 
   auto pthermo = Thermodynamics::GetInstance();
   auto pmicro = pmb->pimpl->pmicro;
-  auto pscm = pmb->pimpl->pscm;
+
+  auto &u = pmb->phydro->u;
+  auto &s = pmb->pscalars->s;
+  auto &m = pmb->pcoord->m;
 
   for (int k = ks; k <= ke; k++)
-    for (int j = js; j <= je; j++) {
-      auto &&ac = AirParcelHelper::gather_from_conserved(pmb, k, j, is, ie);
+    for (int j = js; j <= je; j++)
+      for (int i = is; i <= ie; i++) {
+        // pmicro->AddFrictionalHeating(air_column);
 
-      // pmicro->AddFrictionalHeating(air_column);
+        // pmicro->SetConserved(u.at(k, j, i), s.at(k, j, i));
+        // pmicro->Evolve(pmb->pmy_mesh->time, pmb->pmy_mesh->dt);
+        // pmicro->GetConserved(u.at(k, j, i), s.at(k, j, i));
 
-      pmicro->EvolveSystems(ac, pmb->pmy_mesh->time, pmb->pmy_mesh->dt);
-
-      pthermo->SaturationAdjustment(ac);
-
-      AirParcelHelper::distribute_to_conserved(pmb, k, j, is, ie, ac);
-    }
+        // pthermo->SetConserved(u.at(k, j, i), m.at(k, j, i));
+        pthermo->SetConserved(u.at(k, j, i), m.at(k, j, i));
+        pthermo->EquilibrateUV();
+        pthermo->GetConserved(u.at(k, j, i));
+      }
 
   return TaskStatus::success;
 }

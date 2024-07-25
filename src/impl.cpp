@@ -88,7 +88,7 @@ MeshBlock::Impl::Impl(MeshBlock *pmb, ParameterInput *pin) : pmy_block_(pmb) {
   pexo3 = std::make_shared<CubedSphere>(pmb);
 
   // single column model
-  pscm = std::make_shared<SingleColumn>(pmb, pin);
+  // pscm = std::make_shared<SingleColumn>(pmb, pin);
 
   // surface
   // psurf = std::make_shared<Surface>(pmb, pin);
