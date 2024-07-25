@@ -8,6 +8,7 @@
 #include <athena/mesh/mesh.hpp>
 
 // snap
+#include <snap/stride_iterator.hpp>
 #include <snap/thermodynamics/thermodynamics.hpp>
 
 // forcing
@@ -90,7 +91,7 @@ void BodyHeating::Apply(AthenaArray<Real> &du, MeshBlock *pmb, Real time,
     for (int j = js; j <= je; ++j)
       for (int i = is; i <= ie; ++i) {
         if (w(IDN, k, j, i) < pmin || w(IDN, k, j, i) > pmax) continue;
-        Real cv = pthermo->GetCvMass(pmb, k, j, i);
+        Real cv = pthermo->GetCv(w.at(k, j, i));
         du(IEN, k, j, ie) += dt * dTdt * w(IDN, k, j, i) * cv;
       }
 }

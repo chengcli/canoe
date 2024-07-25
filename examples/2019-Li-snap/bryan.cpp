@@ -36,10 +36,11 @@
 #include <climath/root.hpp>
 
 // snap
-#include <snap/thermodynamics/atm_thermodynamics.hpp>
+#include <snap/stride_iterator.hpp>
+#include <snap/thermodynamics/thermodynamics.hpp>
 
 // special includes
-#include "bryan_vapor_functions.hpp"
+// #include "bryan_vapor_functions.hpp"
 
 int iH2O, iH2Oc;
 Real p0, grav;
@@ -57,26 +58,26 @@ void MeshBlock::InitUserMeshBlockData(ParameterInput *pin) {
 
 void MeshBlock::UserWorkBeforeOutput(ParameterInput *pin) {
   auto pthermo = Thermodynamics::GetInstance();
+  auto &w = phydro->w;
 
   for (int k = ks; k <= ke; ++k)
     for (int j = js; j <= je; ++j)
       for (int i = is; i <= ie; ++i) {
-        user_out_var(0, k, j, i) = pthermo->GetTemp(this, k, j, i);
-        user_out_var(1, k, j, i) = pthermo->PotentialTemp(this, p0, k, j, i);
+        user_out_var(0, k, j, i) = pthermo->GetTemp(w.at(k, j, i));
+        user_out_var(1, k, j, i) = pthermo->PotentialTemp(w.at(k, j, i), p0);
         // theta_v
         user_out_var(2, k, j, i) =
-            user_out_var(1, j, i) * pthermo->RovRd(this, k, j, i);
-        // mse
+            user_out_var(1, j, i) * pthermo->RovRd(w.at(k, j, i));
+        /* mse
         user_out_var(3, k, j, i) =
             pthermo->MoistStaticEnergy(this, grav * pcoord->x1v(i), k, j, i);
         // theta_e
         user_out_var(4, k, j, i) =
             pthermo->EquivalentPotentialTemp(this, p0, iH2O, k, j, i);
         user_out_var(5, k, j, i) =
-            pthermo->RelativeHumidity(this, iH2O, k, j, i);
+            pthermo->RelativeHumidity(this, iH2O, k, j, i);*/
         // total mixing ratio
-        auto &&air = AirParcelHelper::gather_from_primitive(this, k, j, i);
-        user_out_var(6, k, j, i) = air.w[iH2O] + air.c[iH2Oc];
+        user_out_var(6, k, j, i) = w(iH2O, k, j, i) + w(iH2Oc, k, j, i);
       }
 }
 
@@ -93,6 +94,7 @@ void Mesh::InitUserMeshData(ParameterInput *pin) {
 
 void MeshBlock::ProblemGenerator(ParameterInput *pin) {
   auto pthermo = Thermodynamics::GetInstance();
+  auto &w = phydro->w;
 
   Real Ps = p0;
   Real Ts = pin->GetReal("problem", "Ts");
@@ -104,27 +106,21 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
   Real dT = pin->GetReal("problem", "dT");
   Real qt = pin->GetReal("problem", "qt");
 
-  AirParcel air(AirParcel::Type::MassFrac);
-  air.w[iH2O] = qt;
-  air.c[iH2Oc] = 0.;
-
-  air.ToMoleFraction();
-  qt = air.w[iH2O];
-
   // construct a reversible adiabat
   for (int k = ks; k <= ke; ++k)
     for (int j = js; j <= je; ++j) {
-      air.w[iH2O] = qt;
-      air.w[IPR] = Ps;
-      air.w[IDN] = Ts;
-      air.c[iH2Oc] = 0.;
+      w(IDN, k, j, is) = Ts;
+      w(IPR, k, j, is) = Ps;
+      w(iH2O, k, j, is) = qt;
+      w(iH2Oc, k, j, is) = 0.;
 
+      pthermo->SetPrimitive(w.at(k, j, is));
       // half a grid to cell center
-      pthermo->Extrapolate(&air, pcoord->dx1f(is) / 2., "reversible", grav);
+      pthermo->Extrapolate_inplace(pcoord->dx1f(is) / 2., "reversible", grav);
 
       for (int i = is; i <= ie; ++i) {
-        AirParcelHelper::distribute_to_conserved(this, k, j, i, air);
-        pthermo->Extrapolate(&air, pcoord->dx1f(i), "reversible", grav);
+        pthermo->GetPrimitive(w.at(k, j, i));
+        pthermo->Extrapolate_inplace(pcoord->dx1f(i), "reversible", grav);
       }
     }
 
@@ -137,34 +133,27 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
         Real L = sqrt(sqr((x2 - xc) / xr) + sqr((x1 - zc) / zr));
 
         if (L < 1.) {
-          auto &&air = AirParcelHelper::gather_from_conserved(this, k, j, i);
-          air.ToMoleFraction();
-          Real rovrd = get_rovrd(air, pthermo->GetMuRatio());
-          Real temp_v = air.w[IDN] * rovrd;
+          pthermo->SetPrimitive(w.at(k, j, i));
+          Real temp = pthermo->GetTemp();
+          Real temp_v = temp * pthermo->RovRd();
           temp_v *= 1. + dT * sqr(cos(M_PI * L / 2.)) / 300.;
 
-          Real temp;
-          int err = root(air.w[IDN], air.w[IDN] + dT, 1.E-8, &temp,
-                         [&pthermo, &air, temp_v](Real temp) {
-                           air.w[IDN] = temp;
-
-                           auto rates =
-                               pthermo->TryEquilibriumTP_VaporCloud(air, iH2O);
-                           air.w[iH2O] += rates[0];
-                           air.c[iH2Oc] += rates[1];
-                           Real rovrd = get_rovrd(air, pthermo->GetMuRatio());
-
+          int err = root(temp, temp + dT, 1.E-8, &temp,
+                         [&pthermo, temp_v](Real temp) {
+                           pthermo->SetTemperature(temp);
+                           pthermo->EquilibrateTP();
+                           Real rovrd = pthermo->RovRd();
                            return temp * rovrd - temp_v;
                          });
 
           //   if (err) throw RuntimeError("pgen", "TVSolver doesn't converge");
 
-          air.w[IDN] = temp;
-          auto rates = pthermo->TryEquilibriumTP_VaporCloud(air, iH2O);
-          air.w[iH2O] += rates[0];
-          air.c[iH2Oc] += rates[1];
-
-          AirParcelHelper::distribute_to_conserved(this, k, j, i, air);
+          pthermo->SetTemperature(temp);
+          pthermo->EquilibrateTP();
+          pthermo->GetPrimitive(w.at(k, j, i));
         }
       }
+
+  peos->PrimitiveToConserved(w, pfield->bcc, phydro->u, pcoord, is, ie, js, je,
+                             ks, ke);
 }

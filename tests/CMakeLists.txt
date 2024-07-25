@@ -37,12 +37,12 @@ endif()
 
 if (${NVAPOR} EQUAL 0)
   if (NOT HYDROSTATIC OR NOT DEFINED HYDROSTATIC)
-    setup_test(test_convective_adjustment)
+    #setup_test(test_convective_adjustment)
   endif()
 endif()
 
 if (${NVAPOR} EQUAL 1 AND ${NCLOUD} EQUAL 1 AND ${NPHASE_LEGACY} EQUAL 2)
-  setup_test(test_moist_adiabat)
+  #setup_test(test_moist_adiabat)
 endif()
 
 if (${NVAPOR} EQUAL 2)

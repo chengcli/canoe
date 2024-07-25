@@ -81,7 +81,7 @@ void ImplicitSolver::FullCorrection(AthenaArray<Real>& du,
     Real fsig = 1., feps = 1.;
     CopyPrimitives(wl, wr, w, k, j, i, mydir_);
     for (int n = 1; n <= NVAPOR; ++n) {
-      fsig += w(n, k, j, i) * (pthermo->GetCvRatioMass(n) - 1.);
+      fsig += w(n, k, j, i) * (pthermo->GetCvRatio(n) - 1.);
       feps += w(n, k, j, i) * (pthermo->GetInvMuRatio(n) - 1.);
     }
 
