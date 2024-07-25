@@ -6,6 +6,7 @@
 #include <athena/mesh/mesh.hpp>
 
 // snap
+#include <snap/stride_iterator.hpp>
 #include <snap/thermodynamics/thermodynamics.hpp>
 
 // forcing
@@ -47,17 +48,17 @@ void RelaxBotComp::Apply(AthenaArray<Real> &du, MeshBlock *pmb, Real time,
   int is = pmb->is, js = pmb->js, ks = pmb->ks;
   int ie = pmb->ie, je = pmb->je, ke = pmb->ke;
 
-  Real gammad = pthermo->GetGammadRef();
+  Real gammad = pthermo->GetGammad();
   Real cvd = pthermo->GetRd() / (gammad - 1.);
 
   for (int n = 0; n < NVAPOR; ++n) {
     Real bcom = GetPar<Real>("bcom" + std::to_string(1 + n));
     Real btau = GetPar<Real>("btau" + std::to_string(1 + n));
-    Real cv_ratio = pthermo->GetCvRatioMass(n);
+    Real cv_ratio = pthermo->GetCvRatio(n);
 
     for (int k = ks; k <= ke; ++k)
       for (int j = js; j <= je; ++j) {
-        Real tem = pthermo->GetTemp(pmb, k, j, is);
+        Real tem = pthermo->GetTemp(w.at(k, j, is));
         Real v1 = w(IVX, k, j, is);
         Real v2 = w(IVY, k, j, is);
         Real v3 = w(IVZ, k, j, is);

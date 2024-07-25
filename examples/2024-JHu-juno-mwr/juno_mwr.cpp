@@ -81,8 +81,8 @@ void MeshBlock::UserWorkBeforeOutput(ParameterInput *pin) {
   for (int k = ks; k <= ke; ++k)
     for (int j = js; j <= je; ++j)
       for (int i = is; i <= ie; ++i) {
-        user_out_var(0, k, j, i) = pthermo->GetTemp(this, k, j, i);
-        user_out_var(1, k, j, i) = pthermo->PotentialTemp(this, P0, k, j, i);
+        user_out_var(0, k, j, i) = pthermo->GetTemp(w.at(k, j, i));
+        user_out_var(1, k, j, i) = pthermo->PotentialTemp(w.at(k, j, i), P0);
         // theta_v
         user_out_var(2, k, j, i) =
             user_out_var(1, k, j, i) * pthermo->RovRd(this, k, j, i);
@@ -274,7 +274,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
       for (int j = js; j <= je; ++j)
         for (int i = is; i <= ie; ++i) {
           if (phydro->w(IPR, k, j, i) > 1.E5) continue;
-          Real temp_ad = pthermo->GetTemp(this, k, j, i);
+          Real temp_ad = pthermo->GetTemp(w.at(k, j, i));
           // pa -> bar
           Real temp_real = Jupiter::get_temp_fletcher16_cirs(
               glat, phydro->w(IPR, k, j, i) / 1.E5);
@@ -292,7 +292,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
   for (int k = ks; k <= ke; ++k)
     for (int j = js; j <= je; ++j)
       for (int i = is; i <= ie; ++i) {
-        Real temp = pthermo->GetTemp(this, k, j, i);
+        Real temp = pthermo->GetTemp(w.at(k, j, i));
         Real pH2S = xH2S * phydro->w(IPR, k, j, i);
         Real pNa = xNa * phydro->w(IPR, k, j, i);
         Real svp = sat_vapor_p_Na_H2S_Visscher(temp, pH2S);
