@@ -58,6 +58,8 @@ grav_acc1   = -9.8
 gamma       = 1.4         # gamma = C_p/C_v
 
 <problem>
+thermodynamics_config = earth-dry.yaml
+
 dT    = -15.
 xc    = 0.
 xr    = 4.E3
@@ -66,7 +68,5 @@ zr    = 2.E3
 p0    = 1.E5
 Ts    = 300.
 K     = 75.
-
-thermodynamics_config = straka-thermo.yaml
 
 diagnostics = div,curl

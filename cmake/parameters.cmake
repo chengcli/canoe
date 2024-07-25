@@ -4,45 +4,15 @@ list(APPEND CMAKE_PREFIX_PATH "/usr/include/mpich-x84_64" "/usr/lib64/mpich/")
 
 # populate the default values
 set_if_empty(NVAPOR 0)
-
 set_if_empty(NCLOUD 0)
-
+set_if_empty(NMASS 0)
 set_if_empty(NPHASE_LEGACY 3)
-
 set_if_empty(NCHEMISTRY 0)
-
 set_if_empty(NTRACER 0)
-
 set_if_empty(NTURBULENCE 0)
-
 set_if_empty(NSTATIC 0)
-
 set_if_empty(NINT_PARTICLE_DATA 0)
-
 set_if_empty(NREAL_PARTICLE_DATA 0)
-
-# set_if_empty(RSOLVER lmars)
-
-# set_if_empty(NUMBER_GHOST_CELLS 3)
-
-set_if_empty(EOS "ideal_moist")
-
-set_if_empty(NBLOCKS 0)
-
-if(EOS STREQUAL "shallow_xy")
-  set(NVAPOR 0)
-  set(NON_BAROTROPIC_EOS 0)
-  set_if_empty(RSOLVER "roe_shallow_xy")
-elseif(EOS STREQUAL "shallow_yz")
-  set(NVAPOR 0)
-  set(NON_BAROTROPIC_EOS 0)
-  set_if_empty(RSOLVER "roe_shallow_yz")
-elseif(EOS STREQUAL "ideal_moist")
-  set(NON_BAROTROPIC_EOS 1)
-else()
-  message(FATAL_ERROR "Unknown EquationOfState (EOS) : ${EOS}")
-endif()
-set(EQUATION_OF_STATE ${EOS})
 
 if(NOT AFFINE OR NOT DEFINED AFFINE)
   set(AFFINE_OPTION "NOT_AFFINE")
