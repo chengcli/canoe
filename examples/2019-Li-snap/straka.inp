@@ -9,22 +9,22 @@ tasklist   = TimeIntegratorTaskList
 
 <output1>
 file_type  = hst          # History data dump
-dt         = 3.          # time increment between outputs
+dt         = 300.          # time increment between outputs
 
 <output2>
 file_type  = netcdf      # Binary data dump
 variable   = prim         # variables to be output
-dt         = 3.          # time increment between outputs
+dt         = 300.          # time increment between outputs
 
 <output3>
 file_type  = netcdf
 variable   = uov
-dt         = 3.
+dt         = 300.
 
 <output4>
 file_type  = netcdf
 variable   = diag
-dt         = 3.
+dt         = 300.
 
 <time>
 cfl_number = 0.9          # The Courant, Friedrichs, & Lewy (CFL) Number
