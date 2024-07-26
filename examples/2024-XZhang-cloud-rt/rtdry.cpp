@@ -34,49 +34,64 @@
 // harp
 #include "harp/radiation.hpp"
 
-Real Ps, Ts, Omega, grav, sponge_tau, bflux, gammad, Tmin;
-int sponge_layer;
+Real P0, T0, Omega, grav, gammad, Tmin, radius;
 
 void MeshBlock::InitUserMeshBlockData(ParameterInput *pin) {
-  AllocateUserOutputVariables(7);
+#ifdef CUBED_SPHERE
+  AllocateUserOutputVariables(9);
+#else
+  AllocateUserOutputVariables(3);
+#endif
+
   SetUserOutputVariableName(0, "temp");
   SetUserOutputVariableName(1, "theta");
-  SetUserOutputVariableName(2, "lat");
-  SetUserOutputVariableName(3, "lon");
-  SetUserOutputVariableName(4, "vlat");
-  SetUserOutputVariableName(5, "vlon");
-  SetUserOutputVariableName(6, "zenith");
+  SetUserOutputVariableName(2, "pres");
+#ifdef CUBED_SPHERE
+  SetUserOutputVariableName(3, "lat");
+  SetUserOutputVariableName(4, "lon");
+  SetUserOutputVariableName(5, "vlat");
+  SetUserOutputVariableName(6, "vlon");
+  SetUserOutputVariableName(7, "w");
+  SetUserOutputVariableName(8, "zenith");
+#endif
 }
 
 void MeshBlock::UserWorkBeforeOutput(ParameterInput *pin) {
-  auto pexo3 = pimpl->pexo3;
   auto pthermo = Thermodynamics::GetInstance();
 
+  for (int k = ks; k <= ke; ++k)
+    for (int j = js; j <= je; ++j)
+      for (int i = is; i <= ie; ++i) {
+        user_out_var(0, k, j, i) = pthermo->GetTemp(this, k, j, i);
+        user_out_var(1, k, j, i) = pthermo->PotentialTemp(this, P0, k, j, i);
+        user_out_var(2, k, j, i) = phydro->w(IPR, k, j, i);
+      }
+
+#ifdef CUBED_SPHERE
+  auto pexo3 = pimpl->pexo3;
   Real lat, lon;
   Real U, V;
   Direction ray = pimpl->prad->GetRayInput(0);
   Real zenith;
 
   for (int k = ks; k <= ke; ++k)
-    for (int j = js; j <= je; ++j) {
+    for (int j = js; j <= je; ++j)
       for (int i = is; i <= ie; ++i) {
-        user_out_var(0, k, j, i) = pthermo->GetTemp(this, k, j, i);
-        user_out_var(1, k, j, i) = pthermo->PotentialTemp(this, Ps, k, j, i);
-
         pexo3->GetLatLon(&lat, &lon, k, j, i);
         pexo3->GetUV(&U, &V, phydro->w(IVY, k, j, i), phydro->w(IVZ, k, j, i),
                      k, j, i);
-        user_out_var(2, k, j, i) = lat;
-        user_out_var(3, k, j, i) = lon;
-        user_out_var(4, k, j, i) = U;
-        user_out_var(5, k, j, i) = V;
+        user_out_var(3, k, j, i) = lat;
+        user_out_var(4, k, j, i) = lon;
+        user_out_var(5, k, j, i) = U;
+        user_out_var(6, k, j, i) = V;
+        user_out_var(7, k, j, i) = phydro->w(IVX, k, j, i);
 
         ray = pimpl->planet->ParentZenithAngle(pmy_mesh->time, M_PI / 2. - lat,
                                                lon);
         zenith = std::acos(ray.mu) / M_PI * 180.0;
-        user_out_var(6, k, j, i) = zenith;
+        user_out_var(8, k, j, i) = zenith;
       }
-    }
+#endif
 }
 
 void Forcing(MeshBlock *pmb, Real const time, Real const dt,
@@ -133,25 +148,34 @@ void Mesh::InitUserMeshData(ParameterInput *pin) {
   // forcing parameters
   Omega = pin->GetReal("problem", "Omega");
   grav = -pin->GetReal("hydro", "grav_acc1");
-  Ts = pin->GetReal("problem", "Ts");
-  Ps = pin->GetReal("problem", "Ps");
+  T0 = pin->GetReal("problem", "T0");
+  P0 = pin->GetReal("problem", "P0");
   gammad = pin->GetReal("hydro", "gamma");
   Tmin = pin->GetReal("problem", "Tmin");
+  radius = pin->GetReal("problem", "radius");
 
   // forcing function
-  // EnrollUserExplicitSourceFunction(Forcing);
+  EnrollUserExplicitSourceFunction(Forcing);
   // EnrollUserTimeStepFunction(TimeStep);
 }
 
 //! \fn void MeshBlock::ProblemGenerator(ParameterInput *pin)
 void MeshBlock::ProblemGenerator(ParameterInput *pin) {
   srand(Globals::my_rank + time(0));
-
   auto pexo3 = pimpl->pexo3;
   auto pthermo = Thermodynamics::GetInstance();
-
   AirParcel air(AirParcel::Type::MoleFrac);
-  srand(Globals::my_rank + time(0));
+  // estimate surface temperature and pressure
+  // thermodynamic constants
+  // mesh limits
+  Real x1min = pmy_mesh->mesh_size.x1min;
+  Real x1max = pmy_mesh->mesh_size.x1max;
+  Real Rd = pthermo->GetRd();
+  Real cp = gammad / (gammad - 1.) * Rd;
+
+  // estimate surface temperature and pressure
+  Real Ts = T0 - grav / cp * (x1min - radius);
+  Real Ps = P0 * pow(Ts / T0, cp / Rd);
 
   // construct atmosphere from bottom up
   for (int k = ks; k <= ke; ++k)

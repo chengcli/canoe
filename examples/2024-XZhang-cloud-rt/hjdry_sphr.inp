@@ -91,7 +91,7 @@ HJ.equinox    = 0.
 <radiation>
 dt            = 100.
 nstr          = 4
-radiation_config = hjupiter.yaml
+radiation_config = hjdry.yaml
 relax_time    = 1.E2
 
 <forcing>
@@ -104,8 +104,8 @@ relax_bot_temp.tem     = 1955.7
 relax_bot_temp.tau     = 1.E3
 
 <problem>
-Ts         = 1955.7            # Surface temperature, K
-Ps         = 1.E7             # Surface pressure, Pa
+T0         = 1955.7        # Reference temperature, K
+P0         = 1.E7          # Reference pressure, Pa
 Omega      = 1.61E-6       # Rotational frequency
 radius     = 3.6E7
 Tmin       = 450.

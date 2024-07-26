@@ -1,0 +1,62 @@
+opacity-sources:
+  - name: jup-vis
+    class: JupGasv
+    parameters: {scale: 1.}
+
+  - name: jup-ir
+    class: JupGasir
+    parameters: {scale: 1.}
+
+  - name: cloud-vis
+    class: SimpleCloud
+    dependent-species: [cloud.H2O(c), cloud.H2O(p)]
+    parameters: {qext: 5., ssa: 0.997, asymf: 0.938, g1: 0.8, g2: -0.7}
+
+  - name: cloud-ir
+    class: SimpleCloud
+    dependent-species: [cloud.H2O(c), cloud.H2O(p)]
+    parameters: {qext: 1., ssa: 0., asymf: 1., g1: 0.5, g2: 0.}
+
+bands: [ir, vis]
+
+ir:
+  units: cm-1
+  grid-type: regular
+  wavenumber-range: [100., 10000.]
+  num-bins: 1
+  #  opacity: [jup-ir, cloud-ir]
+  opacity: [jup-ir]
+  rt-solver: Disort
+#  parameters: {} #assuming Tint = 350. K
+  flags: [broad_band, thermal_emission]
+
+vis:
+  units: cm-1
+  grid-type: regular
+  wavenumber-range: [10000., 50000.]
+  num-bins: 1
+  #  opacity: [jup-vis, cloud-vis]
+  opacity: [jup-vis]
+  rt-solver: Disort
+  #  parameters: {S0: 14.15, dist_au: 1., umu0: 1., phi0: 0.}
+  #  flags: [broad_band]
+  parameters: {S0: 340.25, umu0: 1., phi0: 0.}
+  flags: [broad_band, time_dependent]
+
+Disort-flags:
+  ibcnd: false
+  lamber: true
+  usrtau: false
+  usrang: false
+  onlyfl: true
+  spher: false
+  intensity_correction: true
+  old_intensity_correction: false
+  general_source: false
+  output_uum: false
+  quiet: true
+  print-input: false
+  print-fluxes: false
+  print-intensity: false
+  print-transmissivity: false
+  print-phase-function: false
