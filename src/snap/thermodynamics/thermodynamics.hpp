@@ -61,6 +61,8 @@ class Thermodynamics {
   //! Destroy the one and only instance of Thermodynamics
   static void Destroy();
 
+  size_t SpeciesIndex(std::string const &name) const;
+
   void UpdateThermoProperties();
 
   //! Ideal gas constant of dry air in [J/(kg K)]
@@ -176,6 +178,12 @@ class Thermodynamics {
   template <typename T>
   Real GetGamma(T w) const;
 
+  template <typename T>
+  Real GetEntropy(T w) const;
+
+  template <typename T>
+  Real GetEnthalpy(T w) const;
+
   //! \brief Calculate equivalent potential temperature from primitive variable
   //!
   //! Eq.4.5.11 in Emanuel (1994)
@@ -207,6 +215,9 @@ class Thermodynamics {
 
   void _rk4_integrate_z(Real dlnp, std::string method, Real grav,
                         Real adlnTdlnP) const;
+
+  template <typename T>
+  Real _molar_entropy(T w, int i) const;
 
  protected:
   std::shared_ptr<Cantera::Condensation> kinetics_;

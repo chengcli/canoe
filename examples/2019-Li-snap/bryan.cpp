@@ -64,32 +64,34 @@ void MeshBlock::UserWorkBeforeOutput(ParameterInput *pin) {
     for (int j = js; j <= je; ++j)
       for (int i = is; i <= ie; ++i) {
         user_out_var(0, k, j, i) = pthermo->GetTemp(w.at(k, j, i));
-        user_out_var(1, k, j, i) = pthermo->PotentialTemp(w.at(k, j, i), p0);
+        user_out_var(1, k, j, i) = potential_temp(pthermo, w.at(k, j, i), p0);
         // theta_v
         user_out_var(2, k, j, i) =
-            user_out_var(1, j, i) * pthermo->RovRd(w.at(k, j, i));
-        /* mse
+            virtual_potential_temp(pthermo, w.at(k, j, i), p0);
+        user_out_var(1, j, i) * pthermo->RovRd(w.at(k, j, i));
+        // mse
         user_out_var(3, k, j, i) =
-            pthermo->MoistStaticEnergy(this, grav * pcoord->x1v(i), k, j, i);
+            moist_static_energy(pthermo, w.at(k, j, i), grav * pcoord->x1v(i));
+        // pthermo->MoistEnthalpy(w.at(k, j, i)) + grav * pcoord->x1v(i);
+        user_out_var(3, k, j, i) = pthermo->MoistEntropy(w.at(k, j, i));
         // theta_e
         user_out_var(4, k, j, i) =
-            pthermo->EquivalentPotentialTemp(this, p0, iH2O, k, j, i);
+            equivalent_potential_temp(pthermo, w.at(k, j, i), p0);
         user_out_var(5, k, j, i) =
-            pthermo->RelativeHumidity(this, iH2O, k, j, i);*/
+            relative_humidity(pthermo, w.at(k, j, i), iH2O);
         // total mixing ratio
         user_out_var(6, k, j, i) = w(iH2O, k, j, i) + w(iH2Oc, k, j, i);
       }
 }
 
 void Mesh::InitUserMeshData(ParameterInput *pin) {
-  auto pindex = IndexMap::GetInstance();
-
+  auto pthermo = Thermodynamics::GetInstance();
   grav = -pin->GetReal("hydro", "grav_acc1");
   p0 = pin->GetReal("problem", "p0");
 
   // index
-  iH2O = pindex->GetVaporId("H2O");
-  iH2Oc = pindex->GetCloudId("H2O(c)");
+  iH2O = pthermo->SpeciesIndex("H2O");
+  iH2Oc = pthermo->SpeciesIndex("H2O(c)");
 }
 
 void MeshBlock::ProblemGenerator(ParameterInput *pin) {
@@ -142,8 +144,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
                          [&pthermo, temp_v](Real temp) {
                            pthermo->SetTemperature(temp);
                            pthermo->EquilibrateTP();
-                           Real rovrd = pthermo->RovRd();
-                           return temp * rovrd - temp_v;
+                           return temp * pthermo->RovRd() - temp_v;
                          });
 
           if (err) throw RuntimeError("pgen", "TVSolver doesn't converge");
