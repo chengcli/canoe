@@ -1,10 +1,10 @@
-
-# 1. Compile hywater
 #if (${NVAPOR} EQUAL 1 AND ${NCLOUD} EQUAL 2 AND ${NPHASE_LEGACY} EQUAL 3)
-if (${NVAPOR} EQUAL 2)
-  setup_problem(rtcld)
+if (${NVAPOR} EQUAL 1)
+  setup_problem(rt_silicate)
+  #setup_problem(rt_h2o)
+elseif (${NVAPOR} EQUAL 2)
+  setup_problem(rt_h2o_nh3)
 else()
-  # Compile hjupiter if none of the above conditions are met
   setup_problem(rtdry)
 endif()
 

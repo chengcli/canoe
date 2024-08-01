@@ -37,7 +37,7 @@
 #include <climath/interpolation.h>
 
 // special includes
-#include <special/giants_enroll_vapor_functions_v1.hpp>
+#include "svp_functions.hpp"
 
 // astro
 #include <astro/celestrial_body.hpp>
@@ -51,7 +51,7 @@
 using namespace std;
 
 Real grav, P0, T0, Tmin, Omega, radius;
-int iH2O, iNH3;
+int imgsio3, imgsio3c, imgsio3p;
 
 std::default_random_engine generator;
 std::normal_distribution<double> distribution(0.0, 1.0);
@@ -67,7 +67,8 @@ void MeshBlock::InitUserMeshBlockData(ParameterInput *pin) {
 
   SetUserOutputVariableName(0, "temp");
   SetUserOutputVariableName(1, "theta");
-  SetUserOutputVariableName(2, "thetav");
+  //  SetUserOutputVariableName(2, "thetav");
+  SetUserOutputVariableName(2, "qtol");
   SetUserOutputVariableName(3, "mse");
   SetUserOutputVariableName(4, "pres");
   for (int n = 1; n <= NVAPOR; ++n) {
@@ -94,8 +95,12 @@ void MeshBlock::UserWorkBeforeOutput(ParameterInput *pin) {
         user_out_var(0, k, j, i) = pthermo->GetTemp(this, k, j, i);
         user_out_var(1, k, j, i) = pthermo->PotentialTemp(this, P0, k, j, i);
         // theta_v
+        //        user_out_var(2, k, j, i) =
+        //            user_out_var(1, k, j, i) * pthermo->RovRd(this, k, j, i);
+        // total mixing ratio
+        auto &&air = AirParcelHelper::gather_from_primitive(this, k, j, i);
         user_out_var(2, k, j, i) =
-            user_out_var(1, k, j, i) * pthermo->RovRd(this, k, j, i);
+            air.w[imgsio3] + air.c[imgsio3c] + air.c[imgsio3p];
         // mse
         user_out_var(3, k, j, i) = pthermo->MoistStaticEnergy(
             this, grav * (pcoord->x1v(i) - radius), k, j, i);
@@ -180,8 +185,9 @@ void Mesh::InitUserMeshData(ParameterInput *pin) {
 
   // index
   auto pindex = IndexMap::GetInstance();
-  iH2O = pindex->GetVaporId("H2O");
-  iNH3 = pindex->GetVaporId("NH3");
+  imgsio3 = pindex->GetVaporId("mgsio3");
+  imgsio3c = pindex->GetCloudId("mgsio3(c)");
+  imgsio3p = pindex->GetCloudId("mgsio3(p)");
   EnrollUserExplicitSourceFunction(Forcing);
 }
 
@@ -206,13 +212,11 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
   // estimate surface temperature and pressure
   Real Ts = T0 - grav / cp * (x1min - radius);
   Real Ps = P0 * pow(Ts / T0, cp / Rd);
-  Real xH2O = pin->GetReal("problem", "qH2O.ppmv") / 1.E6;
-  Real xNH3 = pin->GetReal("problem", "qNH3.ppmv") / 1.E6;
+  Real xmgsio3 = pin->GetReal("problem", "qmgsio3.ppmv") / 1.E6;
 
   while (iter++ < max_iter) {
     // read in vapors
-    air.w[iH2O] = xH2O;
-    air.w[iNH3] = xNH3;
+    air.w[imgsio3] = xmgsio3;
     air.w[IPR] = Ps;
     air.w[IDN] = Ts;
 
@@ -235,8 +239,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
   for (int k = ks; k <= ke; ++k)
     for (int j = js; j <= je; ++j) {
       air.SetZero();
-      air.w[iH2O] = xH2O;
-      air.w[iNH3] = xNH3;
+      air.w[imgsio3] = xmgsio3;
       air.w[IPR] = Ps;
       air.w[IDN] = Ts;
 

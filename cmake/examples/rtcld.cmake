@@ -9,10 +9,9 @@ endmacro()
 # athena variables
 set_if_empty(NUMBER_GHOST_CELLS 3)
 
-# canoe configure
-set(CUBED_SPHERE ON)
-set(NVAPOR 2)
-set(NCLOUD 4)
+# canoe configure set(CUBED_SPHERE ON) set(NVAPOR 2) set(NCLOUD 4)
+set(NVAPOR 1)
+set(NCLOUD 2)
 set(NPHASE_LEGACY 3)
 set(PNETCDF ON)
 set(MPI ON)

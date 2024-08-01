@@ -1,0 +1,100 @@
+#kcl, zns, na2s, mns, cr, mgsio3, fe, tio2-h, al2o3 clouds
+qvapor1     = 2.253e-05
+qvapor2     = 1.025e-05
+qvapor3     = 1.792e-04
+qvapor4     = 6.471e-05
+qvapor5     = 6.341e-05
+qvapor6     = 8.161e-03
+qvapor7     = 4.438e-03
+qvapor8     = 1.856e-05
+qvapor9     = 6.921e-04
+
+<thermodynamics>
+Rd          = 3615.000
+eps1        = 32.391  32.391  32.391
+beta1       = 0.000  26.208  26.208
+rcp1        = 0.      0.    0.
+Ttriple1    = 1000.000
+Ptriple1    = 16.928
+
+eps2        = 42.380  42.380  42.380
+beta2       = 0.000  36.549  36.549
+rcp2        = 0.      0.    0.
+Ttriple2    = 1000.000
+Ptriple2    = 27.479
+
+eps3        = 33.933  33.933  33.933
+beta3       = 0.000  26.651  26.651
+rcp3        = 0.      0.    0.
+Ttriple3    = 1200.000
+Ptriple3    = 53.190
+
+eps4        = 37.827  37.827  37.827
+beta4       = 0.000  36.550  36.550
+rcp4        = 0.      0.    0.
+Ttriple4    = 1500.000
+Ptriple4    = 1.441
+
+eps5        = 22.607  22.607  22.607
+beta5       = 0.000  27.891  27.891
+rcp5        = 0.      0.    0.
+Ttriple5    = 1700.000
+Ptriple5    = 2.383
+
+eps6        = 43.478  43.478  43.478
+beta6       = 0.000  36.909  36.909
+rcp6        = 0.      0.    0.
+Ttriple6    = 1700.000
+Ptriple6    = 6.318
+
+eps7        = 24.280  24.280  24.280
+beta7       = 0.000  28.437  28.437
+rcp7        = 0.      0.    0.
+Ttriple7    = 1700.000
+Ptriple7    = 0.759
+
+eps8        = 34.724  34.724  34.724
+beta8       = 0.000  33.970  33.970
+rcp8        = 0.      0.    0.
+Ttriple8    = 2200.000
+Ptriple8    = 0.625
+
+eps9        = 44.331  44.331  44.331
+beta9       = 0.000  48.033  48.033
+rcp9        = 0.      0.    0.
+Ttriple9    = 2200.000
+Ptriple9    = 10.222
+
+#H2O
+eps1        = 8.18    8.18    8.18
+beta1       = 0.      24.85   24.85
+rcp1        = 0.15    0.33    0.33
+Ttriple1    = 273.16
+Ptriple1    = 611.7
+
+double sat_vapor_p_H2O(double T) {
+  double betal = 24.845, gammal = -2.1735, tr = 273.16, pr = 611.7;
+  return SatVaporPresIdeal(T / tr, pr, betal, gammal);
+
+
+inline double sat_vapor_p_H2O_Ideal(double T) {
+  double betal = 24.845, gammal = 4.986009, betas = 22.98, gammas = 0.52,
+         tr = 273.16, pr = 611.7;
+  return T > tr ? svph2o(T / tr, pr, betal, gammal)
+                : svph2o(T / tr, pr, betas, gammas);
+}
+
+#NH3
+eps2        = 7.72    7.72    7.72
+beta2       = 0.      23.67   23.67
+rcp2        = 0.08    0.37    0.37
+Ttriple2    = 195.4
+Ptriple2    = 6060.
+
+inline double sat_vapor_p_NH3_Ideal(double T) {
+  double betal = 20.08, gammal = 5.62, betas = 20.64, gammas = 1.43, tr = 195.4,
+         pr = 6060.;
+
+  return T > tr ? svpnh3(T / tr, pr, betal, gammal)
+                : svpnh3(T / tr, pr, betas, gammas);
+}
