@@ -15,11 +15,14 @@ if (${Torch_FOUND})
   setup_test(test_reconstruct)
   setup_test(test_riemann)
   setup_test(test_hydro)
-  setup_test(test_thermodynamics)
 endif()
 
 # athena tests
 setup_test(test_mesh)
+
+if (${NVAPOR} EQUAL 3 AND ${NCLOUD} EQUAL 5)
+  setup_test(test_jup_thermo)
+endif()
 
 setup_test(test_glog)
 setup_test(test_absorber)
@@ -60,5 +63,5 @@ endif()
 # copy yaml files
 file(GLOB inputs *.inp *.yaml)
 foreach(input ${inputs})
-    file(COPY ${input} DESTINATION ${CMAKE_BINARY_DIR}/tests)
+  execute_process(COMMAND ln -sf ${input} ${CMAKE_BINARY_DIR}/tests/)
 endforeach()

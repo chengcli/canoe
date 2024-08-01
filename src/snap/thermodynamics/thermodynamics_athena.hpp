@@ -143,13 +143,13 @@ Real Thermodynamics::GetPres(StrideIterator<T*> u, StrideIterator<T*> m) const {
   return igm1 * (u[IEN] - KE) * feps / fsig;
 }
 
-template <typename T>
+/*template <typename T>
 Real _molar_entropy(T w, int i) const {
   if (i <= NVAPOR) {  // vapor
   }
 }
 
-/*template <typename T>
+template <typename T>
 Real Thermodynamics::EquivalentPotentialTemp(T w) {
 #if (NVAPOR > 0)
   Real cpd = GetRd() * gammad_ / (gammad_ - 1.);

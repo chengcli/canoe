@@ -60,7 +60,7 @@ void MeshBlock::UserWorkBeforeOutput(ParameterInput *pin) {
   auto pthermo = Thermodynamics::GetInstance();
   auto &w = phydro->w;
 
-  for (int k = ks; k <= ke; ++k)
+  /*for (int k = ks; k <= ke; ++k)
     for (int j = js; j <= je; ++j)
       for (int i = is; i <= ie; ++i) {
         user_out_var(0, k, j, i) = pthermo->GetTemp(w.at(k, j, i));
@@ -81,7 +81,7 @@ void MeshBlock::UserWorkBeforeOutput(ParameterInput *pin) {
             relative_humidity(pthermo, w.at(k, j, i), iH2O);
         // total mixing ratio
         user_out_var(6, k, j, i) = w(iH2O, k, j, i) + w(iH2Oc, k, j, i);
-      }
+      }*/
 }
 
 void Mesh::InitUserMeshData(ParameterInput *pin) {

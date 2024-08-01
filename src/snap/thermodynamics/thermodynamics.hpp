@@ -28,6 +28,7 @@ class ParameterInput;
 namespace Cantera {
 class ThermoPhase;
 class Condensation;
+class Kinetics;
 }  // namespace Cantera
 
 // Thermodynamic variables are ordered in the array as the following
@@ -85,10 +86,15 @@ class Thermodynamics {
   //! \return $\epsilon_i^{-1} =\mu_d/\mu_i$
   Real GetInvMuRatio(int n) const { return inv_mu_ratio_[n]; }
 
-  //! Ratio of specific heat capacity [J/(kg K)] at constant volume [1]
+  //! Ratio of specific heat capacity [J/(kg K)] at constant volume
   //! \param[in] n the index of the thermodynamic species
   //! \return $c_{v,i}/c_{v,d}$
   Real GetCvRatio(int n) const { return cv_ratio_[n]; }
+
+  //! Ratio of specific heat capacity [J/(kg K)] at constant pressure
+  //! \param[in] n the index of the thermodynamic species
+  //! \return $c_{p,i}/c_{p,d}$
+  Real GetCpRatio(int n) const { return cp_ratio_[n]; }
 
   //! Construct an 1d atmosphere
   //! \param[in,out] qfrac mole fraction representation of air parcel

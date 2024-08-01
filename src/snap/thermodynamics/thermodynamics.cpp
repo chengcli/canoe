@@ -90,6 +90,15 @@ Thermodynamics* Thermodynamics::fromYAMLInput(std::string const& fname) {
   auto& kinetics = mythermo_->kinetics_;
   kinetics = std::static_pointer_cast<Cantera::Condensation>(
       Cantera::newKinetics({thermo}, fname));
+
+  // finalize setup the thermo manager for clouds
+  auto& sp = kinetics->thermo().speciesThermo();
+  for (int n = 1 + NVAPOR; n < Size; ++n) {
+    auto name = kinetics->kineticsSpeciesName(n);
+    sp.getSpeciesThermo(n)->updateFromKinetics(name, *kinetics);
+  }
+
+  // update temperature dependent thermodynamic properties
   mythermo_->UpdateThermoProperties();
 
   return mythermo_;
@@ -138,6 +147,10 @@ void Thermodynamics::Destroy() {
   }
 }
 
+size_t Thermodynamics::SpeciesIndex(std::string const& name) const {
+  return kinetics_->kineticsSpeciesIndex(name);
+}
+
 Real Thermodynamics::GetTemp() const {
   return kinetics_->thermo().temperature();
 }
@@ -153,8 +166,13 @@ Real Thermodynamics::RovRd() const {
   kinetics_->thermo().getMassFractions(w.data());
 
   Real feps = 1.;
-  for (int n = 1; n <= NVAPOR; ++n) feps += w[n] * (inv_mu_ratio_[n] - 1.);
-  for (int n = 1 + NVAPOR; n < Size; ++n) feps -= w[n];
+  for (int n = 1; n <= NVAPOR; ++n) {
+    feps += w[n] * (inv_mu_ratio_[n] - 1.);
+  }
+
+  for (int n = 1 + NVAPOR; n < Size; ++n) {
+    feps -= w[n];
+  }
   return feps;
 }
 
