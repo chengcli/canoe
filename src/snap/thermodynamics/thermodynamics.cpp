@@ -92,11 +92,7 @@ Thermodynamics* Thermodynamics::fromYAMLInput(std::string const& fname) {
       Cantera::newKinetics({thermo}, fname));
 
   // finalize setup the thermo manager for clouds
-  auto& sp = kinetics->thermo().speciesThermo();
-  for (int n = 1 + NVAPOR; n < Size; ++n) {
-    auto name = kinetics->kineticsSpeciesName(n);
-    sp.getSpeciesThermo(n)->updateFromKinetics(name, *kinetics);
-  }
+  thermo->updateFromKinetics(*kinetics);
 
   // update temperature dependent thermodynamic properties
   mythermo_->UpdateThermoProperties();
@@ -199,3 +195,8 @@ void Thermodynamics::Extrapolate_inplace(Real dzORdlnp, std::string method,
 }
 
 Thermodynamics* Thermodynamics::mythermo_ = nullptr;
+
+std::shared_ptr<Cantera::Condensation> get_kinetics_object(
+    Thermodynamics const* pthermo) {
+  return pthermo->kinetics_;
+}

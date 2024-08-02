@@ -43,37 +43,52 @@ species:
   - name: H2O(l)
     composition: {H: 2, O: 1}
     thermo:
-      model: constant-cp-cloud
+      model: constant-cp
       cp0: 75.3 J/mol/K
       h0: -28.5 kJ/mol
+    equation-of-state:
+      model: constant-volume
+      molar-volume: 0.0 cm^3/mol
 
   - name: NH3(l)
     composition: {N: 1, H: 3}
     thermo:
-      model: constant-cp-cloud
+      model: constant-cp
       cp0: 80.0 J/mol/K
       h0: -45.9 kJ/mol
+    equation-of-state:
+      model: constant-volume
+      molar-volume: 0.0 cm^3/mol
 
   - name: H2O(s)
     composition: {H: 2, O: 1}
     thermo:
-      model: constant-cp-cloud
+      model: constant-cp
       cp0: 75.3 J/mol/K
       h0: -28.5 kJ/mol
+    equation-of-state:
+      model: constant-volume
+      molar-volume: 0.0 cm^3/mol
 
   - name: NH3(s)
     composition: {N: 1, H: 3}
     thermo:
-      model: constant-cp-cloud
+      model: constant-cp
       cp0: 80.0 J/mol/K
       h0: -45.9 kJ/mol
+    equation-of-state:
+      model: constant-volume
+      molar-volume: 0.0 cm^3/mol
 
   - name: NH4SH(s)
     composition: {N: 1, H: 5, S: 1}
     thermo:
-      model: constant-cp-cloud
+      model: constant-cp
       cp0: 80.0 J/mol/K
       h0: -105.9 kJ/mol
+    equation-of-state:
+      model: constant-volume
+      molar-volume: 0.0 cm^3/mol
 
 reactions:
   - equation: H2O <=> H2O(l)

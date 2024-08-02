@@ -83,6 +83,7 @@ template <typename T>
 void Thermodynamics::GetConserved(StrideIterator<T*> u) const {
   auto& thermo = kinetics_->thermo();
   thermo.getDensities(&u[0], /*stride=*/u.stride());
+  // TODO: add internal energy
 }
 
 template <typename T>

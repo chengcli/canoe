@@ -25,7 +25,10 @@ void Thermodynamics::EquilibrateUV() const {
     std::cout << "Iteration " << iter << std::endl;*/
 
     Real temp = thermo.temperature();
-    // Real pres = thermo.pressure();
+    Real pres = thermo.pressure();
+
+    /*std::cout << "temp = " << temp << std::endl;
+    std::cout << "pres = " << pres << std::endl;*/
 
     // get concentration
     kinetics_->getActivityConcentrations(conc.data());
@@ -35,9 +38,9 @@ void Thermodynamics::EquilibrateUV() const {
     Real cc = conc.dot(cv);
     Real uc = conc.dot(intEng);
 
-    /*std::cout << "internal energy 1 = " << uc * temp << std::endl;
+    // std::cout << "internal energy 1 = " << uc * temp << std::endl;
 
-    // print initial conditions
+    /* print initial conditions
     std::cout << "Concentration" << std::endl;
     for (size_t i = 0; i < conc.size(); ++i) {
       std::cout << "Concentration" << i << ": " << conc[i] << std::endl;
@@ -68,7 +71,6 @@ void Thermodynamics::EquilibrateUV() const {
     thermo.getCv_R(cv.data());
     std::cout << "internal energy 2 = "
               << conc.dot(intEng) * thermo.temperature() << std::endl;
-
     std::cout << "T = " << thermo.temperature() << std::endl;
     std::cout << "P = " << thermo.pressure() << std::endl;
     std::cout << "D = " << thermo.density() << std::endl;*/

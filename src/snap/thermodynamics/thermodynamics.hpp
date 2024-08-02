@@ -37,6 +37,9 @@ class Kinetics;
 // NVAPOR+1..NVAPOR+NCLOUD: clouds
 
 class Thermodynamics {
+  friend std::shared_ptr<Cantera::Condensation> get_kinetics_object(
+      Thermodynamics const *pthermo);
+
  protected:
   //! Constructor for class sets up the initial conditions
   //! Protected ctor access thru static member function Instance

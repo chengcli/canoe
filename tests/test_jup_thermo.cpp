@@ -117,15 +117,15 @@ TEST_F(TestThermodynamics, equilibrium_tp) {
   pthermo->GetPrimitive<Real>(prim.data());
 
   // density
-  EXPECT_NEAR(prim[0], 0.447323, 1e-5);
+  EXPECT_NEAR(prim[0], 0.573594, 1e-5);
   // H2O
-  EXPECT_NEAR(prim[1], 0.0571486, 1e-5);
+  EXPECT_NEAR(prim[1], 0.0445668, 1e-5);
   // NH3
   EXPECT_NEAR(prim[2], 0.333324, 1e-5);
   // H2S
   EXPECT_NEAR(prim[3], 0.166676, 1e-5);
   // H2O(l)
-  EXPECT_NEAR(prim[4], 0.342851, 1e-5);
+  EXPECT_NEAR(prim[4], 0.355433, 1e-5);
   // NH3(l)
   EXPECT_NEAR(prim[5], 0., 1e-3);
   // H2O(s)
@@ -144,6 +144,51 @@ TEST_F(TestThermodynamics, equilibrium_tp) {
   EXPECT_NEAR(prim[12], 100000, 1e-3);
 }
 
+TEST_F(TestThermodynamics, thermodynamics) {
+  auto pthermo = Thermodynamics::GetInstance();
+
+  std::vector<Real> yfrac = {0.1, 0.2, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1};
+
+  Real temp = 300.;
+  Real pres = 1.e5;
+
+  pthermo->SetMassFractions<Real>(yfrac.data());
+  pthermo->SetTemperature(temp);
+  pthermo->SetPressure(pres);
+
+  auto& thermo = get_kinetics_object(pthermo)->thermo();
+
+  std::vector<Real> cp(Thermodynamics::Size);
+  std::vector<Real> cv(Thermodynamics::Size);
+  std::vector<Real> enthalpy(Thermodynamics::Size);
+  std::vector<Real> entropy(Thermodynamics::Size);
+  std::vector<Real> intEng(Thermodynamics::Size);
+
+  // heat capacity
+  thermo.getCv_R(cv.data());
+  for (auto& v : cv) v *= Constants::Rgas;
+
+  thermo.getCp_R(cp.data());
+  for (auto& v : cp) v *= Constants::Rgas;
+
+  thermo.getEnthalpy_RT(enthalpy.data());
+  for (auto& v : enthalpy) v *= Constants::Rgas * temp;
+
+  thermo.getIntEnergy_RT(intEng.data());
+  for (auto& v : intEng) v *= Constants::Rgas * temp;
+
+  thermo.getEntropy_R(entropy.data());
+  for (auto& v : entropy) v *= Constants::Rgas;
+
+  for (int i = 0; i < Thermodynamics::Size; ++i) {
+    std::cout << "cv[" << i << "] = " << cv[i] << ", "
+              << "cp[" << i << "] = " << cp[i] << ", "
+              << "enthalpy[" << i << "] = " << enthalpy[i] << ", "
+              << "entropy[" << i << "] = " << entropy[i] << ", "
+              << "intEng[" << i << "] = " << intEng[i] << std::endl;
+  }
+}
+
 TEST_F(TestThermodynamics, equilibrium_uv) {
   auto pthermo = Thermodynamics::GetInstance();
 
@@ -157,8 +202,10 @@ TEST_F(TestThermodynamics, equilibrium_uv) {
   std::cout << std::endl;
 
   pthermo->SetMassFractions<Real>(yfrac.data());
-  pthermo->SetTemperature(300.);
+  pthermo->SetTemperature(200.);
   pthermo->SetPressure(1.e5);
+
+  std::cout << "Density = " << pthermo->GetDensity() << std::endl;
 
   pthermo->EquilibrateUV();
   pthermo->GetPrimitive<Real>(prim.data());
