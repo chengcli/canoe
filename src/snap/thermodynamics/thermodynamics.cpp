@@ -181,7 +181,7 @@ void Thermodynamics::SetTemperature(Real temp) const {
 }
 
 void Thermodynamics::SetPressure(Real pres) const {
-  kinetics_->thermo().setTemperature(pres);
+  kinetics_->thermo().setPressure(pres);
 }
 
 void Thermodynamics::SetDensity(Real dens) const {

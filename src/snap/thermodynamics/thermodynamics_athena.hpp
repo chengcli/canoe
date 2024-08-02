@@ -45,6 +45,12 @@ inline Real Thermodynamics::GetCv(AirParcel air) const {
 }
 
 template <typename T>
+void Thermodynamics::SetMassFractions(StrideIterator<T*> w) const {
+  auto& thermo = kinetics_->thermo();
+  thermo.setMassFractions(&w[0], /*stride=*/w.stride());
+}
+
+template <typename T>
 void Thermodynamics::SetPrimitive(StrideIterator<T*> w) const {
   auto& thermo = kinetics_->thermo();
 
@@ -69,6 +75,8 @@ template <typename T>
 void Thermodynamics::GetPrimitive(StrideIterator<T*> w) const {
   auto& thermo = kinetics_->thermo();
   thermo.getMassFractionsPartial(&w[1], /*stride=*/w.stride());
+  w[IDN] = thermo.density();
+  w[IPR] = thermo.pressure();
 }
 
 template <typename T>
@@ -80,8 +88,14 @@ void Thermodynamics::GetConserved(StrideIterator<T*> u) const {
 template <typename T>
 Real Thermodynamics::RovRd(T w) const {
   Real feps = 1.;
-  for (int n = 1; n <= NVAPOR; ++n) feps += w[n] * (inv_mu_ratio_[n] - 1.);
-  for (int n = 1 + NVAPOR; n < Size; ++n) feps -= w[n];
+  for (int n = 1; n <= NVAPOR; ++n) {
+    feps += w[n] * (inv_mu_ratio_[n] - 1.);
+  }
+
+  for (int n = 1 + NVAPOR; n < Size; ++n) {
+    feps -= w[n];
+  }
+
   return feps;
 }
 

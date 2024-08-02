@@ -23,6 +23,10 @@ void Thermodynamics::EquilibrateTP() const {
     // get mole fraction
     kinetics_->getActivityConcentrations(xfrac.data());
     kinetics_->getNetProductionRates(rates.data());
+    for (size_t i = 0; i < rates.size(); ++i) {
+      std::cout << rates[i] << ", ";
+    }
+    std::cout << std::endl;
 
     // update mole fraction
     for (size_t i = 1; i < rates.size(); ++i) {

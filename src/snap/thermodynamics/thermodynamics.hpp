@@ -113,20 +113,18 @@ class Thermodynamics {
   void EquilibrateUV() const;
 
   void SetTemperature(Real temp) const;
-
   void SetPressure(Real pres) const;
-
   void SetDensity(Real dens) const;
+  template <typename T>
+  void SetMassFractions(StrideIterator<T *> w) const;
 
   template <typename T>
   void SetPrimitive(StrideIterator<T *> w) const;
-
   template <typename T>
   void GetPrimitive(StrideIterator<T *> w) const;
 
   template <typename T>
   void SetConserved(StrideIterator<T *> u, StrideIterator<T *> m) const;
-
   template <typename T>
   void GetConserved(StrideIterator<T *> u) const;
 

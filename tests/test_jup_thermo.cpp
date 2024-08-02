@@ -86,17 +86,17 @@ TEST_F(TestThermodynamics, vapors) {
 
   // 3. H2S
   EXPECT_NEAR(pthermo->GetInvMuRatio(3), 0.0685, 1e-3);
-  EXPECT_NEAR(pthermo->GetCvRatio(3), 0.0956, 1e-2);
-  EXPECT_NEAR(pthermo->GetCpRatio(3), 0.0878, 1e-2);
+  EXPECT_NEAR(pthermo->GetCvRatio(3), 0.0956, 1e-3);
+  EXPECT_NEAR(pthermo->GetCpRatio(3), 0.0878, 1e-3);
 
   // 4. H2O(l)
-  EXPECT_NEAR(pthermo->GetInvMuRatio(4), 0.129, 1e-2);
-  EXPECT_NEAR(pthermo->GetCvRatio(4), 0.462, 1e-2);
-  EXPECT_NEAR(pthermo->GetCpRatio(4), 0.33, 1e-2);
+  EXPECT_NEAR(pthermo->GetInvMuRatio(4), 0.129, 1e-3);
+  EXPECT_NEAR(pthermo->GetCvRatio(4), 0.468, 1e-3);
+  EXPECT_NEAR(pthermo->GetCpRatio(4), 0.334, 1e-3);
 
   // 5. NH3(l)
-  EXPECT_NEAR(pthermo->GetCvRatio(5), 0.526, 1e-2);
-  EXPECT_NEAR(pthermo->GetCpRatio(5), 0.375, 1e-2);
+  EXPECT_NEAR(pthermo->GetCvRatio(5), 0.526, 1e-3);
+  EXPECT_NEAR(pthermo->GetCpRatio(5), 0.375, 1e-3);
 
   // 6. H2O(s)
   // 7. NH3(s)
@@ -106,43 +106,68 @@ TEST_F(TestThermodynamics, vapors) {
 TEST_F(TestThermodynamics, equilibrium_tp) {
   auto pthermo = Thermodynamics::GetInstance();
 
-  std::vector<Real> yfrac = {300., 0.2, 0.1, 0.1, 0.1, 0.1, 0.1,
-                             0.1,  0.1, 0.,  0.,  0.,  1.e5};
+  std::vector<Real> yfrac = {0.1, 0.2, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1};
+  std::vector<Real> prim(NHYDRO, 0.);
 
-  std::cout << "Before: " << std::endl;
-  for (int i = 0; i < yfrac.size(); ++i) {
-    std::cout << yfrac[i] << ", ";
-  }
+  pthermo->SetMassFractions<Real>(yfrac.data());
+  pthermo->SetTemperature(300.);
+  pthermo->SetPressure(1.e5);
 
-  pthermo->SetPrimitive<Real>(yfrac.data());
   pthermo->EquilibrateTP();
-  pthermo->GetPrimitive<Real>(yfrac.data());
+  pthermo->GetPrimitive<Real>(prim.data());
 
-  std::cout << "After: " << std::endl;
-  for (int i = 0; i < yfrac.size(); ++i) {
-    std::cout << yfrac[i] << ", ";
-  }
+  // density
+  EXPECT_NEAR(prim[0], 0.447323, 1e-5);
+  // H2O
+  EXPECT_NEAR(prim[1], 0.0571486, 1e-5);
+  // NH3
+  EXPECT_NEAR(prim[2], 0.333324, 1e-5);
+  // H2S
+  EXPECT_NEAR(prim[3], 0.166676, 1e-5);
+  // H2O(l)
+  EXPECT_NEAR(prim[4], 0.342851, 1e-5);
+  // NH3(l)
+  EXPECT_NEAR(prim[5], 0., 1e-3);
+  // H2O(s)
+  EXPECT_NEAR(prim[6], 0., 1e-3);
+  // NH3(s)
+  EXPECT_NEAR(prim[7], 0., 1e-3);
+  // NH4SH(s)
+  EXPECT_NEAR(prim[8], 0., 1e-3);
+  // vel1
+  EXPECT_NEAR(prim[9], 0., 1e-3);
+  // vel2
+  EXPECT_NEAR(prim[10], 0., 1e-3);
+  // vel3
+  EXPECT_NEAR(prim[11], 0., 1e-3);
+  // pressure
+  EXPECT_NEAR(prim[12], 100000, 1e-3);
 }
 
 TEST_F(TestThermodynamics, equilibrium_uv) {
   auto pthermo = Thermodynamics::GetInstance();
 
-  std::vector<Real> yfrac = {200., 0.2, 0.1, 0.1, 0.1, 0.1, 0.1,
-                             0.1,  0.1, 0.,  0.,  0.,  1.e5};
+  std::vector<Real> yfrac = {0.1, 0.2, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1};
+  std::vector<Real> prim(NHYDRO, 0.);
 
   std::cout << "Before: " << std::endl;
   for (int i = 0; i < yfrac.size(); ++i) {
     std::cout << yfrac[i] << ", ";
   }
+  std::cout << std::endl;
 
-  pthermo->SetPrimitive<Real>(yfrac.data());
+  pthermo->SetMassFractions<Real>(yfrac.data());
+  pthermo->SetTemperature(300.);
+  pthermo->SetPressure(1.e5);
+
   pthermo->EquilibrateUV();
-  pthermo->GetPrimitive<Real>(yfrac.data());
+  pthermo->GetPrimitive<Real>(prim.data());
 
   std::cout << "After: " << std::endl;
-  for (int i = 0; i < yfrac.size(); ++i) {
-    std::cout << yfrac[i] << ", ";
+  for (int i = 0; i < prim.size(); ++i) {
+    std::cout << prim[i] << ", ";
   }
+  std::cout << std::endl;
 }
 
 int main(int argc, char* argv[]) {
