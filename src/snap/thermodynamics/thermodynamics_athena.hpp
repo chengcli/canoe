@@ -136,21 +136,21 @@ template <typename T>
 Real Thermodynamics::GetEnthalpy(T w) const {
   SetPrimitive(w);
   auto enthalpy = kinetics_->thermo().enthalpy_mole();
-  return enthalpy * kinetics_->thermo().meanMolecularWeight();
+  return enthalpy / kinetics_->thermo().meanMolecularWeight();
 }
 
 template <typename T>
 Real Thermodynamics::GetEntropy(T w) const {
   SetPrimitive(w);
   auto entropy = kinetics_->thermo().entropy_mole();
-  return entropy * kinetics_->thermo().meanMolecularWeight();
+  return entropy / kinetics_->thermo().meanMolecularWeight();
 }
 
 template <typename T>
 Real Thermodynamics::GetInternalEnergy(T w) const {
   SetPrimitive(w);
   auto intEnergy = kinetics_->thermo().intEnergy_mole();
-  return intEnergy * kinetics_->thermo().meanMolecularWeight();
+  return intEnergy / kinetics_->thermo().meanMolecularWeight();
 }
 
 template <typename T>
