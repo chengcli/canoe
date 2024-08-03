@@ -26,7 +26,7 @@ species:
       h0: -28.5 kJ/mol
     equation-of-state:
       model: constant-volume
-      density: 1.0 g/cm^3
+      molar-volume: 0.0 cm^3/mol
 
 reactions:
   - equation: H2O <=> H2O(l)

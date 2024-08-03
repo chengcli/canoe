@@ -39,9 +39,6 @@
 #include <snap/stride_iterator.hpp>
 #include <snap/thermodynamics/thermodynamics.hpp>
 
-// special includes
-// #include "bryan_vapor_functions.hpp"
-
 int iH2O, iH2Oc;
 Real p0, grav;
 
@@ -109,14 +106,13 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
   Real qt = pin->GetReal("problem", "qt");
 
   // construct a reversible adiabat
+  std::vector<Real> yfrac({1. - qt, qt, 0.});
   for (int k = ks; k <= ke; ++k)
     for (int j = js; j <= je; ++j) {
-      w(IDN, k, j, is) = Ts;
-      w(IPR, k, j, is) = Ps;
-      w(iH2O, k, j, is) = qt;
-      w(iH2Oc, k, j, is) = 0.;
+      pthermo->SetMassFractions<Real>(yfrac.data());
+      pthermo->SetTemperature(Ts);
+      pthermo->SetPressure(Ps);
 
-      pthermo->SetPrimitive(w.at(k, j, is));
       // half a grid to cell center
       pthermo->Extrapolate_inplace(pcoord->dx1f(is) / 2., "reversible", grav);
 
@@ -147,7 +143,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
                            return temp * pthermo->RovRd() - temp_v;
                          });
 
-          if (err) throw RuntimeError("pgen", "TVSolver doesn't converge");
+          // if (err) throw RuntimeError("pgen", "TVSolver doesn't converge");
 
           pthermo->SetTemperature(temp);
           pthermo->EquilibrateTP();

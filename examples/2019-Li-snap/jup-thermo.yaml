@@ -48,7 +48,7 @@ species:
       h0: -28.5 kJ/mol
     equation-of-state:
       model: constant-volume
-      density: 1.0 g/cm^3
+      molar-volume: 0.0 cm^3/mol
 
   - name: NH3(l)
     composition: {N: 1, H: 3}
@@ -58,7 +58,7 @@ species:
       h0: -45.9 kJ/mol
     equation-of-state:
       model: constant-volume
-      density: 1.0 g/cm^3
+      molar-volume: 0.0 cm^3/mol
 
   - name: H2O(s)
     composition: {H: 2, O: 1}
@@ -68,7 +68,7 @@ species:
       h0: -28.5 kJ/mol
     equation-of-state:
       model: constant-volume
-      density: 0.917 g/cm^3
+      molar-volume: 0.0 cm^3/mol
 
   - name: NH3(s)
     composition: {N: 1, H: 3}
@@ -78,7 +78,7 @@ species:
       h0: -45.9 kJ/mol
     equation-of-state:
       model: constant-volume
-      density: 0.917 g/cm^3
+      molar-volume: 0.0 cm^3/mol
 
   - name: NH4SH(s)
     composition: {N: 1, H: 5, S: 1}
@@ -88,7 +88,7 @@ species:
       h0: -105.9 kJ/mol
     equation-of-state:
       model: constant-volume
-      density: 1.5 g/cm^3
+      molar-volume: 0.0 cm^3/mol
 
 reactions:
   - equation: H2O <=> H2O(l)
