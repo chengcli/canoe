@@ -110,10 +110,7 @@ TEST_F(TestThermodynamics, equilibrium_tp) {
   std::vector<Real> prim(NHYDRO, 0.);
 
   pthermo->SetMassFractions<Real>(yfrac.data());
-  pthermo->SetTemperature(300.);
-  pthermo->SetPressure(1.e5);
-
-  pthermo->EquilibrateTP();
+  pthermo->EquilibrateTP(300., 1.e5);
   pthermo->GetPrimitive<Real>(prim.data());
 
   // density

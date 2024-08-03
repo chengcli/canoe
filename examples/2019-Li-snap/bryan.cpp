@@ -38,31 +38,43 @@
 // snap
 #include <snap/stride_iterator.hpp>
 #include <snap/thermodynamics/thermodynamics.hpp>
+// #include <snap/thermodynamics/atm_thermodynamics.hpp>
 
 int iH2O, iH2Oc;
 Real p0, grav;
 
 void MeshBlock::InitUserMeshBlockData(ParameterInput *pin) {
-  AllocateUserOutputVariables(7);
+  AllocateUserOutputVariables(11);
   SetUserOutputVariableName(0, "temp");
-  SetUserOutputVariableName(1, "theta");
-  SetUserOutputVariableName(2, "theta_v");
-  SetUserOutputVariableName(3, "mse");
-  SetUserOutputVariableName(4, "theta_e");
-  SetUserOutputVariableName(5, "rh");
-  SetUserOutputVariableName(6, "qtol");
+  SetUserOutputVariableName(1, "tempv");
+  SetUserOutputVariableName(2, "enthalpy");
+  SetUserOutputVariableName(3, "entropy");
+  SetUserOutputVariableName(4, "intEng");
+
+  SetUserOutputVariableName(5, "theta");
+  SetUserOutputVariableName(6, "theta_v");
+  SetUserOutputVariableName(7, "mse");
+  SetUserOutputVariableName(8, "theta_e");
+  SetUserOutputVariableName(9, "rh");
+  SetUserOutputVariableName(10, "qtol");
 }
 
 void MeshBlock::UserWorkBeforeOutput(ParameterInput *pin) {
   auto pthermo = Thermodynamics::GetInstance();
   auto &w = phydro->w;
 
-  /*for (int k = ks; k <= ke; ++k)
+  for (int k = ks; k <= ke; ++k)
     for (int j = js; j <= je; ++j)
       for (int i = is; i <= ie; ++i) {
         user_out_var(0, k, j, i) = pthermo->GetTemp(w.at(k, j, i));
+        user_out_var(1, k, j, i) =
+            user_out_var(0, k, j, i) * pthermo->RovRd(w.at(k, j, i));
+        user_out_var(2, k, j, i) = pthermo->GetEnthalpy(w.at(k, j, i));
+        user_out_var(3, k, j, i) = pthermo->GetEntropy(w.at(k, j, i));
+        user_out_var(4, k, j, i) = pthermo->GetIntEnergy(w.at(k, j, i));
+
+        /* theta_v
         user_out_var(1, k, j, i) = potential_temp(pthermo, w.at(k, j, i), p0);
-        // theta_v
         user_out_var(2, k, j, i) =
             virtual_potential_temp(pthermo, w.at(k, j, i), p0);
         user_out_var(1, j, i) * pthermo->RovRd(w.at(k, j, i));
@@ -76,9 +88,11 @@ void MeshBlock::UserWorkBeforeOutput(ParameterInput *pin) {
             equivalent_potential_temp(pthermo, w.at(k, j, i), p0);
         user_out_var(5, k, j, i) =
             relative_humidity(pthermo, w.at(k, j, i), iH2O);
+        */
+
         // total mixing ratio
-        user_out_var(6, k, j, i) = w(iH2O, k, j, i) + w(iH2Oc, k, j, i);
-      }*/
+        user_out_var(10, k, j, i) = w(iH2O, k, j, i) + w(iH2Oc, k, j, i);
+      }
 }
 
 void Mesh::InitUserMeshData(ParameterInput *pin) {
@@ -88,7 +102,8 @@ void Mesh::InitUserMeshData(ParameterInput *pin) {
 
   // index
   iH2O = pthermo->SpeciesIndex("H2O");
-  iH2Oc = pthermo->SpeciesIndex("H2O(c)");
+  iH2Oc = pthermo->SpeciesIndex("H2O(l)");
+  std::cout << "iH2O = " << iH2O << ", iH2Oc = " << iH2Oc << std::endl;
 }
 
 void MeshBlock::ProblemGenerator(ParameterInput *pin) {
@@ -110,8 +125,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
   for (int k = ks; k <= ke; ++k)
     for (int j = js; j <= je; ++j) {
       pthermo->SetMassFractions<Real>(yfrac.data());
-      pthermo->SetTemperature(Ts);
-      pthermo->SetPressure(Ps);
+      pthermo->EquilibrateTP(Ts, Ps);
 
       // half a grid to cell center
       pthermo->Extrapolate_inplace(pcoord->dx1f(is) / 2., "reversible", grav);
@@ -133,20 +147,20 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
         if (L < 1.) {
           pthermo->SetPrimitive(w.at(k, j, i));
           Real temp = pthermo->GetTemp();
+          Real pres = pthermo->GetPres();
+
           Real temp_v = temp * pthermo->RovRd();
           temp_v *= 1. + dT * sqr(cos(M_PI * L / 2.)) / 300.;
 
-          int err = root(temp, temp + dT, 1.E-8, &temp,
-                         [&pthermo, temp_v](Real temp) {
-                           pthermo->SetTemperature(temp);
-                           pthermo->EquilibrateTP();
+          int err = root(temp, temp + dT * Ts / 300., 1.E-8, &temp,
+                         [&pthermo, temp_v, pres](Real temp) {
+                           pthermo->EquilibrateTP(temp, pres);
                            return temp * pthermo->RovRd() - temp_v;
                          });
 
-          // if (err) throw RuntimeError("pgen", "TVSolver doesn't converge");
+          if (err) throw RuntimeError("pgen", "TVSolver doesn't converge");
 
-          pthermo->SetTemperature(temp);
-          pthermo->EquilibrateTP();
+          pthermo->EquilibrateTP(temp, pres);
           pthermo->GetPrimitive(w.at(k, j, i));
         }
       }

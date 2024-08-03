@@ -20,31 +20,29 @@ void Thermodynamics::_rk4_integrate_z(Real dz, std::string method, Real grav,
   Real latent[1 + NVAPOR];
   Real cp_ratio_mole[Size];
 
-  Real temp = thermo.temperature();
-  Real pres = thermo.pressure();
-
-  std::vector<Real> rates(Size);
   std::vector<Real> enthalpy(Size);
   std::vector<Real> xfrac(Size);
 
-  thermo.getEnthalpy_RT(enthalpy.data());
-  kinetics_->getNetProductionRates(rates.data());
-
-  for (int i = 1; i <= NVAPOR; ++i) {
-    if (rates[i] > 0.) {
-      latent[i] = (enthalpy[i] - enthalpy[i + NVAPOR]) * temp * Constants::Rgas;
-    } else {
-      latent[i] = 0.;
-    }
-  }
+  Real temp0 = thermo.temperature();
+  Real pres0 = thermo.pressure();
 
   for (int i = 0; i < Size; ++i) {
     cp_ratio_mole[i] = cp_ratio_[i] / inv_mu_ratio_[i];
   }
 
   for (int rk = 0; rk < 4; ++rk) {
-    EquilibrateTP();
     thermo.getMoleFractions(xfrac.data());
+    thermo.getEnthalpy_RT(enthalpy.data());
+
+    for (int i = 1; i <= NVAPOR; ++i) {
+      // if (thermo.massFraction(i + NVAPOR) > 0.) {
+      latent[i] = enthalpy[i] - enthalpy[i + NVAPOR];
+      //} else {
+      //  latent[i] = 0.;
+      //}
+      latent[i] *= temp0 * Constants::Rgas;
+    }
+
     if (method != "reversible") {
       for (int j = 1 + NVAPOR; j < Size; ++j) xfrac[j] = 0;
     }
@@ -75,34 +73,25 @@ void Thermodynamics::_rk4_integrate_z(Real dz, std::string method, Real grav,
     chi[rk] = -R_ov_Rd / g_ov_Rd * dTdz[rk];
 
     // integrate over dz
-    Real chi_avg;
+    Real chi_avg, temp, pres;
     if (rk < 3) {
-      thermo.setTemperature(temp + dTdz[rk] * dz * step[rk]);
+      temp = temp0 + dTdz[rk] * dz * step[rk];
       chi_avg = chi[rk];
     } else {
-      thermo.setTemperature(
-          temp +
-          1. / 6. * (dTdz[0] + 2. * dTdz[1] + 2. * dTdz[2] + dTdz[3]) * dz);
+      temp = temp0 +
+             1. / 6. * (dTdz[0] + 2. * dTdz[1] + 2. * dTdz[2] + dTdz[3]) * dz;
       chi_avg = 1. / 6. * (chi[0] + 2. * chi[1] + 2. * chi[2] + chi[3]);
     }
 
-    if (thermo.temperature() < 0.) thermo.setTemperature(temp);
+    if (temp < 0.) temp = temp0;
 
-    if (fabs(thermo.temperature() - temp) > 0.01) {
-      thermo.setPressure(pres * pow(thermo.temperature() / temp, 1. / chi_avg));
+    if (fabs(temp - temp0) > 0.01) {
+      pres = pres0 * pow(temp / temp0, 1. / chi_avg);
     } else {  // isothermal limit
-      thermo.setPressure(pres * exp(-2. * g_ov_Rd * dz /
-                                    (R_ov_Rd * (thermo.temperature() + temp))));
+      pres = pres0 * exp(-2. * g_ov_Rd * dz / (R_ov_Rd * (temp0 + temp)));
     }
-  }
 
-  // recondensation
-  EquilibrateTP();
-  thermo.getMoleFractions(xfrac.data());
-  pres = thermo.pressure();
-  if (method != "reversible") {
-    for (int j = 1 + NVAPOR; j < Size; ++j) xfrac[j] = 0;
+    thermo.setMoleFractions(xfrac.data());
+    EquilibrateTP(temp, pres);
   }
-  thermo.setMoleFractions(xfrac.data());
-  thermo.setPressure(pres);
 }

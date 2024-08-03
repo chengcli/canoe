@@ -110,14 +110,11 @@ class Thermodynamics {
 
   //! Thermodnamic equilibrium at current TP
   //! \param[in,out] qfrac mole fraction representation of air parcel
-  void EquilibrateTP() const;
+  void EquilibrateTP(Real temp, Real pres) const;
 
   //! Thermodnamic equilibrium at current UV
   void EquilibrateUV() const;
 
-  void SetTemperature(Real temp) const;
-  void SetPressure(Real pres) const;
-  void SetDensity(Real dens) const;
   template <typename T>
   void SetMassFractions(StrideIterator<T *> w) const;
 
@@ -132,6 +129,11 @@ class Thermodynamics {
   void GetConserved(StrideIterator<T *> u) const;
 
  public:
+  Real GetTemp() const;
+  Real GetPres() const;
+  Real GetDensity() const;
+  Real RovRd() const;
+
   //! \brief Inverse of the mean molecular weight
   //!
   //! Eq.16 in Li2019
@@ -139,8 +141,6 @@ class Thermodynamics {
   //! \return $1/\mu$
   template <typename T>
   Real RovRd(T w) const;
-
-  Real RovRd() const;
 
   //! \brief Effective adiabatic index
   //!
@@ -157,16 +157,10 @@ class Thermodynamics {
     return w[IPR] / (w[IDN] * Rd_ * RovRd(w));
   }
 
-  Real GetTemp() const;
-
   //! Pressure from conserved variables
   //! \return $p$
   template <typename T>
   Real GetPres(StrideIterator<T *> u, StrideIterator<T *> m) const;
-
-  Real GetPres() const;
-
-  Real GetDensity() const;
 
   //! \brief Calculate potential temperature from primitive variable
   //!
@@ -186,10 +180,13 @@ class Thermodynamics {
   Real GetGamma(T w) const;
 
   template <typename T>
+  Real GetEnthalpy(T w) const;
+
+  template <typename T>
   Real GetEntropy(T w) const;
 
   template <typename T>
-  Real GetEnthalpy(T w) const;
+  Real GetIntEnergy(T w) const;
 
   //! \brief Calculate equivalent potential temperature from primitive variable
   //!
@@ -222,9 +219,6 @@ class Thermodynamics {
 
   void _rk4_integrate_z(Real dlnp, std::string method, Real grav,
                         Real adlnTdlnP) const;
-
-  template <typename T>
-  Real _molar_entropy(T w, int i) const;
 
  protected:
   std::shared_ptr<Cantera::Condensation> kinetics_;

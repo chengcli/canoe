@@ -6,7 +6,7 @@
 // snap
 #include "thermodynamics.hpp"
 
-void Thermodynamics::EquilibrateTP() const {
+void Thermodynamics::EquilibrateTP(Real temp, Real pres) const {
   kinetics_->setQuantityMoleFraction();
 
   std::vector<Real> rates(Size);
@@ -14,8 +14,8 @@ void Thermodynamics::EquilibrateTP() const {
 
   auto& thermo = kinetics_->thermo();
 
-  Real temp = thermo.temperature();
-  Real pres = thermo.pressure();
+  thermo.setTemperature(temp);
+  thermo.setPressure(pres);
 
   int iter = 0, max_iter = 3;
 
@@ -23,6 +23,7 @@ void Thermodynamics::EquilibrateTP() const {
     // get mole fraction
     kinetics_->getActivityConcentrations(xfrac.data());
     kinetics_->getNetProductionRates(rates.data());
+
     /*for (size_t i = 0; i < rates.size(); ++i) {
       std::cout << rates[i] << ", ";
     }
@@ -34,7 +35,16 @@ void Thermodynamics::EquilibrateTP() const {
     }
 
     thermo.setMoleFractions(xfrac.data());
-    thermo.setTemperature(temp);
+    // updates density
     thermo.setPressure(pres);
+
+    Real max_abs_rate = 0.;
+    for (size_t i = 1; i < rates.size(); ++i) {
+      if (std::abs(rates[i]) > max_abs_rate) {
+        max_abs_rate = std::abs(rates[i]);
+      }
+    }
+
+    if (max_abs_rate < 1.E-8) break;
   }
 }

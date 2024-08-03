@@ -144,7 +144,11 @@ void Thermodynamics::Destroy() {
 }
 
 size_t Thermodynamics::SpeciesIndex(std::string const& name) const {
-  return kinetics_->kineticsSpeciesIndex(name);
+  int index = kinetics_->kineticsSpeciesIndex(name);
+  if (index < 0) {
+    throw RuntimeError("Thermodynamics", "Species " + name + " not found");
+  }
+  return index;
 }
 
 Real Thermodynamics::GetTemp() const {
@@ -158,8 +162,7 @@ Real Thermodynamics::GetDensity() const {
 }
 
 Real Thermodynamics::RovRd() const {
-  std::array<Real, Size> w;
-  kinetics_->thermo().getMassFractions(w.data());
+  Real const* w = kinetics_->thermo().massFractions();
 
   Real feps = 1.;
   for (int n = 1; n <= NVAPOR; ++n) {
@@ -172,18 +175,6 @@ Real Thermodynamics::RovRd() const {
   return feps;
 }
 
-void Thermodynamics::SetTemperature(Real temp) const {
-  kinetics_->thermo().setTemperature(temp);
-}
-
-void Thermodynamics::SetPressure(Real pres) const {
-  kinetics_->thermo().setPressure(pres);
-}
-
-void Thermodynamics::SetDensity(Real dens) const {
-  kinetics_->thermo().setDensity(dens);
-}
-
 void Thermodynamics::Extrapolate_inplace(Real dzORdlnp, std::string method,
                                          Real grav, Real userp) const {
   // RK4 integration
@@ -191,6 +182,23 @@ void Thermodynamics::Extrapolate_inplace(Real dzORdlnp, std::string method,
     _rk4_integrate_lnp(dzORdlnp, method, userp);
   } else {  // non-hydrostatic
     _rk4_integrate_z(dzORdlnp, method, grav, userp);
+  }
+
+  auto& thermo = kinetics_->thermo();
+
+  std::vector<Real> xfrac(Size);
+  thermo.getMoleFractions(xfrac.data());
+
+  if (method != "reversible") {
+    Real temp = thermo.temperature();
+    Real pres = thermo.pressure();
+
+    // a small number indicating saturation
+    for (int j = 1 + NVAPOR; j < Size; ++j) {
+      if (xfrac[j] > 0) xfrac[j] = 1.e-10;
+    }
+    thermo.setMoleFractions(xfrac.data());
+    EquilibrateTP(temp, pres);
   }
 }
 
