@@ -103,7 +103,6 @@ void Mesh::InitUserMeshData(ParameterInput *pin) {
   // index
   iH2O = pthermo->SpeciesIndex("H2O");
   iH2Oc = pthermo->SpeciesIndex("H2O(l)");
-  std::cout << "iH2O = " << iH2O << ", iH2Oc = " << iH2Oc << std::endl;
 }
 
 void MeshBlock::ProblemGenerator(ParameterInput *pin) {

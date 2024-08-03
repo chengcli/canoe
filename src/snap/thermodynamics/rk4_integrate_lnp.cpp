@@ -39,7 +39,6 @@ void Thermodynamics::_rk4_integrate_lnp(Real dlnp, std::string method,
       } else {
         latent[i] = 0.;
       }
-      latent[i] *= temp0 * Constants::Rgas;
     }
 
     if (method != "reversible") {

@@ -35,12 +35,11 @@ void Thermodynamics::_rk4_integrate_z(Real dz, std::string method, Real grav,
     thermo.getEnthalpy_RT(enthalpy.data());
 
     for (int i = 1; i <= NVAPOR; ++i) {
-      // if (thermo.massFraction(i + NVAPOR) > 0.) {
-      latent[i] = enthalpy[i] - enthalpy[i + NVAPOR];
-      //} else {
-      //  latent[i] = 0.;
-      //}
-      latent[i] *= temp0 * Constants::Rgas;
+      if (thermo.massFraction(i + NVAPOR) > 0.) {
+        latent[i] = enthalpy[i] - enthalpy[i + NVAPOR];
+      } else {
+        latent[i] = 0.;
+      }
     }
 
     if (method != "reversible") {

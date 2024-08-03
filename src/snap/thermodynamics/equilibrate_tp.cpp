@@ -18,16 +18,24 @@ void Thermodynamics::EquilibrateTP(Real temp, Real pres) const {
   thermo.setPressure(pres);
 
   int iter = 0, max_iter = 3;
-
   while (iter++ < max_iter) {
     // get mole fraction
     kinetics_->getActivityConcentrations(xfrac.data());
     kinetics_->getNetProductionRates(rates.data());
 
-    /*for (size_t i = 0; i < rates.size(); ++i) {
+    /*std::cout << "iter: " << iter << std::endl;
+    for (size_t i = 0; i < rates.size(); ++i) {
       std::cout << rates[i] << ", ";
     }
     std::cout << std::endl;*/
+
+    Real max_abs_rate = 0.;
+    for (size_t i = 1; i < rates.size(); ++i) {
+      if (std::abs(rates[i]) > max_abs_rate) {
+        max_abs_rate = std::abs(rates[i]);
+      }
+    }
+    if (max_abs_rate < 1.E-8) break;
 
     // update mole fraction
     for (size_t i = 1; i < rates.size(); ++i) {
@@ -37,14 +45,5 @@ void Thermodynamics::EquilibrateTP(Real temp, Real pres) const {
     thermo.setMoleFractions(xfrac.data());
     // updates density
     thermo.setPressure(pres);
-
-    Real max_abs_rate = 0.;
-    for (size_t i = 1; i < rates.size(); ++i) {
-      if (std::abs(rates[i]) > max_abs_rate) {
-        max_abs_rate = std::abs(rates[i]);
-      }
-    }
-
-    if (max_abs_rate < 1.E-8) break;
   }
 }
