@@ -186,7 +186,7 @@ class Thermodynamics {
   Real GetEntropy(T w) const;
 
   template <typename T>
-  Real GetIntEnergy(T w) const;
+  Real GetInternalEnergy(T w) const;
 
   //! \brief Calculate equivalent potential temperature from primitive variable
   //!

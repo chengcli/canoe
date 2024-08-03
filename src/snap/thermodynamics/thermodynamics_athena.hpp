@@ -147,7 +147,7 @@ Real Thermodynamics::GetEntropy(T w) const {
 }
 
 template <typename T>
-Real Thermodynamics::GetIntEnergy(T w) const {
+Real Thermodynamics::GetInternalEnergy(T w) const {
   SetPrimitive(w);
   auto intEnergy = kinetics_->thermo().intEnergy_mole();
   return intEnergy * kinetics_->thermo().meanMolecularWeight();

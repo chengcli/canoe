@@ -2,29 +2,27 @@
 
 #include "thermodynamics.hpp"
 
-template <typename T>
-T potential_temperature(Thermodynamics const *pthermo, T w, float p0) {
-  return GetTemp(w) * pow(p0 / w[IPR], GetChi(w));
-}
-
-template <typename T>
-T equivalent_potential_temperature(Thermodynamics *pthermo, T w, float p0) {
-  return GetTemp(w) * pow(p0 / w[IPR], GetChi(w));
+template <typename A, typename B>
+B potential_temp(Thermodynamics const *pthermo, A w, B p0) {
+  return pthermo->GetTemp(w) * pow(p0 / w[IPR], pthermo->GetChi(w));
 }
 
 template <typename A, typename B>
-A moist_static_energy(Thermodynamics *pthermo, A w, B gz) {
-  return pthermo->MoistEnthalpy(w) + gz;
+B moist_static_energy(Thermodynamics const *pthermo, A w, B gz) {
+  pthermo->SetPrimitive(w);
+  Real intEng = pthermo->GetInternalEnergy(w);
+  Real tempv = pthermo->GetTemp() * pthermo->RovRd();
+  return intEng + pthermo->GetRd() * tempv + gz;
 }
 
-template <typename T>
+/*template <typename T>
 T relative_humidity(Thermodynamics *pthermo, T w, int ivapor) {
   return pthermo->GetDensity(iH2O) / w[IDN];
 }
 
-/*
 template <typename T>
-Real Thermodynamics::EquivalentPotentialTemp(T w) {
+Real Thermodynamics::equivalent_potential_temp(Thermodynamics const *pthermo,
+    T w) {
 #if (NVAPOR > 0)
   Real cpd = GetRd() * gammad_ / (gammad_ - 1.);
   Real temp = GetTemp(w);
@@ -74,6 +72,6 @@ Real Thermodynamics::EquivalentPotentialTemp(T w) {
 
   return temp * pow(p0 / pd, chi) * exp(lv_ov_cpt) * rh;
 #else
-  return PotentialTemp(w, p0);
+  return potential_temp(pthermo, w, p0);
 #endif
 }*/

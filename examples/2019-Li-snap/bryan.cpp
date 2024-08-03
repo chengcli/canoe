@@ -37,8 +37,8 @@
 
 // snap
 #include <snap/stride_iterator.hpp>
+#include <snap/thermodynamics/atm_thermodynamics.hpp>
 #include <snap/thermodynamics/thermodynamics.hpp>
-// #include <snap/thermodynamics/atm_thermodynamics.hpp>
 
 int iH2O, iH2Oc;
 Real p0, grav;
@@ -54,6 +54,7 @@ void MeshBlock::InitUserMeshBlockData(ParameterInput *pin) {
   SetUserOutputVariableName(5, "theta");
   SetUserOutputVariableName(6, "theta_v");
   SetUserOutputVariableName(7, "mse");
+
   SetUserOutputVariableName(8, "theta_e");
   SetUserOutputVariableName(9, "rh");
   SetUserOutputVariableName(10, "qtol");
@@ -71,23 +72,22 @@ void MeshBlock::UserWorkBeforeOutput(ParameterInput *pin) {
             user_out_var(0, k, j, i) * pthermo->RovRd(w.at(k, j, i));
         user_out_var(2, k, j, i) = pthermo->GetEnthalpy(w.at(k, j, i));
         user_out_var(3, k, j, i) = pthermo->GetEntropy(w.at(k, j, i));
-        user_out_var(4, k, j, i) = pthermo->GetIntEnergy(w.at(k, j, i));
+        user_out_var(4, k, j, i) = pthermo->GetInternalEnergy(w.at(k, j, i));
 
-        /* theta_v
-        user_out_var(1, k, j, i) = potential_temp(pthermo, w.at(k, j, i), p0);
-        user_out_var(2, k, j, i) =
-            virtual_potential_temp(pthermo, w.at(k, j, i), p0);
-        user_out_var(1, j, i) * pthermo->RovRd(w.at(k, j, i));
+        // theta
+        user_out_var(5, k, j, i) = potential_temp(pthermo, w.at(k, j, i), p0);
+        // theta_v
+        user_out_var(6, k, j, i) =
+            user_out_var(5, k, j, i) * pthermo->RovRd(w.at(k, j, i));
+
         // mse
-        user_out_var(3, k, j, i) =
+        user_out_var(7, k, j, i) =
             moist_static_energy(pthermo, w.at(k, j, i), grav * pcoord->x1v(i));
-        // pthermo->MoistEnthalpy(w.at(k, j, i)) + grav * pcoord->x1v(i);
-        user_out_var(3, k, j, i) = pthermo->MoistEntropy(w.at(k, j, i));
-        // theta_e
-        user_out_var(4, k, j, i) =
-            equivalent_potential_temp(pthermo, w.at(k, j, i), p0);
+        /* theta_e
         user_out_var(5, k, j, i) =
             relative_humidity(pthermo, w.at(k, j, i), iH2O);
+        user_out_var(4, k, j, i) =
+            equivalent_potential_temp(pthermo, w.at(k, j, i), p0);
         */
 
         // total mixing ratio
