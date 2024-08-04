@@ -126,7 +126,7 @@ class Thermodynamics {
   template <typename T>
   void SetConserved(StrideIterator<T *> u, StrideIterator<T *> m) const;
   template <typename T>
-  void GetConserved(StrideIterator<T *> u) const;
+  void GetConserved(StrideIterator<T *> u, StrideIterator<T *> m) const;
 
  public:
   Real GetTemp() const;
@@ -161,15 +161,6 @@ class Thermodynamics {
   //! \return $p$
   template <typename T>
   Real GetPres(StrideIterator<T *> u, StrideIterator<T *> m) const;
-
-  //! \brief Calculate potential temperature from primitive variable
-  //!
-  //! $\theta = T(\frac{p_0}{p})^{\chi}$
-  //! \return $\theta$
-  template <typename T>
-  Real PotentialTemp(T w, Real p0) const {
-    return GetTemp(w) * pow(p0 / w[IPR], GetChi(w));
-  }
 
   //! \brief Effective polytropic index
   //!
@@ -206,6 +197,44 @@ class Thermodynamics {
 
   template <typename T>
   std::vector<Real> SaturationSurplus(T w);
+
+  template <typename A, typename B>
+  B IntEngToPres(StrideIterator<A *> u, B intEng) const {
+    // internal energy
+    Real fsig = 1., feps = 1.;
+
+    // vapors
+    for (int n = 1; n <= NVAPOR; ++n) {
+      fsig += u[n] * (cv_ratio_[n] - 1.);
+      feps += u[n] * (inv_mu_ratio_[n] - 1.);
+    }
+    // clouds
+    for (int n = 1 + NVAPOR; n < Size; ++n) {
+      fsig += u[n] * (cv_ratio_[n] - 1.);
+      feps -= u[n];
+    }
+
+    return (gammad_ - 1.) * intEng * feps / fsig;
+  }
+
+  template <typename A, typename B>
+  B PresToIntEng(StrideIterator<A *> u, B pres) const {
+    // internal energy
+    Real fsig = 1., feps = 1.;
+
+    // vapors
+    for (int n = 1; n <= NVAPOR; ++n) {
+      fsig += u[n] * (cv_ratio_[n] - 1.);
+      feps += u[n] * (inv_mu_ratio_[n] - 1.);
+    }
+    // clouds
+    for (int n = 1 + NVAPOR; n < Size; ++n) {
+      fsig += u[n] * (cv_ratio_[n] - 1.);
+      feps -= u[n];
+    }
+
+    return pres * fsig / feps / (gammad_ - 1.);
+  }
 
  public:  // air parcel deprecated functions
   Real GetCvRatioMole(int n) const { return 0.; }

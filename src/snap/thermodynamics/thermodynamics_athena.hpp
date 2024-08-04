@@ -60,18 +60,6 @@ void Thermodynamics::SetPrimitive(StrideIterator<T*> w) const {
 }
 
 template <typename T>
-void Thermodynamics::SetConserved(StrideIterator<T*> u,
-                                  StrideIterator<T*> m) const {
-  auto& thermo = kinetics_->thermo();
-
-  thermo.setMassFractions(&u[0], /*stride=*/u.stride());
-  Real rho = 0.;
-  for (int n = 0; n < Size; ++n) rho += u[n];
-  thermo.setDensity(rho);
-  thermo.setPressure(GetPres(u, /*cos_theta=*/m));
-}
-
-template <typename T>
 void Thermodynamics::GetPrimitive(StrideIterator<T*> w) const {
   auto& thermo = kinetics_->thermo();
   thermo.getMassFractionsPartial(&w[1], /*stride=*/w.stride());
@@ -80,10 +68,34 @@ void Thermodynamics::GetPrimitive(StrideIterator<T*> w) const {
 }
 
 template <typename T>
-void Thermodynamics::GetConserved(StrideIterator<T*> u) const {
+void Thermodynamics::SetConserved(StrideIterator<T*> u,
+                                  StrideIterator<T*> m) const {
   auto& thermo = kinetics_->thermo();
+
+  thermo.setMassFractions(&u[0], /*stride=*/u.stride());
+  Real rho = 0.;
+  for (int n = 0; n < Size; ++n) rho += u[n];
+  thermo.setDensity(rho);
+
+  auto w = vec_raise(u, m);
+  Real KE = 0.5 * (u[IM1] * w[0] + u[IM2] * w[1] + u[IM3] * w[2]) / rho;
+
+  thermo.setPressure(IntEngToPres(u, u[IEN] - KE));
+}
+
+template <typename T>
+void Thermodynamics::GetConserved(StrideIterator<T*> u,
+                                  StrideIterator<T*> m) const {
+  auto& thermo = kinetics_->thermo();
+
   thermo.getDensities(&u[0], /*stride=*/u.stride());
-  // TODO: add internal energy
+  Real rho = 0.;
+  for (int n = 0; n < Size; ++n) rho += u[n];
+
+  auto w = vec_raise(u, m);
+  Real KE = 0.5 * (u[IM1] * w[0] + u[IM2] * w[1] + u[IM3] * w[2]) / rho;
+
+  u[IEN] = PresToIntEng(u, thermo.pressure()) + KE;
 }
 
 template <typename T>
@@ -155,28 +167,12 @@ Real Thermodynamics::GetInternalEnergy(T w) const {
 
 template <typename T>
 Real Thermodynamics::GetPres(StrideIterator<T*> u, StrideIterator<T*> m) const {
-  Real igm1 = 1. / (gammad_ - 1.);
-
   Real rho = 0.;
   for (int n = 0; n <= NVAPOR; ++n) rho += u[n];
 
-  // internal energy
-  Real fsig = 1., feps = 1.;
-  // clouds
-  for (int n = 1 + NVAPOR; n < Size; ++n) {
-    fsig += u[n] * (cv_ratio_[n] - 1.);
-    feps -= u[n];
-  }
-  // vapors
-  for (int n = 1; n <= NVAPOR; ++n) {
-    fsig += u[n] * (cv_ratio_[n] - 1.);
-    feps += u[n] * (inv_mu_ratio_[n] - 1.);
-  }
-
   auto w = vec_raise(u, m);
-
   Real KE = 0.5 * (u[IM1] * w[0] + u[IM2] * w[1] + u[IM3] * w[2]) / rho;
-  return igm1 * (u[IEN] - KE) * feps / fsig;
+  return IntEngToPres(u, u[IEN] - KE);
 }
 
 //! Eq.66
