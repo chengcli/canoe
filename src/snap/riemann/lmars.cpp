@@ -34,7 +34,7 @@ void Hydro::RiemannSolver(int const k, int const j, int const il, int const iu,
   MeshBlock *pmb = pmy_block;
 
   Real rhobar, pbar, cbar, ubar, hl, hr;
-  Real gamma = pmb->peos->GetGamma();
+  Real gamma = pthermo->GetGammad();
   Real wli[NHYDRO], wri[NHYDRO];
 
   for (int i = il; i <= iu; ++i) {

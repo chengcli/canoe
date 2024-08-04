@@ -11,8 +11,8 @@ template <typename T>
 Real moist_static_energy(Thermodynamics const *pthermo, T w, Real gz) {
   pthermo->SetPrimitive(w);
   Real intEng = pthermo->GetInternalEnergy(w);
-  Real tempv = pthermo->GetTemp() * pthermo->RovRd();
-  return intEng + pthermo->GetRd() * tempv + gz;
+  // Real tempv = pthermo->GetTemp() * pthermo->RovRd();
+  return intEng + w[IPR] / w[IDN] + gz;
 }
 
 template <typename T>

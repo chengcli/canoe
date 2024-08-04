@@ -162,15 +162,15 @@ Real Thermodynamics::GetDensity() const {
 }
 
 Real Thermodynamics::RovRd() const {
-  Real const* w = kinetics_->thermo().massFractions();
+  auto& thermo = kinetics_->thermo();
 
   Real feps = 1.;
   for (int n = 1; n <= NVAPOR; ++n) {
-    feps += w[n] * (inv_mu_ratio_[n] - 1.);
+    feps += thermo.massFraction(n) * (inv_mu_ratio_[n] - 1.);
   }
 
   for (int n = 1 + NVAPOR; n < Size; ++n) {
-    feps -= w[n];
+    feps -= thermo.massFraction(n);
   }
   return feps;
 }
