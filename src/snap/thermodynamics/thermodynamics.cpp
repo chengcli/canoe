@@ -184,12 +184,11 @@ void Thermodynamics::Extrapolate_inplace(Real dzORdlnp, std::string method,
     _rk4_integrate_z(dzORdlnp, method, grav, userp);
   }
 
-  auto& thermo = kinetics_->thermo();
-
-  std::vector<Real> xfrac(Size);
-  thermo.getMoleFractions(xfrac.data());
-
   if (method != "reversible") {
+    auto& thermo = kinetics_->thermo();
+    std::vector<Real> xfrac(Size);
+    thermo.getMoleFractions(xfrac.data());
+
     Real temp = thermo.temperature();
     Real pres = thermo.pressure();
 

@@ -35,7 +35,7 @@ void Thermodynamics::_rk4_integrate_z(Real dz, std::string method, Real grav,
     thermo.getEnthalpy_RT(enthalpy.data());
 
     for (int i = 1; i <= NVAPOR; ++i) {
-      if (thermo.massFraction(i + NVAPOR) > 0.) {
+      if (xfrac[i + NVAPOR] > 0.) {
         latent[i] = enthalpy[i] - enthalpy[i + NVAPOR];
       } else {
         latent[i] = 0.;
@@ -82,12 +82,12 @@ void Thermodynamics::_rk4_integrate_z(Real dz, std::string method, Real grav,
       chi_avg = 1. / 6. * (chi[0] + 2. * chi[1] + 2. * chi[2] + chi[3]);
     }
 
-    if (temp < 0.) temp = temp0;
+    if (!(temp > 0.)) temp = temp0;
 
     if (fabs(temp - temp0) > 0.01) {
       pres = pres0 * pow(temp / temp0, 1. / chi_avg);
     } else {  // isothermal limit
-      pres = pres0 * exp(-2. * g_ov_Rd * dz / (R_ov_Rd * (temp0 + temp)));
+      pres = pres0 * exp(-2. * g_ov_Rd * dz / (R_ov_Rd * (temp + temp0)));
     }
 
     thermo.setMoleFractions(xfrac.data());
