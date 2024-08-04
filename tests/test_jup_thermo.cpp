@@ -1,7 +1,3 @@
-// C/C++
-#include <algorithm>
-#include <numeric>
-
 // external
 #include <gtest/gtest.h>
 
@@ -16,7 +12,6 @@
 #include <cantera/thermo.h>
 
 // snap
-#include <air_parcel.hpp>
 #include <snap/thermodynamics/thermodynamics.hpp>
 
 class TestThermodynamics : public testing::Test {
@@ -98,7 +93,7 @@ TEST_F(TestThermodynamics, vapors) {
   // 8. NH4SH(s)
 }
 
-TEST_F(TestThermodynamics, equilibrium_tp) {
+TEST_F(TestThermodynamics, equilibrate_tp) {
   auto pthermo = Thermodynamics::GetInstance();
 
   std::vector<Real> yfrac = {0.1, 0.2, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1};
@@ -180,7 +175,7 @@ TEST_F(TestThermodynamics, thermodynamics) {
   }
 }
 
-TEST_F(TestThermodynamics, equilibrium_uv) {
+TEST_F(TestThermodynamics, equilibrate_uv) {
   auto pthermo = Thermodynamics::GetInstance();
 
   std::vector<Real> yfrac = {0.1, 0.2, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1};
@@ -218,6 +213,5 @@ int main(int argc, char* argv[]) {
   int result = RUN_ALL_TESTS();
 
   Application::Destroy();
-
   return result;
 }

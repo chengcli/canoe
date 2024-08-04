@@ -24,6 +24,10 @@ if (${NVAPOR} EQUAL 3 AND ${NCLOUD} EQUAL 5)
   setup_test(test_jup_thermo)
 endif()
 
+if (${NVAPOR} EQUAL 1)
+  setup_test(test_earth_thermo)
+endif()
+
 setup_test(test_glog)
 setup_test(test_absorber)
 setup_test(test_read_stellar_flux)
