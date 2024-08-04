@@ -86,10 +86,9 @@ void MeshBlock::UserWorkBeforeOutput(ParameterInput *pin) {
 
         // rh
         user_out_var(8, k, j, i) = relative_humidity(pthermo, w.at(k, j, i))[1];
-        /* theta_e
-        user_out_var(5, k, j, i) =
-            relative_humidity(pthermo, w.at(k, j, i), iH2O);
-        */
+        // theta_e
+        user_out_var(9, k, j, i) = equivalent_potential_temp(
+            pthermo, w.at(k, j, i), user_out_var(8, k, j, i), p0);
 
         // total mixing ratio
         user_out_var(10, k, j, i) = w(iH2O, k, j, i) + w(iH2Oc, k, j, i);

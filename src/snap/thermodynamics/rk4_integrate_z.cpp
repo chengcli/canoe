@@ -20,8 +20,8 @@ void Thermodynamics::_rk4_integrate_z(Real dz, std::string method, Real grav,
   Real latent[1 + NVAPOR];
   Real cp_ratio_mole[Size];
 
-  std::vector<Real> enthalpy(Size);
-  std::vector<Real> xfrac(Size);
+  std::array<Real, Size> enthalpy;
+  std::array<Real, Size> xfrac;
 
   Real temp0 = thermo.temperature();
   Real pres0 = thermo.pressure();

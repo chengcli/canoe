@@ -2,13 +2,13 @@
 
 #include "thermodynamics.hpp"
 
-template <typename A, typename B>
-B potential_temp(Thermodynamics const *pthermo, A w, B p0) {
+template <typename T>
+Real potential_temp(Thermodynamics const *pthermo, T w, Real p0) {
   return pthermo->GetTemp(w) * pow(p0 / w[IPR], pthermo->GetChi(w));
 }
 
-template <typename A, typename B>
-B moist_static_energy(Thermodynamics const *pthermo, A w, B gz) {
+template <typename T>
+Real moist_static_energy(Thermodynamics const *pthermo, T w, Real gz) {
   pthermo->SetPrimitive(w);
   Real intEng = pthermo->GetInternalEnergy(w);
   Real tempv = pthermo->GetTemp() * pthermo->RovRd();
@@ -16,14 +16,15 @@ B moist_static_energy(Thermodynamics const *pthermo, A w, B gz) {
 }
 
 template <typename T>
-std::vector<Real> relative_humidity(Thermodynamics const *pthermo, T w) {
+std::array<Real, Thermodynamics::Size> relative_humidity(
+    Thermodynamics const *pthermo, T w) {
   pthermo->SetPrimitive(w);
   auto kinetics = get_kinetics_object(pthermo);
 
   std::vector<Real> kfwd(kinetics->nReactions());
   kinetics->getFwdRateConstants(kfwd.data());
 
-  std::vector<Real> xfrac(Thermodynamics::Size);
+  std::array<Real, Thermodynamics::Size> xfrac;
   kinetics->thermo().getMoleFractions(xfrac.data());
 
   // gas fractions
@@ -38,58 +39,51 @@ std::vector<Real> relative_humidity(Thermodynamics const *pthermo, T w) {
   return xfrac;
 }
 
-/*template <typename T>
-Real Thermodynamics::equivalent_potential_temp(Thermodynamics const *pthermo,
-    T w) {
-#if (NVAPOR > 0)
-  Real cpd = GetRd() * gammad_ / (gammad_ - 1.);
-  Real temp = GetTemp(w);
-  Real pres = w[IPR];
+// Eq.4.5.11 in Emanuel (1994)
+template <typename T>
+Real equivalent_potential_temp(Thermodynamics const *pthermo, T w, Real rh,
+                               Real p0) {
+  pthermo->SetPrimitive(w);
+  auto kinetics = get_kinetics_object(pthermo);
+  auto &thermo = kinetics->thermo();
 
-  Real qd = 1.;
-  for (int n = 1; n < Size; ++n) qd -= w[n];
+  std::array<Real, Thermodynamics::Size> enthalpy;
+  std::array<Real, Thermodynamics::Size> cp;
+  thermo.getEnthalpy_RT(enthalpy.data());
+  thermo.getPartialMolarCp(cp.data());
 
-  Real qc[1 + NVAPOR];
-  std::fill(qc, qc + 1 + NVAPOR, 0.);
-  for (int n = 1 + NVAPOR; n < Size; ++n)
-    qc[1 + (n - 1) % NVAPOR] += w[n] + 1.0E-10;  // prevent devide by 0
+  Real temp = thermo.temperature();
+  Real pres = thermo.pressure();
 
-  Real lv = 0.;
-  for (int n = 1 + NVAPOR; n < Size; ++n) {
-    int ng = 1 + (n - 1) % NVAPOR;
-    Real ratio = (w[n] + 1.0E-10) / qc[ng];
-    lv += GetLatent_RT(n - NVAPOR, n) * w[ng] * ratio;
-  }
+  Real lv = (enthalpy[1] - enthalpy[2]) * Cantera::GasConstant * temp /
+            thermo.molecularWeight(1);
+  Real cpd = cp[0] / thermo.molecularWeight(0);
+  Real cl = cp[2] / thermo.molecularWeight(2);
 
-  Real st = 1.;
-  for (int n = 1 + NVAPOR; n < Size; ++n) {
-    int ng = 1 + (n - 1) % NVAPOR;
-    Real ratio = (w[n] + 1.0E-10) / qc[ng];
-    st += (w[n] + w[ng] * ratio) * (cp_ratio_[n] - 1.);
-  }
-  Real lv_ov_cpt = lv / (cpd * st * temp);
+  /*std::cout << "lv: " << lv << std::endl;
+  std::cout << "cpd: " << cpd << std::endl;
+  std::cout << "cl: " << cl << std::endl;*/
 
-  Real chi = GetRd() / cpd * qd / st;
+  Real qd = thermo.massFraction(0);
+  Real qv = thermo.massFraction(1);
+  Real qc = thermo.massFraction(2);
+  Real qt = qv + qc;
 
-  Real xv = 1.;
-  for (int n = 1; n <= NVAPOR; ++n) xv += w[n] / qd * inv_mu_ratio_[n];
+  Real xd = thermo.moleFraction(0);
+  Real xv = thermo.moleFraction(1);
+  Real xg = xd + xv;
 
-  Real pd = pres / xv;
-  Real rh = 1.;
+  Real Rd = Cantera::GasConstant / thermo.molecularWeight(0);
+  Real Rv = Cantera::GasConstant / thermo.molecularWeight(1);
+  Real pd = xd / xg * pres;
+  Real cpt = cpd * qd + cl * qt;
 
-  std::array<Real, Size> kfwd;
-  kinetics_->getFwdRateConstants(kfwd.data());
+  /*std::cout << "Rd: " << Rd << std::endl;
+  std::cout << "Rv: " << Rv << std::endl;
+  std::cout << "pd: " << pd << std::endl;
+  std::cout << "cpt: " << cpt << std::endl;
+  std::cout << "rh: " << rh << std::endl;*/
 
-  for (int n = 1; n <= NVAPOR; ++n) {
-    Real eta = w[n] / qd * inv_mu_ratio_[n];
-    Real pv = pres * eta / xv;
-    int nc = n + NVAPOR;
-    Real esat = std::max(pv, kfwd[j] * Cantera::GasConstant * temp);
-    rh *= pow(pv / esat, -eta * GetRd() / (cpd * st));
-  }
-
-  return temp * pow(p0 / pd, chi) * exp(lv_ov_cpt) * rh;
-#else
-  return potential_temp(pthermo, w, p0);
-#endif
-}*/
+  return temp * pow(p0 / pd, Rd * qd / cpt) * pow(rh, -Rv * qv / cpt) *
+         exp(lv * qv / (cpt * temp));
+}
