@@ -60,7 +60,6 @@ void EquationOfState::ConservedToPrimitive(
 
   // apply_vapor_limiter(&cons, pmy_block_);
 
-  Real gm1 = GetGamma() - 1.0;
   for (int k = kl; k <= ku; ++k)
     for (int j = jl; j <= ju; ++j) {
       for (int i = il; i <= iu; ++i) {
@@ -88,19 +87,6 @@ void EquationOfState::ConservedToPrimitive(
         for (int n = 1; n <= NVAPOR + NCLOUD; ++n)
           prim(n, k, j, i) = std::max(scalar_floor_, cons(n, k, j, i) * di);
 
-        // internal energy
-        Real KE, fsig = 1., feps = 1.;
-        // vapors
-        for (int n = 1; n <= NVAPOR; ++n) {
-          fsig += prim(n, k, j, i) * (pthermo->GetCvRatio(n) - 1.);
-          feps += prim(n, k, j, i) * (pthermo->GetInvMuRatio(n) - 1.);
-        }
-        // clouds
-        for (int n = 1 + NVAPOR; n <= NVAPOR + NCLOUD; ++n) {
-          fsig += prim(n, k, j, i) * (pthermo->GetCvRatio(n) - 1.);
-          feps -= prim(n, k, j, i);
-        }
-
         w_vx = u_m1 * di;
         w_vy = u_m2 * di;
         w_vz = u_m3 * di;
@@ -109,13 +95,14 @@ void EquationOfState::ConservedToPrimitive(
         vec_raise_inplace(prim.at(k, j, i), pco->m.at(k, j, i));
 
         // internal energy
-        KE = 0.5 * (u_m1 * w_vx + u_m2 * w_vy + u_m3 * w_vz);
-        w_p = gm1 * (u_e - KE) * feps / fsig;
+        Real KE = 0.5 * (u_m1 * w_vx + u_m2 * w_vy + u_m3 * w_vz);
+        w_p = pthermo->IntEngToPres(prim.at(k, j, i), u_e - KE);
 
         // apply pressure floor, correct total energy
-        u_e = (w_p > pressure_floor_)
-                  ? u_e
-                  : (pressure_floor_ / gm1 * fsig / feps) + KE;
+        u_e =
+            (w_p > pressure_floor_)
+                ? u_e
+                : pthermo->PresToIntEng(prim.at(k, j, i), pressure_floor_) + KE;
         w_p = (w_p > pressure_floor_) ? w_p : pressure_floor_;
       }
     }
@@ -168,18 +155,7 @@ void EquationOfState::PrimitiveToConserved(const AthenaArray<Real>& prim,
 
         // total energy
         Real KE = 0.5 * (u_m1 * w_vx + u_m2 * w_vy + u_m3 * w_vz);
-        Real fsig = 1., feps = 1.;
-        // vapors
-        for (int n = 1; n <= NVAPOR; ++n) {
-          fsig += prim(n, k, j, i) * (pthermo->GetCvRatio(n) - 1.);
-          feps += prim(n, k, j, i) * (pthermo->GetInvMuRatio(n) - 1.);
-        }
-        // clouds
-        for (int n = 1 + NVAPOR; n <= NVAPOR + NCLOUD; ++n) {
-          fsig += prim(n, k, j, i) * (pthermo->GetCvRatio(n) - 1.);
-          feps -= prim(n, k, j, i);
-        }
-        u_e = igm1 * w_p * fsig / feps + KE;
+        u_e = pthermo->PresToIntEng(prim.at(k, j, i), w_p) + KE;
       }
     }
   }

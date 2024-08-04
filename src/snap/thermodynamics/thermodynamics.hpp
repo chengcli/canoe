@@ -84,21 +84,6 @@ class Thermodynamics {
   template <typename T>
   Real GetCv(T w) const;
 
-  //! Ratio of molecular weights [1]
-  //! \param[in] n the index of the thermodynamic species
-  //! \return $\epsilon_i^{-1} =\mu_d/\mu_i$
-  Real GetInvMuRatio(int n) const { return inv_mu_ratio_[n]; }
-
-  //! Ratio of specific heat capacity [J/(kg K)] at constant volume
-  //! \param[in] n the index of the thermodynamic species
-  //! \return $c_{v,i}/c_{v,d}$
-  Real GetCvRatio(int n) const { return cv_ratio_[n]; }
-
-  //! Ratio of specific heat capacity [J/(kg K)] at constant pressure
-  //! \param[in] n the index of the thermodynamic species
-  //! \return $c_{p,i}/c_{p,d}$
-  Real GetCpRatio(int n) const { return cp_ratio_[n]; }
-
   //! Construct an 1d atmosphere
   //! \param[in,out] qfrac mole fraction representation of air parcel
   //! \param[in] dzORdlnp vertical grid spacing
@@ -242,6 +227,16 @@ class Thermodynamics {
   Real GetLatentEnergyMole(int n) const { return 0.; }
   Real GetCvMassRef(int n) const { return 0.; }
   Real GetInvMu(int n) const { return 0.; }
+
+  //! Ratio of molecular weights [1]
+  //! \param[in] n the index of the thermodynamic species
+  //! \return $\epsilon_i^{-1} =\mu_d/\mu_i$
+  Real GetInvMuRatio(int n) const { return inv_mu_ratio_[n]; }
+
+  //! Ratio of specific heat capacity [J/(kg K)] at constant volume
+  //! \param[in] n the index of the thermodynamic species
+  //! \return $c_{v,i}/c_{v,d}$
+  Real GetCvRatio(int n) const { return cv_ratio_[n]; }
 
  protected:
   void _rk4_integrate_lnp(Real dlnp, std::string method, Real adlnTdlnP) const;
