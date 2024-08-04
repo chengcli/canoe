@@ -10,20 +10,23 @@ species:
     composition: {O: 0.42, N: 1.56, Ar: 0.01}
     thermo:
       model: constant-cp
+      T0: 273.16
       cp0: 29.1 J/mol/K
 
   - name: H2O
     composition: {H: 2, O: 1}
     thermo:
       model: constant-cp
-      cp0: 37.4 J/mol/K
+      T0: 273.16
+      cp0: 21.1 J/mol/K
 
   - name: H2O(l)
     composition: {H: 2, O: 1}
     thermo:
       model: constant-cp
-      cp0: 75.3 J/mol/K
-      h0: -28.5 kJ/mol
+      T0: 273.16
+      cp0: 62.56 J/mol/K
+      h0: -45.1 kJ/mol
     equation-of-state:
       model: constant-volume
       molar-volume: 0.0 cm^3/mol
