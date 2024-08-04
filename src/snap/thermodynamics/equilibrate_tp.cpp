@@ -20,14 +20,7 @@ void Thermodynamics::EquilibrateTP(Real temp, Real pres) const {
   int iter = 0, max_iter = 3;
   while (iter++ < max_iter) {
     // get mole fraction
-    kinetics_->getActivityConcentrations(xfrac.data());
     kinetics_->getNetProductionRates(rates.data());
-
-    /*std::cout << "iter: " << iter << std::endl;
-    for (size_t i = 0; i < Size; ++i) {
-      std::cout << xfrac[i] << ", " << rates[i] << ", ";
-    }
-    std::cout << std::endl;*/
 
     Real max_abs_rate = 0.;
     for (size_t i = 1; i < Size; ++i) {
@@ -36,6 +29,14 @@ void Thermodynamics::EquilibrateTP(Real temp, Real pres) const {
       }
     }
     if (max_abs_rate < 1.E-8) break;
+
+    kinetics_->getActivityConcentrations(xfrac.data());
+
+    /*std::cout << "iter: " << iter << std::endl;
+    for (size_t i = 0; i < Size; ++i) {
+      std::cout << xfrac[i] << ", " << rates[i] << ", ";
+    }
+    std::cout << std::endl;*/
 
     // update mole fraction
     for (size_t i = 1; i < Size; ++i) {

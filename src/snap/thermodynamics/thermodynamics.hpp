@@ -183,39 +183,39 @@ class Thermodynamics {
   template <typename T>
   std::vector<Real> SaturationSurplus(T w);
 
-  template <typename A, typename B>
-  B IntEngToPres(StrideIterator<A *> u, B intEng) const {
+  template <typename T>
+  Real IntEngToPres(StrideIterator<T *> w, Real intEng, Real rho = 1.) const {
     // internal energy
     Real fsig = 1., feps = 1.;
 
     // vapors
     for (int n = 1; n <= NVAPOR; ++n) {
-      fsig += u[n] * (cv_ratio_[n] - 1.);
-      feps += u[n] * (inv_mu_ratio_[n] - 1.);
+      fsig += w[n] / rho * (cv_ratio_[n] - 1.);
+      feps += w[n] / rho * (inv_mu_ratio_[n] - 1.);
     }
     // clouds
     for (int n = 1 + NVAPOR; n < Size; ++n) {
-      fsig += u[n] * (cv_ratio_[n] - 1.);
-      feps -= u[n];
+      fsig += w[n] / rho * (cv_ratio_[n] - 1.);
+      feps -= w[n] / rho;
     }
 
     return (gammad_ - 1.) * intEng * feps / fsig;
   }
 
-  template <typename A, typename B>
-  B PresToIntEng(StrideIterator<A *> u, B pres) const {
+  template <typename T>
+  Real PresToIntEng(StrideIterator<T *> w, Real pres, Real rho = 1.) const {
     // internal energy
     Real fsig = 1., feps = 1.;
 
     // vapors
     for (int n = 1; n <= NVAPOR; ++n) {
-      fsig += u[n] * (cv_ratio_[n] - 1.);
-      feps += u[n] * (inv_mu_ratio_[n] - 1.);
+      fsig += w[n] / rho * (cv_ratio_[n] - 1.);
+      feps += w[n] / rho * (inv_mu_ratio_[n] - 1.);
     }
     // clouds
     for (int n = 1 + NVAPOR; n < Size; ++n) {
-      fsig += u[n] * (cv_ratio_[n] - 1.);
-      feps -= u[n];
+      fsig += w[n] / rho * (cv_ratio_[n] - 1.);
+      feps -= w[n] / rho;
     }
 
     return pres * fsig / feps / (gammad_ - 1.);

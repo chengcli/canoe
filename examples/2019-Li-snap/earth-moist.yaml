@@ -25,8 +25,8 @@ species:
     thermo:
       model: constant-cp
       T0: 273.16
-      cp0: 62.56 J/mol/K
-      h0: -45.1 kJ/mol
+      cp0: 62.556 J/mol/K
+      h0: -45.103 kJ/mol  # h0 = - (beta - delta) * R * T0
     equation-of-state:
       model: constant-volume
       molar-volume: 0.0 cm^3/mol

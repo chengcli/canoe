@@ -80,7 +80,7 @@ void Thermodynamics::SetConserved(StrideIterator<T*> u,
   auto w = vec_raise(u, m);
   Real KE = 0.5 * (u[IM1] * w[0] + u[IM2] * w[1] + u[IM3] * w[2]) / rho;
 
-  thermo.setPressure(IntEngToPres(u, u[IEN] - KE));
+  thermo.setPressure(IntEngToPres(u, u[IEN] - KE, rho));
 }
 
 template <typename T>
@@ -95,7 +95,7 @@ void Thermodynamics::GetConserved(StrideIterator<T*> u,
   auto w = vec_raise(u, m);
   Real KE = 0.5 * (u[IM1] * w[0] + u[IM2] * w[1] + u[IM3] * w[2]) / rho;
 
-  u[IEN] = PresToIntEng(u, thermo.pressure()) + KE;
+  u[IEN] = PresToIntEng(u, thermo.pressure(), rho) + KE;
 }
 
 template <typename T>
@@ -168,11 +168,11 @@ Real Thermodynamics::GetInternalEnergy(T w) const {
 template <typename T>
 Real Thermodynamics::GetPres(StrideIterator<T*> u, StrideIterator<T*> m) const {
   Real rho = 0.;
-  for (int n = 0; n <= NVAPOR; ++n) rho += u[n];
+  for (int n = 0; n < Size; ++n) rho += u[n];
 
   auto w = vec_raise(u, m);
   Real KE = 0.5 * (u[IM1] * w[0] + u[IM2] * w[1] + u[IM3] * w[2]) / rho;
-  return IntEngToPres(u, u[IEN] - KE);
+  return IntEngToPres(u, u[IEN] - KE, rho);
 }
 
 //! Eq.66

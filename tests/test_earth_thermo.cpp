@@ -134,6 +134,25 @@ TEST_F(TestThermodynamics, moist_adiabat) {
   EXPECT_NEAR(thermo.moleFraction(2), 0.01268, 1e-4);
 }
 
+TEST_F(TestThermodynamics, equilibrate_uv) {
+  auto pthermo = Thermodynamics::GetInstance();
+
+  std::vector<Real> yfrac = {0.9804, 0.0196, 0.};
+  pthermo->SetMassFractions<Real>(yfrac.data());
+
+  auto kinetics = get_kinetics_object(pthermo);
+  auto& thermo = kinetics->thermo();
+  thermo.setState_TPY(289.85, 1.e5, yfrac.data());
+
+  pthermo->EquilibrateUV();
+
+  std::vector<Real> prim(NHYDRO, 0.);
+  pthermo->GetPrimitive<Real>(prim.data());
+  EXPECT_NEAR(prim[IDN], 1.187901949988, 1e-4);
+  EXPECT_NEAR(prim[IPR], 101934.372666, 1e-4);
+  EXPECT_NEAR(prim[1] + prim[2], 0.0196, 1e-8);
+}
+
 int main(int argc, char* argv[]) {
   Application::Start(argc, argv);  // needed for MPI initialization
 
