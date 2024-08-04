@@ -41,7 +41,11 @@ thermodynamics_config = earth-thermo.yaml
     pinput->LoadFromFile(infile);
     infile.Close();
 
-    Thermodynamics::InitFromAthenaInput(pinput);
+    auto pthermo = Thermodynamics::InitFromAthenaInput(pinput);
+    std::vector<Real> yfrac = {0.9804, 0.0196};
+
+    pthermo->SetMassFractions<Real>(yfrac.data());
+    pthermo->EquilibrateTP(289.85, 1.e5);
   }
 
   virtual void TearDown() {
@@ -55,11 +59,8 @@ thermodynamics_config = earth-thermo.yaml
 
 TEST_F(TestThermodynamics, equilibrate_tp) {
   auto pthermo = Thermodynamics::GetInstance();
-  std::vector<Real> yfrac = {0.9804, 0.0196};
-  std::vector<Real> prim(NHYDRO, 0.);
 
-  pthermo->SetMassFractions<Real>(yfrac.data());
-  pthermo->EquilibrateTP(289.85, 1.e5);
+  std::vector<Real> prim(NHYDRO, 0.);
   pthermo->GetPrimitive<Real>(prim.data());
 
   for (int i = 0; i < NHYDRO; i++) {
@@ -67,7 +68,18 @@ TEST_F(TestThermodynamics, equilibrate_tp) {
   }
 }
 
-TEST_F(TestThermodynamics, cal_dlnT_dlnP) {}
+TEST_F(TestThermodynamics, cal_dlnT_dlnP) {
+  auto pthermo = Thermodynamics::GetInstance();
+  pthermo->Extrapolate_inplace(/*dz=*/100., /*method=*/"reversible",
+                               /*grav=*/9.8);
+
+  std::vector<Real> prim(NHYDRO, 0.);
+  pthermo->GetPrimitive<Real>(prim.data());
+
+  for (int i = 0; i < NHYDRO; i++) {
+    std::cout << prim[i] << std::endl;
+  }
+}
 
 int main(int argc, char* argv[]) {
   Application::Start(argc, argv);  // needed for MPI initialization
