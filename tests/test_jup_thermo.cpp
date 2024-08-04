@@ -77,26 +77,21 @@ TEST_F(TestThermodynamics, vapors) {
   // 1. H2O
   EXPECT_NEAR(pthermo->GetInvMuRatio(1), 0.129, 1e-3);
   EXPECT_NEAR(pthermo->GetCvRatio(1), 0.18, 1e-2);
-  EXPECT_NEAR(pthermo->GetCpRatio(1), 0.166, 1e-2);
 
   // 2. NH3
   EXPECT_NEAR(pthermo->GetInvMuRatio(2), 0.1367, 1e-3);
   EXPECT_NEAR(pthermo->GetCvRatio(2), 0.1912, 1e-2);
-  EXPECT_NEAR(pthermo->GetCpRatio(2), 0.1756, 1e-2);
 
   // 3. H2S
   EXPECT_NEAR(pthermo->GetInvMuRatio(3), 0.0685, 1e-3);
   EXPECT_NEAR(pthermo->GetCvRatio(3), 0.0956, 1e-3);
-  EXPECT_NEAR(pthermo->GetCpRatio(3), 0.0878, 1e-3);
 
   // 4. H2O(l)
   EXPECT_NEAR(pthermo->GetInvMuRatio(4), 0.129, 1e-3);
   EXPECT_NEAR(pthermo->GetCvRatio(4), 0.468, 1e-3);
-  EXPECT_NEAR(pthermo->GetCpRatio(4), 0.334, 1e-3);
 
   // 5. NH3(l)
   EXPECT_NEAR(pthermo->GetCvRatio(5), 0.526, 1e-3);
-  EXPECT_NEAR(pthermo->GetCpRatio(5), 0.375, 1e-3);
 
   // 6. H2O(s)
   // 7. NH3(s)
@@ -150,10 +145,9 @@ TEST_F(TestThermodynamics, thermodynamics) {
   Real pres = 1.e5;
 
   pthermo->SetMassFractions<Real>(yfrac.data());
-  pthermo->SetTemperature(temp);
-  pthermo->SetPressure(pres);
-
   auto& thermo = get_kinetics_object(pthermo)->thermo();
+  thermo.setTemperature(temp);
+  thermo.setPressure(pres);
 
   std::vector<Real> cp(Thermodynamics::Size);
   std::vector<Real> cv(Thermodynamics::Size);
@@ -199,8 +193,9 @@ TEST_F(TestThermodynamics, equilibrium_uv) {
   std::cout << std::endl;
 
   pthermo->SetMassFractions<Real>(yfrac.data());
-  pthermo->SetTemperature(200.);
-  pthermo->SetPressure(1.e5);
+  auto& thermo = get_kinetics_object(pthermo)->thermo();
+  thermo.setTemperature(200.);
+  thermo.setPressure(1.e5);
 
   std::cout << "Density = " << pthermo->GetDensity() << std::endl;
 
