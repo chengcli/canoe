@@ -15,12 +15,30 @@ B moist_static_energy(Thermodynamics const *pthermo, A w, B gz) {
   return intEng + pthermo->GetRd() * tempv + gz;
 }
 
-/*template <typename T>
-T relative_humidity(Thermodynamics *pthermo, T w, int ivapor) {
-  return pthermo->GetDensity(iH2O) / w[IDN];
+template <typename T>
+std::vector<Real> relative_humidity(Thermodynamics const *pthermo, T w) {
+  pthermo->SetPrimitive(w);
+  auto kinetics = get_kinetics_object(pthermo);
+
+  std::vector<Real> kfwd(kinetics->nReactions());
+  kinetics->getFwdRateConstants(kfwd.data());
+
+  std::vector<Real> xfrac(Thermodynamics::Size);
+  kinetics->thermo().getMoleFractions(xfrac.data());
+
+  // gas fractions
+  Real xg = 0.;
+  for (int n = 0; n <= NVAPOR; ++n) xg += xfrac[n];
+
+  Real temp = pthermo->GetTemp();
+  for (int n = 1; n <= NVAPOR; ++n) {
+    xfrac[n] *= w[IPR] / (xg * kfwd[n - 1] * Cantera::GasConstant * temp);
+  }
+
+  return xfrac;
 }
 
-template <typename T>
+/*template <typename T>
 Real Thermodynamics::equivalent_potential_temp(Thermodynamics const *pthermo,
     T w) {
 #if (NVAPOR > 0)

@@ -55,8 +55,8 @@ void MeshBlock::InitUserMeshBlockData(ParameterInput *pin) {
   SetUserOutputVariableName(6, "theta_v");
   SetUserOutputVariableName(7, "mse");
 
-  SetUserOutputVariableName(8, "theta_e");
-  SetUserOutputVariableName(9, "rh");
+  SetUserOutputVariableName(8, "rh");
+  SetUserOutputVariableName(9, "theta_e");
   SetUserOutputVariableName(10, "qtol");
 }
 
@@ -83,11 +83,12 @@ void MeshBlock::UserWorkBeforeOutput(ParameterInput *pin) {
         // mse
         user_out_var(7, k, j, i) =
             moist_static_energy(pthermo, w.at(k, j, i), grav * pcoord->x1v(i));
+
+        // rh
+        user_out_var(8, k, j, i) = relative_humidity(pthermo, w.at(k, j, i))[1];
         /* theta_e
         user_out_var(5, k, j, i) =
             relative_humidity(pthermo, w.at(k, j, i), iH2O);
-        user_out_var(4, k, j, i) =
-            equivalent_potential_temp(pthermo, w.at(k, j, i), p0);
         */
 
         // total mixing ratio
