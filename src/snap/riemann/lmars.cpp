@@ -43,34 +43,10 @@ void Hydro::RiemannSolver(int const k, int const j, int const il, int const iu,
       wli[n] = wl(n, i);
       wri[n] = wr(n, i);
     }
-    // correction for gamma
-    // left
-    Real fsig = 1., feps = 1.;
-    // vapors
-    for (int n = 1; n <= NVAPOR; ++n) {
-      fsig += wli[n] * (pthermo->GetCvRatio(n) - 1.);
-      feps += wli[n] * (pthermo->GetInvMuRatio(n) - 1.);
-    }
-    // clouds
-    for (int n = 1 + NVAPOR; n <= NVAPOR + NCLOUD; ++n) {
-      fsig += wli[n] * (pthermo->GetCvRatio(n) - 1.);
-      feps -= wli[n];
-    }
-    Real kappal = 1. / (gamma - 1.) * fsig / feps;
 
-    // right
-    fsig = 1., feps = 1.;
-    // vapors
-    for (int n = 1; n <= NVAPOR; ++n) {
-      fsig += wri[n] * (pthermo->GetCvRatio(n) - 1.);
-      feps += wri[n] * (pthermo->GetInvMuRatio(n) - 1.);
-    }
-    // clouds
-    for (int n = 1 + NVAPOR; n <= NVAPOR + NCLOUD; ++n) {
-      fsig += wri[n] * (pthermo->GetCvRatio(n) - 1.);
-      feps -= wri[n];
-    }
-    Real kappar = 1. / (gamma - 1.) * fsig / feps;
+    // correction for gamma
+    Real kappal = 1. / (pthermo->GetGamma(wli) - 1.);
+    Real kappar = 1. / (pthermo->GetGamma(wri) - 1.);
 
     // enthalpy
     // FIXME: m should be at cell interface
@@ -91,23 +67,21 @@ void Hydro::RiemannSolver(int const k, int const j, int const il, int const iu,
            0.5 / (rhobar * cbar) * (wli[IPR] - wri[IPR]);
 
     Real rdl = 1., rdr = 1.;
-    for (int n = 1; n <= NVAPOR + NCLOUD; ++n) {
+    for (int n = 1; n < IVX; ++n) {
       rdl -= wli[n];
       rdr -= wri[n];
     }
 
     if (ubar > 0.) {
       flx(IDN, k, j, i) = ubar * wli[IDN] * rdl;
-      for (int n = 1; n <= NVAPOR + NCLOUD; ++n)
-        flx(n, k, j, i) = ubar * wli[IDN] * wli[n];
+      for (int n = 1; n < IVX; ++n) flx(n, k, j, i) = ubar * wli[IDN] * wli[n];
       flx(ivx, k, j, i) = ubar * wli[IDN] * wli[ivx] + pbar;
       flx(ivy, k, j, i) = ubar * wli[IDN] * wli[ivy];
       flx(ivz, k, j, i) = ubar * wli[IDN] * wli[ivz];
       flx(IEN, k, j, i) = ubar * wli[IDN] * hl;
     } else {
       flx(IDN, k, j, i) = ubar * wri[IDN] * rdr;
-      for (int n = 1; n <= NVAPOR + NCLOUD; ++n)
-        flx(n, k, j, i) = ubar * wri[IDN] * wri[n];
+      for (int n = 1; n < IVX; ++n) flx(n, k, j, i) = ubar * wri[IDN] * wri[n];
       flx(ivx, k, j, i) = ubar * wri[IDN] * wri[ivx] + pbar;
       flx(ivy, k, j, i) = ubar * wri[IDN] * wri[ivy];
       flx(ivz, k, j, i) = ubar * wri[IDN] * wri[ivz];
@@ -122,7 +96,7 @@ void Hydro::RiemannSolver(int const k, int const j, int const il, int const iu,
     // the "total" density To get the denisty of the dry species, the "dry
     // mixing ratio" (rdl/rdr) is multiplied
     // FIXME: remove this?
-    /*for (int n = 0; n < NCLOUD; ++n) {
+    /*for (int n = 0; n < NMASS; ++n) {
       Real vfld = ubar + pmicro->vsedf[dir](n, k, j, i);
       if (vfld > 0.) {
         pmicro->mass_flux[dir](n, k, j, i) = vfld * wli[IDN] * rdl;

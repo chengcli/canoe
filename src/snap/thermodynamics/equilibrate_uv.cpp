@@ -19,27 +19,11 @@ void Thermodynamics::EquilibrateUV() const {
 
   auto& thermo = kinetics_->thermo();
 
-  int iter = 0, max_iter = 3;
-  while (iter++ < max_iter) {
-    /*std::cout << "#############" << std::endl;
-    std::cout << "Iteration " << iter << std::endl;*/
-
-    Real temp = thermo.temperature();
-    Real pres = thermo.pressure();
+  for (int iter = 0; iter < 4; ++iter) {
+    // std::cout << "#############" << std::endl;
+    // std::cout << "Iteration " << iter << std::endl;
 
     kinetics_->getNetProductionRates(rates.data());
-
-    /*std::cout << "temp = " << temp << std::endl;
-    std::cout << "pres = " << pres << std::endl;
-    std::cout << "rates = " << rates << std::endl;*/
-
-    Real max_abs_rate = 0.;
-    for (size_t i = 1; i < Size; ++i) {
-      if (std::abs(rates[i]) > max_abs_rate) {
-        max_abs_rate = std::abs(rates[i]);
-      }
-    }
-    if (max_abs_rate < 1.E-8) break;
 
     // get concentration
     kinetics_->getActivityConcentrations(conc.data());
@@ -62,9 +46,11 @@ void Thermodynamics::EquilibrateUV() const {
     }
 
     // update temperature
+    Real temp = thermo.temperature();
     auto dT = -temp * rates.dot(intEng) / conc.dot(cv);
 
     /* print initial conditions
+    std::cout << "rates = " << rates << std::endl;
     std::cout << "dT = " << dT << std::endl;
     std::cout << "Concentration" << std::endl;
     for (size_t i = 0; i < conc.size(); ++i) {
@@ -73,6 +59,8 @@ void Thermodynamics::EquilibrateUV() const {
 
     thermo.setConcentrationsNoNorm(conc.data());
     thermo.setTemperature(temp + dT);
+
+    if (std::abs(dT) < 0.1) break;
 
     /*thermo.getIntEnergy_RT(intEng.data());
     thermo.getCv_R(cv.data());
