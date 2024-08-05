@@ -101,7 +101,3 @@ MeshBlock::Impl::Impl(MeshBlock *pmb, ParameterInput *pin) : pmy_block_(pmb) {
 }
 
 MeshBlock::Impl::~Impl() {}
-
-void MeshBlock::Impl::MapScalarsConserved(AthenaArray<Real> &s) {
-  if (NCLOUD > 0) pmicro->u.InitWithShallowSlice(s, 4, 0, NCLOUD);
-}

@@ -1,5 +1,6 @@
 #include "thermodynamics.hpp"
 
+//! Eq.1 in Li2018
 Real cal_dlnT_dlnP(Real const* xfrac, Real gammad, Real const* cp_ratio_mole,
                    Real const* latent) {
   Real q_gas = 1.;
@@ -7,10 +8,9 @@ Real cal_dlnT_dlnP(Real const* xfrac, Real gammad, Real const* cp_ratio_mole,
 
   Real f_sig = 1.;
   // vapor
-  for (int n = 1; n <= NVAPOR; ++n) f_sig += xfrac[n] * (cp_ratio_mole[n] - 1.);
-  // cloud
-  for (int n = 1 + NVAPOR; n <= NVAPOR + NCLOUD; ++n)
+  for (int n = 1; n <= NVAPOR + NCLOUD; ++n) {
     f_sig += xfrac[n] * (cp_ratio_mole[n] - 1.);
+  }
   Real cphat_ov_r = gammad / (gammad - 1.) * f_sig / q_gas;
 
   // vapor

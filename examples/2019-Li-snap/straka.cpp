@@ -48,7 +48,7 @@
 // Finally, the Thermodynamics class works with thermodynamic aspects of the
 // problem such as the temperature, potential temperature, condensation of
 // vapor, etc.
-#include <snap/stride_iterator.hpp>
+#include <snap/thermodynamics/atm_thermodynamics.hpp>
 #include <snap/thermodynamics/thermodynamics.hpp>
 
 // Functions in the math library are protected by a specific namespace because
@@ -103,7 +103,7 @@ void MeshBlock::UserWorkBeforeOutput(ParameterInput *pin) {
       // <code>w</code> that stores density, pressure, and velocities at each
       // grid.
       user_out_var(0, j, i) = pthermo->GetTemp(w.at(k, j, i));
-      user_out_var(1, j, i) = pthermo->PotentialTemp(w.at(k, j, i), p0);
+      user_out_var(1, j, i) = potential_temp(pthermo, w.at(k, j, i), p0);
     }
 }
 
@@ -141,15 +141,15 @@ void Diffusion(MeshBlock *pmb, Real const time, Real const dt,
       // the Thermodynamics class to calculate temperature and potential
       // temperature.
       Real temp = pthermo->GetTemp(w.at(pmb->ks, j, i));
-      Real theta = pthermo->PotentialTemp(w.at(pmb->ks, j, i), p0);
+      Real theta = potential_temp(pthermo, w.at(pmb->ks, j, i), p0);
 
       // The thermal diffusion is applied to the potential temperature field,
       // which is not exactly correct. But this is the setting of the test
       // program.
-      Real theta_ip1_j = pthermo->PotentialTemp(w.at(k, j + 1, i), p0);
-      Real theta_im1_j = pthermo->PotentialTemp(w.at(k, j - 1, i), p0);
-      Real theta_i_jp1 = pthermo->PotentialTemp(w.at(k, j, i + 1), p0);
-      Real theta_i_jm1 = pthermo->PotentialTemp(w.at(k, j, i - 1), p0);
+      Real theta_ip1_j = potential_temp(pthermo, w.at(k, j + 1, i), p0);
+      Real theta_im1_j = potential_temp(pthermo, w.at(k, j - 1, i), p0);
+      Real theta_i_jp1 = potential_temp(pthermo, w.at(k, j, i + 1), p0);
+      Real theta_i_jm1 = potential_temp(pthermo, w.at(k, j, i - 1), p0);
 
       // Add viscous dissipation to the velocities. Now you encounter another
       // variable called <code>u</code>. <code>u</code> stands for `conserved

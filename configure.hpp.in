@@ -6,7 +6,7 @@ enum {
   NPHASE_LEGACY = @NPHASE_LEGACY@,
 
   // air-parcle data
-  //NVAPOR = @NVAPOR@,
+  NVAPOR = @NVAPOR@,
   NCLOUD = @NCLOUD@,
   NMASS = @NMASS@,
   NCHEMISTRY = @NCHEMISTRY@,

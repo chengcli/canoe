@@ -9,10 +9,6 @@
 #   h = h0 + cp0 * (t - t0)
 #   s = s0 + cp0 * ln(t/t0)
 
-description: |-
-  This input file describes the properties of species
-  and their thermodynamics relations in Jupiter's atmosphere.
-
 phases:
   - name: gas
     thermo: ideal-moist
