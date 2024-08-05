@@ -59,6 +59,28 @@ void OutputType::loadUserOutputData(MeshBlock *pmb) {
     }
   }
 
+  // cloud
+  if (NCLOUD > 0) {
+    if (output_params.variable.compare("prim") == 0 ||
+        output_params.variable.compare("cloud") == 0) {
+      pod = new OutputData;
+      pod->type = "VECTORS";
+      pod->name = "cloud";
+      pod->data.InitWithShallowSlice(phyd->w, 4, 1 + NVAPOR, NCLOUD);
+      AppendOutputDataNode(pod);
+      num_vars_ += NCLOUD;
+    }
+
+    if (output_params.variable.compare("cons") == 0) {
+      pod = new OutputData;
+      pod->type = "VECTORS";
+      pod->name = "cloud";
+      pod->data.InitWithShallowSlice(phyd->u, 4, 1 + NVAPOR, NCLOUD);
+      AppendOutputDataNode(pod);
+      num_vars_ += NCLOUD;
+    }
+  }
+
   // radiation
   if (output_params.variable.compare("rad") == 0 ||
       output_params.variable.compare("radtau") == 0) {

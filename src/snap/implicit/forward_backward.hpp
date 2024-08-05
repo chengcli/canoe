@@ -21,14 +21,14 @@ void ImplicitSolver::ForwardSweep(std::vector<T1> &a, std::vector<T1> &b,
 
   if (T2::RowsAtCompileTime == 3) {  // partial matrix
     rhs(0) = du_(IDN, k, j, il);
-    for (int n = 1; n <= NVAPOR; ++n) rhs(0) += du_(n, k, j, il);
+    for (int n = 1; n < IVX; ++n) rhs(0) += du_(n, k, j, il);
     rhs(0) /= dt;
     rhs(1) = du_(IVX + mydir_, k, j, il) / dt;
     rhs(2) = du_(IEN, k, j, il) / dt;
     rhs -= corr[il];
   } else {  // full matrix
     rhs(0) = du_(IDN, k, j, il);
-    for (int n = 1; n <= NVAPOR; ++n) rhs(0) += du_(n, k, j, il);
+    for (int n = 1; n < IVX; ++n) rhs(0) += du_(n, k, j, il);
     rhs(0) /= dt;
     rhs(1) = du_(IVX + mydir_, k, j, il) / dt;
     rhs(2) = du_(IVX + (IVY - IVX + mydir_) % 3, k, j, il) / dt;
@@ -54,14 +54,14 @@ void ImplicitSolver::ForwardSweep(std::vector<T1> &a, std::vector<T1> &b,
   for (int i = il + 1; i <= iu; ++i) {
     if (T2::RowsAtCompileTime == 3) {  // partial matrix
       rhs(0) = du_(IDN, k, j, i);
-      for (int n = 1; n <= NVAPOR; ++n) rhs(0) += du_(n, k, j, i);
+      for (int n = 1; n < IVX; ++n) rhs(0) += du_(n, k, j, i);
       rhs(0) /= dt;
       rhs(1) = du_(IVX + mydir_, k, j, i) / dt;
       rhs(2) = du_(IEN, k, j, i) / dt;
       rhs -= corr[i];
     } else {
       rhs(0) = du_(IDN, k, j, i);
-      for (int n = 1; n <= NVAPOR; ++n) rhs(0) += du_(n, k, j, i);
+      for (int n = 1; n < IVX; ++n) rhs(0) += du_(n, k, j, i);
       rhs(0) /= dt;
       rhs(1) = du_(IVX + mydir_, k, j, i) / dt;
       rhs(2) = du_(IVX + (IVY - IVX + mydir_) % 3, k, j, i) / dt;

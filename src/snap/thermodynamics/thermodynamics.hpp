@@ -28,6 +28,7 @@ class ParameterInput;
 namespace Cantera {
 class ThermoPhase;
 class Condensation;
+class Kinetics;
 }  // namespace Cantera
 
 // Thermodynamic variables are ordered in the array as the following
@@ -36,6 +37,9 @@ class Condensation;
 // NVAPOR+1..NVAPOR+NCLOUD: clouds
 
 class Thermodynamics {
+  friend std::shared_ptr<Cantera::Condensation> get_kinetics_object(
+      Thermodynamics const *pthermo);
+
  protected:
   //! Constructor for class sets up the initial conditions
   //! Protected ctor access thru static member function Instance
@@ -61,6 +65,8 @@ class Thermodynamics {
   //! Destroy the one and only instance of Thermodynamics
   static void Destroy();
 
+  size_t SpeciesIndex(std::string const &name) const;
+
   void UpdateThermoProperties();
 
   //! Ideal gas constant of dry air in [J/(kg K)]
@@ -78,16 +84,6 @@ class Thermodynamics {
   template <typename T>
   Real GetCv(T w) const;
 
-  //! Ratio of molecular weights [1]
-  //! \param[in] n the index of the thermodynamic species
-  //! \return $\epsilon_i^{-1} =\mu_d/\mu_i$
-  Real GetInvMuRatio(int n) const { return inv_mu_ratio_[n]; }
-
-  //! Ratio of specific heat capacity [J/(kg K)] at constant volume [1]
-  //! \param[in] n the index of the thermodynamic species
-  //! \return $c_{v,i}/c_{v,d}$
-  Real GetCvRatio(int n) const { return cv_ratio_[n]; }
-
   //! Construct an 1d atmosphere
   //! \param[in,out] qfrac mole fraction representation of air parcel
   //! \param[in] dzORdlnp vertical grid spacing
@@ -99,30 +95,30 @@ class Thermodynamics {
 
   //! Thermodnamic equilibrium at current TP
   //! \param[in,out] qfrac mole fraction representation of air parcel
-  void EquilibrateTP() const;
+  void EquilibrateTP(Real temp, Real pres) const;
 
   //! Thermodnamic equilibrium at current UV
   void EquilibrateUV() const;
 
-  void SetTemperature(Real temp) const;
-
-  void SetPressure(Real pres) const;
-
-  void SetDensity(Real dens) const;
+  template <typename T>
+  void SetMassFractions(StrideIterator<T *> w) const;
 
   template <typename T>
   void SetPrimitive(StrideIterator<T *> w) const;
-
   template <typename T>
   void GetPrimitive(StrideIterator<T *> w) const;
 
   template <typename T>
   void SetConserved(StrideIterator<T *> u, StrideIterator<T *> m) const;
-
   template <typename T>
-  void GetConserved(StrideIterator<T *> u) const;
+  void GetConserved(StrideIterator<T *> u, StrideIterator<T *> m) const;
 
  public:
+  Real GetTemp() const;
+  Real GetPres() const;
+  Real GetDensity() const;
+  Real RovRd() const;
+
   //! \brief Inverse of the mean molecular weight
   //!
   //! Eq.16 in Li2019
@@ -130,8 +126,6 @@ class Thermodynamics {
   //! \return $1/\mu$
   template <typename T>
   Real RovRd(T w) const;
-
-  Real RovRd() const;
 
   //! \brief Effective adiabatic index
   //!
@@ -148,33 +142,19 @@ class Thermodynamics {
     return w[IPR] / (w[IDN] * Rd_ * RovRd(w));
   }
 
-  Real GetTemp() const;
-
   //! Pressure from conserved variables
   //! \return $p$
   template <typename T>
   Real GetPres(StrideIterator<T *> u, StrideIterator<T *> m) const;
 
-  Real GetPres() const;
-
-  Real GetDensity() const;
-
-  //! \brief Calculate potential temperature from primitive variable
-  //!
-  //! $\theta = T(\frac{p_0}{p})^{\chi}$
-  //! \return $\theta$
   template <typename T>
-  Real PotentialTemp(T w, Real p0) const {
-    return GetTemp(w) * pow(p0 / w[IPR], GetChi(w));
-  }
+  Real GetEnthalpy(T w) const;
 
-  //! \brief Effective polytropic index
-  //!
-  //! Eq.63 in Li2019
-  //! $\gamma = \frac{c_p}{c_v}$
-  //! \return $\gamma$
   template <typename T>
-  Real GetGamma(T w) const;
+  Real GetEntropy(T w) const;
+
+  template <typename T>
+  Real GetInternalEnergy(T w) const;
 
   //! \brief Calculate equivalent potential temperature from primitive variable
   //!
@@ -195,12 +175,53 @@ class Thermodynamics {
   template <typename T>
   std::vector<Real> SaturationSurplus(T w);
 
+  //! \brief Effective polytropic index
+  //!
+  //! Eq.63 in Li2019
+  //! $\gamma = \frac{c_p}{c_v}$
+  //! \return $\gamma$
+  template <typename T>
+  Real GetGamma(T u, Real rho = 1.) const {
+    Real fsig = 1., feps = 1.;
+    for (int n = 1; n <= NVAPOR; ++n) {
+      fsig += u[n] / rho * (cv_ratio_[n] - 1.);
+      feps += u[n] / rho * (inv_mu_ratio_[n] - 1.);
+    }
+
+    for (int n = 1 + NVAPOR; n < Size; ++n) {
+      fsig += u[n] / rho * (cv_ratio_[n] - 1.);
+      feps -= u[n] / rho;
+    }
+
+    return 1. + (gammad_ - 1.) * feps / fsig;
+  }
+
+  template <typename T>
+  Real IntEngToPres(T u, Real intEng, Real rho = 1.) const {
+    return (GetGamma(u, rho) - 1.) * intEng;
+  }
+
+  template <typename T>
+  Real PresToIntEng(T u, Real pres, Real rho = 1.) const {
+    return pres / (GetGamma(u, rho) - 1.);
+  }
+
  public:  // air parcel deprecated functions
   Real GetCvRatioMole(int n) const { return 0.; }
   Real GetCpRatioMole(int n) const { return 0.; }
   Real GetLatentEnergyMole(int n) const { return 0.; }
   Real GetCvMassRef(int n) const { return 0.; }
   Real GetInvMu(int n) const { return 0.; }
+
+  //! Ratio of molecular weights [1]
+  //! \param[in] n the index of the thermodynamic species
+  //! \return $\epsilon_i^{-1} =\mu_d/\mu_i$
+  Real GetInvMuRatio(int n) const { return inv_mu_ratio_[n]; }
+
+  //! Ratio of specific heat capacity [J/(kg K)] at constant volume
+  //! \param[in] n the index of the thermodynamic species
+  //! \return $c_{v,i}/c_{v,d}$
+  Real GetCvRatio(int n) const { return cv_ratio_[n]; }
 
  protected:
   void _rk4_integrate_lnp(Real dlnp, std::string method, Real adlnTdlnP) const;

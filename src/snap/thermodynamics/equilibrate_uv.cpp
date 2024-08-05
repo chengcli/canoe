@@ -19,13 +19,11 @@ void Thermodynamics::EquilibrateUV() const {
 
   auto& thermo = kinetics_->thermo();
 
-  int iter = 0, max_iter = 3;
-  while (iter++ < max_iter) {
-    /*std::cout << "#############" << std::endl;
-    std::cout << "Iteration " << iter << std::endl;*/
+  for (int iter = 0; iter < 3; ++iter) {
+    // std::cout << "#############" << std::endl;
+    // std::cout << "Iteration " << iter << std::endl;
 
-    Real temp = thermo.temperature();
-    // Real pres = thermo.pressure();
+    kinetics_->getNetProductionRates(rates.data());
 
     // get concentration
     kinetics_->getActivityConcentrations(conc.data());
@@ -35,16 +33,12 @@ void Thermodynamics::EquilibrateUV() const {
     Real cc = conc.dot(cv);
     Real uc = conc.dot(intEng);
 
-    /*std::cout << "internal energy 1 = " << uc * temp << std::endl;
-
-    // print initial conditions
+    /* print initial conditions
+    std::cout << "internal energy 1 = " << uc * temp << std::endl;
     std::cout << "Concentration" << std::endl;
     for (size_t i = 0; i < conc.size(); ++i) {
       std::cout << "Concentration" << i << ": " << conc[i] << std::endl;
     }*/
-
-    kinetics_->getNetProductionRates(rates.data());
-    // std::cout << "rates = " << rates << std::endl;
 
     // update concentrations
     for (size_t i = 1; i < rates.size(); ++i) {
@@ -52,10 +46,12 @@ void Thermodynamics::EquilibrateUV() const {
     }
 
     // update temperature
+    Real temp = thermo.temperature();
     auto dT = -temp * rates.dot(intEng) / conc.dot(cv);
-    // std::cout << "dT = " << dT << std::endl;
 
     /* print initial conditions
+    std::cout << "rates = " << rates << std::endl;
+    std::cout << "dT = " << dT << std::endl;
     std::cout << "Concentration" << std::endl;
     for (size_t i = 0; i < conc.size(); ++i) {
       std::cout << "Concentration" << i << ": " << conc[i] << std::endl;
@@ -64,11 +60,12 @@ void Thermodynamics::EquilibrateUV() const {
     thermo.setConcentrationsNoNorm(conc.data());
     thermo.setTemperature(temp + dT);
 
+    if (std::abs(dT) < 0.1) break;
+
     /*thermo.getIntEnergy_RT(intEng.data());
     thermo.getCv_R(cv.data());
     std::cout << "internal energy 2 = "
               << conc.dot(intEng) * thermo.temperature() << std::endl;
-
     std::cout << "T = " << thermo.temperature() << std::endl;
     std::cout << "P = " << thermo.pressure() << std::endl;
     std::cout << "D = " << thermo.density() << std::endl;*/
