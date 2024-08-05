@@ -147,14 +147,6 @@ class Thermodynamics {
   template <typename T>
   Real GetPres(StrideIterator<T *> u, StrideIterator<T *> m) const;
 
-  //! \brief Effective polytropic index
-  //!
-  //! Eq.63 in Li2019
-  //! $\gamma = \frac{c_p}{c_v}$
-  //! \return $\gamma$
-  template <typename T>
-  Real GetGamma(T w) const;
-
   template <typename T>
   Real GetEnthalpy(T w) const;
 
@@ -183,42 +175,35 @@ class Thermodynamics {
   template <typename T>
   std::vector<Real> SaturationSurplus(T w);
 
+  //! \brief Effective polytropic index
+  //!
+  //! Eq.63 in Li2019
+  //! $\gamma = \frac{c_p}{c_v}$
+  //! \return $\gamma$
   template <typename T>
-  Real IntEngToPres(StrideIterator<T *> w, Real intEng, Real rho = 1.) const {
-    // internal energy
+  Real GetGamma(T u, Real rho = 1.) const {
     Real fsig = 1., feps = 1.;
-
-    // vapors
     for (int n = 1; n <= NVAPOR; ++n) {
-      fsig += w[n] / rho * (cv_ratio_[n] - 1.);
-      feps += w[n] / rho * (inv_mu_ratio_[n] - 1.);
-    }
-    // clouds
-    for (int n = 1 + NVAPOR; n < Size; ++n) {
-      fsig += w[n] / rho * (cv_ratio_[n] - 1.);
-      feps -= w[n] / rho;
+      fsig += u[n] / rho * (cv_ratio_[n] - 1.);
+      feps += u[n] / rho * (inv_mu_ratio_[n] - 1.);
     }
 
-    return (gammad_ - 1.) * intEng * feps / fsig;
+    for (int n = 1 + NVAPOR; n < Size; ++n) {
+      fsig += u[n] / rho * (cv_ratio_[n] - 1.);
+      feps -= u[n] / rho;
+    }
+
+    return 1. + (gammad_ - 1.) * feps / fsig;
   }
 
   template <typename T>
-  Real PresToIntEng(StrideIterator<T *> w, Real pres, Real rho = 1.) const {
-    // internal energy
-    Real fsig = 1., feps = 1.;
+  Real IntEngToPres(T u, Real intEng, Real rho = 1.) const {
+    return (GetGamma(u, rho) - 1.) * intEng;
+  }
 
-    // vapors
-    for (int n = 1; n <= NVAPOR; ++n) {
-      fsig += w[n] / rho * (cv_ratio_[n] - 1.);
-      feps += w[n] / rho * (inv_mu_ratio_[n] - 1.);
-    }
-    // clouds
-    for (int n = 1 + NVAPOR; n < Size; ++n) {
-      fsig += w[n] / rho * (cv_ratio_[n] - 1.);
-      feps -= w[n] / rho;
-    }
-
-    return pres * fsig / feps / (gammad_ - 1.);
+  template <typename T>
+  Real PresToIntEng(T u, Real pres, Real rho = 1.) const {
+    return pres / (GetGamma(u, rho) - 1.);
   }
 
  public:  // air parcel deprecated functions

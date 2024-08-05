@@ -76,7 +76,7 @@ void EquationOfState::ConservedToPrimitive(
         Real& w_p = prim(IPR, k, j, i);
 
         Real density = 0.;
-        for (int n = 0; n <= NVAPOR + NCLOUD; ++n) {
+        for (int n = 0; n < IVX; ++n) {
           density += cons(n, k, j, i);
         }
         // total density
@@ -84,7 +84,7 @@ void EquationOfState::ConservedToPrimitive(
         Real di = 1. / density;
 
         // mass mixing ratio
-        for (int n = 1; n <= NVAPOR + NCLOUD; ++n)
+        for (int n = 1; n < IVX; ++n)
           prim(n, k, j, i) = std::max(scalar_floor_, cons(n, k, j, i) * di);
 
         w_vx = u_m1 * di;
@@ -120,7 +120,6 @@ void EquationOfState::PrimitiveToConserved(const AthenaArray<Real>& prim,
                                            AthenaArray<Real>& cons,
                                            Coordinates* pco, int il, int iu,
                                            int jl, int ju, int kl, int ku) {
-  Real igm1 = 1.0 / (GetGamma() - 1.0);
   auto pthermo = Thermodynamics::GetInstance();
 
   for (int k = kl; k <= ku; ++k) {
@@ -140,7 +139,7 @@ void EquationOfState::PrimitiveToConserved(const AthenaArray<Real>& prim,
 
         // density
         u_d = w_d;
-        for (int n = 1; n <= NVAPOR + NCLOUD; ++n) {
+        for (int n = 1; n < IVX; ++n) {
           cons(n, k, j, i) = prim(n, k, j, i) * w_d;
           cons(IDN, k, j, i) -= cons(n, k, j, i);
         }
@@ -169,20 +168,8 @@ void EquationOfState::PrimitiveToConserved(const AthenaArray<Real>& prim,
 #pragma omp declare simd simdlen(SIMD_WIDTH) uniform(this)
 Real EquationOfState::SoundSpeed(const Real prim[NHYDRO]) {
   auto pthermo = Thermodynamics::GetInstance();
-
-  Real fsig = 1., feps = 1.;
-  // vapors
-  for (int n = 1; n <= NVAPOR; ++n) {
-    fsig += prim[n] * (pthermo->GetCvRatio(n) - 1.);
-    feps += prim[n] * (pthermo->GetInvMuRatio(n) - 1.);
-  }
-  // clouds
-  for (int n = 1 + NVAPOR; n <= NVAPOR + NCLOUD; ++n) {
-    fsig += prim[n] * (pthermo->GetCvRatio(n) - 1.);
-    feps -= prim[n];
-  }
-
-  return std::sqrt((1. + (gamma_ - 1) * feps / fsig) * prim[IPR] / prim[IDN]);
+  Real gamma = pthermo->GetGamma(prim);
+  return std::sqrt(gamma * prim[IPR] / prim[IDN]);
 }
 
 //----------------------------------------------------------------------------------------
@@ -199,7 +186,7 @@ void EquationOfState::ApplyPrimitiveFloors(AthenaArray<Real>& prim, int k,
   // apply (prim) density floor
   w_d = (w_d > density_floor_) ? w_d : density_floor_;
   // apply composition floors
-  for (int n = 1; n <= NVAPOR + NCLOUD; ++n) {
+  for (int n = 1; n < IVX; ++n) {
     prim(n, i) = std::max(scalar_floor_, prim(n, i));
   }
   // apply pressure floor
@@ -219,7 +206,6 @@ void EquationOfState::ApplyPrimitiveConservedFloors(AthenaArray<Real>& prim,
                                                     AthenaArray<Real>& bcc,
                                                     int k, int j, int i) {
   auto pthermo = Thermodynamics::GetInstance();
-  Real gm1 = GetGamma() - 1.0;
   Real& w_d = prim(IDN, k, j, i);
   Real& w_p = prim(IPR, k, j, i);
 
@@ -232,7 +218,7 @@ void EquationOfState::ApplyPrimitiveConservedFloors(AthenaArray<Real>& prim,
   u_d = w_d;
 
   // apply composition floors
-  for (int n = 1; n <= NVAPOR + NCLOUD; ++n) {
+  for (int n = 1; n < IVX; ++n) {
     prim(n, k, j, i) = std::max(scalar_floor_, prim(n, k, j, i));
     cons(n, k, j, i) = prim(n, k, j, i) * w_d;
     u_d -= cons(n, k, j, i);
@@ -244,21 +230,10 @@ void EquationOfState::ApplyPrimitiveConservedFloors(AthenaArray<Real>& prim,
              (prim(IVX, k, j, i) * vl[IVX] + prim(IVY, k, j, i) * vl[IVY] +
               prim(IVZ, k, j, i) * vl[IVZ]);
 
-  Real fsig = 1., feps = 1.;
-  // vapors
-  for (int n = 1; n <= NVAPOR; ++n) {
-    fsig += prim(n, k, j, i) * (pthermo->GetCvRatio(n) - 1.);
-    feps += prim(n, k, j, i) * (pthermo->GetInvMuRatio(n) - 1.);
-  }
-  // clouds
-  for (int n = 1 + NVAPOR; n <= NVAPOR + NCLOUD; ++n) {
-    fsig += prim(n, k, j, i) * (pthermo->GetCvRatio(n) - 1.);
-    feps -= prim(n, k, j, i);
-  }
-
   // apply pressure floor, correct total energy
-  u_e = (w_p > pressure_floor_) ? u_e
-                                : (pressure_floor_ / gm1 * fsig / feps) + e_k;
+  u_e = (w_p > pressure_floor_)
+            ? u_e
+            : pthermo->PresToIntEng(prim.at(k, j, i), pressure_floor_) + e_k;
   w_p = (w_p > pressure_floor_) ? w_p : pressure_floor_;
 
   return;

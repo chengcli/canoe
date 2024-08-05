@@ -129,22 +129,6 @@ Real Thermodynamics::GetChi(T w) const {
 }
 
 template <typename T>
-Real Thermodynamics::GetGamma(T w) const {
-  Real fsig = 1., feps = 1.;
-  for (int n = 1; n <= NVAPOR; ++n) {
-    fsig += w[n] * (cv_ratio_[n] - 1.);
-    feps += w[n] * (inv_mu_ratio_[n] - 1.);
-  }
-
-  for (int n = 1 + NVAPOR; n < Size; ++n) {
-    fsig += w[n] * (cv_ratio_[n] - 1.);
-    feps -= w[n];
-  }
-
-  return 1. + (gammad_ - 1.) * feps / fsig;
-}
-
-template <typename T>
 Real Thermodynamics::GetEnthalpy(T w) const {
   SetPrimitive(w);
   auto enthalpy = kinetics_->thermo().enthalpy_mole();
