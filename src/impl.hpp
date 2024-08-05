@@ -76,10 +76,6 @@ class MeshBlock::Impl {
   auto &GetMeshOutputGroups() const { return mesh_outputs_; }
   auto &GetFITSOutputGroups() const { return fits_outputs_; }
 
-  // TODO(cli) : more needs to be changed
-  // called in task_list/time_integration.cpp
-  void MapScalarsConserved(AthenaArray<Real> &s);
-
  protected:
   std::map<char const *, ExchangerBase *> exchangers_;
 

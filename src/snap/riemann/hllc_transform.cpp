@@ -34,7 +34,8 @@ void Hydro::RiemannSolver(const int k, const int j, const int il, const int iu,
                           AthenaArray<Real> &wr, AthenaArray<Real> &flx,
                           const AthenaArray<Real> &dxw) {
   auto pthermo = Thermodynamics::GetInstance();
-  auto pmicro = pmy_block->pimpl->pmicro;
+  // FIXME
+  // auto pmicro = pmy_block->pimpl->pmicro;
 
   int ivy = IVX + ((ivx - IVX) + 1) % 3;
   int ivz = IVX + ((ivx - IVX) + 2) % 3;
@@ -79,29 +80,19 @@ void Hydro::RiemannSolver(const int k, const int j, const int il, const int iu,
     wri[IVZ] = wr(ivz, i);
     wri[IPR] = wr(IPR, i);
 
-    for (int n = 1; n <= NVAPOR; ++n) {
+    for (int n = 1; n < IVX; ++n) {
       wli[n] = wl(n, i);
       wri[n] = wr(n, i);
     }
 
     // correction for gamma
     // left
-    Real fsig = 1., feps = 1.;
-    for (int n = 1; n <= NVAPOR; ++n) {
-      fsig += wli[n] * (pthermo->GetCvRatio(n) - 1.);
-      feps += wli[n] * (pthermo->GetInvMuRatio(n) - 1.);
-    }
-    Real kappal = 1. / (gamma - 1.) * fsig / feps;
-    Real gammal = 1. / kappal + 1.;
+    Real gammal = pthermo->GetGamma(wli);
+    Real kappal = 1. / (gammal - 1.);
 
     // right
-    fsig = 1., feps = 1.;
-    for (int n = 1; n <= NVAPOR; ++n) {
-      fsig += wri[n] * (pthermo->GetCvRatio(n) - 1.);
-      feps += wri[n] * (pthermo->GetInvMuRatio(n) - 1.);
-    }
-    Real kappar = 1. / (gamma - 1.) * fsig / feps;
-    Real gammar = 1. / kappar + 1.;
+    Real gammar = pthermo->GetGamma(wri);
+    Real kappar = 1. / (gammar - 1.);
 
     //--- Step 2.  Compute middle state estimates with PVRS (Toro 10.5.2)
 
@@ -195,7 +186,7 @@ void Hydro::RiemannSolver(const int k, const int j, const int il, const int iu,
     vxr = wri[IVX] - bp;
 
     Real rdl = 1., rdr = 1.;
-    for (int n = 1; n <= NVAPOR; ++n) {
+    for (int n = 1; n < IVX; ++n) {
       rdl -= wli[n];
       rdr -= wri[n];
     }
@@ -203,7 +194,7 @@ void Hydro::RiemannSolver(const int k, const int j, const int il, const int iu,
     fl[IDN] = wli[IDN] * vxl * rdl;
     fr[IDN] = wri[IDN] * vxr * rdr;
 
-    for (int n = 1; n <= NVAPOR; ++n) {
+    for (int n = 1; n < IVX; ++n) {
       fl[n] = wli[IDN] * wli[n] * vxl;
       fr[n] = wri[IDN] * wri[n] * vxr;
     }
@@ -237,27 +228,27 @@ void Hydro::RiemannSolver(const int k, const int j, const int il, const int iu,
     // contribution
     // of the flux along the contact
 
-    for (int n = 0; n <= NVAPOR; ++n) flxi[n] = sl * fl[n] + sr * fr[n];
+    for (int n = 0; n < IVX; ++n) flxi[n] = sl * fl[n] + sr * fr[n];
     flxi[IVX] = sl * fl[IVX] + sr * fr[IVX] + sm * cp;
     flxi[IVY] = sl * fl[IVY] + sr * fr[IVY];
     flxi[IVZ] = sl * fl[IVZ] + sr * fr[IVZ];
     flxi[IEN] = sl * fl[IEN] + sr * fr[IEN] + sm * cp * am;
 
-    for (int n = 0; n <= NVAPOR; ++n) flx(n, k, j, i) = flxi[n];
+    for (int n = 0; n < IVX; ++n) flx(n, k, j, i) = flxi[n];
     flx(ivx, k, j, i) = flxi[IVX];
     flx(ivy, k, j, i) = flxi[IVY];
     flx(ivz, k, j, i) = flxi[IVZ];
     flx(IEN, k, j, i) = flxi[IEN];
 
-    // tracer flux
-    Real tfl[(NCLOUD)], tfr[(NCLOUD)], tflxi[(NCLOUD)];
-    for (int n = 0; n < NCLOUD; ++n) {
+    /* tracer flux
+    Real tfl[(NMASS)], tfr[(NMASS)], tflxi[(NMASS)];
+    for (int n = 0; n < NMASS; ++n) {
       Real vsed = pmicro->vsedf[dir](n, k, j, i);
       tfl[n] = wli[IDN] * rdl * (vxl + vsed);
       tfr[n] = wri[IDN] * rdr * (vxr + vsed);
       tflxi[n] = sl * tfl[n] + sr * tfr[n];
       pmicro->mass_flux[dir](n, k, j, i) = tflxi[n];
-    }
+    }*/
   }
 
 #if defined(AFFINE) || defined(CUBED_SPHERE)  // need of deprojection

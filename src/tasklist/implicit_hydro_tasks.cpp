@@ -297,6 +297,7 @@ TaskStatus ImplicitHydroTasks::UpdateAllConserved(MeshBlock *pmb, int stage) {
   auto pmicro = pmb->pimpl->pmicro;
 
   auto &u = pmb->phydro->u;
+  auto &w = pmb->phydro->w;
   auto &s = pmb->pscalars->s;
   auto &m = pmb->pcoord->m;
 
@@ -309,10 +310,21 @@ TaskStatus ImplicitHydroTasks::UpdateAllConserved(MeshBlock *pmb, int stage) {
         // pmicro->Evolve(pmb->pmy_mesh->time, pmb->pmy_mesh->dt);
         // pmicro->GetConserved(u.at(k, j, i), s.at(k, j, i));
 
-        // pthermo->SetConserved(u.at(k, j, i), m.at(k, j, i));
-        // pthermo->SetConserved(u.at(k, j, i), m.at(k, j, i));
-        // pthermo->EquilibrateUV();
-        // pthermo->GetConserved(u.at(k, j, i));
+        /*std::cout << "before: " << std::endl;
+        for (int n = 0; n < NHYDRO; n++) {
+          std::cout << u(n, k, j, i) << ", ";
+        }
+        std::cout << std::endl;*/
+
+        pthermo->SetConserved(u.at(k, j, i), m.at(k, j, i));
+        pthermo->EquilibrateUV();
+        pthermo->GetConserved(u.at(k, j, i), m.at(k, j, i));
+
+        /*std::cout << "after: " << std::endl;
+        for (int n = 0; n < NHYDRO; n++) {
+          std::cout << u(n, k, j, i) << ", ";
+        }
+        std::cout << std::endl;*/
       }
 
   return TaskStatus::success;
