@@ -80,18 +80,7 @@ void ImplicitSolver::FullCorrection(AthenaArray<Real>& du,
   for (int i = is - 2; i <= ie + 1; ++i) {
     Real fsig = 1., feps = 1.;
     CopyPrimitives(wl, wr, w, k, j, i, mydir_);
-    // vapors
-    for (int n = 1; n <= NVAPOR; ++n) {
-      fsig += wr[n] * (pthermo->GetCvRatio(n) - 1.);
-      feps += wr[n] * (pthermo->GetInvMuRatio(n) - 1.);
-    }
-    // clouds
-    for (int n = 1 + NVAPOR; n <= NVAPOR + NCLOUD; ++n) {
-      fsig += wr[n] * (pthermo->GetCvRatio(n) - 1.);
-      feps += wr[n];
-    }
-
-    gamma_m1[i] = (gamma - 1.) * feps / fsig;
+    gamma_m1[i] = pthermo->GetGamma(wr) - 1.;
     FluxJacobian(dfdq[i], gamma_m1[i], wr, mydir_);
   }
 
