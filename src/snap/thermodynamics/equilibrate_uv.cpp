@@ -19,7 +19,7 @@ void Thermodynamics::EquilibrateUV() const {
 
   auto& thermo = kinetics_->thermo();
 
-  for (int iter = 0; iter < 4; ++iter) {
+  for (int iter = 0; iter < 3; ++iter) {
     // std::cout << "#############" << std::endl;
     // std::cout << "Iteration " << iter << std::endl;
 
