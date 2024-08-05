@@ -28,44 +28,38 @@ const std::string Microphysics::input_key = "microphysics_config";
 
 Microphysics::Microphysics(MeshBlock *pmb, ParameterInput *pin)
     : pmy_block_(pmb) {
-  if (NCLOUD == 0) return;
+  if (NMASS == 0) return;
 
   Application::Logger app("microphysics");
   app->Log("Initialize Microphysics");
-
-  w.InitWithShallowSlice(pmb->pscalars->r, 4, 0, NCLOUD);
-  u.InitWithShallowSlice(pmb->pscalars->s, 4, 0, NCLOUD);
 
   int ncells1 = pmb->ncells1;
   int ncells2 = pmb->ncells2;
   int ncells3 = pmb->ncells3;
 
   // storage for sedimentation velocity at cell boundary
-  vsedf[0].NewAthenaArray(NCLOUD, ncells3, ncells2, ncells1 + 1);
-  vsedf[1].NewAthenaArray(NCLOUD, ncells3, ncells2 + 1, ncells1);
-  vsedf[2].NewAthenaArray(NCLOUD, ncells3 + 1, ncells2, ncells1);
+  vsedf[0].NewAthenaArray(NMASS, ncells3, ncells2, ncells1 + 1);
+  vsedf[1].NewAthenaArray(NMASS, ncells3, ncells2 + 1, ncells1);
+  vsedf[2].NewAthenaArray(NMASS, ncells3 + 1, ncells2, ncells1);
 
   // storage for cloud mass flux at cell boundary
-  mass_flux[0].NewAthenaArray(NCLOUD, ncells3, ncells2, ncells1 + 1);
-  mass_flux[1].NewAthenaArray(NCLOUD, ncells3, ncells2 + 1, ncells1);
-  mass_flux[2].NewAthenaArray(NCLOUD, ncells3 + 1, ncells2, ncells1);
+  mass_flux[0].NewAthenaArray(NMASS, ncells3, ncells2, ncells1 + 1);
+  mass_flux[1].NewAthenaArray(NMASS, ncells3, ncells2 + 1, ncells1);
+  mass_flux[2].NewAthenaArray(NMASS, ncells3 + 1, ncells2, ncells1);
 
   // internal storage for sedimentation velocity at cell center
-  vsed_[0].NewAthenaArray(NCLOUD, ncells3, ncells2, ncells1);
+  vsed_[0].NewAthenaArray(NMASS, ncells3, ncells2, ncells1);
   vsed_[0].ZeroClear();
-  vsed_[1].NewAthenaArray(NCLOUD, ncells3, ncells2, ncells1);
+  vsed_[1].NewAthenaArray(NMASS, ncells3, ncells2, ncells1);
   vsed_[1].ZeroClear();
-  vsed_[2].NewAthenaArray(NCLOUD, ncells3, ncells2, ncells1);
+  vsed_[2].NewAthenaArray(NMASS, ncells3, ncells2, ncells1);
   vsed_[2].ZeroClear();
-
-  // hydro_.NewAthenaArray(NCLOUD_HYDRO, NCLOUD, ncells3, ncells2, ncells1);
-  // hydro_.ZeroClear();
 
   systems_ = MicrophysicalSchemesFactory::Create(pmb, pin);
 }
 
 Microphysics::~Microphysics() {
-  if (NCLOUD == 0) return;
+  if (NMASS == 0) return;
 
   Application::Logger app("microphysics");
   app->Log("Destroy Microphysics");
@@ -93,7 +87,7 @@ void Microphysics::SetVsedFromConserved(Hydro const *phydro) {
   }
 
   // interpolation to cell interface
-  for (int n = 0; n < NCLOUD; ++n)
+  for (int n = 0; n < NMASS; ++n)
     for (int k = ks; k <= ke + 1; ++k)
       for (int j = js; j <= je + 1; ++j)
         for (int i = is; i <= ie + 1; ++i) {
@@ -111,7 +105,7 @@ void Microphysics::SetVsedFromConserved(Hydro const *phydro) {
         }
 
   // fix boundary condition (TODO)
-  for (int n = 0; n < NCLOUD; ++n)
+  for (int n = 0; n < NMASS; ++n)
     for (int k = ks; k <= ke; ++k)
       for (int j = js; j <= je; ++j) {
         // no sedimentation velocity at the boundary

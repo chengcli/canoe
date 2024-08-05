@@ -46,7 +46,7 @@ inline void RoeAverage(Real prim[], Real gm1, Real wl[], Real wr[]) {
   prim[IVY] = (sqrtdl * wl[IVY] + sqrtdr * wr[IVY]) * isdlpdr;
   prim[IVZ] = (sqrtdl * wl[IVZ] + sqrtdr * wr[IVZ]) * isdlpdr;
 
-  for (int i = 1; i <= NVAPOR; ++i)
+  for (int i = 1; i < IVX; ++i)
     prim[i] = (sqrtdl * wl[i] + sqrtdr * wr[i]) * isdlpdr;
 
   // Etot of the left side.

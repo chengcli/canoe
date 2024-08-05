@@ -24,16 +24,9 @@ class Microphysics {
  public:  /// public access members
   //! \todo(CLI) track cloud temperature and momentum
   //! tem, v1, v2, v3
-  //! enum { NCLOUD_HYDRO = 4 };
 
   //! microphysics input key in the input file [microphysics_config]
   static const std::string input_key;
-
-  //! primitive variables: mass fraction [kg/kg]
-  AthenaArray<Real> w;
-
-  //! conserved variables: mass concentration [kg/m^3]
-  AthenaArray<Real> u;
 
   //! sedimentation velocity at cell interface [m/s]
   AthenaArray<Real> vsedf[3];
