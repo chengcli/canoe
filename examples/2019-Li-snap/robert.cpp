@@ -27,7 +27,7 @@
 #include <impl.hpp>
 
 // snap
-#include <snap/stride_iterator.hpp>
+#include <snap/thermodynamics/atm_thermodynamics.hpp>
 #include <snap/thermodynamics/thermodynamics.hpp>
 
 // @sect3{Preamble}
@@ -53,7 +53,7 @@ void MeshBlock::UserWorkBeforeOutput(ParameterInput *pin) {
     for (int j = js; j <= je; ++j)
       for (int i = is; i <= ie; ++i) {
         user_out_var(0, k, j, i) = pthermo->GetTemp(w.at(k, j, i));
-        user_out_var(1, k, j, i) = pthermo->PotentialTemp(w.at(k, j, i), p0);
+        user_out_var(1, k, j, i) = potential_temp(pthermo, w.at(k, j, i), p0);
       }
 }
 

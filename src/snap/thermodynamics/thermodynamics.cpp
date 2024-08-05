@@ -90,6 +90,11 @@ Thermodynamics* Thermodynamics::fromYAMLInput(std::string const& fname) {
   auto& kinetics = mythermo_->kinetics_;
   kinetics = std::static_pointer_cast<Cantera::Condensation>(
       Cantera::newKinetics({thermo}, fname));
+
+  // finalize setup the thermo manager for clouds
+  thermo->updateFromKinetics(*kinetics);
+
+  // update temperature dependent thermodynamic properties
   mythermo_->UpdateThermoProperties();
 
   return mythermo_;
@@ -138,6 +143,14 @@ void Thermodynamics::Destroy() {
   }
 }
 
+size_t Thermodynamics::SpeciesIndex(std::string const& name) const {
+  int index = kinetics_->kineticsSpeciesIndex(name);
+  if (index < 0) {
+    throw RuntimeError("Thermodynamics", "Species " + name + " not found");
+  }
+  return index;
+}
+
 Real Thermodynamics::GetTemp() const {
   return kinetics_->thermo().temperature();
 }
@@ -149,25 +162,17 @@ Real Thermodynamics::GetDensity() const {
 }
 
 Real Thermodynamics::RovRd() const {
-  std::array<Real, Size> w;
-  kinetics_->thermo().getMassFractions(w.data());
+  auto& thermo = kinetics_->thermo();
 
   Real feps = 1.;
-  for (int n = 1; n <= NVAPOR; ++n) feps += w[n] * (inv_mu_ratio_[n] - 1.);
-  for (int n = 1 + NVAPOR; n < Size; ++n) feps -= w[n];
+  for (int n = 1; n <= NVAPOR; ++n) {
+    feps += thermo.massFraction(n) * (inv_mu_ratio_[n] - 1.);
+  }
+
+  for (int n = 1 + NVAPOR; n < Size; ++n) {
+    feps -= thermo.massFraction(n);
+  }
   return feps;
-}
-
-void Thermodynamics::SetTemperature(Real temp) const {
-  kinetics_->thermo().setTemperature(temp);
-}
-
-void Thermodynamics::SetPressure(Real pres) const {
-  kinetics_->thermo().setTemperature(pres);
-}
-
-void Thermodynamics::SetDensity(Real dens) const {
-  kinetics_->thermo().setDensity(dens);
 }
 
 void Thermodynamics::Extrapolate_inplace(Real dzORdlnp, std::string method,
@@ -178,6 +183,27 @@ void Thermodynamics::Extrapolate_inplace(Real dzORdlnp, std::string method,
   } else {  // non-hydrostatic
     _rk4_integrate_z(dzORdlnp, method, grav, userp);
   }
+
+  if (method != "reversible") {
+    auto& thermo = kinetics_->thermo();
+    std::vector<Real> xfrac(Size);
+    thermo.getMoleFractions(xfrac.data());
+
+    Real temp = thermo.temperature();
+    Real pres = thermo.pressure();
+
+    // a small number indicating saturation
+    for (int j = 1 + NVAPOR; j < Size; ++j) {
+      if (xfrac[j] > 0) xfrac[j] = 1.e-10;
+    }
+    thermo.setMoleFractions(xfrac.data());
+    EquilibrateTP(temp, pres);
+  }
 }
 
 Thermodynamics* Thermodynamics::mythermo_ = nullptr;
+
+std::shared_ptr<Cantera::Condensation> get_kinetics_object(
+    Thermodynamics const* pthermo) {
+  return pthermo->kinetics_;
+}
