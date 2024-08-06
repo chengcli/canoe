@@ -42,10 +42,6 @@ void Thermodynamics::_rk4_integrate_z(Real dz, std::string method, Real grav,
       }
     }
 
-    if (method != "reversible") {
-      for (int j = 1 + NVAPOR; j < Size; ++j) xfrac[j] = 0;
-    }
-
     Real q_gas = 1., q_eps = 1.;
     for (int i = 1; i <= NVAPOR; ++i) {
       q_eps += xfrac[i] * (1. / inv_mu_ratio_[i] - 1.);
@@ -90,7 +86,6 @@ void Thermodynamics::_rk4_integrate_z(Real dz, std::string method, Real grav,
       pres = pres0 * exp(-2. * g_ov_Rd * dz / (R_ov_Rd * (temp + temp0)));
     }
 
-    thermo.setMoleFractions(xfrac.data());
     EquilibrateTP(temp, pres);
   }
 }
