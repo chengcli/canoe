@@ -144,11 +144,15 @@ void Thermodynamics::Destroy() {
 }
 
 size_t Thermodynamics::SpeciesIndex(std::string const& name) const {
-  int index = kinetics_->kineticsSpeciesIndex(name);
+  int index = kinetics_->thermo().speciesIndex(name);
   if (index < 0) {
     throw RuntimeError("Thermodynamics", "Species " + name + " not found");
   }
   return index;
+}
+
+std::string Thermodynamics::SpeciesName(size_t k) const {
+  return kinetics_->thermo().speciesName(k);
 }
 
 Real Thermodynamics::GetTemp() const {
