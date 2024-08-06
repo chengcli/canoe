@@ -6,11 +6,11 @@
 setup_problem(straka)
 setup_problem(robert)
 setup_problem(bryan)
+setup_problem(jcrm)
 
 # 2. Compile sedimentation
 if (${NVAPOR} EQUAL 2 AND ${NCLOUD} EQUAL 4 AND ${NPHASE_LEGACY} EQUAL 3)
   setup_problem(sedimentation)
-  setup_problem(jvortex)
 endif()
 
 # 4. Copy input files to run directory

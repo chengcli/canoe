@@ -67,6 +67,8 @@ class Thermodynamics {
 
   size_t SpeciesIndex(std::string const &name) const;
 
+  std::string SpeciesName(size_t index) const;
+
   void UpdateThermoProperties();
 
   //! Ideal gas constant of dry air in [J/(kg K)]

@@ -1,0 +1,12 @@
+description: |-
+  This input file describes the reduced thermodynamics
+  relations in Jupiter's atmosphere.
+
+phases:
+  - name: gas
+    thermo: ideal-moist
+    species:
+      - jup-thermo/species: [dry, H2O, NH3, H2O(l), NH3(s)]
+    kinetics: condensation
+    reactions:
+      - jup-thermo.yaml/reactions: declared-species
