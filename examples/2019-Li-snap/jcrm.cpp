@@ -37,14 +37,20 @@ Real grav, P0, T0;
 void MeshBlock::InitUserMeshBlockData(ParameterInput *pin) {
   auto pthermo = Thermodynamics::GetInstance();
 
-  AllocateUserOutputVariables(4 + NVAPOR);
+  AllocateUserOutputVariables(8 + NVAPOR);
   SetUserOutputVariableName(0, "temp");
-  SetUserOutputVariableName(1, "theta");
-  SetUserOutputVariableName(2, "thetav");
-  SetUserOutputVariableName(3, "mse");
+  SetUserOutputVariableName(1, "tempv");
+  SetUserOutputVariableName(2, "enthalpy");
+  SetUserOutputVariableName(3, "entropy");
+  SetUserOutputVariableName(4, "intEng");
+
+  SetUserOutputVariableName(5, "theta");
+  SetUserOutputVariableName(6, "thetav");
+  SetUserOutputVariableName(7, "mse");
+
   for (int n = 1; n <= NVAPOR; ++n) {
     std::string name = "rh" + pthermo->SpeciesName(n);
-    SetUserOutputVariableName(3 + n, name.c_str());
+    SetUserOutputVariableName(7 + n, name.c_str());
   }
 }
 
@@ -56,15 +62,22 @@ void MeshBlock::UserWorkBeforeOutput(ParameterInput *pin) {
     for (int j = js; j <= je; ++j)
       for (int i = is; i <= ie; ++i) {
         user_out_var(0, k, j, i) = pthermo->GetTemp(w.at(k, j, i));
-        user_out_var(1, k, j, i) = potential_temp(pthermo, w.at(k, j, i), P0);
+        user_out_var(1, k, j, i) =
+            user_out_var(0, k, j, i) * pthermo->RovRd(w.at(k, j, i));
+        user_out_var(2, k, j, i) = pthermo->GetEnthalpy(w.at(k, j, i));
+        user_out_var(3, k, j, i) = pthermo->GetEntropy(w.at(k, j, i));
+        user_out_var(4, k, j, i) = pthermo->GetInternalEnergy(w.at(k, j, i));
+
+        // theta
+        user_out_var(5, k, j, i) = potential_temp(pthermo, w.at(k, j, i), P0);
         // theta_v
-        user_out_var(2, k, j, i) =
-            user_out_var(1, k, j, i) * pthermo->RovRd(w.at(k, j, i));
+        user_out_var(6, k, j, i) =
+            user_out_var(5, k, j, i) * pthermo->RovRd(w.at(k, j, i));
         // mse
-        user_out_var(3, k, j, i) =
+        user_out_var(7, k, j, i) =
             moist_static_energy(pthermo, w.at(k, j, i), grav * pcoord->x1v(i));
         auto rh = relative_humidity(pthermo, w.at(k, j, i));
-        for (int n = 1; n <= NVAPOR; ++n) user_out_var(3 + n, k, j, i) = rh[n];
+        for (int n = 1; n <= NVAPOR; ++n) user_out_var(7 + n, k, j, i) = rh[n];
       }
 }
 
@@ -78,7 +91,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
   srand(Globals::my_rank + time(0));
 
   Application::Logger app("main");
-  app->Log("ProblemGenerator: jupiter_crm");
+  app->Log("ProblemGenerator: jcrm");
 
   auto pthermo = Thermodynamics::GetInstance();
 
@@ -143,8 +156,8 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
     if ((fabs(T0 - t0) < Ttol) && (fabs(P0 / p0 - 1.) < Ptol)) break;
 
     app->Log("Iteration #", iter);
-    app->Log("T = ", t0);
-    app->Log("p = ", p0);
+    app->Log("T", t0);
+    app->Log("p", p0);
   }
 
   if (iter > max_iter) {
@@ -165,6 +178,9 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
       for (; i <= ie; ++i) {
         if (pthermo->GetTemp() < Tmin) break;
         pthermo->GetPrimitive(w.at(k, j, i));
+        // set all clouds to zero
+        for (int n = 1 + NVAPOR; n < IVX; ++n) w(n, k, j, i) = 0.;
+        // move to the next cell
         pthermo->Extrapolate_inplace(pcoord->dx1f(i), "pseudo", grav, adTdz);
       }
 
@@ -172,6 +188,8 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
       // is too low
       for (; i <= ie; ++i) {
         pthermo->GetPrimitive(w.at(k, j, i));
+        // set all clouds to zero
+        for (int n = 1 + NVAPOR; n < IVX; ++n) w(n, k, j, i) = 0.;
         pthermo->Extrapolate_inplace(pcoord->dx1f(i), "isothermal", grav);
       }
     }

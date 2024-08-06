@@ -17,7 +17,7 @@ endif()
 if (${TASK} STREQUAL "straka" OR
     ${TASK} STREQUAL "robert" OR
     ${TASK} STREQUAL "bryan" OR
-    ${TASK} STREQUAL "jvortex")
+    ${TASK} STREQUAL "jcrm")
   add_subdirectory(2019-Li-snap)
 endif()
 

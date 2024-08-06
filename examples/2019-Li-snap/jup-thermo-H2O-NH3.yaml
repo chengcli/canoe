@@ -6,7 +6,7 @@ phases:
   - name: gas
     thermo: ideal-moist
     species:
-      - jup-thermo/species: [dry, H2O, NH3, H2O(l), NH3(s)]
+      - jup-thermo.yaml/species: [dry, H2O, NH3, H2O(l), H2O(s), NH3(s)]
     kinetics: condensation
     reactions:
       - jup-thermo.yaml/reactions: declared-species
