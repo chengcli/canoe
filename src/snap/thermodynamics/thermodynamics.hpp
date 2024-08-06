@@ -67,6 +67,8 @@ class Thermodynamics {
 
   size_t SpeciesIndex(std::string const &name) const;
 
+  std::string SpeciesName(size_t index) const;
+
   void UpdateThermoProperties();
 
   //! Ideal gas constant of dry air in [J/(kg K)]
@@ -145,7 +147,7 @@ class Thermodynamics {
   //! Pressure from conserved variables
   //! \return $p$
   template <typename T>
-  Real GetPres(StrideIterator<T *> u, StrideIterator<T *> m) const;
+  Real GetPres(T u, T m) const;
 
   template <typename T>
   Real GetEnthalpy(T w) const;

@@ -27,16 +27,13 @@
 
 // canoe
 #include <impl.hpp>
-#include <index_map.hpp>
 
 // climath
-#include <climath/core.h>
-#include <climath/interpolation.h>
+#include <climath/core.h>  // sqr
 
 #include <climath/root.hpp>
 
 // snap
-#include <snap/stride_iterator.hpp>
 #include <snap/thermodynamics/atm_thermodynamics.hpp>
 #include <snap/thermodynamics/thermodynamics.hpp>
 
