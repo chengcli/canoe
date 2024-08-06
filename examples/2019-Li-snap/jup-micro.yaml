@@ -1,0 +1,61 @@
+name: microphysics scheme for Jupiter
+
+phases:
+  - name: water-system
+    thermo: ideal-moist
+    species:
+      - jup-thermo.yaml/species: [H2O, H2O(l)]
+      - H2O(p)
+    kinetics: gas
+
+  - name: ammonia-system
+    thermo: ideal-moist
+    species:
+      - jup-thermo.yaml/species: [NH3, NH3(l)]
+      - NH3(p)
+    kinetics: gas
+
+species:
+  - name: H2O(p)
+    composition: {H: 2, O: 1}
+    thermo:
+      model: constant-cp
+      cp0: 75.3 J/mol/K
+      h0: -28.5 kJ/mol
+    equation-of-state:
+      model: constant-volume
+      molar-volume: 0.0 cm^3/mol
+    sedimentation: -10. m/s
+
+  - name: NH3(p)
+    composition: {N: 1, H: 3}
+    thermo:
+      model: constant-cp
+      cp0: 80.0 J/mol/K
+      h0: -45.9 kJ/mol
+    equation-of-state:
+      model: constant-volume
+      molar-volume: 0.0 cm^3/mol
+    sedimentation: -10. m/s
+
+water-kessler:
+  - equation: H2O(l) => H2O(p)
+    rate-constant: {A: 0.01}
+
+  - equation: H2O(l) + H2O(p) -> 2 H2O(p)
+    rate-constant: {A: 0.01}
+
+  - equation: H2O(p) => H2O
+    type: evaporation
+    rate-constant: {A: 0.01}
+
+ammonia-kessler:
+  - equation: NH3(l) => NH3(p)
+    rate-constant: {A: 0.01}
+
+  - equation: NH3(l) + NH3(p) -> 2 NH3(p)
+    rate-constant: {A: 0.01}
+
+  - equation: NH3(p) => NH3
+    type: evaporation
+    rate-constant: {A: 0.01}

@@ -150,7 +150,7 @@ Real Thermodynamics::GetInternalEnergy(T w) const {
 }
 
 template <typename T>
-Real Thermodynamics::GetPres(StrideIterator<T*> u, StrideIterator<T*> m) const {
+Real Thermodynamics::GetPres(T u, T m) const {
   Real rho = 0.;
   for (int n = 0; n < Size; ++n) rho += u[n];
 
