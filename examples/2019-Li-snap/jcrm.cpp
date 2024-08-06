@@ -104,9 +104,8 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
   app->Log("request P", P0);
 
   // thermodynamic constants
-  Real gamma = pin->GetReal("hydro", "gamma");
   Real Rd = pthermo->GetRd();
-  Real cp = gamma / (gamma - 1.) * Rd;
+  Real cp = pthermo->GetGammad() / (pthermo->GetGammad() - 1.) * Rd;
 
   // set up atmosphere
   Real Ttol = pin->GetOrAddReal("problem", "Ttol_abs", 0.01);

@@ -23,14 +23,14 @@ file_type   = pnetcdf
 variable    = uov
 dt          = 5.E3
 
-<output4>
-file_type   = pnetcdf
-variable    = diag
-dt          = 5.E3
+#<output4>
+#file_type   = pnetcdf
+#variable    = diag
+#dt          = 5.E3
 
 <time>
 cfl_number  = 0.9         # The Courant, Friedrichs, & Lewy (CFL) Number
-nlim        = 1          # cycle limit
+nlim        = -1          # cycle limit
 tlim        = 10.E5       # time limit
 xorder      = 5
 integrator  = rk3
@@ -42,7 +42,7 @@ x1max       = 60.E3       # maximum value of X1
 ix1_bc      = reflecting  # Inner-X1 boundary condition flag
 ox1_bc      = reflecting  # Outer-X1 boundary condition flag
 
-nx2         = 1           # Number of zones in X2-direction
+nx2         = 80           # Number of zones in X2-direction
 x2min       = -2400.E3    # minimum value of X2
 x2max       = 2400.E3     # maximum value of X2
 ix2_bc      = periodic    # Inner-X2 boundary condition flag
@@ -56,7 +56,7 @@ ox3_bc      = periodic    # Outer-X3 boundary condition flag
 
 <meshblock>
 nx1         = 80
-nx2         = 1
+nx2         = 20
 nx3         = 1
 
 <hydro>
@@ -81,4 +81,4 @@ T0          = 169.
 Tmin        = 110.
 Ttol_abs    = 0.01
 Ptol_rel    = 1.e-4
-diagnostics = div, curl, b, mean, anomaly, radflux, hydroflux, w_avg
+#diagnostics = div, curl, b, mean, anomaly, radflux, hydroflux, w_avg
