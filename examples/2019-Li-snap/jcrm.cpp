@@ -139,14 +139,14 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
     for (; i <= ie; ++i) {
       pthermo->GetPrimitive<Real>(prim1);
       pthermo->Extrapolate_inplace(pcoord->dx1f(i), "pseudo", grav);
-      if (pcoord->x1f(i) > 0.) break;
+      if (pcoord->x1f(i + 1) > 0.) break;
     }
     pthermo->GetPrimitive<Real>(prim);
 
     // linear interpolate to Z = 0
     for (int n = 0; n < NHYDRO; ++n)
       prim[n] =
-          prim1[n] + (prim[n] - prim1[n]) * pcoord->x1f(i) / pcoord->dx1f(i);
+          prim[n] + (prim1[n] - prim[n]) * pcoord->x1f(i + 1) / pcoord->dx1f(i);
 
     // make up for the difference
     Real t0 = pthermo->GetTemp(prim);
