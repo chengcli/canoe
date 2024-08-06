@@ -1,0 +1,13 @@
+diff --git a/src/snap/thermodynamics/thermodynamics.hpp b/src/snap/thermodynamics/thermodynamics.hpp
+index 749be854..72d72920 100644
+--- a/src/snap/thermodynamics/thermodynamics.hpp
++++ b/src/snap/thermodynamics/thermodynamics.hpp
+@@ -147,7 +147,7 @@ class Thermodynamics {
+   //! Pressure from conserved variables
+   //! \return $p$
+   template <typename T>
+-  Real GetPres(StrideIterator<T *> u, StrideIterator<T *> m) const;
++  Real GetPres(T u, T m) const;
+
+   template <typename T>
+   Real GetEnthalpy(T w) const;
