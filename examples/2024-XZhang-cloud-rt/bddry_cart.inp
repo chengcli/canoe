@@ -45,7 +45,7 @@ ox1_bc     = reflecting   # outer-X1 boundary flag
 
 nx2         = 30         # Number of zones in X2-direction
 x2min       = 0.          # minimum value of X2
-x2max       = 1.5E7      # maximum value of X2
+x2max       = 1.5E6      # maximum value of X2
 ix2_bc      = reflecting  # Inner-X2 boundary condition flag
 ox2_bc      = reflecting  # Outer-X2 boundary condition flag
 
@@ -100,7 +100,7 @@ HJ.equinox    = 0.
 
 <radiation>
 dt            = 10.
-radiation_config = hjdry.yaml
+radiation_config = bd.yaml
 nstr          = 4
 relax_time    = 1.E4
 

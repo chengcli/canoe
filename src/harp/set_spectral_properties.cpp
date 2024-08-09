@@ -74,7 +74,10 @@ void RadiationBand::SetSpectralProperties(AirColumn& ac, Real const* x1f,
 
   bool error = false;
   for (int i = 0; i < ac.size(); ++i) {
-    if (temf_[i] < 0.) error = true;
+    if (temf_[i] < 0.) {
+      temf_[i] = tem_[i];
+      // error = true;
+    }
   }
   for (int i = il; i <= iu; ++i) {
     if (tem_[i] < 0.) error = true;
