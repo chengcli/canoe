@@ -9,10 +9,9 @@ endmacro()
 # athena variables
 set_if_empty(NUMBER_GHOST_CELLS 3)
 
-set(CUBED_SPHERE ON)
-# set(COORDINATE_SYSTEM "spherical_polar")
-set(NVAPOR 1)
-set(NCLOUD 2)
+# set(CUBED_SPHERE ON) set(COORDINATE_SYSTEM "spherical_polar")
+set(NVAPOR 3)
+set(NCLOUD 6)
 set(NPHASE_LEGACY 3)
 set(PNETCDF ON)
 set(MPI ON)
