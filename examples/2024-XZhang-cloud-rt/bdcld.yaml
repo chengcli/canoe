@@ -1,0 +1,57 @@
+opacity-sources:
+  - name: H2-vis
+    class: FreedmanMean
+    parameters: {scale: 0.5, met: 1.7}
+#    parameters: {kappa_a: 5.5e-4, kappa_b: 0.}
+
+  - name: H2-ir
+    class: FreedmanMean
+    parameters: {scale: 1., met: 1.7}
+
+  - name: cloud-ir
+    class: SimpleCloud
+    dependent-species: [cloud.mgsio3(c), cloud.mgsio3(p)]
+    parameters: {qext: 0.1, ssa: 0., asymf: 0.5, g1: 0.5, g2: 0.}
+
+bands: [ir]
+
+ir:
+  units: cm-1
+  grid-type: regular
+  wavenumber-range: [100., 30000.]
+  num-bins: 1
+  opacity: [H2-ir, cloud-ir]
+  #opacity: [H2-ir]
+  rt-solver: Disort
+  parameters: {btemp: 0., ttemp: 0} #assuming Tint = 350. K
+  flags: [broad_band, thermal_emission]
+
+vis:
+  units: cm-1
+  grid-type: regular
+  wavenumber-range: [10000., 50000.]
+  num-bins: 1
+  opacity: [H2-vis]
+  rt-solver: Disort
+  #  parameters: {temp0: 768., umu0: 1., phi0: 0.}
+  #flags: [broad_band, time_dependent]
+  parameters: {temp0: 1500., dist_au: 1., umu0: 1., phi0: 0.}
+  flags: [broad_band]
+
+
+Disort-flags:
+  ibcnd: false
+  usrtau: false
+  usrang: false
+  onlyfl: true
+  spher: false
+  intensity_correction: true
+  old_intensity_correction: false
+  general_source: false
+  output_uum: false
+  quiet: true
+  print-input: false
+  print-fluxes: false
+  print-intensity: false
+  print-transmissivity: false
+  print-phase-function: true

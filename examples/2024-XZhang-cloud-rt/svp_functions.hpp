@@ -56,6 +56,30 @@ void enroll_vapor_Function_NH3(Thermodynamics::SVPFunc1Container &svp_func1,
   }
 }
 
+// ammonia-sulfide svp
+double sat_vapor_p_NH4SH(double T) {
+  double betal = 70.14, gammal = 4.6, tr = 250.000, pr = 36.94;
+  return SatVaporPresIdeal(T / tr, pr, betal, gammal);
+}
+
+void enroll_vapor_Function_NH4SH(Thermodynamics::SVPFunc1Container &svp_func1,
+                                 std::vector<IndexSet> const &cloud_index_set) {
+  Application::Logger app("snap");
+  app->Log("Enrolling NH4SH vapor pressures");
+
+  auto pindex = IndexMap::GetInstance();
+  if (!pindex->HasVapor("NH4SH")) return;
+  int iNH4SH = pindex->GetVaporId("NH4SH");
+
+  svp_func1[iNH4SH][0] = [](AirParcel const &qfrac, int, int) {
+    return sat_vapor_p_NH4SH(qfrac.w[IDN]);
+  };
+
+  for (int n = 1; n < cloud_index_set[iNH4SH].size(); ++n) {
+    svp_func1[iNH4SH][n] = NullSatVaporPres1;
+  }
+}
+
 // silicate svp
 double sat_vapor_p_mgsio3(double T) {
   double betal = 36.909, gammal = 0., tr = 1700.000, pr = 6.318;
@@ -84,5 +108,6 @@ void enroll_vapor_Function_mgsio3(
 void Thermodynamics::enrollVaporFunctions() {
   enroll_vapor_Function_H2O(svp_func1_, cloud_index_set_);
   enroll_vapor_Function_NH3(svp_func1_, cloud_index_set_);
+  enroll_vapor_Function_NH4SH(svp_func1_, cloud_index_set_);
   enroll_vapor_Function_mgsio3(svp_func1_, cloud_index_set_);
 }
