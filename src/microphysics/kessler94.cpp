@@ -122,14 +122,12 @@ void Kessler94::SetVsedFromConserved(AthenaArray<Real> vsed[3],
     Real P, T, rho_gas, eta, lambda, Kn, beta;
     auto pthermo = Thermodynamics::GetInstance();
     Real Rd = pthermo->GetRd();
-    const Real pi = 3.14159265358979323846;
-    const Real k_b = 1.380649e-23;  // Boltzmann constant
-    const Real d = 2.827e-10;       // Molecular diameter in m
+    const Real d = 2.827e-10;  // Molecular diameter in m
     const Real epsilon_LJ =
         59.7e-7;              // Depth of Lennard-Jones potential in J for H2
     const Real m = 3.34e-27;  // Molecular mass of H2
     Real r = GetPar<Real>("radius");       // Particle radius
-    Real rho_d = GetPar<Real>("density");  // in MKS
+    Real rho_d = GetPar<Real>("density");  // material density
     Real g = GetPar<Real>("gravity");
     for (int k = kl; k <= ku; ++k)
       for (int j = jl; j <= ju; ++j)
@@ -137,22 +135,25 @@ void Kessler94::SetVsedFromConserved(AthenaArray<Real> vsed[3],
           rho_gas = phydro->w(IDN, k, j, i);
           P = phydro->w(IPR, k, j, i);
           T = P / (Rd * rho_gas);
-          eta = (5.0 / 16.0) * std::sqrt(pi * m * k_b * T) *
-                std::pow(k_b * T / epsilon_LJ, 0.16) / (pi * d * d * 1.22);
+          eta = (5.0 / 16.0) * std::sqrt(M_PI * m * Constants::kBoltz * T) *
+                std::pow(Constants::kBoltz * T / epsilon_LJ, 0.16) /
+                (M_PI * d * d * 1.22);
           // Calculate mean free path, lambda
-          lambda = (eta * std::sqrt(pi * k_b * T)) / (P * std::sqrt(2.0 * m));
+          lambda =
+              (eta * std::sqrt(M_PI * Constants::kBoltz * Constants::kBoltz)) /
+              (P * std::sqrt(2.0 * m));
           // Calculate Knudsen number, Kn
           Kn = lambda / r;
           // Calculate Cunningham slip factor, beta
           beta = 1.0 + Kn * (1.256 + 0.4 * std::exp(-1.1 / Kn));
           // Calculate vsed
           Real vel = beta * (2.0 * r * r * g * (rho_d - rho_gas)) / (9.0 * eta);
-          //          std::cout << "vel: " << vel << " pressure:" << P << "
-          //          rho_gas: " << rho_gas << " T:" << T << "beta: " << beta <<
-          //          " eta:" << eta << " rho_gas: " << rho_gas << " lambda:" <<
-          //          lambda << std::endl;
+          std::cout << "vel: " << vel << " pressure:" << P
+                    << "rho_gas: " << rho_gas << " T:" << T << "beta: " << beta
+                    << " eta:" << eta << " rho_gas: " << rho_gas
+                    << " lambda:" << lambda << std::endl;
           if (vel > 5.e3) {
-            vel = 5.e3;  // limit the sedimentation velocity to 1 km/s
+            vel = 5.e3;  // limit the sedimentation velocity to 5 km/s
           }
           vsed[0](ip, k, j, i) = vel;
         }
