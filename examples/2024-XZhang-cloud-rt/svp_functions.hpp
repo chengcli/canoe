@@ -56,10 +56,18 @@ void enroll_vapor_Function_NH3(Thermodynamics::SVPFunc1Container &svp_func1,
   }
 }
 
-// ammonia-sulfide svp
+// ammonium-sulfide svp
 double sat_vapor_p_NH4SH(double T) {
-  double betal = 70.14, gammal = 4.6, tr = 250.000, pr = 36.94;
-  return SatVaporPresIdeal(T / tr, pr, betal, gammal);
+  // xiz
+  //   double betal = 70.14, gammal = 4.6, tr = 250.000, pr = 36.94;
+  //   return SatVaporPresIdeal(T / tr, pr, betal, gammal);
+
+  // lewis
+  return pow(10., 14.82 - 4705. / T) * 101325. * 101325.;
+
+  // Umich
+  //   double const GOLB2 = (14.83 - (4715.0 / T));
+  //   return (pow(10.0, GOLB2)) * 1013250.0 * 1013250.0;
 }
 
 void enroll_vapor_Function_NH4SH(Thermodynamics::SVPFunc1Container &svp_func1,
