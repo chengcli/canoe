@@ -148,10 +148,11 @@ void Kessler94::SetVsedFromConserved(AthenaArray<Real> vsed[3],
           beta = 1.0 + Kn * (1.256 + 0.4 * std::exp(-1.1 / Kn));
           // Calculate vsed
           Real vel = beta * (2.0 * r * r * g * (rho_d - rho_gas)) / (9.0 * eta);
-          std::cout << "vel: " << vel << " pressure:" << P
-                    << "rho_gas: " << rho_gas << " T:" << T << "beta: " << beta
-                    << " eta:" << eta << " rho_gas: " << rho_gas
-                    << " lambda:" << lambda << std::endl;
+          //          std::cout << "vel: " << vel << " pressure:" << P
+          //                    << "rho_gas: " << rho_gas << " T:" << T <<
+          //                    "beta: " << beta
+          //                    << " eta:" << eta << " rho_gas: " << rho_gas
+          //                    << " lambda:" << lambda << std::endl;
           if (vel > 5.e3) {
             vel = 5.e3;  // limit the sedimentation velocity to 5 km/s
           }
