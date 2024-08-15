@@ -113,9 +113,34 @@ void enroll_vapor_Function_mgsio3(
   }
 }
 
+// Fe svp
+double sat_vapor_p_fe(double T) {
+  double betal = 28.437, gammal = 0., tr = 1700.000, pr = 0.759;
+  return SatVaporPresIdeal(T / tr, pr, betal, gammal);
+}
+
+void enroll_vapor_Function_fe(Thermodynamics::SVPFunc1Container &svp_func1,
+                              std::vector<IndexSet> const &cloud_index_set) {
+  Application::Logger app("snap");
+  app->Log("Enrolling fe vapor pressures");
+
+  auto pindex = IndexMap::GetInstance();
+  if (!pindex->HasVapor("fe")) return;
+  int ife = pindex->GetVaporId("fe");
+
+  svp_func1[ife][0] = [](AirParcel const &qfrac, int, int) {
+    return sat_vapor_p_fe(qfrac.w[IDN]);
+  };
+
+  for (int n = 1; n < cloud_index_set[ife].size(); ++n) {
+    svp_func1[ife][n] = NullSatVaporPres1;
+  }
+}
+
 void Thermodynamics::enrollVaporFunctions() {
   enroll_vapor_Function_H2O(svp_func1_, cloud_index_set_);
   enroll_vapor_Function_NH3(svp_func1_, cloud_index_set_);
   enroll_vapor_Function_NH4SH(svp_func1_, cloud_index_set_);
   enroll_vapor_Function_mgsio3(svp_func1_, cloud_index_set_);
+  enroll_vapor_Function_fe(svp_func1_, cloud_index_set_);
 }
