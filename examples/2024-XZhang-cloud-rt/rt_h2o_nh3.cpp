@@ -245,6 +245,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
 
       int i = is;
       for (; i <= ie; ++i) {
+        air.w[IVX] = 0.001 * (1. * rand() / RAND_MAX - 0.5);
         if (air.w[IDN] < Tmin) break;
         AirParcelHelper::distribute_to_conserved(this, k, j, i, air);
         pthermo->Extrapolate(&air, pcoord->dx1f(i), "pseudo", grav, 1.e-5);
@@ -253,6 +254,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
       // Replace adiabatic atmosphere with isothermal atmosphere if temperature
       // is too low
       for (; i <= ie; ++i) {
+        air.w[IVX] = 0.001 * (1. * rand() / RAND_MAX - 0.5);
         AirParcelHelper::distribute_to_conserved(this, k, j, i, air);
         pthermo->Extrapolate(&air, pcoord->dx1f(i), "isothermal", grav);
       }
