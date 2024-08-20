@@ -253,12 +253,12 @@ void Hydro::RiemannSolver(const int k, const int j, const int il, const int iu,
     Real tfl[(NCLOUD)], tfr[(NCLOUD)], tflxi[(NCLOUD)];
     for (int n = 0; n < NCLOUD; ++n) {
       Real vsed = pmicro->vsedf[dir](n, k, j, i);
-      // xiz 2024 modified the sedimentation flux
-      //      tfl[n] = wli[IDN] * rdl * (vxl + vsed);
-      //      tfr[n] = wri[IDN] * rdr * (vxr + vsed);
-      //      tflxi[n] = sl * tfl[n] + sr * tfr[n];
-      //      pmicro->mass_flux[dir](n, k, j, i) = tflxi[n];
-      pmicro->mass_flux[dir](n, k, j, i) = flxi[n] + vsed * wri[IDN] * rdr;
+      tfl[n] = wli[IDN] * rdl * vxl;
+      tfr[n] = wri[IDN] * rdr * vxr;
+      tflxi[n] = sl * tfl[n] + sr * tfr[n];
+      if (dir==0){ // The direction of the sedimentation velocity
+        pmicro->mass_flux[dir](n, k, j, i) = tflxi[n] + vsed * wri[IDN] * rdr;
+      }
     }
   }
 
