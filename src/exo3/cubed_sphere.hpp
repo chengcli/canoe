@@ -66,11 +66,6 @@ class CubedSphere {
 #endif
 
   std::vector<Real> LRDataBuffer[4];
-#ifdef NBLOCKS
-  int total_blocks_ = NBLOCKS;
-#else
-  int total_blocks_ = 0;
-#endif
   MeshBlock *pmy_block_;
 };
 

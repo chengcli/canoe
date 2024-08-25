@@ -12,13 +12,16 @@ void CubedSphere::TransformOX(int *ox2, int *ox3, int *tox2, int *tox3,
                               LogicalLocation const &loc) {
   // Find the block ID
   int block_id = FindBlockID(loc);
-  if (CubedSphere::total_blocks_ == 0) {
+#ifdef NBLOCKS
+    // Updated method, need to manually setup in configure.hpp, allow 6*n^2 blocks
+    int bound_lim = (int)(sqrt(NBLOCKS / 6) - 0.5);
+    // Sanity check of NBLOCKS
+    static_assert(NBLOCKS == 6 * bound_lim * bound_lim,
+                  "NBLOCKS must be 6*(2n)^2 for the cubed sphere.");
+#else
     // Old method, suitable for 6*4^n blocks
     int bound_lim = (1 << (loc.level - 2)) - 1;
-  }else{
-    // Updated method, need to manually setup in configure.hpp, allow 6*n^2 blocks
-    int bound_lim = (int)(sqrt(total_blocks / 6) - 0.5);
-  }
+#endif
 
   // Find relative location within block
   int lv2_lx2 = loc.lx2 >> (loc.level - 2);
