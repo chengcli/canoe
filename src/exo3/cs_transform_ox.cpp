@@ -15,8 +15,7 @@ void CubedSphere::TransformOX(int *ox2, int *ox3, int *tox2, int *tox3,
   if (CubedSphere::total_blocks_ == 0) {
     // Old method, suitable for 6*4^n blocks
     int bound_lim = (1 << (loc.level - 2)) - 1;
-  }
-  if (CubedSphere::total_blocks_ != total_blocks) {
+  }else{
     // Updated method, need to manually setup in configure.hpp, allow 6*n^2 blocks
     int bound_lim = (int)(sqrt(total_blocks / 6) - 0.5);
   }
