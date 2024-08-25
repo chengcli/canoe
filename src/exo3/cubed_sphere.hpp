@@ -18,7 +18,7 @@ class CubedSphere {
 
   static int FindBlockID(LogicalLocation const &loc);
   static void TransformOX(int *ox2, int *ox3, int *tox2, int *tox3,
-                          LogicalLocation const &loc, int total_blocks);
+                          LogicalLocation const &loc);
 
   static Real GenerateMeshX2(Real x, LogicalLocation const &loc);
   static Real GenerateMeshX3(Real x, LogicalLocation const &loc);
@@ -41,7 +41,7 @@ class CubedSphere {
                                       Real *v2c, Real *v3c) const;
 
   void TransformOX(int *ox2, int *ox3, int *tox2, int *tox3) const {
-    return TransformOX(ox2, ox3, tox2, tox3, pmy_block_->loc, total_blocks_);
+    return TransformOX(ox2, ox3, tox2, tox3, pmy_block_->loc);
   }
 
   void SaveLR3DValues(AthenaArray<Real> &L_in, AthenaArray<Real> &R_in,
@@ -66,7 +66,11 @@ class CubedSphere {
 #endif
 
   std::vector<Real> LRDataBuffer[4];
+#ifdef NBLOCKS
+  int total_blocks_ = NBLOCKS;
+#else
   int total_blocks_ = 0;
+#endif
   MeshBlock *pmy_block_;
 };
 

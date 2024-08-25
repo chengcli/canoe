@@ -9,18 +9,16 @@
 #include "cubed_sphere.hpp"
 
 void CubedSphere::TransformOX(int *ox2, int *ox3, int *tox2, int *tox3,
-                              LogicalLocation const &loc, int total_blocks) {
+                              LogicalLocation const &loc) {
   // Find the block ID
   int block_id = FindBlockID(loc);
   if (CubedSphere::total_blocks_ == 0) {
-    CubedSphere::total_blocks_ = total_blocks;
-    std::cout << "Total Blocks Set: " << total_blocks << std::endl;
+    // Old method, suitable for 6*4^n blocks
+    int bound_lim = (1 << (loc.level - 2)) - 1;
   }
   if (CubedSphere::total_blocks_ != total_blocks) {
-    std::stringstream msg;
-    msg << "Error: total_blocks is not consistent. \n";
-    msg << "----------------------------------" << std::endl;
-    ATHENA_ERROR(msg);
+    // Updated method, need to manually setup in configure.hpp, allow 6*n^2 blocks
+    int bound_lim = (int)(sqrt(total_blocks / 6) - 0.5);
   }
 
   // Find relative location within block
@@ -28,8 +26,6 @@ void CubedSphere::TransformOX(int *ox2, int *ox3, int *tox2, int *tox3,
   int lv2_lx3 = loc.lx3 >> (loc.level - 2);
   int local_lx2 = loc.lx2 - (lv2_lx2 << (loc.level - 2));
   int local_lx3 = loc.lx3 - (lv2_lx3 << (loc.level - 2));
-  int bound_lim = (int)(sqrt(total_blocks / 6) - 0.5);
-  // int bound_lim = (1 << (loc.level - 2)) - 1;
 
   // Hard code the cases... 
   // The corner cases are not used, abandoned after reading buffers.
