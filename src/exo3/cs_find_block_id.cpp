@@ -11,6 +11,7 @@
 int CubedSphere::FindBlockID(LogicalLocation const& loc) {
   int lv2_lx2 = loc.lx2 >> (loc.level - 2);
   int lv2_lx3 = loc.lx3 >> (loc.level - 2);
+  // std::cout << "loc.level=" << loc.level << ", loc.lx2=" << loc.lx2 << ", loc.lx3=" << loc.lx3 << std::endl;
 
   // Determine the block number
   int block_id;

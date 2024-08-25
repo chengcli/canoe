@@ -9,19 +9,30 @@
 #include "cubed_sphere.hpp"
 
 void CubedSphere::TransformOX(int *ox2, int *ox3, int *tox2, int *tox3,
-                              LogicalLocation const &loc) {
+                              LogicalLocation const &loc, int total_blocks) {
   // Find the block ID
   int block_id = FindBlockID(loc);
+  if (CubedSphere::total_blocks_ == 0) {
+    CubedSphere::total_blocks_ = total_blocks;
+    std::cout << "Total Blocks Set: " << total_blocks << std::endl;
+  }
+  if (CubedSphere::total_blocks_ != total_blocks) {
+    std::stringstream msg;
+    msg << "Error: total_blocks is not consistent. \n";
+    msg << "----------------------------------" << std::endl;
+    ATHENA_ERROR(msg);
+  }
 
   // Find relative location within block
   int lv2_lx2 = loc.lx2 >> (loc.level - 2);
   int lv2_lx3 = loc.lx3 >> (loc.level - 2);
   int local_lx2 = loc.lx2 - (lv2_lx2 << (loc.level - 2));
   int local_lx3 = loc.lx3 - (lv2_lx3 << (loc.level - 2));
-  int bound_lim = (1 << (loc.level - 2)) - 1;
+  int bound_lim = (int)(sqrt(total_blocks / 6) - 0.5);
+  // int bound_lim = (1 << (loc.level - 2)) - 1;
 
-  // Hard code the cases...
-  // No need to consider the corner cases, abandon in reading buffers.
+  // Hard code the cases... 
+  // The corner cases are not used, abandoned after reading buffers.
   int target_block = -1;           // Block id of target
   int target_loc_2, target_loc_3;  // local x2 and x3 in target block
 
@@ -168,6 +179,7 @@ void CubedSphere::TransformOX(int *ox2, int *ox3, int *tox2, int *tox3,
       std::stringstream msg;
       msg << "Error: something wrong, check the geometry setup of the cubed "
              "sphere. \n";
+      msg << "Block ID: " << block_id << std::endl;
       msg << "----------------------------------" << std::endl;
       ATHENA_ERROR(msg);
   }
