@@ -715,13 +715,25 @@ void CubedSphere::recvNeighborBlocks(int ox2, int ox3, int tg_rank,
   MeshBlock *pmb = pmy_block_;
   auto &loc = pmb->loc;
 
+#ifdef USE_NBLOCKS
+  // Updated method, need to manually setup in configure.hpp, allow 6*n^2 blocks
+  int bound_lim = (int)(sqrt(NBLOCKS / 6) - 0.5);
+  // Find relative location within block
+  int lv2_lx2 = loc.lx2 / (bound_lim + 1);
+  int lv2_lx3 = loc.lx3 / (bound_lim + 1);
+  int local_lx2 = loc.lx2 - (lv2_lx2 * (bound_lim + 1));
+  int local_lx3 = loc.lx3 - (lv2_lx3 * (bound_lim + 1));
+#else
+  // Old method, suitable for 6*4^n blocks
+  int bound_lim = (1 << (loc.level - 2)) - 1;
+    // Find relative location within block
   int lv2_lx2 = loc.lx2 >> (loc.level - 2);
   int lv2_lx3 = loc.lx3 >> (loc.level - 2);
-  int blockID = FindBlockID(loc);
-  // Calculate local ID
   int local_lx2 = loc.lx2 - (lv2_lx2 << (loc.level - 2));
   int local_lx3 = loc.lx3 - (lv2_lx3 << (loc.level - 2));
-  int bound_lim = (1 << (loc.level - 2)) - 1;
+#endif
+  int blockID = FindBlockID(loc);
+  // Calculate local ID
   int tox2, tox3;
   int DirTag, DirNum, ownTag;  // Tag for receiving, and the numbering of axis
                                // to place the values

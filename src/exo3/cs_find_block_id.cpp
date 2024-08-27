@@ -43,6 +43,7 @@ int CubedSphere::FindBlockID(LogicalLocation const& loc) {
           std::stringstream msg;
           msg << "Error: something wrong, check the geometry setup of the "
                  "cubed sphere. \n";
+          msg << "lv2_lx2: " << lv2_lx2 << " lv2_lx3: " << lv2_lx3 << "bound_lim: " << bound_lim << "loc.lx2: " << loc.lx2 << "loc.lx3: " << loc.lx3 << std::endl;
           msg << "----------------------------------" << std::endl;
           ATHENA_ERROR(msg);
       }

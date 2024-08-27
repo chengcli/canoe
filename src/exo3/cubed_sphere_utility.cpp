@@ -429,12 +429,23 @@ void PackData(const AthenaArray<Real> &src, Real *buf, int sn, int en, int si,
   }
 
   // Get the local indices
+#ifdef USE_NBLOCKS
+  // Updated method, need to manually setup in configure.hpp, allow 6*n^2 blocks
+  int bound_lim = (int)(sqrt(NBLOCKS / 6) - 0.5);
+  // Find relative location within block
+  int lv2_lx2 = loc.lx2 / (bound_lim + 1);
+  int lv2_lx3 = loc.lx3 / (bound_lim + 1);
+  int local_lx2 = loc.lx2 - (lv2_lx2 * (bound_lim + 1));
+  int local_lx3 = loc.lx3 - (lv2_lx3 * (bound_lim + 1));
+#else
+  // Old method, suitable for 6*4^n blocks
+  int bound_lim = (1 << (loc.level - 2)) - 1;
+    // Find relative location within block
   int lv2_lx2 = loc.lx2 >> (loc.level - 2);
   int lv2_lx3 = loc.lx3 >> (loc.level - 2);
   int local_lx2 = loc.lx2 - (lv2_lx2 << (loc.level - 2));
   int local_lx3 = loc.lx3 - (lv2_lx3 << (loc.level - 2));
-  int bound_lim = (1 << (loc.level - 2)) - 1;
-
+#endif
   // Work on interpolation
   AthenaArray<Real> interpolatedSrc;
   interpolatedSrc.NewAthenaArray(en - sn + 1, ek - sk + 1, ej - sj + 1,
