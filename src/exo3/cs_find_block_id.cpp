@@ -9,8 +9,20 @@
 #include "cubed_sphere.hpp"
 
 int CubedSphere::FindBlockID(LogicalLocation const& loc) {
-  int lv2_lx2 = loc.lx2 >> (loc.level - 2);
-  int lv2_lx3 = loc.lx3 >> (loc.level - 2);
+
+#ifdef NBLOCKS
+    // Updated method, need to manually setup in configure.hpp, allow 6*n^2 blocks
+    int bound_lim = (int)(sqrt(NBLOCKS / 6) + 0.5);
+    // Sanity check of NBLOCKS
+    static_assert(NBLOCKS == 6 * bound_lim * bound_lim,
+                  "NBLOCKS must be 6*(2n)^2 for the cubed sphere.");
+#else
+    // Old method, suitable for 6*4^n blocks
+    int bound_lim = (1 << (loc.level - 2));
+#endif
+  // Infer the location in the 2*3 configuration
+  int lv2_lx2 = loc.lx2 / bound_lim;
+  int lv2_lx3 = loc.lx3 / bound_lim;
   // std::cout << "loc.level=" << loc.level << ", loc.lx2=" << loc.lx2 << ", loc.lx3=" << loc.lx3 << std::endl;
 
   // Determine the block number
