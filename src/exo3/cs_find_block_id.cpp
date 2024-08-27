@@ -10,20 +10,23 @@
 
 int CubedSphere::FindBlockID(LogicalLocation const& loc) {
 
-#ifdef NBLOCKS
+#ifdef USE_NBLOCKS
     // Updated method, need to manually setup in configure.hpp, allow 6*n^2 blocks
-    int bound_lim = (int)(sqrt(NBLOCKS / 6) + 0.5);
-    // Sanity check of NBLOCKS
-    static_assert(NBLOCKS == 6 * bound_lim * bound_lim,
-                  "NBLOCKS must be 6*(2n)^2 for the cubed sphere.");
+    int bound_lim = (int)(sqrt(NBLOCKS / 6) - 0.5);
+    // Find relative location within block
+    int lv2_lx2 = loc.lx2 / (bound_lim + 1);
+    int lv2_lx3 = loc.lx3 / (bound_lim + 1);
+    int local_lx2 = loc.lx2 - (lv2_lx2 * (bound_lim + 1));
+    int local_lx3 = loc.lx3 - (lv2_lx3 * (bound_lim + 1));
 #else
     // Old method, suitable for 6*4^n blocks
-    int bound_lim = (1 << (loc.level - 2));
+    int bound_lim = (1 << (loc.level - 2)) - 1;
+      // Find relative location within block
+    int lv2_lx2 = loc.lx2 >> (loc.level - 2);
+    int lv2_lx3 = loc.lx3 >> (loc.level - 2);
+    int local_lx2 = loc.lx2 - (lv2_lx2 << (loc.level - 2));
+    int local_lx3 = loc.lx3 - (lv2_lx3 << (loc.level - 2));
 #endif
-  // Infer the location in the 2*3 configuration
-  int lv2_lx2 = loc.lx2 / bound_lim;
-  int lv2_lx3 = loc.lx3 / bound_lim;
-  // std::cout << "loc.level=" << loc.level << ", loc.lx2=" << loc.lx2 << ", loc.lx3=" << loc.lx3 << std::endl;
 
   // Determine the block number
   int block_id;

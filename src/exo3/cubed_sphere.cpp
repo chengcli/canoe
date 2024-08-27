@@ -39,9 +39,19 @@ CubedSphere::CubedSphere(MeshBlock *pmb) : pmy_block_(pmb) {
 
 Real CubedSphere::GenerateMeshX2(Real x, LogicalLocation const &loc) {
   Real x_l, x_u;
-  int lx2_lv2 = loc.lx2 >> (loc.level - 2);
+#ifdef USE_NBLOCKS
+  // Updated method, need to manually setup in configure.hpp, allow 6*n^2 blocks
+  int bound_lim = (int)(sqrt(NBLOCKS / 6) - 0.5);
+  // Find relative location within block
+  int lv2_lx2 = loc.lx2 / (bound_lim + 1);
+#else
+  // Old method, suitable for 6*4^n blocks
+  int bound_lim = (1 << (loc.level - 2)) - 1;
+    // Find relative location within block
+  int lv2_lx2 = loc.lx2 >> (loc.level - 2);
+#endif
 
-  switch (lx2_lv2) {
+  switch (lv2_lx2) {
     case 0:
       x_l = -0.5;
       x_u = 0.0;
@@ -56,9 +66,19 @@ Real CubedSphere::GenerateMeshX2(Real x, LogicalLocation const &loc) {
 
 Real CubedSphere::GenerateMeshX3(Real x, LogicalLocation const &loc) {
   Real x_l, x_u;
-  int lx3_lv2 = loc.lx3 >> (loc.level - 2);
+#ifdef USE_NBLOCKS
+  // Updated method, need to manually setup in configure.hpp, allow 6*n^2 blocks
+  int bound_lim = (int)(sqrt(NBLOCKS / 6) - 0.5);
+  // Find relative location within block
+  int lv2_lx3 = loc.lx3 / (bound_lim + 1);
+#else
+  // Old method, suitable for 6*4^n blocks
+  int bound_lim = (1 << (loc.level - 2)) - 1;
+    // Find relative location within block
+  int lv2_lx3 = loc.lx3 >> (loc.level - 2);
+#endif
 
-  switch (lx3_lv2) {
+  switch (lv2_lx3) {
     case 0:
       x_l = -0.5;
       x_u = -1.0 / 6.0;
@@ -82,9 +102,25 @@ void CubedSphere::GetLatLon(Real *lat, Real *lon, int k, int j, int i) const {
   auto pcoord = pmy_block_->pcoord;
   auto &loc = pmy_block_->loc;
 
+#ifdef USE_NBLOCKS
+  // Updated method, need to manually setup in configure.hpp, allow 6*n^2 blocks
+  int bound_lim = (int)(sqrt(NBLOCKS / 6) - 0.5);
+  // Find relative location within block
+  int lv2_lx2 = loc.lx2 / (bound_lim + 1);
+  int lv2_lx3 = loc.lx3 / (bound_lim + 1);
+  int local_lx2 = loc.lx2 - (lv2_lx2 * (bound_lim + 1));
+  int local_lx3 = loc.lx3 - (lv2_lx3 * (bound_lim + 1));
+#else
+  // Old method, suitable for 6*4^n blocks
+  int bound_lim = (1 << (loc.level - 2)) - 1;
+    // Find relative location within block
   int lv2_lx2 = loc.lx2 >> (loc.level - 2);
   int lv2_lx3 = loc.lx3 >> (loc.level - 2);
+  int local_lx2 = loc.lx2 - (lv2_lx2 << (loc.level - 2));
+  int local_lx3 = loc.lx3 - (lv2_lx3 << (loc.level - 2));
+#endif
   int blockID = lv2_lx2 + lv2_lx3 * 2 + 1;
+
   // Calculate the needed parameters
   Real dX = tan(pcoord->x2v(j));
   Real dY = tan(pcoord->x3v(k));
@@ -100,8 +136,23 @@ void CubedSphere::GetLatLonFace2(Real *lat, Real *lon, int k, int j,
   auto pcoord = pmy_block_->pcoord;
   auto &loc = pmy_block_->loc;
 
+#ifdef USE_NBLOCKS
+  // Updated method, need to manually setup in configure.hpp, allow 6*n^2 blocks
+  int bound_lim = (int)(sqrt(NBLOCKS / 6) - 0.5);
+  // Find relative location within block
+  int lv2_lx2 = loc.lx2 / (bound_lim + 1);
+  int lv2_lx3 = loc.lx3 / (bound_lim + 1);
+  int local_lx2 = loc.lx2 - (lv2_lx2 * (bound_lim + 1));
+  int local_lx3 = loc.lx3 - (lv2_lx3 * (bound_lim + 1));
+#else
+  // Old method, suitable for 6*4^n blocks
+  int bound_lim = (1 << (loc.level - 2)) - 1;
+    // Find relative location within block
   int lv2_lx2 = loc.lx2 >> (loc.level - 2);
   int lv2_lx3 = loc.lx3 >> (loc.level - 2);
+  int local_lx2 = loc.lx2 - (lv2_lx2 << (loc.level - 2));
+  int local_lx3 = loc.lx3 - (lv2_lx3 << (loc.level - 2));
+#endif
   int blockID = lv2_lx2 + lv2_lx3 * 2 + 1;
 
   // Calculate the needed parameters
@@ -119,8 +170,19 @@ void CubedSphere::GetLatLonFace3(Real *lat, Real *lon, int k, int j,
   auto pcoord = pmy_block_->pcoord;
   auto &loc = pcoord->pmy_block->loc;
 
+#ifdef USE_NBLOCKS
+  // Updated method, need to manually setup in configure.hpp, allow 6*n^2 blocks
+  int bound_lim = (int)(sqrt(NBLOCKS / 6) - 0.5);
+  // Find relative location within block
+  int lv2_lx2 = loc.lx2 / (bound_lim + 1);
+  int lv2_lx3 = loc.lx3 / (bound_lim + 1);
+#else
+  // Old method, suitable for 6*4^n blocks
+  int bound_lim = (1 << (loc.level - 2)) - 1;
+    // Find relative location within block
   int lv2_lx2 = loc.lx2 >> (loc.level - 2);
   int lv2_lx3 = loc.lx3 >> (loc.level - 2);
+#endif
   int blockID = lv2_lx2 + lv2_lx3 * 2 + 1;
 
   // Calculate the needed parameters
@@ -137,8 +199,19 @@ void CubedSphere::GetUV(Real *U, Real *V, Real V2, Real V3, int k, int j,
   auto pcoord = pmy_block_->pcoord;
   auto &loc = pmy_block_->loc;
 
+#ifdef USE_NBLOCKS
+  // Updated method, need to manually setup in configure.hpp, allow 6*n^2 blocks
+  int bound_lim = (int)(sqrt(NBLOCKS / 6) - 0.5);
+  // Find relative location within block
+  int lv2_lx2 = loc.lx2 / (bound_lim + 1);
+  int lv2_lx3 = loc.lx3 / (bound_lim + 1);
+#else
+  // Old method, suitable for 6*4^n blocks
+  int bound_lim = (1 << (loc.level - 2)) - 1;
+    // Find relative location within block
   int lv2_lx2 = loc.lx2 >> (loc.level - 2);
   int lv2_lx3 = loc.lx3 >> (loc.level - 2);
+#endif
   int blockID = lv2_lx2 + lv2_lx3 * 2 + 1;
 
   Real X = tan(pcoord->x2v(j));
@@ -154,8 +227,19 @@ void CubedSphere::GetVyVz(Real *V2, Real *V3, Real U, Real V, int k, int j,
   auto pcoord = pmy_block_->pcoord;
   auto &loc = pmy_block_->loc;
 
+#ifdef USE_NBLOCKS
+  // Updated method, need to manually setup in configure.hpp, allow 6*n^2 blocks
+  int bound_lim = (int)(sqrt(NBLOCKS / 6) - 0.5);
+  // Find relative location within block
+  int lv2_lx2 = loc.lx2 / (bound_lim + 1);
+  int lv2_lx3 = loc.lx3 / (bound_lim + 1);
+#else
+  // Old method, suitable for 6*4^n blocks
+  int bound_lim = (1 << (loc.level - 2)) - 1;
+    // Find relative location within block
   int lv2_lx2 = loc.lx2 >> (loc.level - 2);
   int lv2_lx3 = loc.lx3 >> (loc.level - 2);
+#endif
   int blockID = lv2_lx2 + lv2_lx3 * 2 + 1;
 
   // Calculate the needed parameters
@@ -170,8 +254,19 @@ void CubedSphere::CalculateCoriolisForce2(int i2, int i3, Real v2, Real v3,
   auto pcoord = pmy_block_->pcoord;
   auto &loc = pmy_block_->loc;
 
+#ifdef USE_NBLOCKS
+  // Updated method, need to manually setup in configure.hpp, allow 6*n^2 blocks
+  int bound_lim = (int)(sqrt(NBLOCKS / 6) - 0.5);
+  // Find relative location within block
+  int lv2_lx2 = loc.lx2 / (bound_lim + 1);
+  int lv2_lx3 = loc.lx3 / (bound_lim + 1);
+#else
+  // Old method, suitable for 6*4^n blocks
+  int bound_lim = (1 << (loc.level - 2)) - 1;
+    // Find relative location within block
   int lv2_lx2 = loc.lx2 >> (loc.level - 2);
   int lv2_lx3 = loc.lx3 >> (loc.level - 2);
+#endif  
   int blockID = lv2_lx2 + lv2_lx3 * 2 + 1;
 
   Real x = tan(pcoord->x2v(i2));
@@ -204,8 +299,19 @@ void CubedSphere::CalculateCoriolisForce3(int i2, int i3, Real v1, Real v2,
   auto pcoord = pmy_block_->pcoord;
   auto &loc = pmy_block_->loc;
 
+#ifdef USE_NBLOCKS
+  // Updated method, need to manually setup in configure.hpp, allow 6*n^2 blocks
+  int bound_lim = (int)(sqrt(NBLOCKS / 6) - 0.5);
+  // Find relative location within block
+  int lv2_lx2 = loc.lx2 / (bound_lim + 1);
+  int lv2_lx3 = loc.lx3 / (bound_lim + 1);
+#else
+  // Old method, suitable for 6*4^n blocks
+  int bound_lim = (1 << (loc.level - 2)) - 1;
+    // Find relative location within block
   int lv2_lx2 = loc.lx2 >> (loc.level - 2);
   int lv2_lx3 = loc.lx3 >> (loc.level - 2);
+#endif
   int blockID = lv2_lx2 + lv2_lx3 * 2 + 1;
 
   Real x = tan(pcoord->x2v(i2));
@@ -334,13 +440,25 @@ void CubedSphere::sendNeighborBlocks(int ox2, int ox3, int tg_rank,
   MeshBlock *pmb = pmy_block_;
   auto &loc = pmb->loc;
 
+#ifdef USE_NBLOCKS
+  // Updated method, need to manually setup in configure.hpp, allow 6*n^2 blocks
+  int bound_lim = (int)(sqrt(NBLOCKS / 6) - 0.5);
+  // Find relative location within block
+  int lv2_lx2 = loc.lx2 / (bound_lim + 1);
+  int lv2_lx3 = loc.lx3 / (bound_lim + 1);
+  int local_lx2 = loc.lx2 - (lv2_lx2 * (bound_lim + 1));
+  int local_lx3 = loc.lx3 - (lv2_lx3 * (bound_lim + 1));
+#else
+  // Old method, suitable for 6*4^n blocks
+  int bound_lim = (1 << (loc.level - 2)) - 1;
+    // Find relative location within block
   int lv2_lx2 = loc.lx2 >> (loc.level - 2);
   int lv2_lx3 = loc.lx3 >> (loc.level - 2);
-  int blockID = lv2_lx2 + lv2_lx3 * 2 + 1;
-  // Calculate local ID
   int local_lx2 = loc.lx2 - (lv2_lx2 << (loc.level - 2));
   int local_lx3 = loc.lx3 - (lv2_lx3 << (loc.level - 2));
-  int bound_lim = (1 << (loc.level - 2)) - 1;
+#endif
+  int blockID = lv2_lx2 + lv2_lx3 * 2 + 1;
+  // Calculate local ID
   int tox2, tox3;
   int DirTag, DirNum, ownTag;  // Tag for target, and the numbering of axis
   int ox2_bkp = ox2;
@@ -560,6 +678,16 @@ void CubedSphere::sendNeighborBlocks(int ox2, int ox3, int tg_rank,
   }
 
   // Calculate the tag of destination
+#ifdef USE_NBLOCKS
+  if (tox2 == -1)
+    DirTag = 0 + 4 * pmb->gid + 24 * (bound_lim + 1) * tg_gid;
+  if (tox2 == 1)
+    DirTag = 1 + 4 * pmb->gid + 24 * (bound_lim + 1) * tg_gid;
+  if (tox3 == -1)
+    DirTag = 2 + 4 * pmb->gid + 24 * (bound_lim + 1) * tg_gid;
+  if (tox3 == 1)
+    DirTag = 3 + 4 * pmb->gid + 24 * (bound_lim + 1) * tg_gid;
+#else
   if (tox2 == -1)
     DirTag = 0 + 4 * pmb->gid + 24 * (1 << (loc.level - 2)) * tg_gid;
   if (tox2 == 1)
@@ -568,6 +696,7 @@ void CubedSphere::sendNeighborBlocks(int ox2, int ox3, int tg_rank,
     DirTag = 2 + 4 * pmb->gid + 24 * (1 << (loc.level - 2)) * tg_gid;
   if (tox3 == 1)
     DirTag = 3 + 4 * pmb->gid + 24 * (1 << (loc.level - 2)) * tg_gid;
+#endif
   // Send by MPI: we don't care whether it is in the same process for now
   if (ox2 == -1) ownTag = 0;
   if (ox2 == 1) ownTag = 1;
@@ -658,6 +787,16 @@ void CubedSphere::recvNeighborBlocks(int ox2, int ox3, int tg_rank,
   int dsize = ((kb2 - kb1 + 1) * (jb2 - jb1 + 1) * (ib2 - ib1 + 1) * NWAVE);
   Real *data = new Real[dsize];
   // Calculate the tag for receiving
+#ifdef USE_NBLOCKS
+  if (ox2 == -1)
+    DirTag = 0 + 4 * tg_gid + 24 * (bound_lim + 1) * pmb->gid;
+  if (ox2 == 1)
+    DirTag = 1 + 4 * tg_gid + 24 * (bound_lim + 1) * pmb->gid;
+  if (ox3 == -1)
+    DirTag = 2 + 4 * tg_gid + 24 * (bound_lim + 1) * pmb->gid;
+  if (ox3 == 1)
+    DirTag = 3 + 4 * tg_gid + 24 * (bound_lim + 1) * pmb->gid;
+#else
   if (ox2 == -1)
     DirTag = 0 + 4 * tg_gid + 24 * (1 << (loc.level - 2)) * pmb->gid;
   if (ox2 == 1)
@@ -666,6 +805,7 @@ void CubedSphere::recvNeighborBlocks(int ox2, int ox3, int tg_rank,
     DirTag = 2 + 4 * tg_gid + 24 * (1 << (loc.level - 2)) * pmb->gid;
   if (ox3 == 1)
     DirTag = 3 + 4 * tg_gid + 24 * (1 << (loc.level - 2)) * pmb->gid;
+#endif
 
 #ifdef MPI_PARALLEL
   MPI_Recv(data, dsize, MPI_DOUBLE, tg_rank, DirTag, MPI_COMM_WORLD,
