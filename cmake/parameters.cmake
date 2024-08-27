@@ -27,6 +27,8 @@ set_if_empty(NREAL_PARTICLE_DATA 0)
 
 set_if_empty(EOS "ideal_moist")
 
+set_if_empty(NBLOCKS 0)
+
 if(EOS STREQUAL "shallow_xy")
   set(NVAPOR 0)
   set(NON_BAROTROPIC_EOS 0)
@@ -137,4 +139,10 @@ else()
                  COMPONENTS Interpreter Development.Module)
   endif()
   set(PYTHON_BINDINGS_OPTION "PYTHON_BINDINGS")
+endif()
+
+if(NOT NBLOCKS OR NOT DEFINED NBLOCKS)
+  set(USE_NBLOCKS "NOT_USE_NBLOCKS")
+else()
+  set(USE_NBLOCKS "USE_NBLOCKS")
 endif()

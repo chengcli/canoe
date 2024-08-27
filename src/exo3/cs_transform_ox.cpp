@@ -12,16 +12,26 @@ void CubedSphere::TransformOX(int *ox2, int *ox3, int *tox2, int *tox3,
                               LogicalLocation const &loc) {
   // Find the block ID
   int block_id = FindBlockID(loc);
+#ifdef USE_NBLOCKS
+    // Updated method, need to manually setup in configure.hpp, allow 6*n^2 blocks
+    int bound_lim = (int)(sqrt(NBLOCKS / 6) - 0.5);
+    // Find relative location within block
+    int lv2_lx2 = loc.lx2 / (bound_lim + 1);
+    int lv2_lx3 = loc.lx3 / (bound_lim + 1);
+    int local_lx2 = loc.lx2 - (lv2_lx2 * (bound_lim + 1));
+    int local_lx3 = loc.lx3 - (lv2_lx3 * (bound_lim + 1));
+#else
+    // Old method, suitable for 6*4^n blocks
+    int bound_lim = (1 << (loc.level - 2)) - 1;
+      // Find relative location within block
+    int lv2_lx2 = loc.lx2 >> (loc.level - 2);
+    int lv2_lx3 = loc.lx3 >> (loc.level - 2);
+    int local_lx2 = loc.lx2 - (lv2_lx2 << (loc.level - 2));
+    int local_lx3 = loc.lx3 - (lv2_lx3 << (loc.level - 2));
+#endif
 
-  // Find relative location within block
-  int lv2_lx2 = loc.lx2 >> (loc.level - 2);
-  int lv2_lx3 = loc.lx3 >> (loc.level - 2);
-  int local_lx2 = loc.lx2 - (lv2_lx2 << (loc.level - 2));
-  int local_lx3 = loc.lx3 - (lv2_lx3 << (loc.level - 2));
-  int bound_lim = (1 << (loc.level - 2)) - 1;
-
-  // Hard code the cases...
-  // No need to consider the corner cases, abandon in reading buffers.
+  // Hard code the cases... 
+  // The corner cases are not used, abandoned after reading buffers.
   int target_block = -1;           // Block id of target
   int target_loc_2, target_loc_3;  // local x2 and x3 in target block
 
@@ -168,6 +178,7 @@ void CubedSphere::TransformOX(int *ox2, int *ox3, int *tox2, int *tox3,
       std::stringstream msg;
       msg << "Error: something wrong, check the geometry setup of the cubed "
              "sphere. \n";
+      msg << "Block ID: " << block_id << std::endl;
       msg << "----------------------------------" << std::endl;
       ATHENA_ERROR(msg);
   }
@@ -210,8 +221,13 @@ void CubedSphere::TransformOX(int *ox2, int *ox3, int *tox2, int *tox3,
         msg << "----------------------------------" << std::endl;
         ATHENA_ERROR(msg);
     }
+#ifdef USE_NBLOCKS
+    lx3_0 = (lx3_0 * (bound_lim + 1));
+    lx2_0 = (lx2_0 * (bound_lim + 1));
+#else
     lx3_0 = (lx3_0 << (loc.level - 2));
     lx2_0 = (lx2_0 << (loc.level - 2));
+#endif
     // Add up first block and local positions
     int lx3_t = lx3_0 + target_loc_3;
     int lx2_t = lx2_0 + target_loc_2;

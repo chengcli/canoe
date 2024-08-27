@@ -66,7 +66,6 @@ class CubedSphere {
 #endif
 
   std::vector<Real> LRDataBuffer[4];
-
   MeshBlock *pmy_block_;
 };
 
