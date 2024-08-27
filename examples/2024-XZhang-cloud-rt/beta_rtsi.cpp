@@ -146,6 +146,7 @@ void Forcing(MeshBlock *pmb, Real const time, Real const dt,
   int ie = pmb->ie, je = pmb->je, ke = pmb->ke;
   auto pthermo = Thermodynamics::GetInstance();
 
+#ifndef CUBED_SPHERE
   for (int k = pmb->ks; k <= pmb->ke; ++k)
     for (int j = pmb->js; j <= pmb->je; ++j)
       for (int i = pmb->is; i <= pmb->ie; ++i) {
@@ -163,6 +164,7 @@ void Forcing(MeshBlock *pmb, Real const time, Real const dt,
         du(IM2, k, j, i) -= dt * local_f * m3;
         du(IM3, k, j, i) += dt * local_f * m2;
       }
+#endif
 
 #ifdef CUBED_SPHERE
   auto pexo3 = pmb->pimpl->pexo3;
