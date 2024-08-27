@@ -221,8 +221,13 @@ void CubedSphere::TransformOX(int *ox2, int *ox3, int *tox2, int *tox3,
         msg << "----------------------------------" << std::endl;
         ATHENA_ERROR(msg);
     }
+#ifdef USE_NBLOCKS
+    lx3_0 = (lx3_0 * (bound_lim + 1));
+    lx2_0 = (lx2_0 * (bound_lim + 1));
+#else
     lx3_0 = (lx3_0 << (loc.level - 2));
     lx2_0 = (lx2_0 << (loc.level - 2));
+#endif
     // Add up first block and local positions
     int lx3_t = lx3_0 + target_loc_3;
     int lx2_t = lx2_0 + target_loc_2;
