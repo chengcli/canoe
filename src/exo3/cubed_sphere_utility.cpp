@@ -102,23 +102,9 @@ void InteprolateX2(const AthenaArray<Real> &src, AthenaArray<Real> &tgt,
                    int sk, int ek, int TypeFlag) {
   // Interpolation along X2 (j) axis, used before sending data to X3 (k) axis
   // Get the local indices
-#ifdef USE_NBLOCKS
-  // Updated method, need to manually setup in configure.hpp, allow 6*n^2 blocks
-  int bound_lim = (int)(sqrt(NBLOCKS / 6) - 0.5);
-  // Find relative location within block
-  int lv2_lx2 = loc.lx2 / (bound_lim + 1);
-  int lv2_lx3 = loc.lx3 / (bound_lim + 1);
-  int local_lx2 = loc.lx2 - (lv2_lx2 * (bound_lim + 1));
-  int local_lx3 = loc.lx3 - (lv2_lx3 * (bound_lim + 1));
-#else
-  // Old method, suitable for 6*4^n blocks
-  int bound_lim = (1 << (loc.level - 2)) - 1;
-    // Find relative location within block
-  int lv2_lx2 = loc.lx2 >> (loc.level - 2);
-  int lv2_lx3 = loc.lx3 >> (loc.level - 2);
-  int local_lx2 = loc.lx2 - (lv2_lx2 << (loc.level - 2));
-  int local_lx3 = loc.lx3 - (lv2_lx3 << (loc.level - 2));
-#endif
+  int lv2_lx2, lv2_lx3, local_lx2, local_lx3, bound_lim;
+  GetLocalIndex(&lv2_lx2, &lv2_lx3, &local_lx2, &local_lx3, &bound_lim, loc);
+
   int meshblock_size = ej - sj + 1;
   int N_blk = meshblock_size *
               (bound_lim + 1);  // N in X2 direction for each panel. This value
@@ -246,23 +232,9 @@ void InteprolateX3(const AthenaArray<Real> &src, AthenaArray<Real> &tgt,
                    int sk, int ek, int TypeFlag) {
   // Interpolation along X3 (k) axis, used before sending data to ghost zone in
   // X2 (j) direction Get the local indices
-#ifdef USE_NBLOCKS
-  // Updated method, need to manually setup in configure.hpp, allow 6*n^2 blocks
-  int bound_lim = (int)(sqrt(NBLOCKS / 6) - 0.5);
-  // Find relative location within block
-  int lv2_lx2 = loc.lx2 / (bound_lim + 1);
-  int lv2_lx3 = loc.lx3 / (bound_lim + 1);
-  int local_lx2 = loc.lx2 - (lv2_lx2 * (bound_lim + 1));
-  int local_lx3 = loc.lx3 - (lv2_lx3 * (bound_lim + 1));
-#else
-  // Old method, suitable for 6*4^n blocks
-  int bound_lim = (1 << (loc.level - 2)) - 1;
-    // Find relative location within block
-  int lv2_lx2 = loc.lx2 >> (loc.level - 2);
-  int lv2_lx3 = loc.lx3 >> (loc.level - 2);
-  int local_lx2 = loc.lx2 - (lv2_lx2 << (loc.level - 2));
-  int local_lx3 = loc.lx3 - (lv2_lx3 << (loc.level - 2));
-#endif
+  int lv2_lx2, lv2_lx3, local_lx2, local_lx3, bound_lim;
+  GetLocalIndex(&lv2_lx2, &lv2_lx3, &local_lx2, &local_lx3, &bound_lim, loc);
+
   int meshblock_size = ek - sk + 1;
   int N_blk = meshblock_size *
               (bound_lim + 1);  // N in X2 direction for each panel. This value
@@ -429,23 +401,9 @@ void PackData(const AthenaArray<Real> &src, Real *buf, int sn, int en, int si,
   }
 
   // Get the local indices
-#ifdef USE_NBLOCKS
-  // Updated method, need to manually setup in configure.hpp, allow 6*n^2 blocks
-  int bound_lim = (int)(sqrt(NBLOCKS / 6) - 0.5);
-  // Find relative location within block
-  int lv2_lx2 = loc.lx2 / (bound_lim + 1);
-  int lv2_lx3 = loc.lx3 / (bound_lim + 1);
-  int local_lx2 = loc.lx2 - (lv2_lx2 * (bound_lim + 1));
-  int local_lx3 = loc.lx3 - (lv2_lx3 * (bound_lim + 1));
-#else
-  // Old method, suitable for 6*4^n blocks
-  int bound_lim = (1 << (loc.level - 2)) - 1;
-    // Find relative location within block
-  int lv2_lx2 = loc.lx2 >> (loc.level - 2);
-  int lv2_lx3 = loc.lx3 >> (loc.level - 2);
-  int local_lx2 = loc.lx2 - (lv2_lx2 << (loc.level - 2));
-  int local_lx3 = loc.lx3 - (lv2_lx3 << (loc.level - 2));
-#endif
+  int lv2_lx2, lv2_lx3, local_lx2, local_lx3, bound_lim;
+  GetLocalIndex(&lv2_lx2, &lv2_lx3, &local_lx2, &local_lx3, &bound_lim, loc);
+
   // Work on interpolation
   AthenaArray<Real> interpolatedSrc;
   interpolatedSrc.NewAthenaArray(en - sn + 1, ek - sk + 1, ej - sj + 1,

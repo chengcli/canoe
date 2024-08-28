@@ -12,23 +12,9 @@ void CubedSphere::TransformOX(int *ox2, int *ox3, int *tox2, int *tox3,
                               LogicalLocation const &loc) {
   // Find the block ID
   int block_id = FindBlockID(loc);
-#ifdef USE_NBLOCKS
-    // Updated method, need to manually setup in configure.hpp, allow 6*n^2 blocks
-    int bound_lim = (int)(sqrt(NBLOCKS / 6) - 0.5);
-    // Find relative location within block
-    int lv2_lx2 = loc.lx2 / (bound_lim + 1);
-    int lv2_lx3 = loc.lx3 / (bound_lim + 1);
-    int local_lx2 = loc.lx2 - (lv2_lx2 * (bound_lim + 1));
-    int local_lx3 = loc.lx3 - (lv2_lx3 * (bound_lim + 1));
-#else
-    // Old method, suitable for 6*4^n blocks
-    int bound_lim = (1 << (loc.level - 2)) - 1;
-      // Find relative location within block
-    int lv2_lx2 = loc.lx2 >> (loc.level - 2);
-    int lv2_lx3 = loc.lx3 >> (loc.level - 2);
-    int local_lx2 = loc.lx2 - (lv2_lx2 << (loc.level - 2));
-    int local_lx3 = loc.lx3 - (lv2_lx3 << (loc.level - 2));
-#endif
+  int lv2_lx2, lv2_lx3, local_lx2, local_lx3, bound_lim;
+  GetLocalIndex(&lv2_lx2, &lv2_lx3, &local_lx2, &local_lx3, &bound_lim, loc);
+
 
   // Hard code the cases... 
   // The corner cases are not used, abandoned after reading buffers.
