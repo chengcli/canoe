@@ -79,19 +79,20 @@ int CubedSphere::FindBlockID(LogicalLocation const& loc) {
 void CubedSphere::GetLocalIndex(int *lv2_lx2, int *lv2_lx3, int *local_lx2, int *local_lx3, int *bound_lim, LogicalLocation const& loc) {
 #ifdef USE_NBLOCKS
   // Updated method, need to manually setup in configure.hpp, allow 6*n^2 blocks
-  bound_lim = (int)(sqrt(NBLOCKS / 6) - 0.5);
+  *bound_lim = (int)(sqrt(NBLOCKS / 6) - 0.5);
   // Find relative location within block
-  lv2_lx2 = loc.lx2 / (bound_lim + 1);
-  lv2_lx3 = loc.lx3 / (bound_lim + 1);
-  local_lx2 = loc.lx2 - (lv2_lx2 * (bound_lim + 1));
-  local_lx3 = loc.lx3 - (lv2_lx3 * (bound_lim + 1));
+  
+  *lv2_lx2 = loc.lx2 / (*bound_lim + 1);
+  *lv2_lx3 = loc.lx3 / (*bound_lim + 1);
+  *local_lx2 = loc.lx2 - (*lv2_lx2 * (*bound_lim + 1));
+  *local_lx3 = loc.lx3 - (*lv2_lx3 * (*bound_lim + 1));
 #else
   // Old method, suitable for 6*4^n blocks
-  bound_lim = (1 << (loc.level - 2)) - 1;
+  *bound_lim = (1 << (loc.level - 2)) - 1;
     // Find relative location within block
-  lv2_lx2 = loc.lx2 >> (loc.level - 2);
-  lv2_lx3 = loc.lx3 >> (loc.level - 2);
-  local_lx2 = loc.lx2 - (lv2_lx2 << (loc.level - 2));
-  local_lx3 = loc.lx3 - (lv2_lx3 << (loc.level - 2));
+  *lv2_lx2 = loc.lx2 >> (loc.level - 2);
+  *lv2_lx3 = loc.lx3 >> (loc.level - 2);
+  *local_lx2 = loc.lx2 - (*lv2_lx2 << (loc.level - 2));
+  *local_lx3 = loc.lx3 - (*lv2_lx3 << (loc.level - 2));
 #endif
 }
