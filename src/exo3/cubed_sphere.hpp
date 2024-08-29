@@ -17,6 +17,9 @@ class CubedSphere {
   ~CubedSphere() {}
 
   static int FindBlockID(LogicalLocation const &loc);
+  static void GetLocalIndex(int *lv2_lx2, int *lv2_lx3, int *local_lx2,
+                            int *local_lx3, int *bound_lim,
+                            LogicalLocation const &loc);
   static void TransformOX(int *ox2, int *ox3, int *tox2, int *tox3,
                           LogicalLocation const &loc);
 
@@ -66,7 +69,6 @@ class CubedSphere {
 #endif
 
   std::vector<Real> LRDataBuffer[4];
-
   MeshBlock *pmy_block_;
 };
 

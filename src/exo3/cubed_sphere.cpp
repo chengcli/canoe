@@ -39,9 +39,10 @@ CubedSphere::CubedSphere(MeshBlock *pmb) : pmy_block_(pmb) {
 
 Real CubedSphere::GenerateMeshX2(Real x, LogicalLocation const &loc) {
   Real x_l, x_u;
-  int lx2_lv2 = loc.lx2 >> (loc.level - 2);
+  int lv2_lx2, lv2_lx3, local_lx2, local_lx3, bound_lim;
+  GetLocalIndex(&lv2_lx2, &lv2_lx3, &local_lx2, &local_lx3, &bound_lim, loc);
 
-  switch (lx2_lv2) {
+  switch (lv2_lx2) {
     case 0:
       x_l = -0.5;
       x_u = 0.0;
@@ -56,9 +57,10 @@ Real CubedSphere::GenerateMeshX2(Real x, LogicalLocation const &loc) {
 
 Real CubedSphere::GenerateMeshX3(Real x, LogicalLocation const &loc) {
   Real x_l, x_u;
-  int lx3_lv2 = loc.lx3 >> (loc.level - 2);
+  int lv2_lx2, lv2_lx3, local_lx2, local_lx3, bound_lim;
+  GetLocalIndex(&lv2_lx2, &lv2_lx3, &local_lx2, &local_lx3, &bound_lim, loc);
 
-  switch (lx3_lv2) {
+  switch (lv2_lx3) {
     case 0:
       x_l = -0.5;
       x_u = -1.0 / 6.0;
@@ -81,10 +83,8 @@ Real CubedSphere::GenerateMeshX3(Real x, LogicalLocation const &loc) {
 void CubedSphere::GetLatLon(Real *lat, Real *lon, int k, int j, int i) const {
   auto pcoord = pmy_block_->pcoord;
   auto &loc = pmy_block_->loc;
+  int blockID = FindBlockID(loc);
 
-  int lv2_lx2 = loc.lx2 >> (loc.level - 2);
-  int lv2_lx3 = loc.lx3 >> (loc.level - 2);
-  int blockID = lv2_lx2 + lv2_lx3 * 2 + 1;
   // Calculate the needed parameters
   Real dX = tan(pcoord->x2v(j));
   Real dY = tan(pcoord->x3v(k));
@@ -99,10 +99,7 @@ void CubedSphere::GetLatLonFace2(Real *lat, Real *lon, int k, int j,
                                  int i) const {
   auto pcoord = pmy_block_->pcoord;
   auto &loc = pmy_block_->loc;
-
-  int lv2_lx2 = loc.lx2 >> (loc.level - 2);
-  int lv2_lx3 = loc.lx3 >> (loc.level - 2);
-  int blockID = lv2_lx2 + lv2_lx3 * 2 + 1;
+  int blockID = FindBlockID(loc);
 
   // Calculate the needed parameters
   Real dX = tan(pcoord->x2f(j));
@@ -118,10 +115,7 @@ void CubedSphere::GetLatLonFace3(Real *lat, Real *lon, int k, int j,
                                  int i) const {
   auto pcoord = pmy_block_->pcoord;
   auto &loc = pcoord->pmy_block->loc;
-
-  int lv2_lx2 = loc.lx2 >> (loc.level - 2);
-  int lv2_lx3 = loc.lx3 >> (loc.level - 2);
-  int blockID = lv2_lx2 + lv2_lx3 * 2 + 1;
+  int blockID = FindBlockID(loc);
 
   // Calculate the needed parameters
   Real dX = tan(pcoord->x2v(j));
@@ -136,10 +130,7 @@ void CubedSphere::GetUV(Real *U, Real *V, Real V2, Real V3, int k, int j,
                         int i) const {
   auto pcoord = pmy_block_->pcoord;
   auto &loc = pmy_block_->loc;
-
-  int lv2_lx2 = loc.lx2 >> (loc.level - 2);
-  int lv2_lx3 = loc.lx3 >> (loc.level - 2);
-  int blockID = lv2_lx2 + lv2_lx3 * 2 + 1;
+  int blockID = FindBlockID(loc);
 
   Real X = tan(pcoord->x2v(j));
   Real Y = tan(pcoord->x3v(k));
@@ -153,10 +144,7 @@ void CubedSphere::GetVyVz(Real *V2, Real *V3, Real U, Real V, int k, int j,
                           int i) const {
   auto pcoord = pmy_block_->pcoord;
   auto &loc = pmy_block_->loc;
-
-  int lv2_lx2 = loc.lx2 >> (loc.level - 2);
-  int lv2_lx3 = loc.lx3 >> (loc.level - 2);
-  int blockID = lv2_lx2 + lv2_lx3 * 2 + 1;
+  int blockID = FindBlockID(loc);
 
   // Calculate the needed parameters
   Real X = tan(pcoord->x2v(j));
@@ -169,10 +157,7 @@ void CubedSphere::CalculateCoriolisForce2(int i2, int i3, Real v2, Real v3,
                                           Real *cF3) const {
   auto pcoord = pmy_block_->pcoord;
   auto &loc = pmy_block_->loc;
-
-  int lv2_lx2 = loc.lx2 >> (loc.level - 2);
-  int lv2_lx3 = loc.lx3 >> (loc.level - 2);
-  int blockID = lv2_lx2 + lv2_lx3 * 2 + 1;
+  int blockID = FindBlockID(loc);
 
   Real x = tan(pcoord->x2v(i2));
   Real y = tan(pcoord->x3v(i3));
@@ -203,10 +188,7 @@ void CubedSphere::CalculateCoriolisForce3(int i2, int i3, Real v1, Real v2,
                                           Real *cF3) const {
   auto pcoord = pmy_block_->pcoord;
   auto &loc = pmy_block_->loc;
-
-  int lv2_lx2 = loc.lx2 >> (loc.level - 2);
-  int lv2_lx3 = loc.lx3 >> (loc.level - 2);
-  int blockID = lv2_lx2 + lv2_lx3 * 2 + 1;
+  int blockID = FindBlockID(loc);
 
   Real x = tan(pcoord->x2v(i2));
   Real y = tan(pcoord->x3v(i3));
@@ -333,14 +315,10 @@ void CubedSphere::sendNeighborBlocks(int ox2, int ox3, int tg_rank,
                                      int tg_gid) {
   MeshBlock *pmb = pmy_block_;
   auto &loc = pmb->loc;
-
-  int lv2_lx2 = loc.lx2 >> (loc.level - 2);
-  int lv2_lx3 = loc.lx3 >> (loc.level - 2);
-  int blockID = lv2_lx2 + lv2_lx3 * 2 + 1;
+  int lv2_lx2, lv2_lx3, local_lx2, local_lx3, bound_lim;
+  GetLocalIndex(&lv2_lx2, &lv2_lx3, &local_lx2, &local_lx3, &bound_lim, loc);
+  int blockID = FindBlockID(loc);
   // Calculate local ID
-  int local_lx2 = loc.lx2 - (lv2_lx2 << (loc.level - 2));
-  int local_lx3 = loc.lx3 - (lv2_lx3 << (loc.level - 2));
-  int bound_lim = (1 << (loc.level - 2)) - 1;
   int tox2, tox3;
   int DirTag, DirNum, ownTag;  // Tag for target, and the numbering of axis
   int ox2_bkp = ox2;
@@ -560,6 +538,16 @@ void CubedSphere::sendNeighborBlocks(int ox2, int ox3, int tg_rank,
   }
 
   // Calculate the tag of destination
+#ifdef USE_NBLOCKS
+  if (tox2 == -1)
+    DirTag = 0 + 4 * pmb->gid + 24 * (bound_lim + 1) * tg_gid;
+  if (tox2 == 1)
+    DirTag = 1 + 4 * pmb->gid + 24 * (bound_lim + 1) * tg_gid;
+  if (tox3 == -1)
+    DirTag = 2 + 4 * pmb->gid + 24 * (bound_lim + 1) * tg_gid;
+  if (tox3 == 1)
+    DirTag = 3 + 4 * pmb->gid + 24 * (bound_lim + 1) * tg_gid;
+#else
   if (tox2 == -1)
     DirTag = 0 + 4 * pmb->gid + 24 * (1 << (loc.level - 2)) * tg_gid;
   if (tox2 == 1)
@@ -568,6 +556,7 @@ void CubedSphere::sendNeighborBlocks(int ox2, int ox3, int tg_rank,
     DirTag = 2 + 4 * pmb->gid + 24 * (1 << (loc.level - 2)) * tg_gid;
   if (tox3 == 1)
     DirTag = 3 + 4 * pmb->gid + 24 * (1 << (loc.level - 2)) * tg_gid;
+#endif
   // Send by MPI: we don't care whether it is in the same process for now
   if (ox2 == -1) ownTag = 0;
   if (ox2 == 1) ownTag = 1;
@@ -586,13 +575,10 @@ void CubedSphere::recvNeighborBlocks(int ox2, int ox3, int tg_rank,
   MeshBlock *pmb = pmy_block_;
   auto &loc = pmb->loc;
 
-  int lv2_lx2 = loc.lx2 >> (loc.level - 2);
-  int lv2_lx3 = loc.lx3 >> (loc.level - 2);
+  int lv2_lx2, lv2_lx3, local_lx2, local_lx3, bound_lim;
+  GetLocalIndex(&lv2_lx2, &lv2_lx3, &local_lx2, &local_lx3, &bound_lim, loc);
   int blockID = FindBlockID(loc);
-  // Calculate local ID
-  int local_lx2 = loc.lx2 - (lv2_lx2 << (loc.level - 2));
-  int local_lx3 = loc.lx3 - (lv2_lx3 << (loc.level - 2));
-  int bound_lim = (1 << (loc.level - 2)) - 1;
+
   int tox2, tox3;
   int DirTag, DirNum, ownTag;  // Tag for receiving, and the numbering of axis
                                // to place the values
@@ -658,6 +644,16 @@ void CubedSphere::recvNeighborBlocks(int ox2, int ox3, int tg_rank,
   int dsize = ((kb2 - kb1 + 1) * (jb2 - jb1 + 1) * (ib2 - ib1 + 1) * NWAVE);
   Real *data = new Real[dsize];
   // Calculate the tag for receiving
+#ifdef USE_NBLOCKS
+  if (ox2 == -1)
+    DirTag = 0 + 4 * tg_gid + 24 * (bound_lim + 1) * pmb->gid;
+  if (ox2 == 1)
+    DirTag = 1 + 4 * tg_gid + 24 * (bound_lim + 1) * pmb->gid;
+  if (ox3 == -1)
+    DirTag = 2 + 4 * tg_gid + 24 * (bound_lim + 1) * pmb->gid;
+  if (ox3 == 1)
+    DirTag = 3 + 4 * tg_gid + 24 * (bound_lim + 1) * pmb->gid;
+#else
   if (ox2 == -1)
     DirTag = 0 + 4 * tg_gid + 24 * (1 << (loc.level - 2)) * pmb->gid;
   if (ox2 == 1)
@@ -666,6 +662,7 @@ void CubedSphere::recvNeighborBlocks(int ox2, int ox3, int tg_rank,
     DirTag = 2 + 4 * tg_gid + 24 * (1 << (loc.level - 2)) * pmb->gid;
   if (ox3 == 1)
     DirTag = 3 + 4 * tg_gid + 24 * (1 << (loc.level - 2)) * pmb->gid;
+#endif
 
 #ifdef MPI_PARALLEL
   MPI_Recv(data, dsize, MPI_DOUBLE, tg_rank, DirTag, MPI_COMM_WORLD,
