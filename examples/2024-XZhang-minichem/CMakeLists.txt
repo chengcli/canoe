@@ -1,6 +1,5 @@
-
-if (${COORDINATE_SYSTEM} STREQUAL "spherical_polar")
-  setup_problem(minichem_sphr)
+if (${NVAPOR} EQUAL 1)
+  setup_problem(jup_mini)
 else()
   setup_problem(minichem)
 endif()
