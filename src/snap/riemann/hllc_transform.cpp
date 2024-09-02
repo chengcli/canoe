@@ -258,6 +258,8 @@ void Hydro::RiemannSolver(const int k, const int j, const int il, const int iu,
       tflxi[n] = sl * tfl[n] + sr * tfr[n];
       if (dir==0){ // The direction of the sedimentation velocity
         pmicro->mass_flux[dir](n, k, j, i) = tflxi[n] + vsed * wri[IDN] * rdr;
+      }else{
+        pmicro->mass_flux[dir](n, k, j, i) = tflxi[n];
       }
     }
   }
