@@ -33,8 +33,8 @@ dt          = 5.E5          # time increment
 #dt          = 1.E4          # time increment
 
 <time>
-cfl_number  = 1.
-nlim        = 50            # cycle limit
+cfl_number  = 0.9
+nlim        = -1            # cycle limit
 tlim        = 1.E10
 xorder      = 5             # horizontal reconstruction order
 integrator  = rk3           # integration method
@@ -46,12 +46,9 @@ x1max       = 40.E3       # maximum value of X1
 ix1_bc      = reflecting  # Inner-X1 boundary condition flag
 ox1_bc      = reflecting  # Outer-X1 boundary condition flag
 
-#nx2         = 100         # Number of zones in X2-direction
-#x2min       = 0.          # minimum value of X2
-#x2max       = 5.E6     # maximum value of X2
-nx2         = 1          # Number of zones in X3-direction
-x2min       = -0.5         # minimum value of X3
-x2max       = 0.5         # maximum value of X3
+nx2         = 100         # Number of zones in X2-direction
+x2min       = 0.          # minimum value of X2
+x2max       = 2.E7     # maximum value of X2
 ix2_bc      = periodic    # Inner-X2 boundary condition flag
 ox2_bc      = periodic    # Outer-X2 boundary condition flag
 
@@ -66,7 +63,7 @@ ox3_bc      = periodic    # Outer-X3 boundary condition flag
 
 <meshblock>
 nx1         = 100
-nx2         = 1
+nx2         = 4
 nx3         = 1
 
 <hydro>
@@ -74,12 +71,12 @@ gamma       = 1.42
 grav_acc1   = -24.79
 implicit_flag = 9
 
-<species>
-vapor = H2O
-cloud = H2O(c), H2O(p)
+#<species>
+#vapor = H2O
+#cloud = H2O(c), H2O(p)
 
-<chemistry>
-microphysics_config = water_ammonia.yaml
+#<chemistry>
+#microphysics_config = water_ammonia.yaml
 
 <thermodynamics>
 Rd          = 3777.   # mu = 2.3175 g/mol
@@ -105,11 +102,11 @@ top_cooling.flux = -8.
 #relax_time    = 1.E4
 
 <problem>
-qH2O.ppmv   = 2500.
+#qH2O.ppmv   = 4000.
 P0          = 1.E5
 T0          = 169.
 Tmin        = 110.
 hrate       = 0.
-prad        = 2.e5
+prad        = 2.e-5
 init_Ttol   = 0.1
 diagnostics = div, curl, b, mean, anomaly, radflux, hydroflux
