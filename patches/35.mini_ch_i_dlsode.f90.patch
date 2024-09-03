@@ -1,0 +1,14 @@
+diff --git a/src_mini_chem_dlsode/mini_ch_i_dlsode.f90 b/src_mini_chem_dlsode/mini_ch_i_dlsode.f90
+index 7057dcc..db247dd 100644
+--- a/src_mini_chem_dlsode/mini_ch_i_dlsode.f90
++++ b/src_mini_chem_dlsode/mini_ch_i_dlsode.f90
+@@ -39,7 +39,8 @@ contains
+     allocate(Keq(n_reac), re_f(n_reac), re_r(n_reac))
+ 
+     ! First find the reverse reaction coefficents (Keq)
+-    call reverse_reactions(T_in)
++    !call reverse_reactions(T_in)
++    call reverse_reactions(max(T_in, 200.0_dp))   !xiz 2024 added Tmin
+     ! Find the forward, backward and net reaction rates
+     call reaction_rates(T_in, P_cgs, nd_atm)
+ 
