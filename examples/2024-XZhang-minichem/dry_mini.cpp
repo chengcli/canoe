@@ -59,16 +59,10 @@ Real mmass = 2.238;  // mean molecular mass in amu
 MiniChem *mc;
 
 void MeshBlock::InitUserMeshBlockData(ParameterInput *pin) {
-  AllocateUserOutputVariables(5 + NVAPOR);
+  AllocateUserOutputVariables(3);
   SetUserOutputVariableName(0, "temp");
   SetUserOutputVariableName(1, "theta");
-  SetUserOutputVariableName(2, "thetav");
-  SetUserOutputVariableName(3, "mse");
-  SetUserOutputVariableName(4, "pres");
-  for (int n = 1; n <= NVAPOR; ++n) {
-    std::string name = "rh" + std::to_string(n);
-    SetUserOutputVariableName(4 + n, name.c_str());
-  }
+  SetUserOutputVariableName(2, "pres");
 }
 
 void MeshBlock::UserWorkBeforeOutput(ParameterInput *pin) {
@@ -79,18 +73,8 @@ void MeshBlock::UserWorkBeforeOutput(ParameterInput *pin) {
       for (int i = is; i <= ie; ++i) {
         user_out_var(0, k, j, i) = pthermo->GetTemp(this, k, j, i);
         user_out_var(1, k, j, i) = pthermo->PotentialTemp(this, P0, k, j, i);
-        // theta_v
-        user_out_var(2, k, j, i) =
-            user_out_var(1, k, j, i) * pthermo->RovRd(this, k, j, i);
-        // mse
-        user_out_var(3, k, j, i) =
-            pthermo->MoistStaticEnergy(this, grav * pcoord->x1v(i), k, j, i);
-        user_out_var(4, k, j, i) = phydro->w(IPR, k, j, i);
-        // relative humidity
-        for (int n = 1; n <= NVAPOR; ++n)
-          user_out_var(4 + n, k, j, i) =
-              pthermo->RelativeHumidity(this, n, k, j, i);
-      }
+        user_out_var(2, k, j, i) = phydro->w(IPR, k, j, i);
+  }
 }
 
 void Forcing(MeshBlock *pmb, Real const time, Real const dt,
@@ -149,8 +133,6 @@ void Mesh::InitUserMeshData(ParameterInput *pin) {
   hrate = pin->GetReal("problem", "hrate") / 86400.;
 
   // index
-  auto pindex = IndexMap::GetInstance();
-  iH2O = pindex->GetVaporId("H2O");
   EnrollUserExplicitSourceFunction(Forcing);
 
   // minichem
@@ -192,11 +174,8 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
   // estimate surface temperature and pressure
   Real Ts = T0 - grav / cp * x1min;
   Real Ps = P0 * pow(Ts / T0, cp / Rd);
-  Real xH2O = pin->GetReal("problem", "qH2O.ppmv") / 1.E6;
 
   while (iter++ < max_iter) {
-    // read in vapors
-    air.w[iH2O] = xH2O;
     air.w[IPR] = Ps;
     air.w[IDN] = Ts;
 
@@ -222,7 +201,6 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
   for (int k = ks; k <= ke; ++k)
     for (int j = js; j <= je; ++j) {
       air.SetZero();
-      air.w[iH2O] = xH2O;
       air.w[IPR] = Ps;
       air.w[IDN] = Ts;
 
