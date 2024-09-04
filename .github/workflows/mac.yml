@@ -31,7 +31,7 @@ jobs:
       - name: check if artifact exists
         run: echo "ARTIFACT_EXISTS=$(./tools/check_artifact.sh straka_output.nc)" >> $GITHUB_ENV
 
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4.1.7
         if: env.ARTIFACT_EXISTS == 'true'
         with:
           name: straka_output.nc
@@ -80,7 +80,7 @@ jobs:
 
       - name: check if artifact exists
         run: echo "ARTIFACT_EXISTS=$(./tools/check_artifact.sh robert_output.nc)" >> $GITHUB_ENV
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4.1.7
         if: env.ARTIFACT_EXISTS == 'true'
         with:
           name: robert_output.nc
@@ -130,7 +130,7 @@ jobs:
       - name: check if artifact exists
         run: echo "ARTIFACT_EXISTS=$(./tools/check_artifact.sh robert3d_output.nc)" >> $GITHUB_ENV
 
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4.1.7
         if: env.ARTIFACT_EXISTS == 'true'
         with:
           name: robert3d_output.nc
@@ -181,7 +181,7 @@ jobs:
       - name: check if artifact exists
         run: echo "ARTIFACT_EXISTS=$(./tools/check_artifact.sh bryan_output.nc)" >> $GITHUB_ENV
 
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4.1.7
         if: env.ARTIFACT_EXISTS == 'true'
         with:
           name: bryan_output.nc
@@ -234,7 +234,7 @@ jobs:
       - name: check if artifact exists
         run: echo "ARTIFACT_EXISTS=$(./tools/check_artifact.sh swxy_output.nc)" >> $GITHUB_ENV
 
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4.1.7
         if: env.ARTIFACT_EXISTS == 'true'
         with:
           name: swxy_output.nc
@@ -290,7 +290,7 @@ jobs:
       - name: check if artifact exists
         run: echo "ARTIFACT_EXISTS=$(./tools/check_artifact.sh intruder_output.nc)" >> $GITHUB_ENV
 
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4.1.7
         if: env.ARTIFACT_EXISTS == 'true'
         with:
           name: intruder_output.nc
@@ -384,7 +384,7 @@ jobs:
       - name: check if artifact exists
         run: echo "ARTIFACT_EXISTS=$(./tools/check_artifact.sh test_blast_output.nc)" >> $GITHUB_ENV
 
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4.1.7
         if: env.ARTIFACT_EXISTS == 'true'
         with:
           name: test_blast_output.nc
