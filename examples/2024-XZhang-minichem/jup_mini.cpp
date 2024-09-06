@@ -115,25 +115,24 @@ void Forcing(MeshBlock *pmb, Real const time, Real const dt,
         if (w(IPR, k, j, i) < prad) {
           du(IEN, k, j, i) += dt * hrate * w(IDN, k, j, i) * cv *
                               (1. + 1.E-4 * sin(2. * M_PI * rand() / RAND_MAX));
+        }
+        // minichem
+        Real temp = pthermo->GetTemp(w.at(k, j, i));
+        Real pres = w(IPR, k, j, i);
 
-          // minichem
-          Real temp = pthermo->GetTemp(w.at(k, j, i));
-          Real pres = w(IPR, k, j, i);
+        // change mmr to vmr
+        for (int n = 0; n < NCHEMISTRY; ++n)
+          vmr[n] = prim_scalar(NCLOUD + n, k, j, i) / vmass[n] * mmass;
+        //       vmr_from_prim_scalar(vmr, prim_scalar, w, k, j, i);
+        // call minichem
+        mc->Run(temp, pres, dt, vmr.data(), "NCHO");
 
-          // change mmr to vmr
-          for (int n = 0; n < NCHEMISTRY; ++n)
-            vmr[n] = prim_scalar(NCLOUD + n, k, j, i) / vmass[n] * mmass;
-          //       vmr_from_prim_scalar(vmr, prim_scalar, w, k, j, i);
-          // call minichem
-          mc->Run(temp, pres, dt, vmr.data(), "NCHO");
-
-          // normalize scale VMR to 1 and change to density
-          Real sumVMR =
-              std::accumulate(vmr.begin(), vmr.end(), static_cast<Real>(0));
-          for (int n = 0; n < NCHEMISTRY; ++n) {
-            cons_scalar(NCLOUD + n, k, j, i) =
-                phydro->w(IDN, k, j, i) * vmr[n] / sumVMR * vmass[n] / mmass;
-          }
+        // normalize scale VMR to 1 and change to density
+        Real sumVMR =
+            std::accumulate(vmr.begin(), vmr.end(), static_cast<Real>(0));
+        for (int n = 0; n < NCHEMISTRY; ++n) {
+          cons_scalar(NCLOUD + n, k, j, i) =
+              phydro->w(IDN, k, j, i) * vmr[n] / sumVMR * vmass[n] / mmass;
         }
       }
 }
