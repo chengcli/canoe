@@ -52,10 +52,10 @@
 
 Real grav, P0, T0, Tmin, prad, hrate;
 int iH2O;
-//'OH','H2','H2O','H','CO','CO2','O','CH4','C2H2','NH3','N2','HCN'
-std::vector<double> vmass = {17.01, 2.02,  18.02, 1.01,  28.01, 44.01,
-                             16.,   16.05, 26.04, 17.04, 28.02, 27.03};
-Real mmass = 2.238;  // mean molecular mass in amu
+//'OH','H2','H2O','H','CO','CO2','O','CH4','C2H2','NH3','N2','HCN', 'He'
+std::vector<double> vmass = {17.01, 2.02,  18.02, 1.01,  28.01, 44.01, 16.,
+                             16.05, 26.04, 17.04, 28.02, 27.03, 4.};
+Real sumVMR;
 MiniChem *mc;
 
 void MeshBlock::InitUserMeshBlockData(ParameterInput *pin) {
@@ -85,7 +85,9 @@ void Forcing(MeshBlock *pmb, Real const time, Real const dt,
   int ie = pmb->ie, je = pmb->je, ke = pmb->ke;
   auto pthermo = Thermodynamics::GetInstance();
   auto phydro = pmb->phydro;
-  std::vector<Real> vmr(NCHEMISTRY);
+  std::vector<double> vmr(NCHEMISTRY);
+  std::vector<double> vmr_sp(NCHEMISTRY - 1);
+  std::vector<double> mmr(NCHEMISTRY);
 
   for (int k = ks; k <= ke; ++k)
     for (int j = js; j <= je; ++j)
@@ -105,19 +107,29 @@ void Forcing(MeshBlock *pmb, Real const time, Real const dt,
         Real temp = pthermo->GetTemp(w.at(k, j, i));
         Real pres = w(IPR, k, j, i);
 
-        // change mmr to vmr
+        // change mmr to vmr with an arbitrary scale
         for (int n = 0; n < NCHEMISTRY; ++n)
-          vmr[n] = prim_scalar(NCLOUD + n, k, j, i) / vmass[n] * mmass;
-        //       vmr_from_prim_scalar(vmr, prim_scalar, w, k, j, i);
-        // call minichem
-        mc->Run(temp, pres, dt, vmr.data(), "NCHO");
+          vmr[n] = prim_scalar(NCLOUD + n, k, j, i) / vmass[n];
+        // normalize scale VMR to 1
+        sumVMR = std::accumulate(vmr.begin(), vmr.end(), static_cast<Real>(0));
+        for (auto &value : vmr) value /= sumVMR;
 
-        // normalize scale VMR to 1 and change to density
-        Real sumVMR =
-            std::accumulate(vmr.begin(), vmr.end(), static_cast<Real>(0));
+        // call minichem for sp species if T is larger than 200 K
+        //        for (int n = 0; n < NCHEMISTRY-1; ++n) vmr_sp[n] = vmr[n];
+        //	if (temp > 200.) mc->Run(temp, pres, dt, vmr_sp.data(), "NCHO");
+        //        for (int n = 0; n < NCHEMISTRY-1; ++n) vmr[n] = vmr_sp[n];
+
+        // change vmr to mmr and normalize
+        sumVMR = std::accumulate(vmr.begin(), vmr.end(), static_cast<Real>(0));
+        for (int n = 0; n < NCHEMISTRY; ++n)
+          mmr[n] = vmr[n] * vmass[n] / sumVMR;
+        sumVMR = std::accumulate(mmr.begin(), mmr.end(), static_cast<Real>(0));
+        for (auto &value : mmr) value /= sumVMR;
+
         for (int n = 0; n < NCHEMISTRY; ++n) {
-          cons_scalar(NCLOUD + n, k, j, i) =
-              phydro->w(IDN, k, j, i) * vmr[n] / sumVMR * vmass[n] / mmass;
+          cons_scalar(NCLOUD + n, k, j, i) +=
+              phydro->w(IDN, k, j, i) *
+              (mmr[n] - prim_scalar(NCLOUD + n, k, j, i));
         }
       }
 }
@@ -133,7 +145,7 @@ void Mesh::InitUserMeshData(ParameterInput *pin) {
   hrate = pin->GetReal("problem", "hrate") / 86400.;
 
   // index
-  EnrollUserExplicitSourceFunction(Forcing);
+  // EnrollUserExplicitSourceFunction(Forcing);
 
   // minichem
   mc = new MiniChem();
@@ -227,9 +239,9 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
     }
 
   // minichem initialize conserved variables
-  int n_sp = 13;
   // interpolate from ce table
-  std::vector<double> vmr_ic(n_sp);
+  std::vector<double> vmr_ic(NCHEMISTRY);
+  std::vector<double> mmr(NCHEMISTRY);
   std::string ic_file = "chem_data/IC/mini_chem_IC_FastChem_1x.txt";
 
   for (int k = ks; k <= ke; k++)
@@ -238,23 +250,18 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
         double mu;
         double T_in = pthermo->GetTemp(this, k, j, i);
         double P_in = phydro->w(IPR, k, j, i);
-        //         std::cout<<"interp  "<<P_in<<" "<<T_in<<std::endl;
-        interp_ce_table(n_sp, T_in, P_in, vmr_ic.data(), &mu, ic_file);
+        interp_ce_table(NCHEMISTRY, T_in, P_in, vmr_ic.data(), &mu, ic_file);
 
-        // normalize scale VMR to 1
-        Real sumVMR =
+        // change vmr to mmr and normalize
+        sumVMR =
             std::accumulate(vmr_ic.begin(), vmr_ic.end(), static_cast<Real>(0));
-        for (auto &value : vmr_ic) {
-          value /= sumVMR;
-        }
+        for (int n = 0; n < NCHEMISTRY; ++n)
+          mmr[n] = vmr_ic[n] * vmass[n] / sumVMR;
+        sumVMR = std::accumulate(mmr.begin(), mmr.end(), static_cast<Real>(0));
+        for (auto &value : mmr) value /= sumVMR;
 
-        if (NCHEMISTRY > 0) {
-          for (int n = 0; n < NCHEMISTRY; ++n) {
-            //           std::cout<<"mini  "<<rho<<" "<<n<<" "<<vmr_ic[n]<<"
-            //           "<<vmass[n]<<" "<<mu<<std::endl;
-            pscalars->s(NCLOUD + n, k, j, i) =
-                phydro->w(IDN, k, j, i) * vmr_ic[n] * vmass[n] / mmass;
-          }
+        for (int n = 0; n < NCHEMISTRY; ++n) {
+          pscalars->s(NCLOUD + n, k, j, i) += phydro->w(IDN, k, j, i) * mmr[n];
         }
       }
 }
