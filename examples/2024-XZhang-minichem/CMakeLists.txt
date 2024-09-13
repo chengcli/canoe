@@ -1,8 +1,4 @@
-if (${NVAPOR} EQUAL 1)
-  setup_problem(jup_mini)
-else()
-  setup_problem(dry_mini)
-endif()
+  setup_problem(minichem)
 
 # 2. Copy input files to run directory
 file(GLOB inputs *.py *.inp *.yaml)
