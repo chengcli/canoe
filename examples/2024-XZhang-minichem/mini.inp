@@ -105,6 +105,7 @@ top_cooling.flux = -8.
 <problem>
 qH2O.ppmv   = 2500.
 use_mini    = true
+use_mini_ic = true
 metallicity = 10x
 tracer.ppb  = 5.
 tracer.pre  = 5.E7
