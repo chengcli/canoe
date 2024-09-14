@@ -6,21 +6,21 @@ problem_id  = 2dmini     # problem ID: basename of output filenames
 
 <output0>
 file_type   = rst
-dt          = 10.E5
+dt          = 1.E7
 
 <output1>
 file_type   = hst           # History data dump
-dt          = 10.E5          # time increment between outputs
+dt          = 1.E5          # time increment between outputs
 
 <output2>
 file_type   = pnetcdf        # Netcdf format output
 variable    = prim          # variables to be output
-dt          = 1.E3          # time increment between outputs
+dt          = 5.E5          # time increment between outputs
 
 <output3>
 file_type   = pnetcdf        # Netcdf format output
 variable    = uov           # diagnostic variables
-dt          = 1.E3          # time increment
+dt          = 5.E5          # time increment
 
 #<output4>
 #file_type   = pnetcdf        # Netcdf format output
@@ -33,11 +33,13 @@ dt          = 1.E3          # time increment
 #dt          = 1.E4          # time increment
 
 <time>
-cfl_number  = 1.
+cfl_number  = 0.9
 nlim        = -1            # cycle limit
-tlim        = 1.E5
+tlim        = 1.E15
 xorder      = 5             # horizontal reconstruction order
 integrator  = rk3           # integration method
+ncycle_out  = 100
+shock_capture = true
 
 <mesh>
 nx1         = 64          # Number of zones in X1-direction
