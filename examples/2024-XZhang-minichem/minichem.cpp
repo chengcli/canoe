@@ -53,7 +53,7 @@
 Real grav, P0, T0, Tmin, prad, hrate, xH2O;
 std::string met;
 int iH2O;
-bool use_mini;
+bool use_mini, use_mini_ic;
 
 //'OH','H2','H2O','H','CO','CO2','O','CH4','C2H2','NH3','N2','HCN', 'He'
 std::vector<double> vmass = {17.01, 2.02,  18.02, 1.01,  28.01, 44.01, 16.,
@@ -176,6 +176,7 @@ void Mesh::InitUserMeshData(ParameterInput *pin) {
   prad = pin->GetReal("problem", "prad");
   hrate = pin->GetReal("problem", "hrate") / 86400.;
   use_mini = pin->GetOrAddBoolean("problem", "use_mini", true);
+  use_mini_ic = pin->GetOrAddBoolean("problem", "use_mini_ic", true);
   met = pin->GetOrAddString("problem", "metallicity", "1x");
 
   if (NVAPOR > 0) {
@@ -282,7 +283,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
       }
     }
 
-  if (use_mini) {
+  if (use_mini || use_mini_ic) {
     // minichem initialize conserved variables
     // interpolate from ce table
     std::vector<double> vmr_ic(NCHEMISTRY);
