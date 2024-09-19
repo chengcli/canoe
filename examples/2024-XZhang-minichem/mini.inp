@@ -15,37 +15,35 @@ dt          = 1.E5          # time increment between outputs
 <output2>
 file_type   = pnetcdf        # Netcdf format output
 variable    = prim          # variables to be output
-dt          = 5.E5          # time increment between outputs
+dt          = 1.E6          # time increment between outputs
 
 <output3>
 file_type   = pnetcdf        # Netcdf format output
 variable    = uov           # diagnostic variables
-dt          = 5.E5          # time increment
+dt          = 1.E6          # time increment
 
 #<output4>
-#file_type   = pnetcdf        # Netcdf format output
+#file_type   = netcdf        # Netcdf format output
 #variable    = diag           # diagnostic variables
 #dt          = 1.E4          # time increment
 
 #<output5>
-#file_type   = pnetcdf        # Netcdf format output
+#file_type   = netcdf        # Netcdf format output
 #variable    = rad           # diagnostic variables
 #dt          = 1.E4          # time increment
 
 <time>
-cfl_number  = 0.9
+cfl_number  = 1.
 nlim        = -1            # cycle limit
-tlim        = 1.E15
+tlim        = 1.E10
 xorder      = 5             # horizontal reconstruction order
 integrator  = rk3           # integration method
 ncycle_out  = 100
-shock_capture = true
 
 <mesh>
-nx1         = 64          # Number of zones in X1-direction
+nx1         = 128          # Number of zones in X1-direction
 x1min       = -600.E3     # minimum value of X1
 x1max       = 30.E3       # maximum value of X1
-x1rat       = 0.98
 ix1_bc      = reflecting  # Inner-X1 boundary condition flag
 ox1_bc      = reflecting  # Outer-X1 boundary condition flag
 
@@ -65,8 +63,8 @@ ix3_bc      = periodic    # Inner-X3 boundary condition flag
 ox3_bc      = periodic    # Outer-X3 boundary condition flag
 
 <meshblock>
-nx1         = 64
-nx2         = 32
+nx1         = 128
+nx2         = 4
 nx3         = 1
 
 <hydro>
@@ -90,7 +88,7 @@ Ttriple1    = 273.16
 Ptriple1    = 611.7
 
 sa.relax    = 1.0
-sa.max_iter = 4
+sa.max_iter = 5
 sa.ftol     = 1.e-2
 
 <forcing>
@@ -106,11 +104,18 @@ top_cooling.flux = -8.
 
 <problem>
 qH2O.ppmv   = 2500.
-use_mini    = true
-use_mini_ic = true
-metallicity = 10x
+
+#minichem
+use_mini    = false
+use_mini_ic = false
+metallicity = 1x
+
+#simple tracer
+use_tra_ic = true
+fix_bot_tra = true
 tracer.ppb  = 5.
-tracer.pre  = 5.E7
+tracer.pre  = 6.E7
+
 P0          = 1.E5
 T0          = 169.
 Tmin        = 110.
