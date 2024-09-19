@@ -50,10 +50,10 @@
 // minichem
 #include <minichem/mini_chem.hpp>
 
-Real grav, P0, T0, Tmin, prad, hrate, xH2O;
+Real grav, P0, T0, Tmin, prad, hrate, xH2O, xtra, ptra;
 std::string met;
 int iH2O;
-bool use_mini, use_mini_ic;
+bool use_mini, use_mini_ic, use_tra_ic, fix_bot_tra;
 
 //'OH','H2','H2O','H','CO','CO2','O','CH4','C2H2','NH3','N2','HCN', 'He'
 std::vector<double> vmass = {17.01, 2.02,  18.02, 1.01,  28.01, 44.01, 16.,
@@ -113,10 +113,6 @@ void Forcing(MeshBlock *pmb, Real const time, Real const dt,
   int ie = pmb->ie, je = pmb->je, ke = pmb->ke;
   auto pthermo = Thermodynamics::GetInstance();
   auto phydro = pmb->phydro;
-  std::vector<double> vmr(NCHEMISTRY);
-  std::vector<double> vmr_sp(NCHEMISTRY - 1);
-  std::vector<double> mmr(NCHEMISTRY);
-  Real sumVMR;
 
   for (int k = ks; k <= ke; ++k)
     for (int j = js; j <= je; ++j)
@@ -132,8 +128,13 @@ void Forcing(MeshBlock *pmb, Real const time, Real const dt,
                               (1. + 1.E-4 * sin(2. * M_PI * rand() / RAND_MAX));
         }
       }
-
-  if (use_mini) {
+  
+  if (NCHEMISTRY > 0) {
+    if (use_mini) {
+    std::vector<double> vmr(NCHEMISTRY);
+    std::vector<double> vmr_sp(NCHEMISTRY - 1);
+    std::vector<double> mmr(NCHEMISTRY);
+    Real sumVMR;
     for (int k = ks; k <= ke; ++k)
       for (int j = js; j <= je; ++j)
         for (int i = is; i <= ie; ++i) {
@@ -165,6 +166,17 @@ void Forcing(MeshBlock *pmb, Real const time, Real const dt,
                 (mmr[n] - prim_scalar(NCLOUD + n, k, j, i));
           }
         }
+  } else if (fix_bot_tra) {
+    for (int k = ks; k <= ke; k++)
+      for (int j = js; j <= je; j++)
+        for (int i = is; i <= ie; i++) {
+          if (phydro->w(IPR, k, j, i) > ptra) {
+            for (int n = 0; n < NCHEMISTRY; ++n) {
+              cons_scalar(NCLOUD + n, k, j, i) = cons_scalar(NCLOUD + n, k, j, i);
+            }
+          }
+        }
+      }
   }
 }
 
@@ -177,7 +189,11 @@ void Mesh::InitUserMeshData(ParameterInput *pin) {
   hrate = pin->GetReal("problem", "hrate") / 86400.;
   use_mini = pin->GetOrAddBoolean("problem", "use_mini", true);
   use_mini_ic = pin->GetOrAddBoolean("problem", "use_mini_ic", true);
+  use_tra_ic = pin->GetOrAddBoolean("problem", "use_tra_ic", true);
+  fix_bot_tra= pin->GetOrAddBoolean("problem", "fix_bot_tra", true);
   met = pin->GetOrAddString("problem", "metallicity", "1x");
+  xtra = pin->GetReal("problem", "tracer.ppb") / 1.E9;
+  ptra = pin->GetReal("problem", "tracer.pre");
 
   if (NVAPOR > 0) {
     // index
@@ -283,7 +299,9 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
       }
     }
 
-  if (use_mini || use_mini_ic) {
+  if (NCHEMISTRY > 0) {
+
+   if (use_mini_ic) {
     // minichem initialize conserved variables
     // interpolate from ce table
     std::vector<double> vmr_ic(NCHEMISTRY);
@@ -309,19 +327,17 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
                 phydro->w(IDN, k, j, i) * mmr[n];
           }
         }
-  } else {
-    Real xtra = pin->GetReal("problem", "tracer.ppb") / 1.E9;
-    Real ptra = pin->GetReal("problem", "tracer.pre");
+  } else if (use_tra_ic) {
     for (int k = ks; k <= ke; k++)
       for (int j = js; j <= je; j++)
         for (int i = is; i <= ie; i++) {
-          double P_in = phydro->w(IPR, k, j, i);
-          if (P_in > ptra) {
+          if (phydro->w(IPR, k, j, i) > ptra) {
             for (int n = 0; n < NCHEMISTRY; ++n) {
               pscalars->s(NCLOUD + n, k, j, i) +=
                   phydro->w(IDN, k, j, i) * xtra;
             }
           }
         }
+     }
   }
 }
