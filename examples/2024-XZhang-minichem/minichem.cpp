@@ -50,7 +50,8 @@
 // minichem
 #include <minichem/mini_chem.hpp>
 
-Real grav, P0, T0, Tmin, prad, hrate, xH2O, xtra, ptra;
+Real grav, P0, T0, Tmin, prad, hrate, xH2O;
+Real Tbot, xtra, ptra, Ttop_tau, Tbot_tau, Trabot_tau;
 std::string met;
 int iH2O;
 bool use_mini, use_mini_ic, use_tra_ic, fix_bot_tra;
@@ -119,15 +120,23 @@ void Forcing(MeshBlock *pmb, Real const time, Real const dt,
       for (int i = is; i <= ie; ++i) {
         auto &&air = AirParcelHelper::gather_from_primitive(pmb, k, j, i);
 
+        Real tem = pthermo->GetTemp(w.at(k,j,i));
         air.ToMoleFraction();
         Real cv =
             get_cv_mass(air, 0, pthermo->GetRd(), pthermo->GetCvRatioMass());
 
-        if (w(IPR, k, j, i) < prad) {
+       if (w(IPR, k, j, i) < prad) {
+// body cooling 
           du(IEN, k, j, i) += dt * hrate * w(IDN, k, j, i) * cv *
                               (1. + 1.E-4 * sin(2. * M_PI * rand() / RAND_MAX));
+// newtonian at the top
+           if (tem < Tmin) {
+             du(IEN, k, j, i) += dt * (Tmin - tem)/Ttop_tau * w(IDN, k, j, i) * cv;
+           }
         }
-      }
+// relax T at the bottom
+         if(i == is) du(IEN, k, j, i) += dt * (Tbot - tem)/Tbot_tau * w(IDN, k, j, i) * cv;
+     }
   
   if (NCHEMISTRY > 0) {
     if (use_mini) {
@@ -172,7 +181,9 @@ void Forcing(MeshBlock *pmb, Real const time, Real const dt,
         for (int i = is; i <= ie; i++) {
           if (phydro->w(IPR, k, j, i) > ptra) {
             for (int n = 0; n < NCHEMISTRY; ++n) {
-              cons_scalar(NCLOUD + n, k, j, i) = cons_scalar(NCLOUD + n, k, j, i);
+            cons_scalar(NCLOUD + n, k, j, i) +=
+                dt/Trabot_tau * phydro->w(IDN, k, j, i) *
+                (xtra - prim_scalar(NCLOUD + n, k, j, i));
             }
           }
         }
@@ -185,12 +196,16 @@ void Mesh::InitUserMeshData(ParameterInput *pin) {
   P0 = pin->GetReal("problem", "P0");
   T0 = pin->GetReal("problem", "T0");
   Tmin = pin->GetReal("problem", "Tmin");
+  hrate = pin->GetReal("problem", "hrate") / 86400.;
   prad = pin->GetReal("problem", "prad");
   hrate = pin->GetReal("problem", "hrate") / 86400.;
+  Ttop_tau = pin->GetReal("problem", "Ttop_tau");
+  Tbot_tau = pin->GetReal("problem", "Tbot_tau");
   use_mini = pin->GetOrAddBoolean("problem", "use_mini", true);
   use_mini_ic = pin->GetOrAddBoolean("problem", "use_mini_ic", true);
   use_tra_ic = pin->GetOrAddBoolean("problem", "use_tra_ic", true);
-  fix_bot_tra= pin->GetOrAddBoolean("problem", "fix_bot_tra", true);
+  fix_bot_tra = pin->GetOrAddBoolean("problem", "fix_bot_tra", true);
+  Trabot_tau = pin->GetReal("problem", "Trabot_tau");
   met = pin->GetOrAddString("problem", "metallicity", "1x");
   xtra = pin->GetReal("problem", "tracer.ppb") / 1.E9;
   ptra = pin->GetReal("problem", "tracer.pre");
@@ -298,6 +313,8 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
         pthermo->Extrapolate(&air, pcoord->dx1f(i), "isothermal", grav);
       }
     }
+
+       Tbot = pthermo->GetTemp(this, ks, js, is);;
 
   if (NCHEMISTRY > 0) {
 

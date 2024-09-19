@@ -41,7 +41,7 @@ integrator  = rk3           # integration method
 ncycle_out  = 100
 
 <mesh>
-nx1         = 128          # Number of zones in X1-direction
+nx1         = 150          # Number of zones in X1-direction
 x1min       = -600.E3     # minimum value of X1
 x1max       = 30.E3       # maximum value of X1
 ix1_bc      = reflecting  # Inner-X1 boundary condition flag
@@ -63,14 +63,14 @@ ix3_bc      = periodic    # Inner-X3 boundary condition flag
 ox3_bc      = periodic    # Outer-X3 boundary condition flag
 
 <meshblock>
-nx1         = 128
-nx2         = 4
+nx1         = 150
+nx2         = 16
 nx3         = 1
 
 <hydro>
 gamma       = 1.42
 grav_acc1   = -24.79
-#implicit_flag = 9
+implicit_flag = 1
 
 <species>
 vapor = H2O
@@ -92,9 +92,12 @@ sa.max_iter = 5
 sa.ftol     = 1.e-2
 
 <forcing>
-packages = bot_heating, top_cooling
-bot_heating.flux = 8.
-top_cooling.flux = -8.
+#packages = bot_heating, top_cooling
+#bot_heating.flux = 8.
+#top_cooling.flux = -8.
+packages = top_sponge_lyr
+top_sponge_lyr.tau = 1.E4
+top_sponge_lyr.width = 20.E3
 
 #<radiation>
 #dt            = 200.
@@ -113,13 +116,17 @@ metallicity = 1x
 #simple tracer
 use_tra_ic = true
 fix_bot_tra = true
-tracer.ppb  = 5.
-tracer.pre  = 6.E7
+Trabot_tau = 100.
+tracer.ppb  = 50.
+tracer.pre  = 5.E7
 
 P0          = 1.E5
 T0          = 169.
-Tmin        = 110.
-hrate       = 0.
+Tmin        = 120.
+hrate       = -0.1  #K/day cooling rate
 prad        = 2.e5
+Ttop_tau    = 100.
+Tbot_tau    = 100.
+
 init_Ttol   = 0.1
 diagnostics = div, curl, b, mean, anomaly, radflux, hydroflux
