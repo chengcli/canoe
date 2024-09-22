@@ -9,7 +9,7 @@ endmacro()
 # athena variables
 set_if_empty(NUMBER_GHOST_CELLS 3)
 
-set(MINICHEM ON)
+# set(MINICHEM ON)
 set(NCHEMISTRY 1)
 set(NVAPOR 1)
 set(NCLOUD 2)
