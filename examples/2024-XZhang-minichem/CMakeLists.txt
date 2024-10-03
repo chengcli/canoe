@@ -1,4 +1,5 @@
   setup_problem(minichem)
+  #setup_problem(conv-alichem)
 
 # 2. Copy input files to run directory
 file(GLOB inputs *.py *.inp *.yaml)
