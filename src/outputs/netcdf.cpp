@@ -360,7 +360,7 @@ void NetcdfOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) {
 
     if (ncells3 > 1) {
       for (int k = out_ks; k <= out_ke + 1; ++k)
-        data[k - out_ks] = (float)(pmb->pcoord->x1f(k));
+        data[k - out_ks] = (float)(pmb->pcoord->x3f(k));
       nc_put_var_float(ifile, ivx3f, data);
     }
 
