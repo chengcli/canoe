@@ -14,6 +14,10 @@ if (${TASK} STREQUAL "saturn_radio")
   add_subdirectory(2023-Li-saturn-vla)
 endif()
 
+if (${TASK} STREQUAL "ktable_jup")
+  add_subdirectory(2018-Li-harp)
+endif()
+
 if (${TASK} STREQUAL "straka" OR
     ${TASK} STREQUAL "robert" OR
     ${TASK} STREQUAL "bryan" OR

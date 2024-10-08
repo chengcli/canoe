@@ -27,6 +27,7 @@ class __Constants:
     kUnitConversions = {
         "km": 1e3,
         "m": 1,
+        "K": 1,
         "cm": 1e-2,
         "bar": 1e5,
         "Pa": 1,

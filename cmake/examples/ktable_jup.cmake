@@ -8,11 +8,11 @@ endmacro()
 
 # athena variables
 set_if_empty(NUMBER_GHOST_CELLS 0)
-set_if_empty(NVAPOR 2)
 
-# canoe variables
-set_if_empty(NCLOUD 4)
-set_if_empty(NTRACER 0)
+# canoe configure
+set_if_empty(NVAPOR 0)
+set_if_empty(NCLOUD 0)
+set_if_empty(NTRACER 4)
 
 # canoe configure
 set(CMAKE_INSTALL_PREFIX "$ENV{HOME}/opt/")

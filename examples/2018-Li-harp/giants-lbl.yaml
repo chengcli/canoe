@@ -1,0 +1,110 @@
+opacity-sources:
+  - name: H2-H2-CIA
+    long-name: "Hydrogen-Hydrogen collisional absorption"
+    class: XIZ-H2-H2-CIA
+    data: H2-H2-eq.xiz.txt
+    dependent-species: [vapor.dry]
+    parameters: {xHe: 0.15}
+
+  - name: H2-He-CIA
+    long-name: "Hydrogen-Helium collisional absorption"
+    class: XIZ-H2-He-CIA
+    data: H2-He-eq.xiz.txt
+    dependent-species: [vapor.dry]
+    parameters: {xHe: 0.15}
+
+  - name: CH4
+    long-name: "Methane line absorption"
+    class: Hitran
+    data: giants-lbl-{band}.nc
+    dependent-species: [tracer.CH4]
+
+  - name: C2H2
+    long-name: "Acetylene line absorption"
+    class: Hitran
+    data: giants-lbl-{band}.nc
+    dependent-species: [tracer.C2H2]
+
+  - name: C2H4
+    long-name: "Ethylene line absorption"
+    class: Hitran
+    data: giants-lbl-{band}.nc
+    dependent-species: [tracer.C2H4]
+
+  - name: C2H6
+    long-name: "Ethane line absorption"
+    class: Hitran
+    data: giants-lbl-{band}.nc
+    dependent-species: [tracer.C2H6]
+
+bands: [B1, B2, B3, B4, B5, B6, B7, B8, B9, B10]
+
+B1:
+  unit: cm-1
+  grid-type: regular
+  wavenumber-range: [10., 200.]
+  resolution: 0.01
+  opacity: [C2H2]
+
+B2:
+  unit: cm-1
+  grid-type: regular
+  wavenumber-range: [200., 400.]
+  resolution: 0.01
+  opacity: [C2H2]
+
+B3:
+  unit: cm-1
+  grid-type: regular
+  wavenumber-range: [400., 600.]
+  resolution: 0.01
+  opacity: [C2H2]
+
+B4:
+  unit: cm-1
+  grid-type: regular
+  wavenumber-range: [600., 700.]
+  resolution: 0.01
+  opacity: [C2H2, C2H6]
+
+B5:
+  unit: cm-1
+  grid-type: regular
+  wavenumber-range: [700., 860.]
+  resolution: 0.01
+  opacity: [C2H2, C2H6]
+
+B6:
+  unit: cm-1
+  grid-type: regular
+  wavenumber-range: [860., 960.]
+  resolution: 0.01
+  opacity: [C2H2, C2H6]
+
+B7:
+  unit: cm-1
+  grid-type: regular
+  wavenumber-range: [960., 1200.]
+  resolution: 0.01
+  opacity: [C2H2, C2H6]
+
+B8:
+  unit: cm-1
+  grid-type: regular
+  wavenumber-range: [1200., 1400.]
+  resolution: 0.01
+  opacity: [C2H2, C2H6]
+
+B9:
+  unit: cm-1
+  grid-type: regular
+  wavenumber-range: [1400., 1700.]
+  resolution: 0.01
+  opacity: [C2H2, C2H6]
+
+B10:
+  unit: cm-1
+  grid-type: regular
+  wavenumber-range: [1700., 2100.]
+  resolution: 0.01
+  opacity: [C2H2]
