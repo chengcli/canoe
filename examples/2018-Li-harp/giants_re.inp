@@ -1,0 +1,63 @@
+<comment>
+problem     = Generatel 1D Giant Planet radiation calculation
+
+<job>
+problem_id  = jupiter1d     # problem ID: basename of output filenames
+
+<output1>
+file_type   = hst           # History data dump
+dt          = 2.E4          # time increment between outputs
+
+<output2>
+file_type   = netcdf        # Netcdf format output
+variable    = prim          # variables to be output
+dt          = 1.E4          # time increment between outputs
+
+<output3>
+file_type   = netcdf        # Netcdf format output
+variable    = uov           # diagnostic variables
+dt          = 1.E4          # time increment
+
+<time>
+cfl_number  = 0.9
+nlim        = 1            # cycle limit
+tlim        = 2.E5
+xorder      = 5             # horizontal reconstruction order
+integrator  = rk3           # integration method
+
+<mesh>
+nx1         = 100           # Number of zones in X1-direction
+x1min       = -400.E3       # minimum value of X1
+x1max       = 100.E3        # maximum value of X1
+ix1_bc      = reflecting    # Inner-X1 boundary condition flag
+ox1_bc      = reflecting    # Outer-X1 boundary condition flag
+
+nx2         = 1             # Number of zones in X2-direction
+x2min       = -0.5          # minimum value of X2
+x2max       = 0.5           # maximum value of X2
+ix2_bc      = periodic      # Inner-X2 boundary condition flag
+ox2_bc      = periodic      # Outer-X2 boundary condition flag
+
+nx3         = 1             # Number of zones in X3-direction
+x3min       = -0.5          # minimum value of X3
+x3max       = 0.5           # maximum value of X3
+ix3_bc      = periodic      # Inner-X3 boundary condition flag
+ox3_bc      = periodic      # Outer-X3 boundary condition flag
+
+<hydro>
+gamma       = 1.42
+grav_acc1   = -24.79
+implicit_flag = 1
+
+<species>
+tracer = CH4, C2H2, C2H4, C2H6
+
+<radiation>
+dt = 40.
+radiation_config = giants-lbl.yaml
+nstr = 4
+
+<problem>
+P0          = 1.E5
+T0          = 169.
+Tmin        = 110.

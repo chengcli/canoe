@@ -4,7 +4,7 @@
 
 # 1. Compile giants_re.cpp
 
-#setup_problem(giants_re)
+setup_problem(giants_re)
 
 # 2. Copy input file to run directory
 file(GLOB inputs *.inp *.yaml *.py *.atm)

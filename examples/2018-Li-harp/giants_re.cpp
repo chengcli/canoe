@@ -53,10 +53,6 @@ void MeshBlock::UserWorkBeforeOutput(ParameterInput *pin) {
       }
 }
 
-// w, primitive hydro
-// r, primitive scalar
-// u, conserved hydro
-// s, conserved scalar
 void Forcing(MeshBlock *pmb, Real const time, Real const dt,
              AthenaArray<Real> const &w, AthenaArray<Real> const &r,
              AthenaArray<Real> const &bcc, AthenaArray<Real> &u,
@@ -78,14 +74,14 @@ void Mesh::InitUserMeshData(ParameterInput *pin) {
   P0 = pin->GetReal("problem", "P0");
   T0 = pin->GetReal("problem", "T0");
   Z0 = pin->GetOrAddReal("problem", "Z0", 0.);
-  Tmin = pin->GetReal("hydro", "min_tem");
+  Tmin = pin->GetReal("problem", "Tmin");
 
   EnrollUserExplicitSourceFunction(Forcing);
 }
 
 void MeshBlock::ProblemGenerator(ParameterInput *pin) {
   Application::Logger app("main");
-  app->Log("ProblemGenerator: jupiter_re");
+  app->Log("ProblemGenerator: giants_re");
 
   auto pthermo = Thermodynamics::GetInstance();
 
@@ -103,42 +99,30 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
   Real Rd = pthermo->GetRd();
   Real cp = gamma / (gamma - 1.) * Rd;
 
-  // index
-  auto pindex = IndexMap::GetInstance();
-  int iH2O = pindex->GetVaporId("H2O");
-  int iNH3 = pindex->GetVaporId("NH3");
-
   // set up an adiabatic atmosphere
   int max_iter = 200, iter = 0;
-  Real dlnp = pcoord->dx1f(is) / H0;
+  Real Ttol = pin->GetOrAddReal("problem", "init_Ttol", 0.01);
 
   AirParcel air(AirParcel::Type::MoleFrac);
 
   // estimate surface temperature and pressure
   Real Ps = P0 * exp(-x1min / H0);
   Real Ts = T0 * pow(Ps / P0, Rd / cp);
-  Real xH2O = pin->GetReal("problem", "qH2O.ppmv") / 1.E6;
-  Real xNH3 = pin->GetReal("problem", "qNH3.ppmv") / 1.E6;
 
   while (iter++ < max_iter) {
     // read in vapors
-    air.w[iH2O] = xH2O;
-    air.w[iNH3] = xNH3;
     air.w[IPR] = Ps;
     air.w[IDN] = Ts;
 
     // stop at just above P0
     for (int i = is; i <= ie; ++i) {
-      pthermo->Extrapolate(&air, -dlnp / 2., "dry");
+      pthermo->Extrapolate(&air, pcoord->dx1f(i), "dry", grav);
       if (air.w[IPR] < P0) break;
     }
 
-    // extrapolate down to where var is
-    pthermo->Extrapolate(&air, log(P0 / air.w[IPR]), "dry");
-
     // make up for the difference
-    Ts += T0 - air.w[IDN];
-    if (std::abs(T0 - air.w[IDN]) < 0.01) break;
+    Ts += (T0 - air.w[IDN]) * 0.8;
+    if (std::abs(T0 - air.w[IDN]) < Ttol) break;
 
     app->Log("Iteration #", iter);
     app->Log("T", air.w[IDN]);
@@ -152,50 +136,26 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
   for (int k = ks; k <= ke; ++k)
     for (int j = js; j <= je; ++j) {
       air.SetZero();
-      air.w[iH2O] = xH2O;
-      air.w[iNH3] = xNH3;
       air.w[IPR] = Ps;
       air.w[IDN] = Ts;
 
+      // half a grid to cell center
+      pthermo->Extrapolate(&air, pcoord->dx1f(is) / 2., "reversible", grav);
+
       int i = is;
       for (; i <= ie; ++i) {
-        AirParcelHelper::distribute_to_primitive(this, k, j, i, air);
-
-        pthermo->Extrapolate(&air, -dlnp, "dry");
         if (air.w[IDN] < Tmin) break;
+        AirParcelHelper::distribute_to_primitive(this, k, j, i, air);
+        pthermo->Extrapolate(&air, pcoord->dx1f(i), "dry", grav);
       }
 
       // Replace adiabatic atmosphere with isothermal atmosphere if temperature
       // is too low
-      pthermo->Extrapolate(&air, dlnp, "dry");
       for (; i <= ie; ++i) {
-        pthermo->Extrapolate(&air, -dlnp, "isothermal");
         AirParcelHelper::distribute_to_primitive(this, k, j, i, air);
+        pthermo->Extrapolate(&air, pcoord->dx1f(i), "isothermal", grav);
       }
     }
-
-  // if requested
-  // modify atmospheric stability
-  Real adlnTdlnP = pin->GetOrAddReal("problem", "adlnTdlnP", 0.);
-
-  if (adlnTdlnP != 0.) {
-    Real pmin = pin->GetOrAddReal("problem", "adlnTdlnP.pmin", 1.);
-    Real pmax = pin->GetOrAddReal("problem", "adlnTdlnP.pmax", 20.);
-
-    for (int k = ks; k <= ke; ++k)
-      for (int j = js; j <= je; ++j) {
-        int ibegin = find_pressure_level_lesser(pmax, phydro->w, k, j, is, ie);
-        int iend = find_pressure_level_lesser(pmin, phydro->w, k, j, is, ie);
-
-        auto &&air = AirParcelHelper::gather_from_primitive(this, k, j, ibegin);
-        air.ToMoleFraction();
-
-        for (int i = ibegin; i < iend; ++i) {
-          pthermo->Extrapolate(&air, -dlnp, "dry", 0., adlnTdlnP);
-          AirParcelHelper::distribute_to_primitive(this, k, j, i + 1, air);
-        }
-      }
-  }
 
   // set chemical tracers
   auto ptracer = pimpl->ptracer;

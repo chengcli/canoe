@@ -78,6 +78,13 @@ RadiationBand::RadiationBand(std::string myname, YAML::Node const &rad,
 
     if (load_opacity) {
       for (auto &ab : absorbers_) {
+        // fill placeholder with the band name
+        auto fname = ab->GetOpacityFile();
+        size_t pos = fname.find("{band}");
+        if (pos != std::string::npos) {
+          fname.replace(pos, strlen("{band}"), myname);
+        }
+        ab->SetOpacityFile(fname);
         ab->LoadOpacity(RadiationBandsFactory::GetBandId(myname));
         // Correlated-k absorbers need to modify the spectral grid
         ab->ModifySpectralGrid(pgrid_->spec);

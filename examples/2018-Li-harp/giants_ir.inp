@@ -1,5 +1,0 @@
-<species>
-tracer = CH4, C2H2, C2H4, C2H6
-
-<radiation>
-infrared_bands = giants_ir.yaml

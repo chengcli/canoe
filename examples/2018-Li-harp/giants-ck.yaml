@@ -108,3 +108,21 @@ B10:
   wavenumber-range: [1700., 2100.]
   resolution: 0.01
   opacity: [C2H2]
+
+Disort-flags:
+  ibcnd: false
+  usrtau: false
+  usrang: false
+  lamber: true
+  onlyfl: true
+  spher: false
+  intensity_correction: true
+  old_intensity_correction: false
+  general_source: false
+  output_uum: false
+  quiet: true
+  print-input: false
+  print-fluxes: false
+  print-intensity: false
+  print-transmissivity: false
+  print-phase-function: false
