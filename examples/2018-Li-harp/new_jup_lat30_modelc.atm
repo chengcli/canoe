@@ -1,4 +1,5 @@
-# Julie Moses' Jupiter Model-C
+# From Moses et al., 2005, JGR, Jupiter Model-C
+# HGT in km, PRE in mbar, mixing ratios are in ppmv
 
    IDX           HGT           PRE           TEM            He            H2           CH4          C2H2          C2H4          C2H6           H2O           NH3           PH3
      1    -315.80806       6289.62       294.272        136001     861993.25       1809.89   5.17186e-07   4.95379e-08    0.00219952   3.89017e-08       195.261           0.6
