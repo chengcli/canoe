@@ -294,15 +294,9 @@ TaskStatus ImplicitHydroTasks::UpdateAllConserved(MeshBlock *pmb, int stage) {
   int ie = pmb->ie, je = pmb->je, ke = pmb->ke;
 
   auto pthermo = Thermodynamics::GetInstance();
-  auto pmicro = pmb->pimpl->pmicro;
 
   auto &u = pmb->phydro->u;
-  auto &s = pmb->pscalars->s;
   auto &m = pmb->pcoord->m;
-
-  pmicro->SetConserved(u, s, m);
-  pmicro->Evolve(pmb->pmy_mesh->time, pmb->pmy_mesh->dt);
-  pmicro->GetConserved(u, s, m);
 
   for (int k = ks; k <= ke; k++)
     for (int j = js; j <= je; j++)
@@ -314,6 +308,7 @@ TaskStatus ImplicitHydroTasks::UpdateAllConserved(MeshBlock *pmb, int stage) {
         std::cout << std::endl;*/
 
         pthermo->SetConserved(u.at(k, j, i), m.at(k, j, i));
+        // pthermo->Evolve(pmb->pmy_mesh->time, pmb->pmy_mesh->dt);
         pthermo->EquilibrateUV();
         pthermo->GetConserved(u.at(k, j, i), m.at(k, j, i));
 
