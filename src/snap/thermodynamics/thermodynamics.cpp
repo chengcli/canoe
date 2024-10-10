@@ -12,6 +12,7 @@
 
 // cantera
 #include <cantera/kinetics.h>
+#include <cantera/kinetics/BulkKinetics.h>
 #include <cantera/kinetics/Condensation.h>
 #include <cantera/thermo.h>
 
@@ -80,19 +81,33 @@ void Thermodynamics::UpdateThermoProperties() {
 Thermodynamics* Thermodynamics::fromYAMLInput(std::string const& fname) {
   mythermo_ = new Thermodynamics();
 
-  auto thermo = Cantera::newThermo(fname, "gas");
+  auto atm = Cantera::newThermo(fname, "atm");
 
-  if (thermo->nSpecies() != 1 + NVAPOR + NCLOUD) {
+  if (atm->nSpecies() != 1 + NVAPOR + NCLOUD + NPRECIP) {
     throw RuntimeError("Thermodynamics",
                        "Number of species does not match the input file");
   }
 
   auto& kinetics = mythermo_->kinetics_;
-  kinetics = std::static_pointer_cast<Cantera::Condensation>(
-      Cantera::newKinetics({thermo}, fname));
+  kinetics = std::static_pointer_cast<Cantera::BulkKinetics>(
+      Cantera::newKinetics({atm}, fname));
 
   // finalize setup the thermo manager for clouds
-  thermo->updateFromKinetics(*kinetics);
+  atm->updateFromKinetics(*kinetics);
+
+  auto cloud = Cantera::newThermo(fname, "vapor-cloud");
+
+  if (atm->nSpecies() != 1 + NVAPOR + NCLOUD + NPRECIP) {
+    throw RuntimeError("Thermodynamics",
+                       "Number of species does not match the input file");
+  }
+
+  auto& microphy = mythermo_->microphy_;
+  microphy = std::static_pointer_cast<Cantera::Condensation>(
+      Cantera::newKinetics({cloud}, fname));
+
+  // finalize setup the thermo manager for clouds
+  cloud->updateFromKinetics(*kinetics);
 
   // update temperature dependent thermodynamic properties
   mythermo_->UpdateThermoProperties();
@@ -207,7 +222,7 @@ void Thermodynamics::Extrapolate_inplace(Real dzORdlnp, std::string method,
 
 Thermodynamics* Thermodynamics::mythermo_ = nullptr;
 
-std::shared_ptr<Cantera::Condensation> get_kinetics_object(
+std::shared_ptr<Cantera::BulkKinetics> get_kinetics_object(
     Thermodynamics const* pthermo) {
   return pthermo->kinetics_;
 }

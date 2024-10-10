@@ -28,6 +28,7 @@ class ParameterInput;
 namespace Cantera {
 class ThermoPhase;
 class Condensation;
+class BulkKinetics;
 class Kinetics;
 }  // namespace Cantera
 
@@ -37,7 +38,7 @@ class Kinetics;
 // NVAPOR+1..NVAPOR+NCLOUD: clouds
 
 class Thermodynamics {
-  friend std::shared_ptr<Cantera::Condensation> get_kinetics_object(
+  friend std::shared_ptr<Cantera::BulkKinetics> get_kinetics_object(
       Thermodynamics const *pthermo);
 
  protected:
@@ -47,7 +48,7 @@ class Thermodynamics {
   static Thermodynamics *fromYAMLInput(std::string const &fname);
 
  public:
-  enum { Size = 1 + NVAPOR + NCLOUD };
+  enum { Size = 1 + NVAPOR + NCLOUD + NPRECIP };
 
   //! thermodynamics input key in the input file [thermodynamics_config]
   static const std::string input_key;
@@ -232,7 +233,8 @@ class Thermodynamics {
                         Real adlnTdlnP) const;
 
  protected:
-  std::shared_ptr<Cantera::Condensation> kinetics_;
+  std::shared_ptr<Cantera::BulkKinetics> kinetics_;
+  std::shared_ptr<Cantera::Condensation> microphy_;
 
   //! Gas constant of dry air in [J/(kg K)]
   Real Rd_;
