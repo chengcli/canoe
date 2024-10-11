@@ -6,8 +6,8 @@ set(patch_command
     ${CMAKE_CURRENT_SOURCE_DIR}/patches/21.new_blockdt.patch
     ${CMAKE_CURRENT_SOURCE_DIR}/patches/23.meshblock.patch
     ${CMAKE_CURRENT_SOURCE_DIR}/patches/24.time_integrator.patch
-    ${CMAKE_CURRENT_SOURCE_DIR}/patches/25.constant_acc.patch
-    ${CMAKE_CURRENT_SOURCE_DIR}/patches/26.scalars_flux.patch
+    # ${CMAKE_CURRENT_SOURCE_DIR}/patches/25.constant_acc.patch
+    # ${CMAKE_CURRENT_SOURCE_DIR}/patches/26.scalars_flux.patch
     ${CMAKE_CURRENT_SOURCE_DIR}/patches/26.adiabatic_hydro.patch
     ${CMAKE_CURRENT_SOURCE_DIR}/patches/27.coordinates.patch
     ${CMAKE_CURRENT_SOURCE_DIR}/patches/29.mesh.patch
@@ -19,6 +19,5 @@ set(patch_command
 
 set(PACKAGE_NAME athenapp)
 set(REPO_URL "https://github.com/chengcli/athenapp")
-# set(REPO_TAG "12b11a6004827ba4732c248c021be55b2906ab82")
-set(REPO_TAG "1750ec93a0969a9d572d8e0d6a094583b7007bb0")
+set(REPO_TAG "6a612f4039ac08eacf92ce1644657fd0f340834f")
 add_package(${PACKAGE_NAME} ${REPO_URL} ${REPO_TAG} "${patch_command}" ON)
