@@ -47,7 +47,7 @@ class Thermodynamics {
   static Thermodynamics *fromYAMLInput(std::string const &fname);
 
  public:
-  enum { Size = 1 + NVAPOR + NCLOUD };
+  enum { Size = 1 + NVAPOR + NCLOUD + NPRECIP };
 
   //! thermodynamics input key in the input file [thermodynamics_config]
   static const std::string input_key;

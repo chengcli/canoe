@@ -5,7 +5,7 @@ list(APPEND CMAKE_PREFIX_PATH "/usr/include/mpich-x84_64" "/usr/lib64/mpich/")
 # populate the default values
 set_if_empty(NVAPOR 0)
 set_if_empty(NCLOUD 0)
-set_if_empty(NMASS 0)
+set_if_empty(NPRECIP 0)
 set_if_empty(NPHASE_LEGACY 3)
 set_if_empty(NCHEMISTRY 0)
 set_if_empty(NTRACER 0)

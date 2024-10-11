@@ -80,19 +80,18 @@ void Thermodynamics::UpdateThermoProperties() {
 Thermodynamics* Thermodynamics::fromYAMLInput(std::string const& fname) {
   mythermo_ = new Thermodynamics();
 
-  auto thermo = Cantera::newThermo(fname, "gas");
-
-  if (thermo->nSpecies() != 1 + NVAPOR + NCLOUD) {
+  auto atm = Cantera::newThermo(fname, "atm");
+  if (atm->nSpecies() != 1 + NVAPOR + NCLOUD + NPRECIP) {
     throw RuntimeError("Thermodynamics",
                        "Number of species does not match the input file");
   }
 
   auto& kinetics = mythermo_->kinetics_;
   kinetics = std::static_pointer_cast<Cantera::Condensation>(
-      Cantera::newKinetics({thermo}, fname));
+      Cantera::newKinetics({atm}, fname));
 
   // finalize setup the thermo manager for clouds
-  thermo->updateFromKinetics(*kinetics);
+  atm->updateFromKinetics(*kinetics);
 
   // update temperature dependent thermodynamic properties
   mythermo_->UpdateThermoProperties();

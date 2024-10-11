@@ -61,9 +61,6 @@ class MeshBlock::Impl {
   std::vector<std::shared_ptr<Diagnostics>> all_diags;
   std::vector<std::shared_ptr<Forcing>> all_forcings;
 
-  // scheduler
-  std::shared_ptr<Scheduler> scheduler;
-
  public:  // constructor and destructor
   Impl(MeshBlock *pmb, ParameterInput *pin);
   ~Impl();

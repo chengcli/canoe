@@ -282,7 +282,7 @@ TaskStatus ImplicitHydroTasks::ImplicitCorrection(MeshBlock *pmb, int stage) {
 
 TaskStatus ImplicitHydroTasks::UpdateAllConserved(MeshBlock *pmb, int stage) {
   if (stage <= nstages) {
-    pmb->pimpl->pmicro->SetVsedFromConserved(pmb->phydro);
+    // pmb->pimpl->pmicro->SetVsedFromConserved(pmb->phydro);
   } else {
     return TaskStatus::fail;
   }
@@ -294,22 +294,13 @@ TaskStatus ImplicitHydroTasks::UpdateAllConserved(MeshBlock *pmb, int stage) {
   int ie = pmb->ie, je = pmb->je, ke = pmb->ke;
 
   auto pthermo = Thermodynamics::GetInstance();
-  auto pmicro = pmb->pimpl->pmicro;
 
   auto &u = pmb->phydro->u;
-  auto &w = pmb->phydro->w;
-  auto &s = pmb->pscalars->s;
   auto &m = pmb->pcoord->m;
 
   for (int k = ks; k <= ke; k++)
     for (int j = js; j <= je; j++)
       for (int i = is; i <= ie; i++) {
-        // pmicro->AddFrictionalHeating(air_column);
-
-        // pmicro->SetConserved(u.at(k, j, i), s.at(k, j, i));
-        // pmicro->Evolve(pmb->pmy_mesh->time, pmb->pmy_mesh->dt);
-        // pmicro->GetConserved(u.at(k, j, i), s.at(k, j, i));
-
         /*std::cout << "before: " << std::endl;
         for (int n = 0; n < NHYDRO; n++) {
           std::cout << u(n, k, j, i) << ", ";
@@ -317,6 +308,7 @@ TaskStatus ImplicitHydroTasks::UpdateAllConserved(MeshBlock *pmb, int stage) {
         std::cout << std::endl;*/
 
         pthermo->SetConserved(u.at(k, j, i), m.at(k, j, i));
+        // pthermo->Evolve(pmb->pmy_mesh->time, pmb->pmy_mesh->dt);
         pthermo->EquilibrateUV();
         pthermo->GetConserved(u.at(k, j, i), m.at(k, j, i));
 
