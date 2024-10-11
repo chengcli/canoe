@@ -23,7 +23,7 @@ dt          = 100.          # time increment
 
 <time>
 cfl_number  = 0.9           # The Courant, Friedrichs, & Lewy (CFL) Number
-nlim        = -1            # cycle limit
+nlim        = 1            # cycle limit
 tlim        = 1000          # time limit
 xorder      = 5             # horizontal reconstruction order
 integrator  = rk3           # integration method
@@ -47,17 +47,17 @@ x3max       = 0.5           # maximum value of X3
 ix3_bc      = periodic      # inner-X3 boundary flag
 ox3_bc      = periodic      # outer-X3 boundary flag
 
-<meshblock>
-nx1         = 200
-nx2         = 100
-nx3         = 1
+#<meshblock>
+#nx1         = 200
+#nx2         = 100
+#nx3         = 1
 
 <hydro>
 grav_acc1   = -9.81
 gamma       = 1.4           # gamma = C_p/C_v
 
 <problem>
-thermodynamics_config = earth-moist.yaml
+thermodynamics_config = earth-precip.yaml
 
 dT    = 2.0
 xc    = 10.E3

@@ -3,14 +3,7 @@ phases:
   - name: atm
     thermo: ideal-moist
     species: [dry, H2O, H2O(l), H2O(p)]
-    kinetics: bulk
-    reactions: [microphysics]
-
-  - name: vapor-cloud
-    thermo: ideal-moist
-    species: [dry, H2O, H2O(l)]
     kinetics: condensation
-    reactions: [equilibrium]
 
 species:
   - name: dry
@@ -49,18 +42,13 @@ species:
       model: constant-volume
       molar-volume: 0.0 cm^3/mol
 
-equilibrium:
+reactions:
   - equation: H2O <=> H2O(l)
     type: nucleation
     rate-constant: {formula: ideal, T3: 273.16, P3: 611.7, beta: 24.845, delta: 4.986, minT: 200.}
 
-microphysics:
   - equation: H2O(l) => H2O(p)
-    rate-constant: {A: 0.01}
-
-  - equation: H2O(l) + H2O(p) -> 2 H2O(p)
-    rate-constant: {A: 0.01}
+    rate-constant: {A: 0.01, b: 0}
 
   - equation: H2O(p) => H2O
-    type: evaporation
-    rate-constant: {A: 0.01}
+    rate-constant: {A: 0.01, b: 0}

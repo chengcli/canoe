@@ -10,25 +10,23 @@
 #include "thermodynamics.hpp"
 
 void Thermodynamics::EquilibrateUV() const {
-  microphy_->setQuantityConcentration();
-
-  enum { Size = 1 + NVAPOR + NCLOUD };
+  kinetics_->setQuantityConcentration();
 
   Eigen::VectorXd rates(Size);
   Eigen::VectorXd conc(Size);
   Eigen::VectorXd intEng(Size);
   Eigen::VectorXd cv(Size);
 
-  auto& thermo = microphy_->thermo();
+  auto& thermo = kinetics_->thermo();
 
   for (int iter = 0; iter < 3; ++iter) {
     // std::cout << "#############" << std::endl;
     // std::cout << "Iteration " << iter << std::endl;
 
-    microphy_->getNetProductionRates(rates.data());
+    kinetics_->getNetProductionRates(rates.data());
 
     // get concentration
-    microphy_->getActivityConcentrations(conc.data());
+    kinetics_->getActivityConcentrations(conc.data());
     thermo.getIntEnergy_RT(intEng.data());
     thermo.getCv_R(cv.data());
 

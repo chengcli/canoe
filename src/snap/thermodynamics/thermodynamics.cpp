@@ -12,7 +12,6 @@
 
 // cantera
 #include <cantera/kinetics.h>
-#include <cantera/kinetics/BulkKinetics.h>
 #include <cantera/kinetics/Condensation.h>
 #include <cantera/thermo.h>
 
@@ -73,7 +72,7 @@ void Thermodynamics::UpdateThermoProperties() {
     cv_ratio_[n] = gammad_ * cp_ratio_[n] + (1. - gammad_) * inv_mu_ratio_[n];
   }
 
-  for (int n = 1 + NVAPOR; n < Size; ++n) {
+  for (int n = 1 + NVAPOR; n < cv_ratio_.size(); ++n) {
     cv_ratio_[n] = gammad_ * cp_ratio_[n];
   }
 }
@@ -82,32 +81,28 @@ Thermodynamics* Thermodynamics::fromYAMLInput(std::string const& fname) {
   mythermo_ = new Thermodynamics();
 
   auto atm = Cantera::newThermo(fname, "atm");
-
   if (atm->nSpecies() != 1 + NVAPOR + NCLOUD + NPRECIP) {
     throw RuntimeError("Thermodynamics",
                        "Number of species does not match the input file");
   }
+  // atm->setNDim(2);
+
+  /*auto precip = Cantera::newThermo(fname, "precip");
+  if (precip->nSpecies() != NPRECIP) {
+    throw RuntimeError("Thermodynamics",
+                       "Number of species does not match the input file");
+  }
+
+  std::cout << "atm dim = " << atm->nDim() << std::endl;
+  std::cout << "precip dim = " << precip->nDim() << std::endl;*/
 
   auto& kinetics = mythermo_->kinetics_;
-  kinetics = std::static_pointer_cast<Cantera::BulkKinetics>(
+  kinetics = std::static_pointer_cast<Cantera::Condensation>(
       Cantera::newKinetics({atm}, fname));
 
   // finalize setup the thermo manager for clouds
   atm->updateFromKinetics(*kinetics);
-
-  auto cloud = Cantera::newThermo(fname, "vapor-cloud");
-
-  if (atm->nSpecies() != 1 + NVAPOR + NCLOUD + NPRECIP) {
-    throw RuntimeError("Thermodynamics",
-                       "Number of species does not match the input file");
-  }
-
-  auto& microphy = mythermo_->microphy_;
-  microphy = std::static_pointer_cast<Cantera::Condensation>(
-      Cantera::newKinetics({cloud}, fname));
-
-  // finalize setup the thermo manager for clouds
-  cloud->updateFromKinetics(*kinetics);
+  // precip->updateFromKinetics(*kinetics);
 
   // update temperature dependent thermodynamic properties
   mythermo_->UpdateThermoProperties();
@@ -222,7 +217,7 @@ void Thermodynamics::Extrapolate_inplace(Real dzORdlnp, std::string method,
 
 Thermodynamics* Thermodynamics::mythermo_ = nullptr;
 
-std::shared_ptr<Cantera::BulkKinetics> get_kinetics_object(
+std::shared_ptr<Cantera::Condensation> get_kinetics_object(
     Thermodynamics const* pthermo) {
   return pthermo->kinetics_;
 }

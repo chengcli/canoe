@@ -28,7 +28,6 @@ class ParameterInput;
 namespace Cantera {
 class ThermoPhase;
 class Condensation;
-class BulkKinetics;
 class Kinetics;
 }  // namespace Cantera
 
@@ -38,7 +37,7 @@ class Kinetics;
 // NVAPOR+1..NVAPOR+NCLOUD: clouds
 
 class Thermodynamics {
-  friend std::shared_ptr<Cantera::BulkKinetics> get_kinetics_object(
+  friend std::shared_ptr<Cantera::Condensation> get_kinetics_object(
       Thermodynamics const *pthermo);
 
  protected:
@@ -191,7 +190,7 @@ class Thermodynamics {
       feps += u[n] / rho * (inv_mu_ratio_[n] - 1.);
     }
 
-    for (int n = 1 + NVAPOR; n < Size; ++n) {
+    for (int n = 1 + NVAPOR; n <= NVAPOR + NCLOUD + NPRECIP; ++n) {
       fsig += u[n] / rho * (cv_ratio_[n] - 1.);
       feps -= u[n] / rho;
     }
@@ -233,8 +232,7 @@ class Thermodynamics {
                         Real adlnTdlnP) const;
 
  protected:
-  std::shared_ptr<Cantera::BulkKinetics> kinetics_;
-  std::shared_ptr<Cantera::Condensation> microphy_;
+  std::shared_ptr<Cantera::Condensation> kinetics_;
 
   //! Gas constant of dry air in [J/(kg K)]
   Real Rd_;

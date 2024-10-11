@@ -1,6 +1,6 @@
 
 phases:
-  - name: gas
+  - name: atm
     thermo: ideal-moist
     species: [dry, H2O, H2O(l)]
     kinetics: condensation

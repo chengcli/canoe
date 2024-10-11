@@ -7,14 +7,12 @@
 #include "thermodynamics.hpp"
 
 void Thermodynamics::EquilibrateTP(Real temp, Real pres) const {
-  microphy_->setQuantityMoleFraction();
-
-  enum { Size = 1 + NVAPOR + NCLOUD };
+  kinetics_->setQuantityMoleFraction();
 
   std::array<Real, Size> rates;
   std::array<Real, Size> xfrac;
 
-  auto& thermo = microphy_->thermo();
+  auto& thermo = kinetics_->thermo();
 
   thermo.setTemperature(temp);
   thermo.setPressure(pres);
@@ -22,7 +20,7 @@ void Thermodynamics::EquilibrateTP(Real temp, Real pres) const {
   int iter = 0, max_iter = 3;
   while (iter++ < max_iter) {
     // get mole fraction
-    microphy_->getNetProductionRates(rates.data());
+    kinetics_->getNetProductionRates(rates.data());
 
     Real max_abs_rate = 0.;
     for (size_t i = 1; i < Size; ++i) {
@@ -32,7 +30,7 @@ void Thermodynamics::EquilibrateTP(Real temp, Real pres) const {
     }
     if (max_abs_rate < 1.E-8) break;
 
-    microphy_->getActivityConcentrations(xfrac.data());
+    kinetics_->getActivityConcentrations(xfrac.data());
 
     /*std::cout << "iter: " << iter << std::endl;
     for (size_t i = 0; i < Size; ++i) {
