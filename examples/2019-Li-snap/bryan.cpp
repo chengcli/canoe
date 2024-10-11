@@ -156,6 +156,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
 
           //   if (err) throw RuntimeError("pgen", "TVSolver doesn't converge");
 
+          pthermo->SetPrimitive(w.at(k, j, i));
           pthermo->EquilibrateTP(temp, pres);
           pthermo->GetPrimitive(w.at(k, j, i));
         }
