@@ -72,7 +72,7 @@ void Thermodynamics::UpdateThermoProperties() {
     cv_ratio_[n] = gammad_ * cp_ratio_[n] + (1. - gammad_) * inv_mu_ratio_[n];
   }
 
-  for (int n = 1 + NVAPOR; n < cv_ratio_.size(); ++n) {
+  for (int n = 1 + NVAPOR; n < Size; ++n) {
     cv_ratio_[n] = gammad_ * cp_ratio_[n];
   }
 }
@@ -85,16 +85,6 @@ Thermodynamics* Thermodynamics::fromYAMLInput(std::string const& fname) {
     throw RuntimeError("Thermodynamics",
                        "Number of species does not match the input file");
   }
-  // atm->setNDim(2);
-
-  /*auto precip = Cantera::newThermo(fname, "precip");
-  if (precip->nSpecies() != NPRECIP) {
-    throw RuntimeError("Thermodynamics",
-                       "Number of species does not match the input file");
-  }
-
-  std::cout << "atm dim = " << atm->nDim() << std::endl;
-  std::cout << "precip dim = " << precip->nDim() << std::endl;*/
 
   auto& kinetics = mythermo_->kinetics_;
   kinetics = std::static_pointer_cast<Cantera::Condensation>(
@@ -102,7 +92,6 @@ Thermodynamics* Thermodynamics::fromYAMLInput(std::string const& fname) {
 
   // finalize setup the thermo manager for clouds
   atm->updateFromKinetics(*kinetics);
-  // precip->updateFromKinetics(*kinetics);
 
   // update temperature dependent thermodynamic properties
   mythermo_->UpdateThermoProperties();

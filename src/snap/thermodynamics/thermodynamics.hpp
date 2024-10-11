@@ -190,7 +190,7 @@ class Thermodynamics {
       feps += u[n] / rho * (inv_mu_ratio_[n] - 1.);
     }
 
-    for (int n = 1 + NVAPOR; n <= NVAPOR + NCLOUD + NPRECIP; ++n) {
+    for (int n = 1 + NVAPOR; n < Size; ++n) {
       fsig += u[n] / rho * (cv_ratio_[n] - 1.);
       feps -= u[n] / rho;
     }

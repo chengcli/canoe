@@ -4,7 +4,6 @@
 
 // cantera
 #include <cantera/kinetics.h>
-#include <cantera/kinetics/BulkKinetics.h>
 #include <cantera/kinetics/Condensation.h>
 #include <cantera/thermo.h>
 
