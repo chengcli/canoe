@@ -226,8 +226,8 @@ void RadiationBand::RTSolverDisort::Prepare(MeshBlock const *pmb, int k,
 
   // set the surface temperature from the user input variables
   // FIXME(cli)
-  //AthenaArray<Real> &ts = pmb->ruser_meshblock_data[1];
-  //ds_.bc.btemp = ts(j);
+  // AthenaArray<Real> &ts = pmb->ruser_meshblock_data[1];
+  // ds_.bc.btemp = ts(j);
 }
 
 void RadiationBand::RTSolverDisort::CalBandFlux(MeshBlock const *pmb, int k,
@@ -328,6 +328,28 @@ void RadiationBand::RTSolverDisort::addDisortFlux(Coordinates const *pcoord,
     bflxdn_iu = bflxdn(k, j, i);
     bflxdn(k, j, i) = (bflxdn(k, j, i + 1) * farea_(i + 1) - volh) / farea_(i);
   }
+
+  /*
+  //xiz add div flux calculation
+    auto &tau = pmy_band_->btau;
+    Real vf = 0.657;
+    for (int i = iu-2; i >= il; --i) {
+            Real cc1 = bflxup(k, j, i)-bflxdn(k, j, i);
+            Real cc2 = bflxup(k, j, i+1)-bflxdn(k, j, i+1);
+            Real fdiv = cc2 - cc1;
+            Real vdtau = -std::log(1.-fdiv/vf);
+            vf -= fdiv;
+            if (vf < 0.0) vf = 1.e10;
+
+            std::cout << "i = " << i <<"  tau= " <<(tau(k,j,i+1)+tau(k,j,i))/2.
+  <<" bflxdiv = " << fdiv <<"  dtau/dz= " << vdtau/pcoord->dx1f(i) << std::endl;
+            //std::cout << "i = " << i <<"  tau= "
+  <<(tau(k,j,i+1)+tau(k,j,i))/2. <<" bflxdiv = " << fdiv <<" vdtau = " << vdtau
+  << std::endl;
+    }
+            std::cout << "top up flux = " << bflxup(k, j, iu-1) << " dn flux = "
+  << bflxdn(k, j, iu-1)<< std::endl;
+  */
 }
 
 void RadiationBand::RTSolverDisort::CalBandRadiance(MeshBlock const *pmb, int k,
