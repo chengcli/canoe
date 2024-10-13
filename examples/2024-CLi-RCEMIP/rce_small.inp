@@ -15,80 +15,62 @@ dt          = 2.E4          # time increment between outputs
 <output2>
 file_type   = pnetcdf        # Netcdf format output
 variable    = prim          # variables to be output
-dt          = 1.E4          # time increment between outputs
+dt          = 3600          # time increment between outputs
 
 <output3>
 file_type   = pnetcdf        # Netcdf format output
 variable    = uov           # diagnostic variables
-dt          = 1.E4          # time increment
+dt          = 3600          # time increment
 
-<output3>
+<output4>
 file_type   = pnetcdf        # Netcdf format output
 variable    = diag           # diagnostic variables
-dt          = 1.E4          # time increment
+dt          = 3600          # time increment
 
 <time>
 cfl_number  = 0.9
 nlim        = -1            # cycle limit
-tlim        = 100.E5
+tlim        = 10.E5
 xorder      = 5             # horizontal reconstruction order
 integrator  = rk3           # integration method
 
 <mesh>
-nx1         = 80          # Number of zones in X1-direction
+nx1         = 40          # Number of zones in X1-direction
 x1min       = 0.E3     # minimum value of X1
 x1max       = 34.E3       # maximum value of X1
 ix1_bc      = reflecting  # Inner-X1 boundary condition flag
 ox1_bc      = reflecting  # Outer-X1 boundary condition flag
 
-nx2         = 100         # Number of zones in X2-direction
+nx2         = 60         # Number of zones in X2-direction
 x2min       = 0.          # minimum value of X2
 x2max       = 100.E3      # maximum value of X2
 ix2_bc      = periodic    # Inner-X2 boundary condition flag
 ox2_bc      = periodic    # Outer-X2 boundary condition flag
 
-nx3         = 100         # Number of zones in X3-direction
+nx3         = 60         # Number of zones in X3-direction
 x3min       = 0.          # minimum value of X3
 x3max       = 100.E3      # maximum value of X3
 ix3_bc      = periodic    # Inner-X3 boundary condition flag
 ox3_bc      = periodic    # Outer-X3 boundary condition flag
 
 <meshblock>
-nx1         = 80
-nx2         = 50
-nx3         = 50
+nx1         = 40
+nx2         = 15
+nx3         = 15
 
 <hydro>
 gamma       = 1.42
 grav_acc1   = -9.79764
 implicit_flag = 1
 
-<species>
-vapor = H2O
-cloud = H2O(c), H2O(p)
-
-<chemistry>
-microphysics_config = rcemip.yaml
-Nc = 1.e8
-Ni = 1.e5
-
-<thermodynamics>
-Rd          = 287.04   # mu = 2.3175 g/mol
-
-eps1        = 8.18    8.18    8.18
-beta1       = 0.      24.845  24.845
-rcp1        = 0.15    0.33    0.33
-Ttriple1    = 273.16
-Ptriple1    = 611.7
-
-sa.relax    = 1.0
-sa.max_iter = 4
-sa.ftol     = 1.e-2
-
-#<forcing>
-#packages = fix_bot_temp
+<forcing>
+packages = relax_bot_temp
+relax_bot_temp.tem = 295.
+relax_bot_temp.tau = 10.
 
 <problem>
+thermodynamics_config = rcemip.yaml
+
 radius      = 6471.e3
 xCO2        = 348.e-6
 xCH4        = 1650.e-12
@@ -103,5 +85,5 @@ q0          = 12.e-3
 
 P0          = 1.0148e5
 T0          = 295.
-gamma       = 0.0067
-diagnostics = div, curl, b, mean, div_h, tempa, presa, hydroflux
+gamma_tv    = 0.0067
+diagnostics = div, curl, b

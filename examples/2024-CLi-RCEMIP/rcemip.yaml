@@ -48,8 +48,8 @@ reactions:
     rate-constant: {formula: ideal, T3: 273.16, P3: 611.7, beta: 24.845, delta: 4.986, minT: 200.}
 
   - equation: H2O(l) => H2O(p)
-    rate-constant: {A: 0.01, b: 0}
+    rate-constant: {A: 0.000, b: 0}
 
   - equation: H2O(p) => H2O
     type: evaporation
-    rate-constant: {A: 0.1, b: 0}
+    rate-constant: {A: 0.00, b: 0}
