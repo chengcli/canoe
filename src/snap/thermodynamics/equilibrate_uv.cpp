@@ -9,8 +9,8 @@
 // snap
 #include "thermodynamics.hpp"
 
-void Thermodynamics::EquilibrateUV() const {
-  kinetics_->setQuantityConcentration();
+void Thermodynamics::EquilibrateUV(Real dt) const {
+  kinetics_->setQuantityConcentration(dt);
 
   Eigen::VectorXd rates(Size);
   Eigen::VectorXd conc(Size);
@@ -26,7 +26,7 @@ void Thermodynamics::EquilibrateUV() const {
     kinetics_->getNetProductionRates(rates.data());
 
     // get concentration
-    kinetics_->getActivityConcentrations(conc.data());
+    thermo.getConcentrations(conc.data());
     thermo.getIntEnergy_RT(intEng.data());
     thermo.getCv_R(cv.data());
 

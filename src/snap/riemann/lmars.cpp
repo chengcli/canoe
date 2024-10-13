@@ -18,9 +18,6 @@
 // snap
 #include <snap/thermodynamics/thermodynamics.hpp>
 
-// microphysics
-#include <microphysics/microphysics.hpp>
-
 void Hydro::RiemannSolver(int const k, int const j, int const il, int const iu,
                           int const ivx, AthenaArray<Real> &wl,
                           AthenaArray<Real> &wr, AthenaArray<Real> &flx,
@@ -30,7 +27,6 @@ void Hydro::RiemannSolver(int const k, int const j, int const il, int const iu,
   int dir = ivx - IVX;
 
   auto pthermo = Thermodynamics::GetInstance();
-  auto pmicro = pmy_block->pimpl->pmicro;
   MeshBlock *pmb = pmy_block;
 
   Real rhobar, pbar, cbar, ubar, hl, hr;
@@ -96,13 +92,22 @@ void Hydro::RiemannSolver(int const k, int const j, int const il, int const iu,
     // the "total" density To get the denisty of the dry species, the "dry
     // mixing ratio" (rdl/rdr) is multiplied
     // FIXME: remove this?
-    /*for (int n = 0; n < NMASS; ++n) {
-      Real vfld = ubar + pmicro->vsedf[dir](n, k, j, i);
-      if (vfld > 0.) {
-        pmicro->mass_flux[dir](n, k, j, i) = vfld * wli[IDN] * rdl;
-      } else {
-        pmicro->mass_flux[dir](n, k, j, i) = vfld * wri[IDN] * rdr;
+    if (ivx == IVX) {
+      if (i == iu) return;
+      Real vsed_[NHYDRO];
+      for (int n = 0; n <= NVAPOR + NCLOUD; ++n) vsed_[n] = 0.;
+      for (int n = 1 + NVAPOR + NCLOUD; n <= NVAPOR + NCLOUD + NPRECIP; ++n) {
+        vsed_[n] = -10.;
       }
-    }*/
+
+      for (int n = 1 + NVAPOR; n <= NVAPOR + NCLOUD + NPRECIP; ++n) {
+        Real rho = wri[IDN] * wri[n];
+        flx(n, k, j, i) += vsed_[n] * rho;
+        flx(ivx, k, j, i) += vsed_[n] * rho * wri[ivx];
+        flx(ivy, k, j, i) += vsed_[n] * rho * wri[ivy];
+        flx(ivz, k, j, i) += vsed_[n] * rho * wri[ivz];
+        flx(IEN, k, j, i) += vsed_[n] * rho * hr;
+      }
+    }
   }
 }

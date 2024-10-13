@@ -51,4 +51,5 @@ reactions:
     rate-constant: {A: 0.01, b: 0}
 
   - equation: H2O(p) => H2O
-    rate-constant: {A: 0.01, b: 0}
+    type: evaporation
+    rate-constant: {A: 0.1, b: 0}
