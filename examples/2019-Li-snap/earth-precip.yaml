@@ -51,4 +51,5 @@ reactions:
     rate-constant: {A: 0.01, b: 0}
 
   - equation: H2O(p) => H2O
-    rate-constant: {A: 0.01, b: 0}
+    type: evaporation
+    rate-constant: {formula: ideal, T3: 273.16, P3: 611.7, beta: 24.845, delta: 4.986, minT: 200., A: 0.01, b: 0}
