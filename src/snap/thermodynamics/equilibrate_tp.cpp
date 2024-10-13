@@ -30,7 +30,7 @@ void Thermodynamics::EquilibrateTP(Real temp, Real pres) const {
     }
     if (max_abs_rate < 1.E-8) break;
 
-    kinetics_->getActivityConcentrations(xfrac.data());
+    thermo.getMoleFractions(xfrac.data());
 
     /*std::cout << "iter: " << iter << std::endl;
     for (size_t i = 0; i < Size; ++i) {
