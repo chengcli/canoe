@@ -57,7 +57,7 @@ grav_acc1   = -9.81
 gamma       = 1.4           # gamma = C_p/C_v
 
 <problem>
-thermodynamics_config = earth-precip.yaml
+thermodynamics_config = earth-moist.yaml
 
 dT    = 2.0
 xc    = 10.E3
