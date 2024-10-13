@@ -205,15 +205,4 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
         pthermo->Extrapolate(&air, pcoord->dx1f(i), "dry", grav, 1.e-3);
       }
     }
-/*
-  for (int i = ie - 1; i >= is; --i) {
-    std::cout << "i = " << i << " pres = "
-              << (phydro->u(IPR, ks, js, i + 1) + phydro->u(IPR, ks, js, i)) /
-                     2.
-              << " dens = "
-              << (phydro->u(IDN, ks, js, i + 1) + phydro->u(IDN, ks, js, i)) /
-                     2.
-              << std::endl;
-  }
-*/
 }
