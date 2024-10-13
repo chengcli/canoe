@@ -100,7 +100,7 @@ class Thermodynamics {
   void EquilibrateTP(Real temp, Real pres) const;
 
   //! Thermodnamic equilibrium at current UV
-  void EquilibrateUV() const;
+  void EquilibrateUV(Real dt = 0.) const;
 
   template <typename T>
   void SetMassFractions(StrideIterator<T *> w) const;
