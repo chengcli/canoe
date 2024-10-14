@@ -42,6 +42,7 @@ void RadiationBand::packSpectralProperties() {
   int nlayers = GetNumLayers();
   int npmom = GetNumPhaseMoments();
 
+  pexv->send_buffer[1].resize(pgrid_->spec.size() * nlayers * (npmom + 3));
   auto buf = pexv->send_buffer[1].data();
 
   for (int b = 0; b < pgrid_->spec.size(); ++b) {

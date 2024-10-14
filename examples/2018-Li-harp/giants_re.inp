@@ -49,6 +49,9 @@ gamma       = 1.42
 grav_acc1   = -24.79
 implicit_flag = 1
 
+<thermodynamics>
+Rd          = 3777.   # mu = 2.3175 g/mol
+
 <species>
 tracer = CH4, C2H2, C2H4, C2H6
 

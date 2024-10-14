@@ -45,6 +45,8 @@ B1:
   wavenumber-range: [10., 200.]
   resolution: 0.01
   opacity: [C2H2]
+  rt-solver: Disort
+  flags: [thermal_emission]
 
 B2:
   unit: cm-1
@@ -52,6 +54,8 @@ B2:
   wavenumber-range: [200., 400.]
   resolution: 0.01
   opacity: [C2H2]
+  rt-solver: Disort
+  flags: [thermal_emission]
 
 B3:
   unit: cm-1
@@ -59,6 +63,8 @@ B3:
   wavenumber-range: [400., 600.]
   resolution: 0.01
   opacity: [C2H2]
+  rt-solver: Disort
+  flags: [thermal_emission]
 
 B4:
   unit: cm-1
@@ -66,6 +72,8 @@ B4:
   wavenumber-range: [600., 700.]
   resolution: 0.01
   opacity: [C2H2, C2H6]
+  rt-solver: Disort
+  flags: [thermal_emission]
 
 B5:
   unit: cm-1
@@ -73,6 +81,8 @@ B5:
   wavenumber-range: [700., 860.]
   resolution: 0.01
   opacity: [C2H2, C2H6]
+  rt-solver: Disort
+  flags: [thermal_emission]
 
 B6:
   unit: cm-1
@@ -80,6 +90,8 @@ B6:
   wavenumber-range: [860., 960.]
   resolution: 0.01
   opacity: [C2H2, C2H6]
+  rt-solver: Disort
+  flags: [thermal_emission]
 
 B7:
   unit: cm-1
@@ -87,6 +99,8 @@ B7:
   wavenumber-range: [960., 1200.]
   resolution: 0.01
   opacity: [C2H2, C2H6]
+  rt-solver: Disort
+  flags: [thermal_emission]
 
 B8:
   unit: cm-1
@@ -94,6 +108,8 @@ B8:
   wavenumber-range: [1200., 1400.]
   resolution: 0.01
   opacity: [C2H2, C2H6]
+  rt-solver: Disort
+  flags: [thermal_emission]
 
 B9:
   unit: cm-1
@@ -101,6 +117,8 @@ B9:
   wavenumber-range: [1400., 1700.]
   resolution: 0.01
   opacity: [C2H2, C2H6]
+  rt-solver: Disort
+  flags: [thermal_emission]
 
 B10:
   unit: cm-1
@@ -108,6 +126,8 @@ B10:
   wavenumber-range: [1700., 2100.]
   resolution: 0.01
   opacity: [C2H2]
+  rt-solver: Disort
+  flags: [thermal_emission]
 
 Disort-flags:
   ibcnd: false

@@ -106,8 +106,8 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
   AirParcel air(AirParcel::Type::MoleFrac);
 
   // estimate surface temperature and pressure
-  Real Ps = P0 * exp(-x1min / H0);
-  Real Ts = T0 * pow(Ps / P0, Rd / cp);
+  Real Ts = T0 - grav / cp * x1min;
+  Real Ps = P0 * pow(Ts / T0, cp / Rd);
 
   while (iter++ < max_iter) {
     // read in vapors
