@@ -1,0 +1,19 @@
+description: >
+  This file describes the kessler microphysics scheme for water
+
+reactions:
+  - equation: H2O(l) => H2O(p)
+    rate-constant: {A: 0.01}
+
+  - equation: H2O(s) => H2O(p)
+    rate-constant: {A: 0.01}
+
+  - equation: H2O(l) + H2O(p) -> 2 H2O(p)
+    rate-constant: {A: 0.01}
+
+  - equation: H2O(s) + H2O(p) -> 2 H2O(p)
+    rate-constant: {A: 0.01}
+
+  - equation: H2O(p) => H2O
+    type: evaporation
+    rate-constant: {A: 0.01}

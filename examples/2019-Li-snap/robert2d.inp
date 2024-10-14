@@ -57,10 +57,9 @@ nx3        = 1
 grav_acc1   = -9.8
 gamma       = 1.4         # gamma = C_p/C_v
 
-<thermodynamics>
-Rd          = 287.
-
 <problem>
+thermodynamics_config = earth-dry.yaml
+
 dT    = 0.5
 xc    = 500.
 yc    = 0.

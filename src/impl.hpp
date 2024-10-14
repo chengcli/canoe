@@ -61,9 +61,6 @@ class MeshBlock::Impl {
   std::vector<std::shared_ptr<Diagnostics>> all_diags;
   std::vector<std::shared_ptr<Forcing>> all_forcings;
 
-  // scheduler
-  std::shared_ptr<Scheduler> scheduler;
-
  public:  // constructor and destructor
   Impl(MeshBlock *pmb, ParameterInput *pin);
   ~Impl();
@@ -75,10 +72,6 @@ class MeshBlock::Impl {
 
   auto &GetMeshOutputGroups() const { return mesh_outputs_; }
   auto &GetFITSOutputGroups() const { return fits_outputs_; }
-
-  // TODO(cli) : more needs to be changed
-  // called in task_list/time_integration.cpp
-  void MapScalarsConserved(AthenaArray<Real> &s);
 
  protected:
   std::map<char const *, ExchangerBase *> exchangers_;

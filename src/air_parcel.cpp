@@ -11,9 +11,6 @@
 #include "air_parcel.hpp"
 #include "impl.hpp"
 
-// microphysics
-#include "microphysics/microphysics.hpp"
-
 // chemistry
 #include "flask/chemistry.hpp"
 
@@ -178,23 +175,23 @@ void AirParcel::moleFractionToMassFraction() {
   Real sum = 1.;
 #pragma omp simd reduction(+ : sum)
   for (int n = 1; n <= NVAPOR; ++n) {
-    sum += w[n] * (pthermo->GetMuRatio(n) - 1.);
+    sum += w[n] * (1. / pthermo->GetInvMuRatio(n) - 1.);
   }
 
 #pragma omp simd reduction(+ : sum, g)
   for (int n = 0; n < NCLOUD; ++n) {
-    sum += c[n] * (pthermo->GetMuRatio(n + 1 + NVAPOR) - 1.);
+    sum += c[n] * (1. / pthermo->GetInvMuRatio(n + 1 + NVAPOR) - 1.);
     g += -c[n];
   }
 
 #pragma omp simd
   for (int n = 1; n <= NVAPOR; ++n) {
-    w[n] *= pthermo->GetMuRatio(n) / sum;
+    w[n] *= 1. / pthermo->GetInvMuRatio(n) / sum;
   }
 
 #pragma omp simd
   for (int n = 0; n < NCLOUD; ++n) {
-    c[n] *= pthermo->GetMuRatio(n + 1 + NVAPOR) / sum;
+    c[n] *= 1. / pthermo->GetInvMuRatio(n + 1 + NVAPOR) / sum;
   }
 
   // set density
@@ -257,12 +254,12 @@ void AirParcel::moleFractionToMassConcentration() {
 
 #pragma omp simd reduction(+ : sum)
   for (int n = 1; n <= NVAPOR; ++n) {
-    sum += w[n] * (pthermo->GetMuRatio(n) - 1.);
+    sum += w[n] * (1. / pthermo->GetInvMuRatio(n) - 1.);
   }
 
 #pragma omp simd reduction(+ : sum, g)
   for (int n = 0; n < NCLOUD; ++n) {
-    sum += c[n] * (pthermo->GetMuRatio(n + 1 + NVAPOR) - 1.);
+    sum += c[n] * (1. / pthermo->GetInvMuRatio(n + 1 + NVAPOR) - 1.);
     g += -c[n];
   }
 
@@ -272,13 +269,13 @@ void AirParcel::moleFractionToMassConcentration() {
   w[IEN] = 0.;
 
   for (int n = 1; n <= NVAPOR; ++n) {
-    w[n] *= rho * pthermo->GetMuRatio(n) / sum;
+    w[n] *= rho * 1. / pthermo->GetInvMuRatio(n) / sum;
     w[IDN] -= w[n];
     w[IEN] += w[n] * pthermo->GetCvMassRef(n) * tem;
   }
 
   for (int n = 0; n < NCLOUD; ++n) {
-    c[n] *= rho * pthermo->GetMuRatio(n + 1 + NVAPOR) / sum;
+    c[n] *= rho * 1. / pthermo->GetInvMuRatio(n + 1 + NVAPOR) / sum;
     w[IDN] -= c[n];
     w[IEN] += c[n] * pthermo->GetCvMassRef(n + 1 + NVAPOR) * tem;
   }
@@ -297,7 +294,7 @@ void AirParcel::moleFractionToMassConcentration() {
 
 void AirParcel::massFractionToMassConcentration() {
   auto pthermo = Thermodynamics::GetInstance();
-  Real igm1 = 1.0 / (pthermo->GetGammadRef() - 1.0);
+  Real igm1 = 1.0 / (pthermo->GetGammad() - 1.0);
 
   // density
   Real rho = w[IDN], pres = w[IPR];
@@ -315,14 +312,14 @@ void AirParcel::massFractionToMassConcentration() {
   // vapors
 #pragma omp simd reduction(+ : fsig, feps)
   for (int n = 1; n <= NVAPOR; ++n) {
-    fsig += w[n] * pthermo->GetCvRatioMass(n);
+    fsig += w[n] * pthermo->GetCvRatio(n);
     feps += w[n] * pthermo->GetInvMuRatio(n);
   }
 
   // clouds
 #pragma omp simd reduction(+ : fsig)
   for (int n = 0; n < NCLOUD; ++n) {
-    fsig += c[n] * pthermo->GetCvRatioMass(n + 1 + NVAPOR);
+    fsig += c[n] * pthermo->GetCvRatio(n + 1 + NVAPOR);
   }
 
   // internal energy
@@ -342,7 +339,7 @@ void AirParcel::massFractionToMassConcentration() {
 
 void AirParcel::massConcentrationToMassFraction() {
   auto pthermo = Thermodynamics::GetInstance();
-  Real gm1 = pthermo->GetGammadRef() - 1.;
+  Real gm1 = pthermo->GetGammad() - 1.;
 
   Real rho = 0., inv_rhod = w[IDN];
 #pragma omp simd reduction(+ : rho)
@@ -365,13 +362,13 @@ void AirParcel::massConcentrationToMassFraction() {
   // vapors
 #pragma omp simd reduction(+ : fsig, feps)
   for (int n = 1; n <= NVAPOR; ++n) {
-    fsig += w[n] * (pthermo->GetCvRatioMass(n) - 1.);
+    fsig += w[n] * (pthermo->GetCvRatio(n) - 1.);
     feps += w[n] * (pthermo->GetInvMuRatio(n) - 1.);
   }
 
 #pragma omp simd reduction(+ : fsig, feps)
   for (int n = 0; n < NCLOUD; ++n) {
-    fsig += c[n] * (pthermo->GetCvRatioMass(n + 1 + NVAPOR) - 1.);
+    fsig += c[n] * (pthermo->GetCvRatio(n + 1 + NVAPOR) - 1.);
     feps += -c[n];
   }
 
@@ -419,7 +416,7 @@ void AirParcel::moleFractionToMoleConcentration() {
   w[IVY] *= tmols;
   w[IVZ] *= tmols;
 
-  Real cvd = Constants::Rgas / (pthermo->GetGammadRef() - 1.);
+  Real cvd = Constants::Rgas / (pthermo->GetGammad() - 1.);
   w[IEN] = tmols * (cvd * tem * fsig + LE);
 
 #pragma omp simd
@@ -472,7 +469,7 @@ void AirParcel::moleConcentrationToMoleFraction() {
   w[IVY] /= tmols;
   w[IVZ] /= tmols;
 
-  Real cvd = Constants::Rgas / (pthermo->GetGammadRef() - 1.);
+  Real cvd = Constants::Rgas / (pthermo->GetGammad() - 1.);
   w[IDN] = (w[IEN] - LE) / (cvd * fsig);
   w[IPR] = xgas * tmols * Constants::Rgas * w[IDN];
 
@@ -560,14 +557,10 @@ AirParcel gather_from_primitive(MeshBlock const* pmb, int k, int j, int i) {
 
   auto phydro = pmb->phydro;
   auto ptracer = pmb->pimpl->ptracer;
-  auto pmicro = pmb->pimpl->pmicro;
   auto pchem = pmb->pimpl->pchem;
 
 #pragma omp simd
   for (int n = 0; n < NHYDRO; ++n) air.w[n] = phydro->w(n, k, j, i);
-
-#pragma omp simd
-  for (int n = 0; n < NCLOUD; ++n) air.c[n] = pmicro->w(n, k, j, i);
 
   // scale mass fractions
   Real rho = air.w[IDN], xd = 1.;
@@ -608,16 +601,12 @@ AirParcel gather_from_conserved(MeshBlock const* pmb, int k, int j, int i) {
 
   auto phydro = pmb->phydro;
   auto ptracer = pmb->pimpl->ptracer;
-  auto pmicro = pmb->pimpl->pmicro;
   auto pchem = pmb->pimpl->pchem;
 
   auto pthermo = Thermodynamics::GetInstance();
 
 #pragma omp simd
   for (int n = 0; n < NHYDRO; ++n) air.w[n] = phydro->u(n, k, j, i);
-
-#pragma omp simd
-  for (int n = 0; n < NCLOUD; ++n) air.c[n] = pmicro->u(n, k, j, i);
 
   Real rho = 0., cvt = 0.;
 #pragma omp simd reduction(+ : rho, cvt)
@@ -659,7 +648,6 @@ void distribute_to_primitive(MeshBlock* pmb, int k, int j, int i,
 
   auto phydro = pmb->phydro;
   auto ptracer = pmb->pimpl->ptracer;
-  auto pmicro = pmb->pimpl->pmicro;
   auto pchem = pmb->pimpl->pchem;
 
   if (air_in.GetType() != AirParcel::Type::MassFrac) {
@@ -695,10 +683,6 @@ void distribute_to_primitive(MeshBlock* pmb, int k, int j, int i,
   for (int n = 1 + NVAPOR; n < NHYDRO; ++n) phydro->w(n, k, j, i) = air->w[n];
 
 #pragma omp simd
-  for (int n = 0; n < NCLOUD; ++n)
-    pmicro->w(n, k, j, i) = air->c[n] * rho * inv_rhod;
-
-#pragma omp simd
   for (int n = 0; n < NCHEMISTRY; ++n)
     pchem->w(n, k, j, i) = air->q[n] * rho * inv_rhod;
 
@@ -717,7 +701,6 @@ void distribute_to_conserved(MeshBlock* pmb, int k, int j, int i,
   auto phydro = pmb->phydro;
   auto pthermo = Thermodynamics::GetInstance();
   auto ptracer = pmb->pimpl->ptracer;
-  auto pmicro = pmb->pimpl->pmicro;
   auto pchem = pmb->pimpl->pchem;
 
   if (air_in.GetType() != AirParcel::Type::MassConc) {
@@ -729,9 +712,6 @@ void distribute_to_conserved(MeshBlock* pmb, int k, int j, int i,
 
 #pragma omp simd
   for (int n = 0; n < NHYDRO; ++n) phydro->u(n, k, j, i) = air->w[n];
-
-#pragma omp simd
-  for (int n = 0; n < NCLOUD; ++n) pmicro->u(n, k, j, i) = air->c[n];
 
   Real rho = 0., cvt = 0.;
 

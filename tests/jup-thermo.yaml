@@ -1,0 +1,120 @@
+# Thermodynamic data for Jupiter's atmosphere
+#
+# constant-cp model assumes a constant specific heat, which by default is zero.
+# Parameters that can be specified are `cp0`, `t0`, `h0`, and `s0`.
+# If omitted, t0 = 298.15 K, cp0 = 0, h0 = 0, and s0 = 0 at 101325 Pa (OneAtm).
+#
+# The thermo properties are computed as follows:
+#
+#   h = h0 + cp0 * (t - t0)
+#   s = s0 + cp0 * ln(t/t0)
+
+phases:
+  - name: gas
+    thermo: ideal-moist
+    species: [dry, H2O, NH3, H2S, H2O(l), NH3(l), H2O(s), NH3(s), NH4SH(s)]
+    kinetics: condensation
+
+species:
+  - name: dry
+    composition: {H: 1.686, He: 0.157}
+    thermo:
+      model: constant-cp
+      cp0: 29.1 J/mol/K
+
+  - name: H2O
+    composition: {H: 2, O: 1}
+    thermo:
+      model: constant-cp
+      cp0: 37.4 J/mol/K
+
+  - name: NH3
+    composition: {N: 1, H: 3}
+    thermo:
+      model: constant-cp
+      cp0: 37.4 J/mol/K
+
+  - name: H2S
+    composition: {H: 2, S: 1}
+    thermo:
+      model: constant-cp
+      cp0: 37.4 J/mol/K
+
+  - name: H2O(l)
+    composition: {H: 2, O: 1}
+    thermo:
+      model: constant-cp
+      cp0: 75.3 J/mol/K
+      h0: -28.5 kJ/mol
+    equation-of-state:
+      model: constant-volume
+      molar-volume: 0.0 cm^3/mol
+
+  - name: NH3(l)
+    composition: {N: 1, H: 3}
+    thermo:
+      model: constant-cp
+      cp0: 80.0 J/mol/K
+      h0: -45.9 kJ/mol
+    equation-of-state:
+      model: constant-volume
+      molar-volume: 0.0 cm^3/mol
+
+  - name: H2O(s)
+    composition: {H: 2, O: 1}
+    thermo:
+      model: constant-cp
+      cp0: 75.3 J/mol/K
+      h0: -28.5 kJ/mol
+    equation-of-state:
+      model: constant-volume
+      molar-volume: 0.0 cm^3/mol
+
+  - name: NH3(s)
+    composition: {N: 1, H: 3}
+    thermo:
+      model: constant-cp
+      cp0: 80.0 J/mol/K
+      h0: -45.9 kJ/mol
+    equation-of-state:
+      model: constant-volume
+      molar-volume: 0.0 cm^3/mol
+
+  - name: NH4SH(s)
+    composition: {N: 1, H: 5, S: 1}
+    thermo:
+      model: constant-cp
+      cp0: 80.0 J/mol/K
+      h0: -105.9 kJ/mol
+    equation-of-state:
+      model: constant-volume
+      molar-volume: 0.0 cm^3/mol
+
+reactions:
+  - equation: H2O <=> H2O(l)
+    type: nucleation
+    rate-constant: {formula: ideal, T3: 273.16, P3: 611.7, beta: 24.845, delta: 4.986, minT: 273.16}
+
+  - equation: H2O <=> H2O(s)
+    type: nucleation
+    rate-constant: {formula: ideal, T3: 273.16, P3: 611.7, beta: 22.98, delta: 0.52, maxT: 273.16}
+
+  - equation: H2O(l) <=> H2O(s)
+    type: freezing
+    rate-constant: {T3: 273.16}
+
+  - equation: NH3 <=> NH3(l)
+    type: nucleation
+    rate-constant: {formula: ideal, T3: 195.4, P3: 6060., beta: 20.08, delta: 5.62, minT: 195.4}
+
+  - equation: NH3 <=> NH3(s)
+    type: nucleation
+    rate-constant: {formula: ideal, T3: 195.4, P3: 6060., beta: 20.64, delta: 1.43, maxT: 195.4}
+
+  - equation: NH3(l) <=> NH3(s)
+    type: freezing
+    rate-constant: {T3: 195.4}
+
+  - equation: NH3 + H2S <=> NH4SH(s)
+    type: nucleation
+    rate-constant: {formula: lewis}

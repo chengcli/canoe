@@ -1,0 +1,13 @@
+description: >
+  This file describes the kessler microphysics scheme for ammonia
+
+reactions:
+  - equation: NH3(s) => NH3(p)
+    rate-constant: {A: 0.01}
+
+  - equation: NH3(s) + NH3(p) -> 2 NH3(p)
+    rate-constant: {A: 0.01}
+
+  - equation: NH3(p) => NH3
+    type: evaporation
+    rate-constant: {A: 0.01}

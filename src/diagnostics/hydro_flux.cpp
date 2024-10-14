@@ -6,6 +6,7 @@
 #include <exchanger/exchanger.hpp>
 
 // snap
+#include <snap/stride_iterator.hpp>
 #include <snap/thermodynamics/thermodynamics.hpp>
 
 // diagnostics
@@ -56,7 +57,7 @@ void HydroFlux::Progress(MeshBlock *pmb) {
         for (int n = 1; n < IPR; ++n)
           data(n, i) += vol_(i) * w(n, k, j, i) * w(IVX, k, j, i);
         data(IPR, i) +=
-            vol_(i) * pthermo->GetTemp(pmb, k, j, i) * w(IVX, k, j, i);
+            vol_(i) * pthermo->GetTemp(w.at(k, j, i)) * w(IVX, k, j, i);
       }
     }
 

@@ -1,105 +1,89 @@
-#ifndef SRC_SNAP_THERMODYNAMICS_ATM_THERMODYNAMICS_HPP_
-#define SRC_SNAP_THERMODYNAMICS_ATM_THERMODYNAMICS_HPP_
+#pragma once
 
-// canoe
-#include <air_parcel.hpp>
-#include <configure.hpp>
-
-// snap
 #include "thermodynamics.hpp"
 
-//! adiaibatic index of dry air [1]
-Real get_gammad(AirParcel const &qfrac);
-
-//! Adiabatic index
-//! \return $\chi = \frac{R}{c_p}$
-Real get_chi(AirParcel const &qfrac, Real const *cp_ratio_mole);
-
-//! Inverse of the mean molecular weight (with cloud)
-//! \param[in] qfrac mole fraction representation of air parcel
-Real get_rovrd(AirParcel const &qfrac, Real const *mu_ratio);
-
-void set_total_equivalent_vapor(
-    AirParcel *qfrac, IndexSet const *cloud_index_set,
-    std::map<IndexPair, ReactionInfo> const &cloud_reaction_map);
-
-//! update T/P
-void update_TP_conserving_U(AirParcel *qfrac, Real rmole, Real umole,
-                            Real const *cv_ratio_mole,
-                            Real const *latent_energy_mole,
-                            IndexSet const *cloud_index_set);
-
-Real get_internal_energy_mole(AirParcel const &qfrac, Real const *cv_ratio_mole,
-                              Real const *latent_energy_mole,
-                              IndexSet const *cloud_index_set);
-
-void rk4_integrate_lnp(AirParcel *qfrac, Real dlnp, std::string method,
-                       Real adlnTdlnP);
-
-void rk4_integrate_z(AirParcel *qfrac, Real dlnp, std::string method, Real grav,
-                     Real adlnTdlnP);
-
-//! \brief Calculate moist adiabatic temperature gradient
-//!
-//! $\Gamma_m = (\frac{d\ln T}{d\ln P})_m$
-//! \return $\Gamma_m$
-Real cal_dlnT_dlnP(AirParcel const &qfrac, Real const *cp_ratio_mole,
-                   Real const *latent);
-
-// thermodynamic functions
-//! \brief Relative humidity
-//!
-//! $H_i = \frac{e_i}{e_i^s}$
-//! \return $H$
-inline Real get_relative_humidity(AirParcel const &qfrac, int n) {
-  auto pthermo = Thermodynamics::GetInstance();
-  auto rates = pthermo->TryEquilibriumTP_VaporCloud(qfrac, n, 0., true);
-  return qfrac.w[n] / (qfrac.w[n] + rates[0]);
+template <typename T>
+Real potential_temp(Thermodynamics const *pthermo, T w, Real p0) {
+  return pthermo->GetTemp(w) * pow(p0 / w[IPR], pthermo->GetChi(w));
 }
 
-//! Specific heat capacity [J/(kg K)] at constant volume
-//! $c_{v,d} = \frac{R_d}{\gamma_d - 1}$ \n
-//! $c_{v,i} = \frac{c_{v,i}}{c_{v,d}}\times c_{v,d}$
-//! \return $c_{v,i}$
-inline Real get_cv_mass(AirParcel const &qfrac, int n, Real Rd,
-                        Real const *cv_ratio_mass) {
-  Real cvd = Rd / (get_gammad(qfrac) - 1.);
-  return cv_ratio_mass[n] * cvd;
+template <typename T>
+Real moist_static_energy(Thermodynamics const *pthermo, T w, Real gz) {
+  pthermo->SetPrimitive(w);
+  Real intEng = pthermo->GetInternalEnergy(w);
+  // Real tempv = pthermo->GetTemp() * pthermo->RovRd();
+  return intEng + w[IPR] / w[IDN] + gz;
 }
 
-//! Specific heat capacity [J/(mol K)] of the air parcel at constant volume
-//! \return $\hat{c}_v$
-inline Real get_cv_mole(AirParcel const &qfrac, int n, Real Rd,
-                        Real const *cv_ratio_mole) {
-  Real cvd = Rd / (get_gammad(qfrac) - 1.);
-  return cv_ratio_mole[n] * cvd;
+template <typename T>
+std::array<Real, Thermodynamics::Size> relative_humidity(
+    Thermodynamics const *pthermo, T w) {
+  pthermo->SetPrimitive(w);
+  auto kinetics = get_kinetics_object(pthermo);
+
+  std::vector<Real> kfwd(kinetics->nReactions());
+  kinetics->getFwdRateConstants(kfwd.data());
+
+  std::array<Real, Thermodynamics::Size> xfrac;
+  kinetics->thermo().getMoleFractions(xfrac.data());
+
+  // gas fractions
+  Real xg = 0.;
+  for (int n = 0; n <= NVAPOR; ++n) xg += xfrac[n];
+
+  Real temp = pthermo->GetTemp();
+  for (int n = 1; n <= NVAPOR; ++n) {
+    xfrac[n] *= w[IPR] / (xg * kfwd[n - 1] * Cantera::GasConstant * temp);
+  }
+
+  return xfrac;
 }
 
-//! Specific heat capacity [J/(kg K)] at constant pressure
-//! $c_{p,d} = \frac{\gamma_d}{\gamma_d - 1}R_d$ \n
-//! $c_{p,i} = \frac{c_{p,i}}{c_{p,d}}\times c_{p,d}$
-//! \return $c_p$
-inline Real get_cp_mass(AirParcel const &qfrac, int n, Real Rd,
-                        Real const *cp_ratio_mass) {
-  Real gammad = get_gammad(qfrac);
-  Real cpd = Rd * gammad / (gammad - 1.);
-  return cp_ratio_mass[n] * cpd;
-}
+// Eq.4.5.11 in Emanuel (1994)
+template <typename T>
+Real equivalent_potential_temp(Thermodynamics const *pthermo, T w, Real rh,
+                               Real p0) {
+  pthermo->SetPrimitive(w);
+  auto kinetics = get_kinetics_object(pthermo);
+  auto &thermo = kinetics->thermo();
 
-//! Specific heat capacity [J/(mol K)] of the air parcel at constant pressure
-//! \return $\hat{c}_v$
-inline Real get_cp_mole(AirParcel const &qfrac, int n, Real Rd,
-                        Real const *cp_ratio_mole) {
-  Real gammad = get_gammad(qfrac);
-  Real cpd = Rd * gammad / (gammad - 1.);
-  return cp_ratio_mole[n] * cpd;
-}
+  std::array<Real, Thermodynamics::Size> enthalpy;
+  std::array<Real, Thermodynamics::Size> cp;
+  thermo.getEnthalpy_RT(enthalpy.data());
+  thermo.getPartialMolarCp(cp.data());
 
-inline Real get_density_mole(AirParcel const &qfrac) {
-  Real qgas = 1.;
-#pragma omp simd reduction(+ : qgas)
-  for (int n = 0; n < NCLOUD; ++n) qgas += -qfrac.c[n];
-  return qfrac.w[IPR] / (Constants::Rgas * qfrac.w[IDN] * qgas);
-}
+  Real temp = thermo.temperature();
+  Real pres = thermo.pressure();
 
-#endif  // SRC_SNAP_THERMODYNAMICS_ATM_THERMODYNAMICS_HPP_
+  Real lv = (enthalpy[1] - enthalpy[2]) * Cantera::GasConstant * temp /
+            thermo.molecularWeight(1);
+  Real cpd = cp[0] / thermo.molecularWeight(0);
+  Real cl = cp[2] / thermo.molecularWeight(2);
+
+  /*std::cout << "lv: " << lv << std::endl;
+  std::cout << "cpd: " << cpd << std::endl;
+  std::cout << "cl: " << cl << std::endl;*/
+
+  Real qd = thermo.massFraction(0);
+  Real qv = thermo.massFraction(1);
+  Real qc = thermo.massFraction(2);
+  Real qt = qv + qc;
+
+  Real xd = thermo.moleFraction(0);
+  Real xv = thermo.moleFraction(1);
+  Real xg = xd + xv;
+
+  Real Rd = Cantera::GasConstant / thermo.molecularWeight(0);
+  Real Rv = Cantera::GasConstant / thermo.molecularWeight(1);
+  Real pd = xd / xg * pres;
+  Real cpt = cpd * qd + cl * qt;
+
+  /*std::cout << "Rd: " << Rd << std::endl;
+  std::cout << "Rv: " << Rv << std::endl;
+  std::cout << "pd: " << pd << std::endl;
+  std::cout << "cpt: " << cpt << std::endl;
+  std::cout << "rh: " << rh << std::endl;*/
+
+  return temp * pow(p0 / pd, Rd * qd / cpt) * pow(rh, -Rv * qv / cpt) *
+         exp(lv * qv / (cpt * temp));
+}

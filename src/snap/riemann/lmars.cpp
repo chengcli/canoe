@@ -9,17 +9,14 @@
 #include <athena/eos/eos.hpp>
 #include <athena/hydro/hydro.hpp>
 
-// climath
-#include <climath/core.h>  // sqr
-
 // canoe
 #include <impl.hpp>
 
+// exo3
+#include <exo3/exo3.hpp>
+
 // snap
 #include <snap/thermodynamics/thermodynamics.hpp>
-
-// microphysics
-#include <microphysics/microphysics.hpp>
 
 void Hydro::RiemannSolver(int const k, int const j, int const il, int const iu,
                           int const ivx, AthenaArray<Real> &wl,
@@ -30,10 +27,10 @@ void Hydro::RiemannSolver(int const k, int const j, int const il, int const iu,
   int dir = ivx - IVX;
 
   auto pthermo = Thermodynamics::GetInstance();
-  auto pmicro = pmy_block->pimpl->pmicro;
+  MeshBlock *pmb = pmy_block;
 
   Real rhobar, pbar, cbar, ubar, hl, hr;
-  Real gamma = pmy_block->peos->GetGamma();
+  Real gamma = pthermo->GetGammad();
   Real wli[NHYDRO], wri[NHYDRO];
 
   for (int i = il; i <= iu; ++i) {
@@ -42,28 +39,20 @@ void Hydro::RiemannSolver(int const k, int const j, int const il, int const iu,
       wli[n] = wl(n, i);
       wri[n] = wr(n, i);
     }
-    // correction for gamma
-    // left
-    Real fsig = 1., feps = 1.;
-    for (int n = 1; n <= NVAPOR; ++n) {
-      fsig += wli[n] * (pthermo->GetCvRatioMass(n) - 1.);
-      feps += wli[n] * (1. / pthermo->GetMuRatio(n) - 1.);
-    }
-    Real kappal = 1. / (gamma - 1.) * fsig / feps;
 
-    // right
-    fsig = 1., feps = 1.;
-    for (int n = 1; n <= NVAPOR; ++n) {
-      fsig += wri[n] * (pthermo->GetCvRatioMass(n) - 1.);
-      feps += wri[n] * (1. / pthermo->GetMuRatio(n) - 1.);
-    }
-    Real kappar = 1. / (gamma - 1.) * fsig / feps;
+    // correction for gamma
+    Real kappal = 1. / (pthermo->GetGamma(wli) - 1.);
+    Real kappar = 1. / (pthermo->GetGamma(wri) - 1.);
 
     // enthalpy
+    // FIXME: m should be at cell interface
+    auto vl = vec_lower<Real>(wli, pmb->pcoord->m.at(k, j, i));
     hl = wli[IPR] / wli[IDN] * (kappal + 1.) +
-         0.5 * (sqr(wli[ivx]) + sqr(wli[ivy]) + sqr(wli[ivz]));
+         0.5 * (wli[ivx] * vl[ivx] + wli[ivy] * vl[ivy] + wli[ivz] * vl[ivz]);
+
+    auto vr = vec_lower<Real>(wri, pmb->pcoord->m.at(k, j, i));
     hr = wri[IPR] / wri[IDN] * (kappar + 1.) +
-         0.5 * (sqr(wri[ivx]) + sqr(wri[ivy]) + sqr(wri[ivz]));
+         0.5 * (wri[ivx] * vr[ivx] + wri[ivy] * vr[ivy] + wri[ivz] * vr[ivz]);
 
     rhobar = 0.5 * (wli[IDN] + wri[IDN]);
     cbar = sqrt(0.5 * (1. + (1. / kappar + 1. / kappal) / 2.) *
@@ -74,23 +63,21 @@ void Hydro::RiemannSolver(int const k, int const j, int const il, int const iu,
            0.5 / (rhobar * cbar) * (wli[IPR] - wri[IPR]);
 
     Real rdl = 1., rdr = 1.;
-    for (int n = 1; n <= NVAPOR; ++n) {
+    for (int n = 1; n < IVX; ++n) {
       rdl -= wli[n];
       rdr -= wri[n];
     }
 
     if (ubar > 0.) {
       flx(IDN, k, j, i) = ubar * wli[IDN] * rdl;
-      for (int n = 1; n <= NVAPOR; ++n)
-        flx(n, k, j, i) = ubar * wli[IDN] * wli[n];
+      for (int n = 1; n < IVX; ++n) flx(n, k, j, i) = ubar * wli[IDN] * wli[n];
       flx(ivx, k, j, i) = ubar * wli[IDN] * wli[ivx] + pbar;
       flx(ivy, k, j, i) = ubar * wli[IDN] * wli[ivy];
       flx(ivz, k, j, i) = ubar * wli[IDN] * wli[ivz];
       flx(IEN, k, j, i) = ubar * wli[IDN] * hl;
     } else {
       flx(IDN, k, j, i) = ubar * wri[IDN] * rdr;
-      for (int n = 1; n <= NVAPOR; ++n)
-        flx(n, k, j, i) = ubar * wri[IDN] * wri[n];
+      for (int n = 1; n < IVX; ++n) flx(n, k, j, i) = ubar * wri[IDN] * wri[n];
       flx(ivx, k, j, i) = ubar * wri[IDN] * wri[ivx] + pbar;
       flx(ivy, k, j, i) = ubar * wri[IDN] * wri[ivy];
       flx(ivz, k, j, i) = ubar * wri[IDN] * wri[ivz];
@@ -104,12 +91,22 @@ void Hydro::RiemannSolver(int const k, int const j, int const il, int const iu,
     // condensation However, the first component of the primitive variable is
     // the "total" density To get the denisty of the dry species, the "dry
     // mixing ratio" (rdl/rdr) is multiplied
-    for (int n = 0; n < NCLOUD; ++n) {
-      Real vfld = ubar + pmicro->vsedf[dir](n, k, j, i);
-      if (vfld > 0.) {
-        pmicro->mass_flux[dir](n, k, j, i) = vfld * wli[IDN] * rdl;
-      } else {
-        pmicro->mass_flux[dir](n, k, j, i) = vfld * wri[IDN] * rdr;
+    // FIXME: remove this?
+    if (ivx == IVX) {
+      if (i == iu) return;
+      Real vsed_[NHYDRO];
+      for (int n = 0; n <= NVAPOR + NCLOUD; ++n) vsed_[n] = 0.;
+      for (int n = 1 + NVAPOR + NCLOUD; n <= NVAPOR + NCLOUD + NPRECIP; ++n) {
+        vsed_[n] = -10.;
+      }
+
+      for (int n = 1 + NVAPOR; n <= NVAPOR + NCLOUD + NPRECIP; ++n) {
+        Real rho = wri[IDN] * wri[n];
+        flx(n, k, j, i) += vsed_[n] * rho;
+        flx(ivx, k, j, i) += vsed_[n] * rho * wri[ivx];
+        flx(ivy, k, j, i) += vsed_[n] * rho * wri[ivy];
+        flx(ivz, k, j, i) += vsed_[n] * rho * wri[ivz];
+        flx(IEN, k, j, i) += vsed_[n] * rho * hr;
       }
     }
   }

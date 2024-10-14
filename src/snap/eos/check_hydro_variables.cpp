@@ -38,7 +38,7 @@ void check_hydro_variables(MeshBlock *pmb) {
           }
         }
 
-        Real temp = pthermo->GetTemp(pmb, k, j, i);
+        Real temp = pthermo->GetTemp(w.at(k, j, i));
         Real grav = -pmb->phydro->hsrc.GetG1();
         if (grav != 0) {
           Real Tmin = grav * pmb->pcoord->dx1f(i) / pthermo->GetRd();

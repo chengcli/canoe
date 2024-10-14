@@ -15,6 +15,9 @@
 // diagnostics
 #include <diagnostics/diagnostics.hpp>
 
+// snap
+#include <snap/thermodynamics/thermodynamics.hpp>
+
 // outputs
 #include "output_utils.hpp"
 
@@ -37,25 +40,27 @@ void OutputType::loadUserOutputData(MeshBlock *pmb) {
     }
   }
 
-  // vapor
-  if (NVAPOR > 0) {
-    if (output_params.variable.compare("prim") == 0 ||
-        output_params.variable.compare("vapor") == 0) {
+  // vapor/cloud
+  auto pthermo = Thermodynamics::GetInstance();
+  if (output_params.variable.compare("prim") == 0) {
+    for (int n = 1; n < IVX; ++n) {
       pod = new OutputData;
-      pod->type = "VECTORS";
-      pod->name = "vapor";
-      pod->data.InitWithShallowSlice(phyd->w, 4, 1, NVAPOR);
+      pod->type = "SCALARS";
+      pod->name = pthermo->SpeciesName(n);
+      pod->data.InitWithShallowSlice(phyd->w, 4, n, 1);
       AppendOutputDataNode(pod);
-      num_vars_ += NVAPOR;
+      num_vars_ += 1;
     }
+  }
 
-    if (output_params.variable.compare("cons") == 0) {
+  if (output_params.variable.compare("cons") == 0) {
+    for (int n = 1; n < IVX; ++n) {
       pod = new OutputData;
-      pod->type = "VECTORS";
-      pod->name = "vapor";
-      pod->data.InitWithShallowSlice(phyd->u, 4, 1, NVAPOR);
+      pod->type = "SCALARS";
+      pod->name = pthermo->SpeciesName(n);
+      pod->data.InitWithShallowSlice(phyd->u, 4, n, 1);
       AppendOutputDataNode(pod);
-      num_vars_ += NVAPOR;
+      num_vars_ += 1;
     }
   }
 

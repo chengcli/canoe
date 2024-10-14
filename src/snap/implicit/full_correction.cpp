@@ -80,14 +80,11 @@ void ImplicitSolver::FullCorrection(AthenaArray<Real>& du,
   for (int i = is - 2; i <= ie + 1; ++i) {
     Real fsig = 1., feps = 1.;
     CopyPrimitives(wl, wr, w, k, j, i, mydir_);
-    for (int n = 1; n <= NVAPOR; ++n) {
-      fsig += w(n, k, j, i) * (pthermo->GetCvRatioMass(n) - 1.);
-      feps += w(n, k, j, i) * (pthermo->GetInvMuRatio(n) - 1.);
-    }
-
-    gamma_m1[i] = (gamma - 1.) * feps / fsig;
+    gamma_m1[i] = pthermo->GetGamma(wr) - 1.;
     FluxJacobian(dfdq[i], gamma_m1[i], wr, mydir_);
-  }  // 5. set up diffusion matrix and tridiagonal coefficients
+  }
+
+  // 5. set up diffusion matrix and tridiagonal coefficients
   // left edge
   CopyPrimitives(wl, wr, w, k, j, is - 1, mydir_);
   Real gm1 = 0.5 * (gamma_m1[is - 2] + gamma_m1[is - 1]);

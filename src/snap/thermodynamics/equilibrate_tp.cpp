@@ -1,35 +1,52 @@
-// canoe
-#include <air_parcel.hpp>
+// cantera
+#include <cantera/kinetics.h>
+#include <cantera/kinetics/Condensation.h>
+#include <cantera/thermo.h>
 
 // snap
-#include "atm_thermodynamics.hpp"
+#include "thermodynamics.hpp"
 
-void Thermodynamics::EquilibrateTP(AirParcel* qfrac) const {
-  set_total_equivalent_vapor(qfrac, cloud_index_set_.data(),
-                             cloud_reaction_map_);
+void Thermodynamics::EquilibrateTP(Real temp, Real pres) const {
+  kinetics_->setQuantityMoleFraction();
 
-  // vapor <=> cloud
-  for (int i = 1; i <= NVAPOR; ++i) {
-    auto rates = TryEquilibriumTP_VaporCloud(*qfrac, i);
+  std::array<Real, Size> rates;
+  std::array<Real, Size> xfrac;
 
-    // vapor condensation rate
-    qfrac->w[i] += rates[0];
+  auto& thermo = kinetics_->thermo();
 
-    // cloud concentration rates
-    for (int n = 1; n < rates.size(); ++n)
-      qfrac->c[cloud_index_set_[i][n - 1]] += rates[n];
-  }
+  thermo.setTemperature(temp);
+  thermo.setPressure(pres);
 
-  // vapor + vapor <=> cloud
-  for (auto const& [ij, info] : cloud_reaction_map_) {
-    auto rates = TryEquilibriumTP_VaporVaporCloud(*qfrac, ij);
-    auto& indx = info.first;
+  int iter = 0, max_iter = 3;
+  while (iter++ < max_iter) {
+    // get mole fraction
+    kinetics_->getNetProductionRates(rates.data());
 
-    // vapor condensation rate
-    qfrac->w[indx[0]] += rates[0];
-    qfrac->w[indx[1]] += rates[1];
+    Real max_abs_rate = 0.;
+    for (size_t i = 1; i < Size; ++i) {
+      if (std::abs(rates[i]) > max_abs_rate) {
+        max_abs_rate = std::abs(rates[i]);
+      }
+    }
+    if (max_abs_rate < 1.E-8) break;
 
-    // cloud concentration rates
-    qfrac->c[indx[2]] += rates[3];
+    thermo.getMoleFractions(xfrac.data());
+
+    /*std::cout << "iter: " << iter << std::endl;
+    for (size_t i = 0; i < Size; ++i) {
+      std::cout << xfrac[i] << ", " << rates[i] << ", ";
+    }
+    std::cout << std::endl;*/
+
+    // update mole fraction
+    for (size_t i = 1; i < Size; ++i) {
+      xfrac[i] += rates[i];
+    }
+
+    thermo.setMoleFractions(xfrac.data());
+
+    // updates density
+    thermo.setTemperature(temp);
+    thermo.setPressure(pres);
   }
 }

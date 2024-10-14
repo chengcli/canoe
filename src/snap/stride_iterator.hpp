@@ -17,7 +17,10 @@ class StrideIterator {
   // constructors
   StrideIterator() : data(NULL), step(0){};
   StrideIterator(const StrideIterator& x) : data(x.data), step(x.step) {}
-  StrideIterator(T x, difference_type n) : data(x), step(n) {}
+  StrideIterator(T x, difference_type n = 1) : data(x), step(n) {}
+  StrideIterator(std::vector<T> x) : data(x.data()), step(1) {}
+
+  difference_type stride() const { return step; }
 
   // operators
   StrideIterator& operator++() {

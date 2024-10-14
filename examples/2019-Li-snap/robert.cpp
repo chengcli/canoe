@@ -27,7 +27,7 @@
 #include <impl.hpp>
 
 // snap
-#include <snap/stride_iterator.hpp>
+#include <snap/thermodynamics/atm_thermodynamics.hpp>
 #include <snap/thermodynamics/thermodynamics.hpp>
 
 // @sect3{Preamble}
@@ -46,13 +46,14 @@ void MeshBlock::InitUserMeshBlockData(ParameterInput *pin) {
 // Set temperature and potential temperature.
 void MeshBlock::UserWorkBeforeOutput(ParameterInput *pin) {
   auto pthermo = Thermodynamics::GetInstance();
+  auto &w = phydro->w;
 
   Real gamma = peos->GetGamma();
   for (int k = ks; k <= ke; ++k)
     for (int j = js; j <= je; ++j)
       for (int i = is; i <= ie; ++i) {
-        user_out_var(0, k, j, i) = pthermo->GetTemp(this, k, j, i);
-        user_out_var(1, k, j, i) = pthermo->PotentialTemp(this, p0, k, j, i);
+        user_out_var(0, k, j, i) = pthermo->GetTemp(w.at(k, j, i));
+        user_out_var(1, k, j, i) = potential_temp(pthermo, w.at(k, j, i), p0);
       }
 }
 
@@ -66,11 +67,13 @@ void Mesh::InitUserMeshData(ParameterInput *pin) {
 // We do not need forcings other than gravity in this problem,
 // so we go directly to the initial condition.
 void MeshBlock::ProblemGenerator(ParameterInput *pin) {
+  auto pthermo = Thermodynamics::GetInstance();
+
   // Similar to @ref straka, read variables in the input file
   Real gamma = pin->GetReal("hydro", "gamma");
   Real grav = -phydro->hsrc.GetG1();
   Real Ts = pin->GetReal("problem", "Ts");
-  Real Rd = pin->GetReal("thermodynamics", "Rd");
+  Real Rd = pthermo->GetRd();
   Real cp = gamma / (gamma - 1.) * Rd;
 
   Real xc = pin->GetReal("problem", "xc");

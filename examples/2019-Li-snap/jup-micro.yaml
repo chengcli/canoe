@@ -1,0 +1,44 @@
+description: |-
+  This file describes the microphysics scheme for Jupiter
+
+phases:
+  - name: water-system
+    thermo: ideal-moist
+    species:
+      - H2O(p)
+      - jup-thermo.yaml/species: [H2O, H2O(l)]
+    kinetics: gas
+    reactions:
+      - water-kessler.yaml/reactions: declared-species
+
+  - name: ammonia-system
+    thermo: ideal-moist
+    species:
+      - NH3(p)
+      - jup-thermo.yaml/species: [NH3, NH3(s)]
+    kinetics: gas
+    reactions:
+      - ammonia-kessler.yaml/reactions: declared-species
+
+species:
+  - name: H2O(p)
+    composition: {H: 2, O: 1}
+    thermo:
+      model: constant-cp
+      cp0: 75.3 J/mol/K
+      h0: -28.5 kJ/mol
+    equation-of-state:
+      model: constant-volume
+      molar-volume: 0.0 cm^3/mol
+    sedimentation: -10. m/s
+
+  - name: NH3(p)
+    composition: {N: 1, H: 3}
+    thermo:
+      model: constant-cp
+      cp0: 80.0 J/mol/K
+      h0: -45.9 kJ/mol
+    equation-of-state:
+      model: constant-volume
+      molar-volume: 0.0 cm^3/mol
+    sedimentation: -10. m/s

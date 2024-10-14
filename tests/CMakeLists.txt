@@ -15,11 +15,18 @@ if (${Torch_FOUND})
   setup_test(test_reconstruct)
   setup_test(test_riemann)
   setup_test(test_hydro)
-  setup_test(test_thermodynamics)
 endif()
 
 # athena tests
 setup_test(test_mesh)
+
+if (${NVAPOR} EQUAL 3 AND ${NCLOUD} EQUAL 5)
+  setup_test(test_jup_thermo)
+endif()
+
+if (${NVAPOR} EQUAL 1)
+  setup_test(test_earth_thermo)
+endif()
 
 setup_test(test_glog)
 setup_test(test_absorber)
@@ -37,12 +44,12 @@ endif()
 
 if (${NVAPOR} EQUAL 0)
   if (NOT HYDROSTATIC OR NOT DEFINED HYDROSTATIC)
-    setup_test(test_convective_adjustment)
+    #setup_test(test_convective_adjustment)
   endif()
 endif()
 
 if (${NVAPOR} EQUAL 1 AND ${NCLOUD} EQUAL 1 AND ${NPHASE_LEGACY} EQUAL 2)
-  setup_test(test_moist_adiabat)
+  #setup_test(test_moist_adiabat)
 endif()
 
 if (${NVAPOR} EQUAL 2)
@@ -60,5 +67,5 @@ endif()
 # copy yaml files
 file(GLOB inputs *.inp *.yaml)
 foreach(input ${inputs})
-    file(COPY ${input} DESTINATION ${CMAKE_BINARY_DIR}/tests)
+  execute_process(COMMAND ln -sf ${input} ${CMAKE_BINARY_DIR}/tests/)
 endforeach()

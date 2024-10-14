@@ -14,9 +14,9 @@
 
 // canoe
 #include <air_parcel.hpp>
+#include <athena/coordinates/coordinates.hpp>
 #include <configure.hpp>
 #include <impl.hpp>
-#include <athena/coordinates/coordinates.hpp>
 
 // climath
 #include <climath/core.h>
@@ -60,8 +60,8 @@ void MeshBlock::UserWorkBeforeOutput(ParameterInput *pin) {
   for (int k = ks; k <= ke; ++k)
     for (int j = js; j <= je; ++j) {
       for (int i = is; i <= ie; ++i) {
-        user_out_var(0, k, j, i) = pthermo->GetTemp(this, k, j, i);
-        user_out_var(1, k, j, i) = pthermo->PotentialTemp(this, Ps, k, j, i);
+        user_out_var(0, k, j, i) = pthermo->GetTemp(w.at(k, j, i));
+        user_out_var(1, k, j, i) = pthermo->PotentialTemp(w.at(k, j, i), Ps);
 
         pexo3->GetLatLon(&lat, &lon, k, j, i);
         pexo3->GetUV(&U, &V, phydro->w(IVY, k, j, i), phydro->w(IVZ, k, j, i),
@@ -176,6 +176,5 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
         AirParcelHelper::distribute_to_conserved(this, k, j, i, air);
         pthermo->Extrapolate(&air, pcoord->dx1f(i), "isothermal", grav);
       }
-
     }
 }
