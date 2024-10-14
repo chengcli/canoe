@@ -103,17 +103,31 @@ void CelestrialBody::loadSpectralData(std::string sfile) {
 Direction CelestrialBody::ParentZenithAngle(Real time, Real lat,
                                             Real lon) const {
   Direction dir;
+  // Calculate Solar Declination (δ)
+  Real solar_declination = obliq * sin(2.0 * M_PI * time / orbit_p);
 
-  if (spinp == 0. && orbit_p == 0.) dir.mu = cos(-lon + M_PI) * cos(lat);
-  if (spinp == 0. && orbit_p != 0.)
-    dir.mu = cos((time * 2. * M_PI * (-1. / orbit_p)) - lon + M_PI) * cos(lat);
-  if (spinp != 0. && orbit_p == 0.)
-    dir.mu = cos((time * 2. * M_PI * (1. / spinp)) - lon + M_PI) * cos(lat);
-  if (spinp != 0. && orbit_p != 0.)
-    dir.mu =
-        cos((time * 2. * M_PI * (1. / spinp - 1. / orbit_p)) - lon + M_PI) *
-        cos(lat);
-  dir.phi = 0.;
+  // Calculate Hour Angle (H)
+  Real hour_angle;
+  if (spinp == 0. && orbit_p == 0.) {
+    hour_angle = -lon + M_PI;
+  } else if (spinp == 0. && orbit_p != 0.) {
+    hour_angle = 2.0 * M_PI * (-1.0 / orbit_p) * time - lon + M_PI;
+  } else if (spinp != 0. && orbit_p == 0.) {
+    hour_angle = 2.0 * M_PI * (1.0 / spinp) * time - lon + M_PI;
+  } else {  // spinp != 0. && orbit_p != 0.
+    hour_angle = 2.0 * M_PI * (1.0 / spinp - 1.0 / orbit_p) * time - lon + M_PI;
+  }
+
+  // Compute cos(theta) using the solar zenith angle formula
+  Real cos_theta = sin(lat) * sin(solar_declination) +
+                   cos(lat) * cos(solar_declination) * cos(hour_angle);
+
+  // Clamp cos_theta to the range [-1, 1] to avoid numerical errors
+  if (cos_theta > 1.0) cos_theta = 1.0;
+  if (cos_theta < -1.0) cos_theta = -1.0;
+
+  dir.mu = cos_theta;
+  dir.phi = 0.;  // Unused in this context
 
   return dir;
 }

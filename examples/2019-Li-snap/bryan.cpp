@@ -157,7 +157,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
                            return temp * rovrd - temp_v;
                          });
 
-          if (err) throw RuntimeError("pgen", "TVSolver doesn't converge");
+          //   if (err) throw RuntimeError("pgen", "TVSolver doesn't converge");
 
           air.w[IDN] = temp;
           auto rates = pthermo->TryEquilibriumTP_VaporCloud(air, iH2O);

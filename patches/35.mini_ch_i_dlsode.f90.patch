@@ -1,0 +1,315 @@
+diff --git a/src_mini_chem_dlsode/mini_ch_i_dlsode.f90 b/src_mini_chem_dlsode/mini_ch_i_dlsode.f90
+index 7057dcc..63f5757 100644
+--- a/src_mini_chem_dlsode/mini_ch_i_dlsode.f90
++++ b/src_mini_chem_dlsode/mini_ch_i_dlsode.f90
+@@ -4,6 +4,7 @@ module mini_ch_i_dlsode
+   use mini_ch_chem
+   implicit none
+ 
++  logical, parameter :: use_bdfsol = .True. 
+   logical, parameter :: use_stiff = .True.
+   real(dp) :: nd_atm
+ 
+@@ -32,6 +33,13 @@ contains
+     integer :: itol, itask, istate, iopt, mf
+     integer :: rworkdim, iworkdim
+ 
++    ! new solver
++    real(dp), dimension(n_sp) ::f, sol
++    real(dp), dimension(n_sp, n_sp) :: jac
++    real(dp) :: time, rpar
++    integer :: ipar
++    !
++
+     !! Find the number density of the atmosphere
+     P_cgs = P_in * 10.0_dp   ! Convert pascal to dyne cm-2
+     nd_atm = P_cgs/(kb*T_in)  ! Find initial number density [cm-3] of atmosphere
+@@ -39,12 +47,36 @@ contains
+     allocate(Keq(n_reac), re_f(n_reac), re_r(n_reac))
+ 
+     ! First find the reverse reaction coefficents (Keq)
+-    call reverse_reactions(T_in)
++    ! call reverse_reactions(T_in)
++      call reverse_reactions(max(T_in, 200.0_dp))   !xiz 2024 added Tmin
+     ! Find the forward, backward and net reaction rates
+     call reaction_rates(T_in, P_cgs, nd_atm)
+ 
+-    !! Find initial number density of all species from VMR
+-    y(:) = nd_atm * VMR(:)
++
++!! use BDF solver for faster integration xiz 2024
++    if (use_bdfsol) then
++        !! Pass VMR to y array
++        y(:) = VMR(:)
++
++        call RHS_update(n_sp, time, y, f, rpar, ipar)
++        select case(network)
++        case('HO')
++          call jac_HO(n_sp, 0.0_dp, y, 1, 1, jac, n_sp)
++        case('CHO')
++          call jac_CHO(n_sp, 0.0_dp, y, 1, 1, jac, n_sp)
++        case('NCHO')
++          call jac_NCHO(n_sp, 0.0_dp, y, 1, 1, jac, n_sp)
++        case default
++          print*, 'Invalid network provided: ', trim(network)
++          stop
++        end select
++
++        call solveBDF1(n_sp, f, jac, t_end, sol)
++        VMR(:) = sol(:) + y(:)
++
++        deallocate(Keq, re_r, re_f)
++
++    else
+ 
+     ! -----------------------------------------
+     ! ***  parameters for the DLSODE solver  ***
+@@ -66,7 +98,7 @@ contains
+ 
+       itol = 4
+       rtol(:) = 1.0e-3_dp           ! Relative tolerances for each scalar
+-      atol(:) = 1.0e-99_dp               ! Absolute tolerance for each scalar (floor value)
++      atol(:) = 1.0e-30_dp               ! Absolute tolerance for each scalar (floor value)
+ 
+       rwork(:) = 0.0_dp
+       iwork(:) = 0
+@@ -88,14 +120,14 @@ contains
+       allocate(rtol(n_sp), atol(n_sp), rwork(rworkdim), iwork(iworkdim))
+       itol = 4
+       rtol(:) = 1.0e-3_dp
+-      atol(:) = 1.0e-99_dp
++      atol(:) = 1.0e-30_dp
+ 
+       rwork(1) = t_end
+ 
+       rwork(5:10) = 0.0_dp
+       iwork(5:10) = 0
+ 
+-      rwork(5) = 1.0e-99_dp
++      rwork(5) = 1.0e-30_dp
+       rwork(6) = t_end
+       iwork(6) = 100000
+     end if
+@@ -109,6 +141,9 @@ contains
+ 
+     ncall = 0
+ 
++    !! Pass VMR to y array
++    y(:) = VMR(:)
++
+     do while (t_now < t_end)
+ 
+       y_old(:) = y(:)
+@@ -117,7 +152,7 @@ contains
+       select case(network)
+       case('HO')
+         call DLSODE (RHS_update, n_sp, y, t_now, t_end, itol, rtol, atol, itask, &
+-        & istate, iopt, rwork, rworkdim, iwork, iworkdim, jac_HO, mf)
++        & istate, iopt, rwork, rworkdim, iwork, iworkdim, jac_NCHO, mf)
+       case('CHO')
+         call DLSODE (RHS_update, n_sp, y, t_now, t_end, itol, rtol, atol, itask, &
+         & istate, iopt, rwork, rworkdim, iwork, iworkdim, jac_CHO, mf)
+@@ -147,10 +182,13 @@ contains
+ 
+     end do
+ 
+-    VMR(:) = y(:)/nd_atm
++    !! Pass y to VMR array
++    VMR(:) = y(:)
+ 
+     deallocate(Keq, re_r, re_f, rtol, atol, rwork, iwork)
+ 
++    endif ! use_bdfsol
++
+   end subroutine mini_ch_dlsode
+ 
+   subroutine RHS_update(NEQ, time, y, f, rpar, ipar)
+@@ -169,6 +207,9 @@ contains
+     real(dp), dimension(NEQ) :: f_pr, f_re, t_pr, t_re
+     real(dp), dimension(NEQ) :: c_pr, c_re
+ 
++    !! Convert VMR to number density for rate calculations
++    y(:) = y(:) * nd_atm
++
+     ! Calculate the rate of change of number density for all species [cm-3/s] this is the f vector
+     f_pr(:) = 0.0_dp
+     c_pr(:) = 0.0_dp
+@@ -235,13 +276,17 @@ contains
+ 
+     !! Sum product and reactant rates to get net rate for species
+     f(:) = f_pr(:) + f_re(:)
++
++    !! Convert rates and number density to VMR for integration
++    f(:) = f(:)/nd_atm
++    y(:) = y(:)/nd_atm
+  
+   end subroutine RHS_update
+ 
+   subroutine jac_dummy (NEQ, X, Y, ML, MU, PD, NROWPD)
+     integer, intent(in) :: NEQ, ML, MU, NROWPD
+     real(dp), intent(in) :: X
+-    real(dp), dimension(NEQ), intent(in) :: Y
++    real(dp), dimension(NEQ), intent(inout) :: Y
+     real(dp), dimension(NROWPD, NEQ), intent(inout) :: PD
+   end subroutine jac_dummy
+ 
+@@ -249,9 +294,12 @@ contains
+     implicit none
+     integer, intent(in) :: N, ML, MU, NROWPD
+     real(dp), intent(in) :: X
+-    real(dp), dimension(N), intent(in) :: Y
++    real(dp), dimension(N), intent(inout) :: Y
+     real(dp), dimension(NROWPD, N), intent(out) :: DFY
+ 
++    !! Convert to real number density for Jacobian calculations
++    y(:) = y(:) * nd_atm
++
+     dfy(1,1) = -re_f(1)*y(2) - re_f(2)*y(5) - re_r(3)*y(4)
+     dfy(1,2) = -re_f(1)*y(1) + re_f(3)*y(7)
+     dfy(1,3) = re_r(1)*y(4)
+@@ -401,15 +449,21 @@ contains
+     dfy(12,11) = 0.0_dp
+     dfy(12,12) = -re_r(9)*y(2)**3 - re_r(10)*y(3)
+ 
++    !! Return y to VMR
++    y(:) = y(:)/nd_atm
++
+   end subroutine jac_NCHO
+ 
+   subroutine jac_CHO(N, X, Y, ML, MU, DFY, NROWPD)
+     implicit none
+     integer, intent(in) :: N, ML, MU, NROWPD
+     real(dp), intent(in) :: X
+-    real(dp), dimension(N), intent(in) :: Y
++    real(dp), dimension(N), intent(inout) :: Y
+     real(dp), dimension(NROWPD, N), intent(out) :: DFY
+ 
++    !! Convert to real number density for Jacobian calculations
++    y(:) = y(:) * nd_atm
++
+     dfy(1,1) = -re_f(1)*y(2) - re_f(2)*y(5) - re_r(3)*y(4)
+     dfy(1,2) = -re_f(1)*y(1) + re_f(3)*y(7)
+     dfy(1,3) = re_r(1)*y(4)
+@@ -493,15 +547,21 @@ contains
+     dfy(9,8) = 2.0_dp*re_f(6)*y(8) + re_f(7)*y(5)
+     dfy(9,9) = -re_r(6)*y(2)**3 - re_r(7)*y(3)
+ 
++    !! Return y to VMR
++    y(:) = y(:)/nd_atm
++
+   end subroutine jac_CHO
+ 
+   subroutine jac_HO(N, X, Y, ML, MU, DFY, NROWPD)
+     implicit none
+     integer, intent(in) :: N, ML, MU, NROWPD
+     real(dp), intent(in) :: X
+-    real(dp), dimension(N), intent(in) :: Y
++    real(dp), dimension(N), intent(inout) :: Y
+     real(dp), dimension(NROWPD, N), intent(out) :: DFY
+ 
++    !! Convert to real number density for Jacobian calculations
++    y(:) = y(:) * nd_atm
++
+     dfy(1, 1) = -re_f(1)*y(2) - re_r(2)*y(4)
+     dfy(1, 2) = -re_f(1)*y(1) + re_f(2)*y(5)
+     dfy(1, 3) = re_r(1)*y(4)
+@@ -528,6 +588,99 @@ contains
+     dfy(5, 4) = re_r(2)*y(1)
+     dfy(5, 5) = -re_f(2)*y(2)
+ 
++    !! Return y to VMR
++    y(:) = y(:)/nd_atm
++
+   end subroutine jac_HO
+ 
++  subroutine solveBDF1(n, f, jac, dt, sol)
++    ! BDF1 solver: sol = A \ rate, where A = I/dt - Jac
++    integer, intent(in) :: n
++    real(dp), intent(in) :: f(n), jac(n, n), dt
++    real(dp), intent(out) :: sol(n)
++    real(dp), dimension(n, n) :: Id, A
++    integer :: i
++
++    Id = 0.0_dp
++    do i = 1, n
++      Id(i, i) = 1.0_dp
++    end do
++
++    A = Id / dt - jac
++    call solve_linear_system(n, A, f, sol)
++   end subroutine solveBDF1
++
++  subroutine solveTRBDF2(n, f, jac, dt, sol)
++    ! TR-BDF2 solver
++    integer, intent(in) :: n
++    real(dp), intent(in) :: f(n), jac(n, n), dt
++    real(dp), intent(out) :: sol(n)
++    real(dp), dimension(n, n) :: Id, A
++    real(dp), dimension(n) :: B
++    integer :: i
++    real(dp), parameter :: gamma = 2.0_dp - sqrt(2.0_dp)
++
++    Id = 0.0_dp
++    do i = 1, n
++      Id(i, i) = 1.0_dp
++    end do
++
++    A = Id - gamma / 2.0_dp * dt * jac
++    B = dt * (1.0_dp - gamma / 2.0_dp) * f + dt * gamma / 2.0_dp * matmul(A, f)
++    A = matmul(A, A)
++    call solve_linear_system(n, A, B, sol)
++  end subroutine solveTRBDF2
++
++ 
++  subroutine solveTRBDF2Blend(n, f, jac, dt, y, sol)
++    ! Blended TR-BDF2 and BDF1 solver
++    integer, intent(in) :: n
++    real(dp), intent(in) :: f(n), jac(n, n), dt
++    real(dp), intent(in) :: y(n)
++    real(dp), intent(out) :: sol(n)
++    real(dp) :: alpha
++    real(dp), dimension(n_sp) :: S1, S2
++    integer :: i
++
++    ! Solve BDF1
++    call solveBDF1(n, f, jac, dt, sol)
++    S1 = y + sol
++
++    ! Solve TR-BDF2
++    call solveTRBDF2(n, f, jac, dt, sol)
++    S2 = y + sol
++
++    ! Blend solutions
++    alpha = 1.0_dp
++    do i = 1, n
++      if (S2(i) < S1(i)) alpha = min(alpha, S1(i) / (S1(i) - S2(i)))
++    end do
++    alpha = max(alpha, 0.0_dp)
++
++    ! Final blended solution
++    sol = (1.0_dp - alpha) * S1 + alpha * S2 - y
++  end subroutine solveTRBDF2Blend
++
++  subroutine solve_linear_system(n, A, b, x)
++    ! Solve the linear system A*x = b using LAPACK
++    integer, intent(in) :: n
++    real(dp), intent(in) :: A(n, n), b(n)
++    real(dp), intent(out) :: x(n)
++    integer :: ipiv(n), ipvt(n), info
++
++    ! Copy matrix A and vector b to avoid modifying them
++    x = b
++!    call dgesv(n, 1, A, n, ipiv, x, n, info)
++!    if (info /= 0) stop "Error solving linear system"
++
++   ! Perform LU decomposition using DGEFA
++    call dgefa(A, n, n, ipvt, info)
++    if (info /= 0) then
++       print*, 'Error: Matrix is singular'
++       stop
++    end if
++! Solve the system using DGESL
++    call dgesl(A, n, n, ipvt, x, 0)
++  end subroutine solve_linear_system 
++
+ end module mini_ch_i_dlsode

@@ -1,0 +1,107 @@
+<comment>
+problem   = Uranus Double Gray Test
+
+<job>
+problem_id = 3duranus   # problem ID: basename of output filenames
+tasklist   = ImplicitHydroTasks
+
+<output0>
+file_type  = rst
+dt         = 1.728E8
+
+<output1>
+file_type  = hst          # History data dump
+dt         = 8.64E8      # time increment between outputs
+
+<output2>
+file_type  = pnetcdf      # Binary data dump
+variable   = prim         # variables to be output
+dt         = 8.64E2      # time increment between outputs
+
+<output3>
+file_type  = pnetcdf
+variable   = uov
+dt         = 8.64E2      # time increment between outputs
+
+<output4>
+file_type  = pnetcdf
+variable   = rad
+dt         = 8.64E2      # time increment between outputs
+
+#<output5>
+#file_type  = dbg
+#dt         = 1
+
+<time>
+cfl_number = 0.1          # The Courant, Friedrichs, & Lewy (CFL) Number
+nlim       = -1           # cycle limit
+tlim       = 5.E4        # time limit
+xorder     = 5            # horizontal reconstruction order
+integrator = rk3          # integration method
+shock_capture = true
+
+<mesh>
+nx1        = 80          # Number of zones in X1-direction
+x1min      = 2.515E7         # minimum value of X1
+x1max      = 2.55E7       # maximum value of X1
+ix1_bc     = reflecting   # inner-X1 boundary flag
+ox1_bc     = reflecting   # outer-X1 boundary flag
+
+nx2        = 32           # Number of zones in X2-direction
+x2min      = 0.     # minimum value of X2
+x2max      = 1.E3      # maximum value of X2
+ix2_bc     = periodic        # inner-X2 boundary flag
+ox2_bc     = periodic        # outer-X2 boundary flag
+
+nx3        = 48          # Number of zones in X3-direction
+x3min      = 0.0          # minimum value of X3
+x3max      = 1.E3      # maximum value of X3
+ix3_bc     = periodic     # inner-X3 boundary flag
+ox3_bc     = periodic     # outer-X3 boundary flag
+
+<meshblock>
+nx1        = 80
+nx2        = 16
+nx3        = 16
+
+<hydro>
+grav_acc1   = -9.01
+gamma       = 1.4         # gamma = C_p/C_v
+implicit_flag = 9
+
+<thermodynamics>
+Rd          = 3149.       # Gas constant
+
+<astronomy>
+planet        = HJ
+HJ.parent     = Sun
+HJ.re         = 2.5362E4      # km
+HJ.rp         = 2.5362E4      # km
+HJ.obliq      = 90.        # deg
+HJ.spinp      = 0.72        # day
+HJ.orbit_a    = 19.165        # au
+HJ.orbit_e    = 0.
+HJ.orbit_i    = 0.        # deg
+HJ.orbit_p    = 3.06E4        # day
+HJ.grav_eq    = 9.01       # m/s^2
+HJ.equinox    = 0.
+
+<radiation>
+dt            = 200.
+nstr          = 4
+radiation_config = u3d.yaml
+relax_time    = 1.E4
+
+<forcing>
+packages = top_sponge_lyr, relax_bot_temp
+top_sponge_lyr.tau     = 1.E3
+top_sponge_lyr.width   = 2.E4
+relax_bot_temp.tem     = 250.
+relax_bot_temp.tau     = 1.E3
+
+<problem>
+T0         = 250.            # Surface temperature, K
+P0         = 5.E6             # Surface pressure, Pa
+Omega      = 1.01E-4             # Rotational frequency
+Tmin       = 52.
+radius     = 2.515E7

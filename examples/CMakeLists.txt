@@ -40,7 +40,9 @@ if (${TASK} STREQUAL "exo2" OR
   add_subdirectory(2023-Chen-exo3)
 endif()
 
-if (${TASK} STREQUAL "hjupiter")
+if (${TASK} STREQUAL "rtdry" OR
+    ${TASK} STREQUAL "rtcld" OR
+    ${TASK} STREQUAL "rtcldexo")
   add_subdirectory(2024-XZhang-cloud-rt)
 endif()
 

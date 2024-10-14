@@ -1,3 +1,6 @@
+// C/C++
+#include <cmath>
+
 // external
 #include <application/application.hpp>
 
@@ -102,61 +105,58 @@ void Kessler94::EvolveOneStep(AirParcel *air, Real time, Real dt) {
     air->w[ip] = 0.;
   }
 }
-/*
-for (int n = 0; n < pthermo->cloud_index_set_[iv].size(); ++n) {
-//int j = pthermo->GetCloudIndex(iv,n);
-//  Real xs = pthermo->getSVPFunc1(*air, iv, j, n) / air->w[IPR];
-int j = pthermo->cloud_index_set_[iv][n];
-Real xs = pthermo->svp_func1_[iv][0](*air, iv, j) / air->w[IPR];
-
-//std::cout << "iv=:" << iv << " bpres=:" << pthermo->getSVPFunc1(*air, iv, 0)
-<< std::endl;
-//std::cout << "iv=:" << iv << "ic=:" << ic<< "ip=:" << ip<< " j= "<<j<<"
-bpres=:" << pthermo->svp_func1_[iv][0](*air, iv, j) << std::endl;
-//std::cout << "iv=:" << iv << " j= "<<j<<" bpres=:" <<
-pthermo->svp_func1_[iv][0](*air, iv, j) << std::endl;
-
-if (xs > 0.) { // test
-   //std::cout << "svp nonzero: " <<pthermo->getSVPFunc1(*air, iv, j, n)<<"
-P:"<< air->w[IPR]<<" T:"<< tem << " Bsvp:" <<sat_vapor_p_H2O_BriggsS(tem) <<
-std::endl;
-   //std::cout << "svp nonzero: " <<pthermo->svp_func1_[iv][n](*air, iv, j)<<"
-P:"<< air->w[IPR]<<" T:"<< tem << " Bsvp:" <<sat_vapor_p_H2O_BriggsS(tem) <<
-std::endl;
-//     std::cout << "iv=:" << iv << " j= "<<j<< " n= "<<n<<" bpres=:" <<
-pthermo->svp_func1_[iv][0](*air, iv, j) << std::endl;
-   //std::cout << "svp nonzero: " <<pthermo->svp_func1_[iv][n](*air, iv, n)<<"
-P:"<< air->w[IPR]<<" T:"<< tem << " Bsvp:" <<sat_vapor_p_H2O_BriggsS(tem) <<
-std::endl; std::cout << "svp nonzero: " <<pthermo->svp_func1_[iv][0](airmole, 0,
-0)<<" P:"<< air->w[IPR]<<" T:"<< tem << " Bsvp:" <<sat_vapor_p_H2O_BriggsS(tem)
-<< std::endl;
-   //std::cout << "svp nonzero: " <<pthermo->svp_func1_[1][1](*air, iv, n)<<"
-P:"<< air->w[IPR]<<" T:"<< tem << " Bsvp:" <<sat_vapor_p_H2O_BriggsS(tem) <<
-std::endl;
-}
-
-if (xs > 1.) { // boiling
-   //std::cout << "boiling: " <<pthermo->getSVPFunc1(*air, iv, j, n)<<
-std::endl;
-//     std::cout << "boiling: " <<pthermo->svp_func1_[iv][n](*air, iv, j)<<
-std::endl;
-
-   air->w[iv] += air->w[ip];
-   air->w[ip] = 0.;
-  }
-}
-}
-*/
 
 void Kessler94::SetVsedFromConserved(AthenaArray<Real> vsed[3],
                                      Hydro const *phydro, int kl, int ku,
                                      int jl, int ju, int il, int iu) {
+  // xiz added sedimentation velocity calculation 2024
   int ip = myCloudId(2);
-  Real vel = GetPar<Real>("sedimentation");
-
-  for (int k = kl; k <= ku; ++k)
-    for (int j = jl; j <= ju; ++j)
-      for (int i = il; i <= iu; ++i) {
-        vsed[0](ip, k, j, i) = vel;
-      }
+  if (HasPar("sedimentation")) {
+    Real vel = GetPar<Real>("sedimentation");
+    for (int k = kl; k <= ku; ++k)
+      for (int j = jl; j <= ju; ++j)
+        for (int i = il; i <= iu; ++i) {
+          vsed[0](ip, k, j, i) = vel;
+        }
+  } else {
+    Real P, T, rho_gas, eta, lambda, Kn, beta;
+    auto pthermo = Thermodynamics::GetInstance();
+    Real Rd = pthermo->GetRd();
+    const Real d = 2.827e-10;  // Molecular diameter in m
+    const Real epsilon_LJ =
+        59.7e-7;              // Depth of Lennard-Jones potential in J for H2
+    const Real m = 3.34e-27;  // Molecular mass of H2
+    Real r = GetPar<Real>("radius");       // Particle radius
+    Real rho_d = GetPar<Real>("density");  // material density
+    Real g = GetPar<Real>("gravity");
+    for (int k = kl; k <= ku; ++k)
+      for (int j = jl; j <= ju; ++j)
+        for (int i = il; i <= iu; ++i) {
+          rho_gas = phydro->w(IDN, k, j, i);
+          P = phydro->w(IPR, k, j, i);
+          T = P / (Rd * rho_gas);
+          eta = (5.0 / 16.0) * std::sqrt(M_PI * m * Constants::kBoltz * T) *
+                std::pow(Constants::kBoltz * T / epsilon_LJ, 0.16) /
+                (M_PI * d * d * 1.22);
+          // Calculate mean free path, lambda
+          lambda =
+              (eta * std::sqrt(M_PI * Constants::kBoltz * Constants::kBoltz)) /
+              (P * std::sqrt(2.0 * m));
+          // Calculate Knudsen number, Kn
+          Kn = lambda / r;
+          // Calculate Cunningham slip factor, beta
+          beta = 1.0 + Kn * (1.256 + 0.4 * std::exp(-1.1 / Kn));
+          // Calculate vsed
+          Real vel = beta * (2.0 * r * r * g * (rho_d - rho_gas)) / (9.0 * eta);
+          //          std::cout << "vel: " << vel << " pressure:" << P
+          //                    << "rho_gas: " << rho_gas << " T:" << T <<
+          //                    "beta: " << beta
+          //                    << " eta:" << eta << " rho_gas: " << rho_gas
+          //                    << " lambda:" << lambda << std::endl;
+          if (vel > 5.e3) {
+            vel = 5.e3;  // limit the sedimentation velocity to 5 km/s
+          }
+          vsed[0](ip, k, j, i) = vel;
+        }
+  }
 }

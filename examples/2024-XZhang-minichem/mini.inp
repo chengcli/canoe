@@ -1,0 +1,132 @@
+<comment>
+problem     = test jupiter
+
+<job>
+problem_id  = 2dmini     # problem ID: basename of output filenames
+
+<output0>
+file_type   = rst
+dt          = 1.E7
+
+<output1>
+file_type   = hst           # History data dump
+dt          = 1.E5          # time increment between outputs
+
+<output2>
+file_type   = pnetcdf        # Netcdf format output
+variable    = prim          # variables to be output
+dt          = 1.E6          # time increment between outputs
+
+<output3>
+file_type   = pnetcdf        # Netcdf format output
+variable    = uov           # diagnostic variables
+dt          = 1.E6          # time increment
+
+#<output4>
+#file_type   = netcdf        # Netcdf format output
+#variable    = diag           # diagnostic variables
+#dt          = 1.E4          # time increment
+
+#<output5>
+#file_type   = netcdf        # Netcdf format output
+#variable    = rad           # diagnostic variables
+#dt          = 1.E4          # time increment
+
+<time>
+cfl_number  = 1.
+nlim        = -1            # cycle limit
+tlim        = 1.E10
+xorder      = 5             # horizontal reconstruction order
+integrator  = rk3           # integration method
+ncycle_out  = 100
+
+<mesh>
+nx1         = 150          # Number of zones in X1-direction
+x1min       = -600.E3     # minimum value of X1
+x1max       = 30.E3       # maximum value of X1
+ix1_bc      = reflecting  # Inner-X1 boundary condition flag
+ox1_bc      = reflecting  # Outer-X1 boundary condition flag
+
+nx2         = 256         # Number of zones in X2-direction
+x2min       = 0.          # minimum value of X2
+x2max       = 1.2E6     # maximum value of X2
+ix2_bc      = periodic    # Inner-X2 boundary condition flag
+ox2_bc      = periodic    # Outer-X2 boundary condition flag
+
+nx3         = 1          # Number of zones in X3-direction
+x3min       = -0.5         # minimum value of X3
+x3max       = 0.5         # maximum value of X3
+#nx3         = 80         # Number of zones in X3-direction
+#x3min       = 0.        	# minimum value of X3
+#x3max       = 1600.E3    	# maximum value of X3
+ix3_bc      = periodic    # Inner-X3 boundary condition flag
+ox3_bc      = periodic    # Outer-X3 boundary condition flag
+
+<meshblock>
+nx1         = 150
+nx2         = 16
+nx3         = 1
+
+<hydro>
+gamma       = 1.42
+grav_acc1   = -24.79
+implicit_flag = 1
+
+<species>
+vapor = H2O
+cloud = H2O(c), H2O(p)
+
+<chemistry>
+microphysics_config = water_ammonia.yaml
+
+<thermodynamics>
+Rd          = 3777.   # mu = 2.3175 g/mol
+eps1        = 8.18    8.18    8.18
+beta1       = 0.      24.845  24.845
+rcp1        = 0.15    0.33    0.33
+Ttriple1    = 273.16
+Ptriple1    = 611.7
+
+sa.relax    = 1.0
+sa.max_iter = 5
+sa.ftol     = 1.e-2
+
+<forcing>
+#packages = bot_heating, top_cooling
+#bot_heating.flux = 8.
+#top_cooling.flux = -8.
+packages = top_sponge_lyr
+top_sponge_lyr.tau = 1.E4
+top_sponge_lyr.width = 20.E3
+
+#<radiation>
+#dt            = 200.
+#nstr          = 4
+#radiation_config = jupiter.yaml
+#relax_time    = 1.E4
+
+<problem>
+qH2O.ppmv   = 2500.
+
+#minichem
+use_mini    = false
+use_mini_ic = false
+metallicity = 1x
+
+#simple tracer
+use_tra_ic = true
+fix_bot_tra = true
+Trabot_tau = 100.
+tracer.ppb  = 50.
+tracer.pre  = 5.E7
+
+P0          = 1.E5
+T0          = 169.
+Tmin        = 120.
+hrate       = -0.1  #K/day cooling rate
+prad        = 2.e5
+Ttop_tau    = 100.
+Tbot_tau    = 100.
+
+init_Ttol   = 0.1
+diagnostics = div, curl, b, mean, anomaly, radflux, hydroflux

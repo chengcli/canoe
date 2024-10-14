@@ -1,0 +1,24 @@
+## Reaction list for mini-chem ##
+# Format is:
+# reaction type (1,2 or 3 body), Tmin, Tmax
+# n reactants, n products, A, B, C (or A0, B0, C0 , A_inf, B_inf, C_inf)
+# Stoichiometric factors for each species
+# reactant and product species
+# Number of reactions:
+3
+#
+2, 250, 2500
+2, 2, 3.57e-16, 1.52, 1740.0
+1, 1, 1, 1
+OH, H2, H2O, H
+#
+2, 300, 2500
+2, 2, 8.52e-20, 2.67, 3160.0
+1, 1, 1, 1
+O, H2, OH, H
+#
+3, 100, 5000
+2, 1, 2.7e-31, -0.6, 0.0, 3.31e-6, -1.0, 0.0
+1, 1, 1
+H, H, H2
+#

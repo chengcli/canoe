@@ -226,8 +226,8 @@ void RadiationBand::RTSolverDisort::Prepare(MeshBlock const *pmb, int k,
 
   // set the surface temperature from the user input variables
   // FIXME(cli)
-  //AthenaArray<Real> &ts = pmb->ruser_meshblock_data[1];
-  //ds_.bc.btemp = ts(j);
+  // AthenaArray<Real> &ts = pmb->ruser_meshblock_data[1];
+  // ds_.bc.btemp = ts(j);
 }
 
 void RadiationBand::RTSolverDisort::CalBandFlux(MeshBlock const *pmb, int k,

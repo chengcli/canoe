@@ -2,6 +2,9 @@
 #define CONFIGURE_HPP_
 
 enum {
+  //cubesphere nblocks data
+  NBLOCKS = @NBLOCKS@,
+
   // thermodynamics data
   NPHASE_LEGACY = @NPHASE_LEGACY@,
 
@@ -49,5 +52,10 @@ enum {
 
 // python bindings (PYTHON_BINDINGS or NO_PYTHOND_BINDINGS)
 #define @PYTHON_BINDINGS_OPTION@
+
+// nblocks for exo3 option (USE_NBLOCKS or NOT_USE_NBLOCKS)
+#define @USE_NBLOCKS@
+
+#define ENABLE_FIX
 
 #endif  // CONFIGURE_HPP_

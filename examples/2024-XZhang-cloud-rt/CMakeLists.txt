@@ -1,11 +1,16 @@
-
-# 1. Compile hywater
-if (${NVAPOR} EQUAL 1 AND ${NCLOUD} EQUAL 2 AND ${NPHASE_LEGACY} EQUAL 3)
-  setup_problem(hywater)
+#if (${NVAPOR} EQUAL 1 AND ${NCLOUD} EQUAL 2 AND ${NPHASE_LEGACY} EQUAL 3)
+if (${NVAPOR} EQUAL 1)
+  #setup_problem(rt_silicate)
+  setup_problem(beta_rtsi)
+  #setup_problem(rt_h2o)
+elseif (${NVAPOR} EQUAL 2)
+  #setup_problem(rt_h2o_nh3)
+  setup_problem(jupiter_crm)
+elseif (${NVAPOR} EQUAL 3)
+  setup_problem(beta_rtjup3cld)
+else()
+  setup_problem(rtdry)
 endif()
-
-# 2. Compile hjupiter
-setup_problem(hjupiter)
 
 # 2. Copy input files to run directory
 file(GLOB inputs *.py *.inp *.yaml)

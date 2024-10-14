@@ -97,19 +97,30 @@ void ImplicitSolver::BackwardSubstitution(std::vector<T1> &a,
   for (int i = iu - 1; i >= il; --i) delta[i] -= a[i] * delta[i + 1];
 
   // 7. update conserved variables, i = iu
+  auto &w = pmy_block_->phydro->w;
   for (int i = il; i <= iu; ++i) {
+    Real dens = du_(IDN, k, j, i);
+    for (int n = 1; n < IVX; ++n) dens += du_(n, k, j, i);
+    dens = delta[i](0) - dens;
+
     if (T2::RowsAtCompileTime == 3) {  // partial matrix
       du_(IDN, k, j, i) = delta[i](0);
+      for (int n = 1; n < IVX; ++n) {
+        du_(n, k, j, i) += dens * w(n, k, j, i);
+      }
       du_(IVX + mydir_, k, j, i) = delta[i](1);
       du_(IEN, k, j, i) = delta[i](2);
     } else {  // full matrix
       du_(IDN, k, j, i) = delta[i](0);
+      for (int n = 1; n < IVX; ++n) {
+        du_(n, k, j, i) += dens * w(n, k, j, i);
+      }
       du_(IVX + mydir_, k, j, i) = delta[i](1);
       du_(IVX + (IVY - IVX + mydir_) % 3, k, j, i) = delta[i](2);
       du_(IVX + (IVZ - IVX + mydir_) % 3, k, j, i) = delta[i](3);
       du_(IEN, k, j, i) = delta[i](4);
     }
-    for (int n = 1; n <= NVAPOR; ++n) du_(IDN, k, j, i) -= du_(n, k, j, i);
+    for (int n = 1; n < IVX; ++n) du_(IDN, k, j, i) -= du_(n, k, j, i);
   }
 
   if (!first_block) SendBuffer(delta[il], k, j, bblock);

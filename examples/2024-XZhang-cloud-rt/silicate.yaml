@@ -1,0 +1,10 @@
+name: giant planet chemistry model
+
+microphysics:
+  - mgsio3-system
+
+mgsio3-system:
+  scheme: Kessler94
+  dependent-species: [vapor.mgsio3, cloud.mgsio3(c), cloud.mgsio3(p)]
+  parameters: {autoconversion: 1.e-5, accretion: 0.0, evaporation: 1.e-2, radius: 1.e-5, gravity: 500., density: 5000.}
+  #parameters: {autoconversion: 1.e-5, accretion: 0.0, evaporation: 1.e-2, sedimentation: -5.e2}

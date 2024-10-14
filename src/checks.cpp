@@ -181,7 +181,7 @@ void fix_eos_cons2prim(MeshBlock* pmb, AthenaArray<Real>& prim,
     }
   }
 
-  pscm->ConvectiveAdjustment(ac, k, j, ifix - 1, iu);
+  // pscm->ConvectiveAdjustment(ac, k, j, ifix - 1, iu);
 
   for (int i = ifix - 1; i <= iu; ++i) {
     ac[i].ToMassFraction();
@@ -195,7 +195,7 @@ void fix_eos_cons2prim(MeshBlock* pmb, AthenaArray<Real>& prim,
     }
   }
 
-  /*Real temp = pthermo->GetTemp(pmb, k, j, ifix - 1);
+  Real temp = pthermo->GetTemp(pmb, k, j, ifix - 1);
   for (int i = ifix; i <= iu; ++i) {
     Real z = pcoord->x1v(i) - pcoord->x1v(ifix - 1);
     prim(IDN, k, j, i) =
@@ -205,7 +205,7 @@ void fix_eos_cons2prim(MeshBlock* pmb, AthenaArray<Real>& prim,
     prim(IVX, k, j, i) /= 2.;
     prim(IVY, k, j, i) /= 2.;
     prim(IVZ, k, j, i) /= 2.;
-  }*/
+  }
 
 #endif  // ENABLE_FIX
 }
@@ -269,7 +269,7 @@ void fix_implicit_cons(MeshBlock* pmb, AthenaArray<Real>& cons, int il, int iu,
         }
       }
 
-      pscm->ConvectiveAdjustment(ac, k, j, ifix - 1, iu);
+      // pscm->ConvectiveAdjustment(ac, k, j, ifix - 1, iu);
 
       for (int i = ifix - 1; i <= iu; ++i) {
         for (int n = 0; n < NHYDRO; ++n) {
@@ -277,7 +277,7 @@ void fix_implicit_cons(MeshBlock* pmb, AthenaArray<Real>& cons, int il, int iu,
         }
       }
 
-      /*AirParcel air0(AirParcel::Type::MassConc);
+      AirParcel air0(AirParcel::Type::MassConc);
       for (int n = 0; n < NHYDRO; ++n) air0.w[n] = cons(n, k, j, ifix - 1);
       air0.ToMoleFraction();
       Real temp = air0.w[IDN];
@@ -298,7 +298,7 @@ void fix_implicit_cons(MeshBlock* pmb, AthenaArray<Real>& cons, int il, int iu,
 
         air.ToMassConcentration();
         for (int n = 0; n < NHYDRO; ++n) cons(n, k, j, i) = air.w[n];
-      }*/
+      }
     }
 #endif  // ENABLE_FIX
 }
