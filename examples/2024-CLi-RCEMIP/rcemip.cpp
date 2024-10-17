@@ -26,6 +26,9 @@ Real qt, q0;
 int iH2O, iH2Oc, iH2Op;
 int iCO2 = 0, iCH4 = 1, iN2O = 2, iO3 = 3;
 
+// bulk aerodynamic coefficients
+Real cdq, cdm, cdh;
+
 void MeshBlock::InitUserMeshBlockData(ParameterInput *pin) {
   AllocateUserOutputVariables(11);
   SetUserOutputVariableName(0, "temp");
@@ -94,11 +97,45 @@ void Forcing(MeshBlock *pmb, Real const time, Real const dt,
   // heat capacity
   Real cv = 717.;           // J/kg/K
   Real dTdt = 2. / 86400.;  // K/s
+
+  auto pthermo = Thermodynamics::GetInstance();
+  auto pcoord = pmb->pcoord;
+  int is = pmb->is;
+
   for (int k = pmb->ks; k <= pmb->ke; ++k)
-    for (int j = pmb->js; j <= pmb->je; ++j)
+    for (int j = pmb->js; j <= pmb->je; ++j) {
+      // body cooling
       for (int i = pmb->is; i <= pmb->ie; ++i) {
         u(IEN, k, j, i) -= cv * w(IDN, k, j, i) * dTdt * dt;
       }
+
+      // surface fluxes
+      Real vh = sqrt(w(IVY, k, j, is) * w(IVY, k, j, is) +
+                     w(IVZ, k, j, is) * w(IVZ, k, j, is));
+
+      // vapor flux
+      Real Kq = cdq * vh * pcoord->dx1f(is) / 2.;
+      auto rh = std::max(0.01, relative_humidity(pthermo, w.at(k, j, is))[1]);
+      Real dqdz = 2. * (1. - 1. / rh) * w(iH2O, k, j, is) / pcoord->dx1f(is);
+      u(iH2O, k, j, is) +=
+          -w(IDN, k, j, is) * (Kq * dqdz) / pcoord->dx1f(is) * dt;
+
+      // momentum flux
+      Real Km = cdm * vh * pcoord->dx1f(is) / 2.;
+      Real dv2dz = 2. * w(IVY, k, j, is) / pcoord->dx1f(is);
+      Real dv3dz = 2. * w(IVZ, k, j, is) / pcoord->dx1f(is);
+      u(IVY, k, j, is) +=
+          -w(IDN, k, j, is) * (Km * dv2dz) / pcoord->dx1f(is) * dt;
+      u(IVZ, k, j, is) +=
+          -w(IDN, k, j, is) * (Km * dv3dz) / pcoord->dx1f(is) * dt;
+
+      // energy flux
+      Real Kh = cdh * vh * pcoord->dx1f(is) / 2.;
+      Real tem = pthermo->GetTemp(w.at(k, j, is));
+      Real dTdz = 2. * (tem - T0) / pcoord->dx1f(is);
+      u(IEN, k, j, is) +=
+          -w(IDN, k, j, is) * cv * (Kh * dTdz) / pcoord->dx1f(is) * dt;
+    }
 }
 
 void Mesh::InitUserMeshData(ParameterInput *pin) {
@@ -119,6 +156,10 @@ void Mesh::InitUserMeshData(ParameterInput *pin) {
   P0 = pin->GetReal("problem", "P0");
   T0 = pin->GetReal("problem", "T0");
   gamma_tv = pin->GetReal("problem", "gamma_tv");
+
+  Real cdq = pin->GetOrAddReal("problem", "Cdq", 0.02);
+  Real cdm = pin->GetOrAddReal("problem", "Cdm", 0.02);
+  Real cdh = pin->GetOrAddReal("problem", "Cdh", 0.02);
 
   // index
   iH2O = pthermo->SpeciesIndex("H2O");
