@@ -240,17 +240,23 @@ void Hydro::RiemannSolver(const int k, const int j, const int il, const int iu,
     flx(ivz, k, j, i) = flxi[IVZ];
     flx(IEN, k, j, i) = flxi[IEN];
 
-    /* tracer flux
-    Real tfl[(NMASS)], tfr[(NMASS)], tflxi[(NMASS)];
-    for (int n = 0; n < NMASS; ++n) {
-      Real vsed = pmicro->vsedf[dir](n, k, j, i);
-      tfl[n] = wli[IDN] * rdl * vxl;
-      tfr[n] = wri[IDN] * rdr * vxr;
-      tflxi[n] = sl * tfl[n] + sr * tfr[n];
-      if (dir==0){ // The direction of the sedimentation velocity
-        pmicro->mass_flux[dir](n, k, j, i) = tflxi[n] + vsed * wri[IDN] * rdr;
-      }else{
-        pmicro->mass_flux[dir](n, k, j, i) = tflxi[n];
+    // sedimentation flux
+    if (ivx == IVX) {
+      if (i == iu) return;
+      Real vsed_[NHYDRO];
+      for (int n = 0; n <= NVAPOR + NCLOUD; ++n) vsed_[n] = 0.;
+      for (int n = 1 + NVAPOR + NCLOUD; n <= NVAPOR + NCLOUD + NPRECIP; ++n) {
+        vsed_[n] = -10.;
+      }
+
+      Real hr = (wri[IPR] * (kappar + 1.) + KE_r) / wri[IDN];
+      for (int n = 1 + NVAPOR; n <= NVAPOR + NCLOUD + NPRECIP; ++n) {
+        Real rho = wri[IDN] * wri[n];
+        flx(n, k, j, i) += vsed_[n] * rho;
+        flx(ivx, k, j, i) += vsed_[n] * rho * wri[ivx];
+        flx(ivy, k, j, i) += vsed_[n] * rho * wri[ivy];
+        flx(ivz, k, j, i) += vsed_[n] * rho * wri[ivz];
+        flx(IEN, k, j, i) += vsed_[n] * rho * hr;
       }
     }
   }

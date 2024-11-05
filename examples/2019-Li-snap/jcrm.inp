@@ -54,10 +54,10 @@ x3max       = 2400.E3     # maximum value of X3
 ix3_bc      = periodic    # Inner-X3 boundary condition flag
 ox3_bc      = periodic    # Outer-X3 boundary condition flag
 
-<meshblock>
-nx1         = 80
-nx2         = 20
-nx3         = 1
+#<meshblock>
+#nx1         = 80
+#nx2         = 20
+#nx3         = 1
 
 <hydro>
 grav_acc1       = -24.79
@@ -70,8 +70,7 @@ bot_heating.flux = 50.
 top_cooling.flux = -50.
 
 <problem>
-thermodynamics_config = jup-thermo-H2O-NH3.yaml
-#microphysics_config = water_ammonia.yaml
+thermodynamics_config = jup-precip.yaml
 
 qH2O        = 0.0500
 qNH3        = 0.0028

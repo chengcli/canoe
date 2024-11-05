@@ -2,7 +2,7 @@
 #define CONFIGURE_HPP_
 
 enum {
-  //cubesphere nblocks data
+  // dirty cubesphere nblocks data
   NBLOCKS = @NBLOCKS@,
 
   // thermodynamics data
@@ -57,6 +57,6 @@ enum {
 // nblocks for exo3 option (USE_NBLOCKS or NOT_USE_NBLOCKS)
 #define @USE_NBLOCKS@
 
-#define ENABLE_FIX
+//#define ENABLE_FIX
 
 #endif  // CONFIGURE_HPP_
