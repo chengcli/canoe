@@ -7,6 +7,8 @@
 // microphysics
 #include "sedimentation.hpp"
 
+#define sqr(x) ((x) * (x))
+
 void SedimentationImpl::reset() {
   if (options.radius().size() != options.density().size()) {
     throw std::runtime_error(
@@ -24,31 +26,26 @@ torch::Tensor SedimentationImpl::forward(torch::Tensor hydro_w) {
 
   auto tem = shared_->at("temperature").get();
 
-  auto eta = (5.0 / 16.0) * torch::sqrt(M_PI * m * Constants::kBoltz * tem) *
-             torch::pow(Constants::kBoltz * tem / epsilon_LJ, 0.16) /
+  // cope with float precision
+  auto eta = (5.0 / 16.0) * std::sqrt(M_PI * Constants::kBoltz) * std::sqrt(m) *
+             torch::sqrt(tem) *
+             torch::pow(Constants::kBoltz / epsilon_LJ * tem, 0.16) /
              (M_PI * d * d * 1.22);
 
   // Calculate mean free path, lambda
-  auto lambda =
-      (eta * std::sqrt(M_PI * Constants::kBoltz * Constants::kBoltz)) /
-      (hydro_w[IPR] * std::sqrt(2.0 * m));
+  auto lambda = (eta * std::sqrt(M_PI * sqr(Constants::kBoltz))) /
+                (hydro_w[IPR] * std::sqrt(2.0 * m));
 
   // Calculate Knudsen number, Kn
-  auto Kn = lambda / radius;
+  auto Kn = lambda / radius.view({-1, 1, 1, 1});
 
   // Calculate Cunningham slip factor, beta
   auto beta = 1.0 + Kn * (1.256 + 0.4 * torch::exp(-1.1 / Kn));
 
   // Calculate vsed
-  auto vel =
-      beta *
-      (2.0 * radius * radius * options.gravity() * (density - hydro_w[IDN])) /
-      (9.0 * eta);
-  //          std::cout << "vel: " << vel << " pressure:" << P
-  //                    << "rho_gas: " << rho_gas << " T:" << T <<
-  //                    "beta: " << beta
-  //                    << " eta:" << eta << " rho_gas: " << rho_gas
-  //                    << " lambda:" << lambda << std::endl;
+  auto vel = beta / (9.0 * eta) *
+             (2.0 * sqr(radius.view({-1, 1, 1, 1})) * options.gravity() *
+              (density.view({-1, 1, 1, 1}) - hydro_w[IDN]));
 
   return torch::clamp(vel, c10::nullopt, options.upper_limit());
 }
