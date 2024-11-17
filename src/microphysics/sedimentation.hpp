@@ -19,22 +19,25 @@ using SharedData = std::shared_ptr<
 
 struct SedimentationOptions {
   //! radius and density of particles
-  ADD_ARG(std::vector<float>, radius) = {1.0e-6};
-  ADD_ARG(std::vector<float>, density) = {1.0e3};
-  ADD_ARG(float, gravity) = 1.0;
+  ADD_ARG(std::vector<double>, radius) = {10.0e-6};
+  ADD_ARG(std::vector<double>, density) = {1.0e3};
+  ADD_ARG(double, gravity) = 1.0;
 
   //! default H2-atmosphere properties
   //! diameter of molecule [m]
-  ADD_ARG(float, a_diameter) = 2.827e-10;
+  ADD_ARG(double, a_diameter) = 2.827e-10;
 
   //! Lennard-Jones potential in J [J]
-  ADD_ARG(float, a_epsilon_LJ) = 59.7e-7;
+  ADD_ARG(double, a_epsilon_LJ) = 59.7e-7;
 
   //! molecular mass of H2 [kg]
-  ADD_ARG(float, a_mass) = 3.34e-27;
+  ADD_ARG(double, a_mass) = 3.34e-27;
+
+  //! minimum radius of particles subject to sedimentation [m]
+  ADD_ARG(double, min_radius) = 1.e-6;
 
   //! upper limit of sedimentation velocity [m/s]
-  ADD_ARG(float, upper_limit) = 5.e3;
+  ADD_ARG(double, upper_limit) = 5.e3;
 };
 
 class SedimentationImpl : public torch::nn::Cloneable<SedimentationImpl> {

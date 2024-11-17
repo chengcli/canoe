@@ -47,5 +47,12 @@ torch::Tensor SedimentationImpl::forward(torch::Tensor hydro_w) {
              (2.0 * sqr(radius.view({-1, 1, 1, 1})) * options.gravity() *
               (density.view({-1, 1, 1, 1}) - hydro_w[IDN]));
 
+  // Set velocity to zero for particles with radius less than min_radius
+  for (int i = 0; i < options.radius().size(); ++i) {
+    if (options.radius()[i] < options.min_radius()) {
+      vel[i] = torch::zeros_like(vel[i]);
+    }
+  }
+
   return torch::clamp(vel, c10::nullopt, options.upper_limit());
 }

@@ -41,7 +41,7 @@ TEST_P(DeviceTest, forward) {
 
 TEST_P(DeviceTest, two_species_forward) {
   auto options = SedimentationOptions();
-  options.radius({1.0e-6, 10.e-6});
+  options.radius({0.0e-6, 10.e-6});
   options.density({1.0e3, 1.0e3});
 
   auto sed = Sedimentation(options);
