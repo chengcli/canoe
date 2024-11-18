@@ -18,6 +18,7 @@ void SedimentationImpl::reset() {
   radius = register_parameter(
       "radius",
       torch::clamp(torch::tensor(options.radius()), options.min_radius()));
+
   density = register_parameter(
       "density", torch::clamp(torch::tensor(options.density()), 0.));
 }
@@ -54,6 +55,10 @@ torch::Tensor SedimentationImpl::forward(torch::Tensor hydro_w) {
   for (int i = 0; i < options.radius().size(); ++i) {
     if (options.radius()[i] < options.min_radius()) {
       vel[i] = torch::zeros_like(vel[i]);
+    }
+
+    if (options.const_vsed().size() > i) {
+      vel[i] += options.const_vsed()[i];
     }
   }
 

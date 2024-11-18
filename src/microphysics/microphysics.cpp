@@ -72,6 +72,17 @@ Microphysics::Microphysics(MeshBlock *pmb, ParameterInput *pin)
   str = pin->GetOrAddString("microphysics", "particle_density", "");
   sed_opts_.density() = Vectorize<double>(str.c_str(), " ,");
 
+  auto vsed1 = pin->GetOrAddReal("microphysics", "particle_vsed1", 0.);
+  auto vsed2 = pin->GetOrAddReal("microphysics", "particle_vsed2", 0.);
+
+  if (vsed1 != 0.0) {
+    sed_opts_.const_vsed().push_back(vsed1);
+    if (vsed2 != 0.0) sed_opts_.const_vsed().push_back(vsed2);
+  } else if (vsed2 != 0.0) {
+    sed_opts_.const_vsed().push_back(0.);
+    sed_opts_.const_vsed().push_back(vsed2);
+  }
+
   sed_opts_.gravity() = pin->GetOrAddReal("hydro", "grav_acc1", 0.0);
 }
 

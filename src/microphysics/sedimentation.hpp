@@ -21,6 +21,10 @@ struct SedimentationOptions {
   //! radius and density of particles
   ADD_ARG(std::vector<double>, radius) = {10.0e-6};
   ADD_ARG(std::vector<double>, density) = {1.0e3};
+
+  //! additional constant sedimentation velocity
+  ADD_ARG(std::vector<double>, const_vsed) = {};
+
   ADD_ARG(double, gravity) = -10.0;
 
   //! default H2-atmosphere properties
