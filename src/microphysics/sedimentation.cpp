@@ -15,8 +15,11 @@ void SedimentationImpl::reset() {
         "Sedimentation: radius and density must have the same size");
   }
 
-  radius = register_parameter("radius", torch::tensor(options.radius()));
-  density = register_parameter("density", torch::tensor(options.density()));
+  radius = register_parameter(
+      "radius",
+      torch::clamp(torch::tensor(options.radius()), options.min_radius()));
+  density = register_parameter(
+      "density", torch::clamp(torch::tensor(options.density()), 0.));
 }
 
 torch::Tensor SedimentationImpl::forward(torch::Tensor hydro_w) {
@@ -43,7 +46,7 @@ torch::Tensor SedimentationImpl::forward(torch::Tensor hydro_w) {
   auto beta = 1.0 + Kn * (1.256 + 0.4 * torch::exp(-1.1 / Kn));
 
   // Calculate vsed
-  auto vel = beta / (9.0 * eta) *
+  auto vel = -beta / (9.0 * eta) *
              (2.0 * sqr(radius.view({-1, 1, 1, 1})) * options.gravity() *
               (density.view({-1, 1, 1, 1}) - hydro_w[IDN]));
 

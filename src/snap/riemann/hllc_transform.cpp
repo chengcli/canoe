@@ -34,8 +34,7 @@ void Hydro::RiemannSolver(const int k, const int j, const int il, const int iu,
                           AthenaArray<Real> &wr, AthenaArray<Real> &flx,
                           const AthenaArray<Real> &dxw) {
   auto pthermo = Thermodynamics::GetInstance();
-  // FIXME
-  // auto pmicro = pmy_block->pimpl->pmicro;
+  auto pmicro = pmy_block->pimpl->pmicro;
 
   int ivy = IVX + ((ivx - IVX) + 1) % 3;
   int ivz = IVX + ((ivx - IVX) + 2) % 3;
@@ -243,20 +242,15 @@ void Hydro::RiemannSolver(const int k, const int j, const int il, const int iu,
     // sedimentation flux
     if (ivx == IVX) {
       if (i == iu) return;
-      Real vsed_[NHYDRO];
-      for (int n = 0; n <= NVAPOR + NCLOUD; ++n) vsed_[n] = 0.;
-      for (int n = 1 + NVAPOR + NCLOUD; n <= NVAPOR + NCLOUD + NPRECIP; ++n) {
-        vsed_[n] = -10.;
-      }
-
       Real hr = (wri[IPR] * (kappar + 1.) + KE_r) / wri[IDN];
-      for (int n = 1 + NVAPOR; n <= NVAPOR + NCLOUD + NPRECIP; ++n) {
-        Real rho = wri[IDN] * wri[n];
-        flx(n, k, j, i) += vsed_[n] * rho;
-        flx(ivx, k, j, i) += vsed_[n] * rho * wri[ivx];
-        flx(ivy, k, j, i) += vsed_[n] * rho * wri[ivy];
-        flx(ivz, k, j, i) += vsed_[n] * rho * wri[ivz];
-        flx(IEN, k, j, i) += vsed_[n] * rho * hr;
+      for (int n = 0; n < NCLOUD + NPRECIP; ++n) {
+        Real rho = wri[IDN] * wri[1 + NVAPOR + n];
+        auto vsed = pmicro->vsedf[0](n, k, j, i);
+        flx(1 + NVAPOR + n, k, j, i) += vsed * rho;
+        flx(ivx, k, j, i) += vsed * rho * wri[ivx];
+        flx(ivy, k, j, i) += vsed * rho * wri[ivy];
+        flx(ivz, k, j, i) += vsed * rho * wri[ivz];
+        flx(IEN, k, j, i) += vsed * rho * hr;
       }
     }
   }

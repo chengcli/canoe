@@ -13,6 +13,9 @@
 #include <air_parcel.hpp>
 #include <virtual_groups.hpp>
 
+// microphysics
+#include "sedimentation.hpp"
+
 class MeshBlock;
 class ParameterInput;
 class MicrophysicalSchemeBase;
@@ -72,6 +75,9 @@ class Microphysics {
  private:
   //! meshblock pointer
   MeshBlock const *pmy_block_;
+
+  //! sedimentation options
+  SedimentationOptions sed_opts_;
 };
 
 using MicrophysicsPtr = std::shared_ptr<Microphysics>;

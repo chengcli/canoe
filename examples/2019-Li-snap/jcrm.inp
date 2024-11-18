@@ -64,6 +64,10 @@ grav_acc1       = -24.79
 gamma           = 1.4    # override by thermodynamics
 implicit_flag   = 1
 
+<microphysics>
+particle_radius = 0., 1.e-4
+particle_density = 1.e3, 1.e3
+
 <forcing>
 packages = bot_heating, top_cooling
 bot_heating.flux = 50.

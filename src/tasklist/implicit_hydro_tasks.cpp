@@ -282,7 +282,7 @@ TaskStatus ImplicitHydroTasks::ImplicitCorrection(MeshBlock *pmb, int stage) {
 
 TaskStatus ImplicitHydroTasks::UpdateAllConserved(MeshBlock *pmb, int stage) {
   if (stage <= nstages) {
-    // pmb->pimpl->pmicro->SetVsedFromConserved(pmb->phydro);
+    pmb->pimpl->pmicro->SetVsedFromConserved(pmb->phydro);
   } else {
     return TaskStatus::fail;
   }
