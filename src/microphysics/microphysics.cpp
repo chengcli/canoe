@@ -68,8 +68,11 @@ Microphysics::Microphysics(MeshBlock *pmb, ParameterInput *pin)
   // set up sedimentation options
   auto str = pin->GetOrAddString("microphysics", "particle_radius", "");
   sed_opts_.radius() = Vectorize<double>(str.c_str(), " ,");
+
   str = pin->GetOrAddString("microphysics", "particle_density", "");
   sed_opts_.density() = Vectorize<double>(str.c_str(), " ,");
+
+  sed_opts_.gravity() = pin->GetOrAddReal("hydro", "grav_acc1", 0.0);
 }
 
 Microphysics::~Microphysics() {
