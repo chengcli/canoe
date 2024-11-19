@@ -66,10 +66,10 @@ Microphysics::Microphysics(MeshBlock *pmb, ParameterInput *pin)
   systems_ = MicrophysicalSchemesFactory::Create(pmb, pin);
 
   // set up sedimentation options
-  auto str = pin->GetOrAddString("microphysics", "particle_radius", "");
+  auto str = pin->GetOrAddString("microphysics", "particle_radius", "0.");
   sed_opts_.radius() = Vectorize<double>(str.c_str(), " ,");
 
-  str = pin->GetOrAddString("microphysics", "particle_density", "");
+  str = pin->GetOrAddString("microphysics", "particle_density", "0.");
   sed_opts_.density() = Vectorize<double>(str.c_str(), " ,");
 
   auto vsed1 = pin->GetOrAddReal("microphysics", "particle_vsed1", 0.);

@@ -62,5 +62,5 @@ torch::Tensor SedimentationImpl::forward(torch::Tensor hydro_w) {
     }
   }
 
-  return torch::clamp(vel, c10::nullopt, options.upper_limit());
+  return torch::clamp(vel, -options.upper_limit(), options.upper_limit());
 }
