@@ -64,14 +64,17 @@ grav_acc1       = -24.79
 gamma           = 1.4    # override by thermodynamics
 implicit_flag   = 1
 
+<microphysics>
+particle_radius = 0., 1.e-5
+particle_density = 1.e3, 1.e3
+
 <forcing>
 packages = bot_heating, top_cooling
 bot_heating.flux = 50.
 top_cooling.flux = -50.
 
 <problem>
-thermodynamics_config = jup-thermo-H2O-NH3.yaml
-#microphysics_config = water_ammonia.yaml
+thermodynamics_config = jup-precip.yaml
 
 qH2O        = 0.0500
 qNH3        = 0.0028

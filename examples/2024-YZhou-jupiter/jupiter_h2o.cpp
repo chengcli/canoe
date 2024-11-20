@@ -37,7 +37,7 @@
 #include <snap/thermodynamics/atm_thermodynamics.hpp>
 
 // special includes
-#include <special/giants_enroll_vapor_functions_v1.hpp>
+// #include <special/giants_enroll_vapor_functions_v1.hpp>
 
 Real grav, P0, T0, Tmin, prad, hrate;
 int iH2O;
@@ -53,20 +53,21 @@ void MeshBlock::InitUserMeshBlockData(ParameterInput *pin) {
 
 void MeshBlock::UserWorkBeforeOutput(ParameterInput *pin) {
   auto pthermo = Thermodynamics::GetInstance();
+  auto &w = phydro->w;
 
   for (int k = ks; k <= ke; ++k)
     for (int j = js; j <= je; ++j)
       for (int i = is; i <= ie; ++i) {
         user_out_var(0, k, j, i) = pthermo->GetTemp(w.at(k, j, i));
-        user_out_var(1, k, j, i) = pthermo->PotentialTemp(w.at(k, j, i), P0);
+        user_out_var(1, k, j, i) = potential_temp(pthermo, w.at(k, j, i), P0);
         // theta_v
         user_out_var(2, k, j, i) =
-            user_out_var(1, k, j, i) * pthermo->RovRd(this, k, j, i);
+            user_out_var(1, k, j, i) * pthermo->RovRd(w.at(k, j, i));
         // mse
         user_out_var(3, k, j, i) =
-            pthermo->MoistStaticEnergy(this, grav * pcoord->x1v(i), k, j, i);
+            moist_static_energy(pthermo, w.at(k, j, i), grav * pcoord->x1v(i));
         // relative humidity
-        user_out_var(4, k, j, i) = pthermo->RelativeHumidity(this, 1, k, j, i);
+        user_out_var(4, k, j, i) = relative_humidity(pthermo, w.at(k, j, i))[1];
       }
 }
 
@@ -81,12 +82,7 @@ void Forcing(MeshBlock *pmb, Real const time, Real const dt,
   for (int k = ks; k <= ke; ++k)
     for (int j = js; j <= je; ++j)
       for (int i = is; i <= ie; ++i) {
-        auto &&air = AirParcelHelper::gather_from_primitive(pmb, k, j, i);
-
-        air.ToMoleFraction();
-        Real cv =
-            get_cv_mass(air, 0, pthermo->GetRd(), pthermo->GetCvRatioMass());
-
+        Real cv = pthermo->GetCv(w.at(k, j, i));
         if (w(IPR, k, j, i) < prad) {
           du(IEN, k, j, i) += dt * hrate * w(IDN, k, j, i) * cv *
                               (1. + 1.E-4 * sin(2. * M_PI * rand() / RAND_MAX));
@@ -95,6 +91,7 @@ void Forcing(MeshBlock *pmb, Real const time, Real const dt,
 }
 
 void Mesh::InitUserMeshData(ParameterInput *pin) {
+  auto pthermo = Thermodynamics::GetInstance();
   grav = -pin->GetReal("hydro", "grav_acc1");
 
   P0 = pin->GetReal("problem", "P0");
@@ -105,8 +102,7 @@ void Mesh::InitUserMeshData(ParameterInput *pin) {
   hrate = pin->GetReal("problem", "hrate") / 86400.;
 
   // index
-  auto pindex = IndexMap::GetInstance();
-  iH2O = pindex->GetVaporId("H2O");
+  iH2O = pthermo->SpeciesIndex("H2O");
   EnrollUserExplicitSourceFunction(Forcing);
 }
 
@@ -117,6 +113,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
   app->Log("ProblemGenerator: jupiter_crm");
 
   auto pthermo = Thermodynamics::GetInstance();
+  auto &w = phydro->w;
 
   // mesh limits
   Real x1min = pmy_mesh->mesh_size.x1min;
@@ -137,20 +134,21 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
 
   AirParcel air(AirParcel::Type::MoleFrac);
 
-  // estimate surface temperature and pressure
   Real Ts = T0 - grav / cp * x1min;
   Real Ps = P0 * pow(Ts / T0, cp / Rd);
-  Real xH2O = pin->GetReal("problem", "qH2O.ppmv") / 1.E6;
+  Real yH2O = pin->GetReal("problem", "qH2O.gkg") / 1.E3;
+
+  std::vector<Real> yfrac(IVX, 0.);
+  yfrac[iH2O] = yH2O;
+  yfrac[0] = 1. - yH2O;
 
   while (iter++ < max_iter) {
-    // read in vapors
-    air.w[iH2O] = xH2O;
-    air.w[IPR] = Ps;
-    air.w[IDN] = Ts;
+    pthermo->SetMassFractions<Real>(yfrac.data());
+    pthermo->EquilibrateTP(Ts, Ps);
 
     // stop at just above P0
     for (int i = is; i <= ie; ++i) {
-      pthermo->Extrapolate(&air, pcoord->dx1f(i), "pseudo", grav);
+      pthermo->Extrapolate_inplace(pcoord->dx1f(i), "pseudo", grav);
       if (air.w[IPR] < P0) break;
     }
 
@@ -169,26 +167,24 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
   // construct atmosphere from bottom up
   for (int k = ks; k <= ke; ++k)
     for (int j = js; j <= je; ++j) {
-      air.SetZero();
-      air.w[iH2O] = xH2O;
-      air.w[IPR] = Ps;
-      air.w[IDN] = Ts;
+      pthermo->SetMassFractions<Real>(yfrac.data());
+      pthermo->EquilibrateTP(Ts, Ps);
 
       // half a grid to cell center
-      pthermo->Extrapolate(&air, pcoord->dx1f(is) / 2., "reversible", grav);
+      pthermo->Extrapolate_inplace(pcoord->dx1f(is) / 2., "reversible", grav);
 
       int i = is;
       for (; i <= ie; ++i) {
-        if (air.w[IDN] < Tmin) break;
-        AirParcelHelper::distribute_to_conserved(this, k, j, i, air);
-        pthermo->Extrapolate(&air, pcoord->dx1f(i), "pseudo", grav, 1.e-5);
+        pthermo->GetPrimitive(w.at(k, j, i));
+        if (pthermo->GetTemp() < Tmin) break;
+        pthermo->Extrapolate_inplace(pcoord->dx1f(i), "pseudo", grav);
       }
 
       // Replace adiabatic atmosphere with isothermal atmosphere if temperature
       // is too low
       for (; i <= ie; ++i) {
-        AirParcelHelper::distribute_to_conserved(this, k, j, i, air);
-        pthermo->Extrapolate(&air, pcoord->dx1f(i), "isothermal", grav);
+        pthermo->GetPrimitive(w.at(k, j, i));
+        pthermo->Extrapolate_inplace(pcoord->dx1f(i), "isothermal", grav);
       }
     }
 }

@@ -118,7 +118,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
   Real Ps = P0 * pow(Ts / T0, cp / Rd);
 
   // read deep composition
-  std::vector<Real> yfrac(1 + NVAPOR, 0.);
+  std::vector<Real> yfrac(IVX, 0.);
   Real qdry = 1.;
   for (int n = 1; n <= NVAPOR; ++n) {
     std::string name = "q" + pthermo->SpeciesName(n);
@@ -132,6 +132,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
   while (iter++ < max_iter) {
     pthermo->SetMassFractions<Real>(yfrac.data());
     pthermo->EquilibrateTP(Ts, Ps);
+    std::cout << "Ts = " << Ts << ", Ps = " << Ps << std::endl;
 
     // stop at just above Z = 0
     int i = is;
