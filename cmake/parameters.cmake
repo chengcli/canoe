@@ -14,6 +14,9 @@ set_if_empty(NSTATIC 0)
 set_if_empty(NINT_PARTICLE_DATA 0)
 set_if_empty(NREAL_PARTICLE_DATA 0)
 
+# dirty
+set_if_empty(NBLOCKS 0)
+
 if(NOT AFFINE OR NOT DEFINED AFFINE)
   set(AFFINE_OPTION "NOT_AFFINE")
 else()

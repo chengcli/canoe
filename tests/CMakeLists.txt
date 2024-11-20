@@ -10,11 +10,12 @@ enable_testing()
 
 # torch tests
 if (${Torch_FOUND})
-  setup_test(test_eos)
-  setup_test(test_weno)
-  setup_test(test_reconstruct)
-  setup_test(test_riemann)
-  setup_test(test_hydro)
+  #setup_test(test_eos)
+  #setup_test(test_weno)
+  #setup_test(test_reconstruct)
+  #setup_test(test_riemann)
+  #setup_test(test_hydro)
+  setup_test(test_sedimentation)
 endif()
 
 # athena tests

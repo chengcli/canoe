@@ -195,7 +195,7 @@ void fix_eos_cons2prim(MeshBlock* pmb, AthenaArray<Real>& prim,
     }
   }
 
-  Real temp = pthermo->GetTemp(pmb, k, j, ifix - 1);
+  Real temp = pthermo->GetTemp(pmb->phydro->w.at(k, j, ifix - 1));
   for (int i = ifix; i <= iu; ++i) {
     Real z = pcoord->x1v(i) - pcoord->x1v(ifix - 1);
     prim(IDN, k, j, i) =

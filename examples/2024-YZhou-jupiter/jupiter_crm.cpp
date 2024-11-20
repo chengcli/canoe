@@ -150,7 +150,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
   Real Ts = T0 - grav / cp * x1min;
   Real Ps = P0 * pow(Ts / T0, cp / Rd);
   Real xH2O = pin->GetReal("problem", "qH2O.ppmv") / 1.E6;
-  Real xNH3 = pin->GetReal("problem", "qNH3.ppmv") / 1.E6;
+  // Real xNH3 = pin->GetReal("problem", "qNH3.ppmv") / 1.E6;
 
   while (iter++ < max_iter) {
     // read in vapors

@@ -6,6 +6,7 @@
 
 // athena
 #include <athena/athena.hpp>
+#include <athena/hydro/hydro.hpp>
 #include <athena/mesh/mesh.hpp>
 #include <athena/parameter_input.hpp>
 #include <athena/reconstruct/interpolation.hpp>
@@ -19,6 +20,11 @@
 #include <air_parcel.hpp>
 #include <configure.hpp>
 #include <impl.hpp>
+#include <snap/athena_torch.hpp>
+#include <snap/thermodynamics/thermodynamics.hpp>
+
+// utils
+#include <utils/vectorize.hpp>
 
 // microphysics
 #include "microphysical_schemes.hpp"
@@ -26,7 +32,7 @@
 
 const std::string Microphysics::input_key = "microphysics_config";
 
-enum { NMASS = 0 };
+enum { NMASS = NCLOUD + NPRECIP };
 
 Microphysics::Microphysics(MeshBlock *pmb, ParameterInput *pin)
     : pmy_block_(pmb) {
@@ -58,6 +64,26 @@ Microphysics::Microphysics(MeshBlock *pmb, ParameterInput *pin)
   vsed_[2].ZeroClear();
 
   systems_ = MicrophysicalSchemesFactory::Create(pmb, pin);
+
+  // set up sedimentation options
+  auto str = pin->GetOrAddString("microphysics", "particle_radius", "0.");
+  sed_opts_.radius() = Vectorize<double>(str.c_str(), " ,");
+
+  str = pin->GetOrAddString("microphysics", "particle_density", "0.");
+  sed_opts_.density() = Vectorize<double>(str.c_str(), " ,");
+
+  auto vsed1 = pin->GetOrAddReal("microphysics", "particle_vsed1", 0.);
+  auto vsed2 = pin->GetOrAddReal("microphysics", "particle_vsed2", 0.);
+
+  if (vsed1 != 0.0) {
+    sed_opts_.const_vsed().push_back(vsed1);
+    if (vsed2 != 0.0) sed_opts_.const_vsed().push_back(vsed2);
+  } else if (vsed2 != 0.0) {
+    sed_opts_.const_vsed().push_back(0.);
+    sed_opts_.const_vsed().push_back(vsed2);
+  }
+
+  sed_opts_.gravity() = pin->GetOrAddReal("hydro", "grav_acc1", 0.0);
 }
 
 Microphysics::~Microphysics() {
@@ -79,14 +105,44 @@ void Microphysics::EvolveSystems(AirColumn &ac, Real time, Real dt) {
 }
 
 void Microphysics::SetVsedFromConserved(Hydro const *phydro) {
+  if (NMASS == 0) return;
+
   auto pmb = pmy_block_;
 
   int ks = pmb->ks, js = pmb->js, is = pmb->is;
   int ke = pmb->ke, je = pmb->je, ie = pmb->ie;
 
-  for (auto &system : systems_) {
-    system->SetVsedFromConserved(vsed_, phydro, ks, ke, js, je, is, ie);
-  }
+  // for (auto &system : systems_) {
+  //   system->SetVsedFromConserved(vsed_, phydro, ks, ke, js, je, is, ie);
+  // }
+
+  // Following this article
+  // https://stackoverflow.com/questions/59676983/in-torch-c-api-how-to-write-to-the-internal-data-of-a-tensor-fastly
+
+  // set temperature
+  auto pthermo = Thermodynamics::GetInstance();
+  torch::Tensor temp =
+      torch::zeros({pmb->ncells3, pmb->ncells2, pmb->ncells1}, torch::kDouble);
+  auto accessor = temp.accessor<double, 3>();
+
+  for (int k = 0; k < pmb->ncells3; ++k)
+    for (int j = 0; j < pmb->ncells2; ++j)
+      for (int i = 0; i < pmb->ncells1; ++i) {
+        accessor[k][j][i] = pthermo->GetTemp(phydro->w.at(k, j, i));
+      }
+
+  auto sed = Sedimentation(sed_opts_);
+  sed->to(torch::kCPU, torch::kDouble);
+
+  auto diag = std::make_shared<SharedData::element_type>();
+  (*diag)["temperature"] =
+      std::async(std::launch::async, [&]() { return temp; }).share();
+  sed->set_shared_data(diag);
+
+  // calculate sedimentation velocity
+  auto vel = sed->forward(to_torch(phydro->w));
+
+  vsed_[X1DIR] = to_athena(vel);
 
   // interpolation to cell interface
   for (int n = 0; n < NMASS; ++n)

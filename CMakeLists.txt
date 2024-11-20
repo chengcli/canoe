@@ -64,7 +64,7 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/parameters.cmake)
 message(STATUS "${PROJECT_NAME}-3. Setting up system libraries")
 find_package(Eigen3 REQUIRED)
 find_package(Cantera)
-#find_package(Torch)
+find_package(Torch)
 
 include(${CMAKE_SOURCE_DIR}/cmake/yamlpp.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/gtest.cmake)

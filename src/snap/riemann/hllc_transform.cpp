@@ -34,8 +34,7 @@ void Hydro::RiemannSolver(const int k, const int j, const int il, const int iu,
                           AthenaArray<Real> &wr, AthenaArray<Real> &flx,
                           const AthenaArray<Real> &dxw) {
   auto pthermo = Thermodynamics::GetInstance();
-  // FIXME
-  // auto pmicro = pmy_block->pimpl->pmicro;
+  auto pmicro = pmy_block->pimpl->pmicro;
 
   int ivy = IVX + ((ivx - IVX) + 1) % 3;
   int ivz = IVX + ((ivx - IVX) + 2) % 3;
@@ -240,17 +239,18 @@ void Hydro::RiemannSolver(const int k, const int j, const int il, const int iu,
     flx(ivz, k, j, i) = flxi[IVZ];
     flx(IEN, k, j, i) = flxi[IEN];
 
-    /* tracer flux
-    Real tfl[(NMASS)], tfr[(NMASS)], tflxi[(NMASS)];
-    for (int n = 0; n < NMASS; ++n) {
-      Real vsed = pmicro->vsedf[dir](n, k, j, i);
-      tfl[n] = wli[IDN] * rdl * vxl;
-      tfr[n] = wri[IDN] * rdr * vxr;
-      tflxi[n] = sl * tfl[n] + sr * tfr[n];
-      if (dir==0){ // The direction of the sedimentation velocity
-        pmicro->mass_flux[dir](n, k, j, i) = tflxi[n] + vsed * wri[IDN] * rdr;
-      }else{
-        pmicro->mass_flux[dir](n, k, j, i) = tflxi[n];
+    // sedimentation flux
+    if (ivx == IVX) {
+      if (i == iu) return;
+      Real hr = (wri[IPR] * (kappar + 1.) + KE_r) / wri[IDN];
+      for (int n = 0; n < NCLOUD + NPRECIP; ++n) {
+        Real rho = wri[IDN] * wri[1 + NVAPOR + n];
+        auto vsed = pmicro->vsedf[0](n, k, j, i);
+        flx(1 + NVAPOR + n, k, j, i) += vsed * rho;
+        flx(ivx, k, j, i) += vsed * rho * wri[ivx];
+        flx(ivy, k, j, i) += vsed * rho * wri[ivy];
+        flx(ivz, k, j, i) += vsed * rho * wri[ivz];
+        flx(IEN, k, j, i) += vsed * rho * hr;
       }
     }
   }
