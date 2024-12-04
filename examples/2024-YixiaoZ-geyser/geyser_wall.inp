@@ -1,0 +1,101 @@
+<comment>
+problem   = Moist rising bubble test
+reference = Bryan and Fritsch, 2002
+configure = --prob=geyser --flux=lmars --nvapor=2 --nphase=2 --nghost=3 -pnetcdf -mpi
+
+<job>
+problem_id  = geyser        # problem ID: basename of output filenames
+tasklist    = ImplicitHydroTasks
+
+<output1>
+file_type   = hst           # History data dump
+dt          = 0.1           # time increment between outputs
+# dcycle = 1
+
+<output2>
+file_type   = pnetcdf       # Netcdf format output
+variable    = prim          # variables to be output
+dt          = 0.1           # time increment between outputs
+# dcycle = 1
+
+<output3>
+file_type   = pnetcdf       # Netcdf format output
+variable    = uov           # diagnostic variables
+dt          = 0.1           # time increment
+# dcycle = 1
+
+<output4>
+file_type   = rst           # History data dump
+dt          = 20.           # time increment between outputs
+
+<time>
+cfl_number  = 0.3           # The Courant, Friedrichs, & Lewy (CFL) Number
+nlim        = -1            # cycle limit
+tlim        = 20.           # time limit
+xorder      = 2             # horizontal reconstruction order
+integrator  = rk3           # integration method
+
+<mesh>
+nx1         = 100           # Number of zones in X1-direction
+x1min       = 0.            # minimum value of X1
+x1max       = 1.E3          # maximum value of X1
+ix1_bc      = reflecting    # inner-X1 boundary flag
+ox1_bc      = outflow       # outer-X1 boundary flag
+
+nx2         = 50            # Number of zones in X2-direction
+x2min       = -250.         # minimum value of X2
+x2max       =  250.         # maximum value of X2
+ix2_bc      = outflow      # inner-X2 boundary flag
+ox2_bc      = outflow      # outer-X2 boundary flag
+
+nx3         = 1             # Number of zones in X3-direction
+x3min       = -0.5          # minimum value of X3
+x3max       = 0.5           # maximum value of X3
+ix3_bc      = periodic      # inner-X3 boundary flag
+ox3_bc      = periodic      # outer-X3 boundary flag
+
+<meshblock>
+nx1         = 100
+nx2         = 10
+nx3         = 1
+
+<hydro>
+grav_acc1   = -0.113
+gamma      = 1.45        # gamma = C_pd/C_vd
+drag_coef = 2e-3
+implicit_flag = 1
+
+<problem>
+thermodynamics_config = geyser_h2o.yaml
+
+Ptriple1 = 611.7
+Ttriple1 = 273.16
+Rd = 4155
+massflux_H2ratio = 0.01 # injected mass ratio of H2
+massflux_CO2ratio = 0.01 # injected mass ratio of CO2
+
+dT    = 2.0
+xc    = 10.E3
+zc    = 2.E3
+xr    = 2.E3
+zr    = 2.E3
+p0    = 1.E5
+qt    = 0.0196
+tau   = 1e8
+
+Tm    = 271.0 # melting temperature of ice, water-ice interface temp
+Ts    = 100.0 # ice surface temperature
+
+wall1_corner_x1 = 500.
+wall1_corner_x2 = -50.
+
+wall2_corner_x1 = 500.
+wall2_corner_x2 = 50.
+
+sigtanh = 30.
+
+<initialcondition>
+rho_bottom = 4.0e-4
+ScaleHeight = 100.0
+H2Oratio=0.0f
+CO2ratio=0.0f

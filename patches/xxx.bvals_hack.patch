@@ -1,0 +1,13 @@
+diff --git a/src/bvals/bvals.hpp b/src/bvals/bvals.hpp
+index f048b02b..2cb58a91 100644
+--- a/src/bvals/bvals.hpp
++++ b/src/bvals/bvals.hpp
+@@ -168,7 +168,7 @@ class BoundaryValues : public BoundaryBase, //public BoundaryPhysics,
+     return apply_bndry_fn_[bid];
+   }
+ 
+- private:
++ public:
+   MeshBlock *pmy_block_;      // ptr to MeshBlock containing this BoundaryValues
+   int nface_, nedge_;         // used only in fc/flux_correction_fc.cpp calculations
+ 
