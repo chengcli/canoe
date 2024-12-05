@@ -53,13 +53,10 @@ void Decomposition::ChangeToTemperature(AthenaArray<Real> &w, int kl, int ku,
   int is = pmb->is, ie = pmb->ie;
   if (grav == 0.) return;
 
-  auto ptop = ExchangeUtils::find_top_neighbor(pmb);
+  FindNeighbors();
 
-  if (ptop != nullptr) {
-    // RecvFromTop(psf_, kl, ku, jl, ju);
-    // auto ptop = ExchangeUtils::find_top_neighbor(pmb);
-    pexv->RecvFrom(ptop->snb);
-    unpackData(pmb, kl, ku, jl, ju);
+  if (has_top_neighbor) {
+    RecvFromTop(psf_, kl, ku, jl, ju);
   } else {
     // isothermal extrapolation to find the pressure at top boundary
     for (int k = kl; k <= ku; ++k)
@@ -71,12 +68,8 @@ void Decomposition::ChangeToTemperature(AthenaArray<Real> &w, int kl, int ku,
   }
   IntegrateDownwards(psf_, w, pco, grav, kl, ku, jl, ju, is, ie);
 
-  auto pbot = ExchangeUtils::find_bot_neighbor(pmb);
   // populate ghost cells
-  if (pbot != nullptr) {
-    packData(pmb, kl, ku, jl, ju);
-    pexv->SendTo(pmb, pbot->snb);
-  }
+  if (has_bot_neighbor) SendToBottom(psf_, kl, ku, jl, ju);
 
   // boundary condition
   if (pmb->pbval->block_bcs[inner_x1] == BoundaryFlag::reflect) {
@@ -134,10 +127,12 @@ void Decomposition::ChangeToTemperature(AthenaArray<Real> &w, int kl, int ku,
       }
     }
 
-  // finish send top pressure
-  if (pbot != nullptr) {
-    pexv->ClearBuffer();
-  }
+    // finish send top pressure
+#ifdef MPI_PARALLEL
+  MPI_Status status;
+  if (has_bot_neighbor && (bblock.snb.rank != Globals::my_rank))
+    MPI_Wait(&req_send_bot_, &status);
+#endif
 }
 
 void Decomposition::RestoreFromTemperature(AthenaArray<Real> &w,
