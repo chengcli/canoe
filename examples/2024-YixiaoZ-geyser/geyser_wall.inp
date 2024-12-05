@@ -29,7 +29,7 @@ file_type   = rst           # History data dump
 dt          = 20.           # time increment between outputs
 
 <time>
-cfl_number  = 0.3           # The Courant, Friedrichs, & Lewy (CFL) Number
+cfl_number  = 0.1           # The Courant, Friedrichs, & Lewy (CFL) Number
 nlim        = -1            # cycle limit
 tlim        = 20.           # time limit
 xorder      = 2             # horizontal reconstruction order
@@ -55,7 +55,7 @@ ix3_bc      = periodic      # inner-X3 boundary flag
 ox3_bc      = periodic      # outer-X3 boundary flag
 
 <meshblock>
-nx1         = 100
+nx1         = 50
 nx2         = 10
 nx3         = 1
 
@@ -63,7 +63,7 @@ nx3         = 1
 grav_acc1   = -0.113
 gamma      = 1.45        # gamma = C_pd/C_vd
 drag_coef = 2e-3
-implicit_flag = 1
+#implicit_flag = 1
 
 <problem>
 thermodynamics_config = geyser_h2o.yaml
@@ -71,7 +71,7 @@ thermodynamics_config = geyser_h2o.yaml
 Ptriple1 = 611.7
 Ttriple1 = 273.16
 Rd = 4155
-massflux_H2ratio = 0.01 # injected mass ratio of H2
+massflux_H2ratio = 0.1 # injected mass ratio of H2
 massflux_CO2ratio = 0.01 # injected mass ratio of CO2
 
 dT    = 2.0
