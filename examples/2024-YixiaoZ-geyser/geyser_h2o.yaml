@@ -1,0 +1,35 @@
+
+phases:
+  - name: atm
+    thermo: ideal-moist
+    species: [dry, H2O, H2O(s)]
+    kinetics: condensation
+
+species:
+  - name: dry
+    composition: {H: 2}
+    thermo:
+      model: constant-cp
+      cp0: 29.1 J/mol/K
+
+  - name: H2O
+    composition: {H: 2, O: 1}
+    thermo:
+      model: constant-cp
+      cp0: 37.4 J/mol/K
+
+  - name: H2O(s)
+    composition: {H: 2, O: 1}
+    thermo:
+      model: constant-cp
+      T0: 273.16
+      cp0: 62.556 J/mol/K
+      h0: -45.103 kJ/mol  # h0 = - (beta - delta) * R * T0
+    equation-of-state:
+      model: constant-volume
+      molar-volume: 0.0 cm^3/mol
+
+reactions:
+  - equation: H2O <=> H2O(s)
+    type: nucleation
+    rate-constant: {formula: ideal, T3: 273.16, P3: 611.7, beta: 24.845, delta: 4.986, minT: 200.}
