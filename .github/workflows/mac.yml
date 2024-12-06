@@ -222,7 +222,7 @@ jobs:
 
   shallow-xy:
     if: github.event.pull_request.draft == false
-    runs-on: macos-12
+    runs-on: [self-hosted, macOS, ARM64]
     steps:
       - uses: actions/checkout@v3
         with:
@@ -253,7 +253,7 @@ jobs:
       - name: create build directory
         # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
         # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
-        run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_Fortran_COMPILER=gfortran-12 -DNETCDF=ON -DTASK=vortex
+        run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DNETCDF=ON -DTASK=vortex
 
       - name: Build
         # Build your program with the given configuration
@@ -337,7 +337,7 @@ jobs:
 
   juno-mwr:
     if: github.event.pull_request.draft == false
-    runs-on: macos-12
+    runs-on: [self-hosted, macOS, ARM64]
     steps:
       - uses: actions/checkout@v3
         with:
@@ -352,7 +352,7 @@ jobs:
       - name: create build directory
         # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
         # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
-        run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_Fortran_COMPILER=gfortran-12 -DTASK=juno
+        run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DTASK=juno
 
       - name: build
         # Build your program with the given configuration

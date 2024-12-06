@@ -54,11 +54,9 @@ void Decomposition::ChangeToAnomaly(AthenaArray<Real> &w, int kl, int ku,
   int is = pmb->is, ie = pmb->ie;
   if (grav == 0.) return;
 
-  auto ptop = ExchangeUtils::find_top_neighbor(pmb);
-
-  if (ptop != nullptr) {
-    pexv->RecvFrom(ptop->snb);
-    unpackData(pmb, kl, ku, jl, ju);
+  FindNeighbors();
+  if (has_top_neighbor) {
+    RecvFromTop(psf_, kl, ku, jl, ju);
   } else {
     // isothermal extrapolation to find the pressure at top boundary
     for (int k = kl; k <= ku; ++k)
@@ -80,11 +78,7 @@ void Decomposition::ChangeToAnomaly(AthenaArray<Real> &w, int kl, int ku,
 
   auto pbot = ExchangeUtils::find_bot_neighbor(pmb);
   // populate ghost cells
-  if (pbot != nullptr) {
-    // SendToBottom(psf_, kl, ku, jl, ju);
-    packData(pmb, kl, ku, jl, ju);
-    pexv->SendTo(pmb, pbot->snb);
-  }
+  if (has_bot_neighbor) SendToBottom(psf_, kl, ku, jl, ju);
 
   // boundary condition
   if (pmb->pbval->block_bcs[inner_x1] == BoundaryFlag::reflect) {
@@ -168,42 +162,46 @@ void Decomposition::ChangeToAnomaly(AthenaArray<Real> &w, int kl, int ku,
       }*/
     }
 
-  /* debug
-  if (Globals::my_rank == 0) {
-    //int km = (kl + ku)/2;
-    //int jm = (jl + ju)/2;
-    int km = kl;
-    int jm = jl;
-    std::cout << "my.gid = " << pmb->gid << std::endl;
-    std::cout << "bblock.gid = " << bblock.snb.gid << std::endl;
-    std::cout << "===== k = " << km << " j = " << jm << std::endl;
-    for (int i = is - NGHOST; i <= ie + NGHOST; ++i) {
-      if (i == is)
-        std::cout << "-------- ";
-      if (i == 0)
-        std::cout << "i = " << "-1/2 ";
-      else if (i == 1)
-        std::cout << "i = " << "+1/2 ";
-      else
-        std::cout << "i = " << i-1 << "+1/2 ";
-      std::cout << "psf = " << psf_(km,jm,i) << ", ";
-      std::cout << "dsf = " << dsf_(km,jm,i) << std::endl;
-      std::cout << "i = " << i  << "    ";
-      std::cout << " pre = " << w(IPR,km,jm,i)
-                << " den = " << w(IDN,km,jm,i) << std::endl;
-      if (i == ie)
-        std::cout << "-------- ";
-      if (i == ie + NGHOST) {
-        std::cout << "i = " << i+1 << "+1/2 ";
-        std::cout << "psf = " << psf_(km,jm,i+1) << ", ";
-        std::cout << "dsf = " << dsf_(km,jm,i+1) << std::endl;
+    /* debug
+    if (Globals::my_rank == 0) {
+      //int km = (kl + ku)/2;
+      //int jm = (jl + ju)/2;
+      int km = kl;
+      int jm = jl;
+      std::cout << "my.gid = " << pmb->gid << std::endl;
+      std::cout << "bblock.gid = " << bblock.snb.gid << std::endl;
+      std::cout << "===== k = " << km << " j = " << jm << std::endl;
+      for (int i = is - NGHOST; i <= ie + NGHOST; ++i) {
+        if (i == is)
+          std::cout << "-------- ";
+        if (i == 0)
+          std::cout << "i = " << "-1/2 ";
+        else if (i == 1)
+          std::cout << "i = " << "+1/2 ";
+        else
+          std::cout << "i = " << i-1 << "+1/2 ";
+        std::cout << "psf = " << psf_(km,jm,i) << ", ";
+        std::cout << "dsf = " << dsf_(km,jm,i) << std::endl;
+        std::cout << "i = " << i  << "    ";
+        std::cout << " pre = " << w(IPR,km,jm,i)
+                  << " den = " << w(IDN,km,jm,i) << std::endl;
+        if (i == ie)
+          std::cout << "-------- ";
+        if (i == ie + NGHOST) {
+          std::cout << "i = " << i+1 << "+1/2 ";
+          std::cout << "psf = " << psf_(km,jm,i+1) << ", ";
+          std::cout << "dsf = " << dsf_(km,jm,i+1) << std::endl;
+        }
       }
-    }
-    std::cout << "==========" << std::endl;
-  }*/
+      std::cout << "==========" << std::endl;
+    }*/
 
-  // finish send top pressure
-  pexv->ClearBuffer();
+    // finish send top pressure
+#ifdef MPI_PARALLEL
+  MPI_Status status;
+  if (has_bot_neighbor && (bblock.snb.rank != Globals::my_rank))
+    MPI_Wait(&req_send_bot_, &status);
+#endif
 }
 
 void Decomposition::RestoreFromAnomaly(AthenaArray<Real> &w,
