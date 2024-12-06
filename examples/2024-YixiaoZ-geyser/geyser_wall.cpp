@@ -324,8 +324,8 @@ void BottomInjection(MeshBlock *pmb, Real const time, Real const dt,
 
         // add water vapor
         drhoH2O =
-            (dt * (Ptriple1 - p) /
-             sqrt(2 * M_PI * Rd * Ttriple1 * pthermo->GetInvMuRatio(iH2O))) /
+            dt * std::max(Ptriple1 - p, 0.) /
+            sqrt(2 * M_PI * Rd * Ttriple1 * pthermo->GetInvMuRatio(iH2O)) /
             pmb->pcoord->dx1f(is);
         u(iH2O, k, j, is) += drhoH2O;
         u(IEN, k, j, is) += drhoH2O * (Rd / (gammad - 1.)) *

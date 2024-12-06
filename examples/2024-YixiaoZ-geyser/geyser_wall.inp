@@ -63,7 +63,7 @@ nx3         = 1
 grav_acc1   = -0.113
 gamma      = 1.45        # gamma = C_pd/C_vd
 drag_coef = 2e-3
-#implicit_flag = 1
+implicit_flag = 1
 
 <problem>
 thermodynamics_config = geyser_h2o.yaml

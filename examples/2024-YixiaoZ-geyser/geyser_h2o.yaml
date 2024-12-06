@@ -32,4 +32,4 @@ species:
 reactions:
   - equation: H2O <=> H2O(s)
     type: nucleation
-    rate-constant: {formula: ideal, T3: 273.16, P3: 611.7, beta: 24.845, delta: 4.986, minT: 200.}
+    rate-constant: {formula: ideal, T3: 273.16, P3: 611.7, beta: 24.845, delta: 4.986, minT: 0.}
