@@ -31,7 +31,7 @@ dt          = 5.E4
 <time>
 cfl_number  = 0.9         # The Courant, Friedrichs, & Lewy (CFL) Number
 nlim        = -1          # cycle limit
-tlim        = 100.E5       # time limit
+tlim        = 1000.E5       # time limit
 xorder      = 5
 integrator  = rk3
 
@@ -55,7 +55,7 @@ ix3_bc      = periodic    # Inner-X3 boundary condition flag
 ox3_bc      = periodic    # Outer-X3 boundary condition flag
 
 <meshblock>
-nx1         = 80
+nx1         = 20
 nx2         = 10
 nx3         = 1
 
@@ -70,9 +70,11 @@ particle_density = 1.e3, 1.e3
 particle_vsed2 = -20.
 
 <forcing>
-packages = bot_heating, top_cooling
+packages = bot_heating, body_heating
 bot_heating.flux = 50.
-top_cooling.flux = -50.
+body_heating.dTdt.Kday = -2
+body_heating.pmin = 0.
+body_heating.pmax = 5.e5
 
 <problem>
 thermodynamics_config = hywater-precip.yaml

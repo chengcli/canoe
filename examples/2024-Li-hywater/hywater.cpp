@@ -28,6 +28,9 @@
 // canoe
 #include <impl.hpp>
 
+// climath
+#include <climath/interpolation.h>
+
 // snap
 #include <snap/thermodynamics/atm_thermodynamics.hpp>
 #include <snap/thermodynamics/thermodynamics.hpp>
@@ -131,6 +134,17 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
   }
   yfrac[0] = qdry;
 
+  // construct 1d atmosphere from bottom up
+  int nx1 = pmy_mesh->mesh_size.nx1;
+  Real dz = (x1max - x1min) / (nx1 - 1);
+
+  AthenaArray<Real> w1, z1;
+  w1.NewAthenaArray(NHYDRO, nx1);
+
+  z1.NewAthenaArray(nx1);
+  z1(0) = x1min;
+  for (int i = 1; i < nx1; ++i) z1(i) = z1(i - 1) + dz;
+
   int max_iter = 200, iter = 0;
   Real prim[NHYDRO], prim1[NHYDRO];
   while (iter++ < max_iter) {
@@ -138,18 +152,17 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
     pthermo->EquilibrateTP(Ts, Ps);
 
     // stop at just above Z = 0
-    int i = is;
-    for (; i <= ie; ++i) {
+    int i = 0;
+    for (; i < nx1; ++i) {
       pthermo->GetPrimitive<Real>(prim1);
-      pthermo->Extrapolate_inplace(pcoord->dx1f(i), "pseudo", grav);
-      if (pcoord->x1f(i + 1) > 0.) break;
+      pthermo->Extrapolate_inplace(dz, "pseudo", grav);
+      if (z1(i + 1) > 0.) break;
     }
     pthermo->GetPrimitive<Real>(prim);
 
     // linear interpolate to Z = 0
     for (int n = 0; n < NHYDRO; ++n)
-      prim[n] =
-          prim[n] + (prim1[n] - prim[n]) * pcoord->x1f(i + 1) / pcoord->dx1f(i);
+      prim[n] = prim[n] + (prim1[n] - prim[n]) * z1(i + 1) / dz;
 
     // make up for the difference
     Real t0 = pthermo->GetTemp(prim);
@@ -167,41 +180,56 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
     throw RuntimeError("ProblemGenerator", "maximum iteration reached");
   }
 
-  // construct atmosphere from bottom up
-  auto &w = phydro->w;
+  std::cout << "########## Finished ##########" << std::endl;
+  std::cout << "Ts = " << Ts << std::endl;
+  std::cout << "Ps = " << Ps << std::endl;
+
+  // construct 1d atmosphere
+  pthermo->SetMassFractions<Real>(yfrac.data());
+  pthermo->EquilibrateTP(Ts, Ps);
+
+  // half a grid to cell center
+  pthermo->Extrapolate_inplace(dz / 2., "pseudo", grav);
+
+  int i = 0;
+  for (; i < nx1; ++i) {
+    if (pthermo->GetTemp() < Tmin) break;
+    pthermo->GetPrimitive(w1.at(i));
+
+    // set all clouds to zero
+    for (int n = 1 + NVAPOR; n < IVX; ++n) w1(n, i) = 0.;
+
+    // move to the next cell
+    pthermo->Extrapolate_inplace(dz, "pseudo", grav);
+  }
+
+  // Replace adiabatic atmosphere with isothermal atmosphere if temperature
+  // is too low
+  for (; i < nx1; ++i) {
+    pthermo->GetPrimitive(w1.at(i));
+    // set all clouds to zero
+    for (int n = 1 + NVAPOR; n < IVX; ++n) w1(n, i) = 0.;
+    pthermo->Extrapolate_inplace(dz, "isothermal", grav);
+  }
+
+  // populate to 3D mesh
+  for (int k = ks; k <= ke; ++k)
+    for (int j = js; j <= je; ++j)
+      for (int i = is; i <= ie; ++i) {
+        for (int n = 0; n < NHYDRO; ++n) {
+          phydro->w(n, k, j, i) =
+              interp1(pcoord->x1v(i), w1.data() + n * nx1, z1.data(), nx1);
+        }
+      }
+
+  // add noise
   for (int k = ks; k <= ke; ++k)
     for (int j = js; j <= je; ++j) {
-      pthermo->SetMassFractions<Real>(yfrac.data());
-      pthermo->EquilibrateTP(Ts, Ps);
-
-      // half a grid to cell center
-      pthermo->Extrapolate_inplace(pcoord->dx1f(is) / 2., "reversible", grav);
-
-      int i = is;
-      for (; i <= ie; ++i) {
-        if (pthermo->GetTemp() < Tmin) break;
-        pthermo->GetPrimitive(w.at(k, j, i));
-        // set all clouds to zero
-        for (int n = 1 + NVAPOR; n < IVX; ++n) w(n, k, j, i) = 0.;
-        // move to the next cell
-        pthermo->Extrapolate_inplace(pcoord->dx1f(i), "pseudo", grav, adTdz);
-      }
-
-      // Replace adiabatic atmosphere with isothermal atmosphere if temperature
-      // is too low
-      for (; i <= ie; ++i) {
-        pthermo->GetPrimitive(w.at(k, j, i));
-        // set all clouds to zero
-        for (int n = 1 + NVAPOR; n < IVX; ++n) w(n, k, j, i) = 0.;
-        pthermo->Extrapolate_inplace(pcoord->dx1f(i), "isothermal", grav);
-      }
-
       for (int i = is; i <= ie; ++i) {
-        // add noise
-        w(IVX, k, j, i) = 0.1 * (1. * rand() / RAND_MAX - 0.5);
+        phydro->w(IVX, k, j, i) = 0.1 * (1. * rand() / RAND_MAX - 0.5);
       }
     }
 
-  peos->PrimitiveToConserved(w, pfield->bcc, phydro->u, pcoord, is, ie, js, je,
-                             ks, ke);
+  peos->PrimitiveToConserved(phydro->w, pfield->bcc, phydro->u, pcoord, is, ie,
+                             js, je, ks, ke);
 }
