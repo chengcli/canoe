@@ -1,0 +1,87 @@
+<comment>
+problem   = hywater cloud resolving model
+
+<job>
+problem_id  = hywater   # problem ID: basename of output filenames
+tasklist    = ImplicitHydroTasks
+
+<output0>
+file_type   = rst
+dt          = 10.E5
+
+<output1>
+file_type   = hst
+dt          = 5.E4
+
+<output2>
+file_type   = pnetcdf     # Tabular data dump
+variable    = prim        # variables to be output
+dt          = 5.E4        # time increment between outputs
+
+<output3>
+file_type   = pnetcdf
+variable    = uov
+dt          = 5.E4
+
+#<output4>
+#file_type   = pnetcdf
+#variable    = diag
+#dt          = 5.E3
+
+<time>
+cfl_number  = 0.9         # The Courant, Friedrichs, & Lewy (CFL) Number
+nlim        = -1          # cycle limit
+tlim        = 100.E5       # time limit
+xorder      = 5
+integrator  = rk3
+
+<mesh>
+nx1         = 80          # Number of zones in X1-direction
+x1min       = -300.E3     # minimum value of X1
+x1max       = 60.E3       # maximum value of X1
+ix1_bc      = reflecting  # Inner-X1 boundary condition flag
+ox1_bc      = reflecting  # Outer-X1 boundary condition flag
+
+nx2         = 80           # Number of zones in X2-direction
+x2min       = -600.E3    # minimum value of X2
+x2max       = 600.E3     # maximum value of X2
+ix2_bc      = periodic    # Inner-X2 boundary condition flag
+ox2_bc      = periodic    # Outer-X2 boundary condition flag
+
+nx3         = 1           # Number of zones in X3-direction
+x3min       = -600.E3    # minimum value of X3
+x3max       = 600.E3     # maximum value of X3
+ix3_bc      = periodic    # Inner-X3 boundary condition flag
+ox3_bc      = periodic    # Outer-X3 boundary condition flag
+
+<meshblock>
+nx1         = 80
+nx2         = 10
+nx3         = 1
+
+<hydro>
+grav_acc1       = -24.79
+gamma           = 1.4    # override by thermodynamics
+implicit_flag   = 1
+
+<microphysics>
+particle_radius = 0., 0.
+particle_density = 1.e3, 1.e3
+particle_vsed2 = -20.
+
+<forcing>
+packages = bot_heating, top_cooling
+bot_heating.flux = 50.
+top_cooling.flux = -50.
+
+<problem>
+thermodynamics_config = hywater-precip.yaml
+
+qH2O        = 0.10
+
+P0          = 1.E5
+T0          = 169.
+Tmin        = 110.
+Ttol_abs    = 0.01
+Ptol_rel    = 1.e-4
+#diagnostics = div, curl, b, mean, anomaly, radflux, hydroflux, w_avg
