@@ -35,7 +35,7 @@ inline double SatVaporPresIdeal(double t, double p, double beta, double gamma) {
   return p * exp((1. - 1. / t) * beta - gamma * log(t));
 }
 
-double sat_vapor_p_H2O(double T) {
+inline double sat_vapor_p_H2O(double T) {
   double betal = 22.46, gammal = 0, tr = 273.16, pr = 611.7;
   return SatVaporPresIdeal(T / tr, pr, betal, gammal);
 }

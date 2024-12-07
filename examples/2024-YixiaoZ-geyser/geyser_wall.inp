@@ -71,7 +71,7 @@ thermodynamics_config = geyser_h2o.yaml
 Ptriple1 = 611.7
 Ttriple1 = 273.16
 Rd = 4155
-massflux_H2ratio = 0.1 # injected mass ratio of H2
+massflux_H2ratio = 0.01 # injected mass ratio of H2
 massflux_CO2ratio = 0.01 # injected mass ratio of CO2
 
 dT    = 2.0
