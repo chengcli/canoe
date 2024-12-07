@@ -16,3 +16,4 @@ scons
 sphinx_rtd_theme
 torch
 tqdm
+wheel
