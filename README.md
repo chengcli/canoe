@@ -99,6 +99,9 @@ export MPICC=/usr/lib64/mpich/bin/mpicc
 export MPICXX=/usr/lib64/mpich/bin/mpicxx
 ```
 
+## Compiler
+gcc9 or clang is supported and tested.
+
 ## How to build and test
 After you completed the installation steps, you can build the canoe library.
 The easiest way is to build it in-place, meaning that the build (binary files) are

@@ -14,7 +14,7 @@ description: |-
   and their thermodynamics relations in Jupiter's atmosphere.
 
 phases:
-  - name: gas
+  - name: atm
     thermo: ideal-moist
     species: [dry, H2O, NH3, H2S, H2O(l), NH3(l), H2O(s), NH3(s), NH4SH(s)]
     kinetics: condensation

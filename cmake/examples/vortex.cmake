@@ -7,5 +7,6 @@ set(NON_BAROTROPIC_EOS 0)
 set(RSOLVER roe_shallow_xy)
 
 # canoe variables
+set(NETCDF ON)
 set(PNETCDF ON)
 set(MPI ON)
