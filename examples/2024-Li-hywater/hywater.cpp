@@ -85,6 +85,10 @@ void Mesh::InitUserMeshData(ParameterInput *pin) {
   grav = -pin->GetReal("hydro", "grav_acc1");
   P0 = pin->GetReal("problem", "P0");
   T0 = pin->GetReal("problem", "T0");
+
+  auto pthermo = Thermodynamics::GetInstance();
+  auto kinetics = get_kinetics_object(pthermo);
+  kinetics->setBoiling(true);
 }
 
 void MeshBlock::ProblemGenerator(ParameterInput *pin) {
