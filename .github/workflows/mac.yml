@@ -171,7 +171,7 @@ jobs:
 
   bryan-2d:
     if: github.event.pull_request.draft == false
-    runs-on: macos-12
+    runs-on: [self-hosted, macOS]
     needs: [straka-2d]
     steps:
       - uses: actions/checkout@v3
@@ -244,9 +244,6 @@ jobs:
         if: env.ARTIFACT_EXISTS == 'false'
         run: git lfs pull -I examples/2020-Li-polar-vortex/swxy_output.nc
 
-      - name: set up libraries
-        run: brew bundle
-
       - name: set up python libraries
         run: pip3 install -r requirements.txt
 
@@ -281,7 +278,7 @@ jobs:
 
   polar-vortex:
     if: github.event.pull_request.draft == false
-    runs-on: macos-12
+    runs-on: [self-hosted, macOS]
     steps:
       - uses: actions/checkout@v3
         with:
@@ -299,12 +296,6 @@ jobs:
       - name: fetch the needed lfs file
         if: env.ARTIFACT_EXISTS == 'false'
         run: git lfs pull -I examples/2020-Li-polar-vortex/intruder_output.nc
-
-      - name: set up libraries
-        run: brew bundle
-
-      - name: set up python libraries
-        run: pip3 install -r requirements.txt
 
       - name: create build directory
         # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
@@ -343,9 +334,6 @@ jobs:
         with:
           lfs: false
 
-      - name: set up libraries
-        run: brew bundle
-
       - name: install python modules
         run: pip3 install -r requirements.txt
 
@@ -378,9 +366,6 @@ jobs:
         with:
           lfs: false
 
-      - name: install python modules
-        run: pip3 install -r requirements.txt
-
       - name: check if artifact exists
         run: echo "ARTIFACT_EXISTS=$(./tools/check_artifact.sh test_blast_output.nc)" >> $GITHUB_ENV
 
@@ -393,9 +378,6 @@ jobs:
       - name: fetch the needed lfs file
         if: env.ARTIFACT_EXISTS == 'false'
         run: git lfs pull -I examples/2023-Chen-exo3/test_blast_output.nc
-
-      - name: set up libraries
-        run: brew bundle
 
       - name: create build directory
         # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
