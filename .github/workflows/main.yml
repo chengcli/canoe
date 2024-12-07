@@ -39,7 +39,7 @@ jobs:
   straka-2d:
     if: github.event.pull_request.draft == false
     runs-on: [self-hosted, Linux]
-    needs: build-non-hydrostatic
+    needs: style-checker
     steps:
       - uses: actions/checkout@v3
         with:
@@ -87,7 +87,7 @@ jobs:
   robert-2d:
     if: github.event.pull_request.draft == false
     runs-on: [self-hosted, Linux, 8core]
-    needs: build-non-hydrostatic
+    needs: style-checker
     steps:
       - uses: actions/checkout@v3
         with:
@@ -138,7 +138,7 @@ jobs:
   robert-3d:
     if: github.event.pull_request.draft == false
     runs-on: [self-hosted, Linux, 16core]
-    needs: build-non-hydrostatic
+    needs: style-checker
     steps:
       - uses: actions/checkout@v3
         with:
@@ -240,7 +240,7 @@ jobs:
   shallow-xy:
     if: github.event.pull_request.draft == false
     runs-on: [self-hosted, Linux, 4core]
-    needs: build-non-hydrostatic
+    needs: style-checker
     steps:
       - uses: actions/checkout@v3
         with:
@@ -291,7 +291,7 @@ jobs:
   polar-vortex:
     if: github.event.pull_request.draft == false
     runs-on: [self-hosted, Linux, 16core]
-    needs: build-non-hydrostatic
+    needs: style-checker
     steps:
       - uses: actions/checkout@v3
         with:
@@ -342,7 +342,7 @@ jobs:
   cubed-blast:
     if: github.event.pull_request.draft == false
     runs-on: [self-hosted, Linux, 8core]
-    needs: build-cubed-sphere-2d
+    needs: style-checker
     steps:
       - uses: actions/checkout@v3
         with:
