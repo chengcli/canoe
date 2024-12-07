@@ -191,6 +191,11 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
         for (int n = 1 + NVAPOR; n < IVX; ++n) w(n, k, j, i) = 0.;
         pthermo->Extrapolate_inplace(pcoord->dx1f(i), "isothermal", grav);
       }
+
+      for (int i = is; i <= ie; ++i) {
+        // add noise
+        w(IVX, k, j, i) = 0.1 * (1. * rand() / RAND_MAX - 0.5);
+      }
     }
 
   peos->PrimitiveToConserved(w, pfield->bcc, phydro->u, pcoord, is, ie, js, je,
