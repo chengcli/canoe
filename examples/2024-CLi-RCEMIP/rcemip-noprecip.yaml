@@ -45,11 +45,15 @@ species:
 reactions:
   - equation: H2O <=> H2O(l)
     type: nucleation
-    rate-constant: {formula: ideal, T3: 273.16, P3: 611.7, beta: 24.845, delta: 4.986, minT: 0.}
+    rate-constant: {formula: ideal, T3: 273.16, P3: 611.7, beta: 24.845, delta: 4.986, minT: 273.16}
+
+  - equation: H2O <=> H2O(s)
+    type: nucleation
+    rate-constant: {formula: ideal, T3: 273.16, P3: 611.7, beta: 22.98, delta: 0.52, maxT: 273.16}
 
   - equation: H2O(l) => H2O(p)
-    rate-constant: {A: 1.e-4, b: 0}
+    rate-constant: {A: 0, b: 0}
 
   - equation: H2O(p) => H2O
     type: evaporation
-    rate-constant: {A: 1.e-2, b: 0}
+    rate-constant: {A: 0, b: 0}

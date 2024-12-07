@@ -1,9 +1,11 @@
 # configure RCEMIP case
 set(NUMBER_GHOST_CELLS 3)
 set(NVAPOR 1)
-set(NCLOUD 2)
+set(NCLOUD 1)
+set(NPRECIP 1)
 set(NETCDF ON)
 set(PNETCDF ON)
 set(MPI ON)
-set(RRTMG_SW ON)
+set(EQUATION_OF_STATE ideal_moist)
+# set(RRTMG_SW ON)
 set(RSOLVER lmars)
