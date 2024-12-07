@@ -14,12 +14,13 @@ void Thermodynamics::EquilibrateUV(Real dt) const {
 
   Eigen::VectorXd rates(Size);
   Eigen::VectorXd conc(Size);
+  Eigen::VectorXd conc0(Size);
   Eigen::VectorXd intEng(Size);
   Eigen::VectorXd cv(Size);
 
   auto& thermo = kinetics_->thermo();
 
-  for (int iter = 0; iter < 3; ++iter) {
+  for (int iter = 0; iter < 10; ++iter) {
     // std::cout << "#############" << std::endl;
     // std::cout << "Iteration " << iter << std::endl;
 
@@ -41,6 +42,7 @@ void Thermodynamics::EquilibrateUV(Real dt) const {
     }*/
 
     // update concentrations
+    conc0 = conc;
     for (size_t i = 1; i < rates.size(); ++i) {
       conc(i) += rates(i);
     }
@@ -56,6 +58,14 @@ void Thermodynamics::EquilibrateUV(Real dt) const {
     for (size_t i = 0; i < conc.size(); ++i) {
       std::cout << "Concentration" << i << ": " << conc[i] << std::endl;
     }*/
+
+    if (temp + dT < 0) {
+      for (size_t i = 1; i < rates.size(); ++i) {
+        rates(i) /= 2.;
+        conc(i) = conc0(i) + rates(i);
+      }
+      dT = -temp * rates.dot(intEng) / conc.dot(cv);
+    }
 
     thermo.setConcentrationsNoNorm(conc.data());
     thermo.setTemperature(temp + dT);
