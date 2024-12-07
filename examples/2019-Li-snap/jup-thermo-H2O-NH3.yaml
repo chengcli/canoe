@@ -3,7 +3,7 @@ description: |-
   relations in Jupiter's atmosphere.
 
 phases:
-  - name: gas
+  - name: atm
     thermo: ideal-moist
     species:
       - jup-thermo.yaml/species: [dry, H2O, NH3, H2O(l), H2O(s), NH3(s)]
