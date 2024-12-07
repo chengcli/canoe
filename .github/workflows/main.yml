@@ -45,6 +45,9 @@ jobs:
         with:
           lfs: false
 
+      - name: activate gcc9
+        run: scl enable gcc-toolset-9 bash
+
       - name: check if artifact exists
         run: echo "ARTIFACT_EXISTS=$(./tools/check_artifact.sh robert_output.nc)" >> $GITHUB_ENV
 
@@ -92,6 +95,9 @@ jobs:
       - uses: actions/checkout@v3
         with:
           lfs: false
+
+      - name: activate gcc9
+        run: scl enable gcc-toolset-9 bash
 
       - name: check if artifact exists
         run: echo "ARTIFACT_EXISTS=$(./tools/check_artifact.sh robert_output.nc)" >> $GITHUB_ENV
@@ -144,6 +150,9 @@ jobs:
         with:
           lfs: false
 
+      - name: activate gcc9
+        run: scl enable gcc-toolset-9 bash
+
       - name: check if artifact exists
         run: echo "ARTIFACT_EXISTS=$(./tools/check_artifact.sh robert3d_output.nc)" >> $GITHUB_ENV
 
@@ -194,6 +203,9 @@ jobs:
       - uses: actions/checkout@v3
         with:
           lfs: false
+
+      - name: activate gcc9
+        run: scl enable gcc-toolset-9 bash
 
       - name: check if artifact exists
         run: echo "ARTIFACT_EXISTS=$(./tools/check_artifact.sh bryan_output.nc)" >> $GITHUB_ENV
@@ -246,6 +258,9 @@ jobs:
         with:
           lfs: false
 
+      - name: activate gcc9
+        run: scl enable gcc-toolset-9 bash
+
       - name: check if artifact exists
         run: echo "ARTIFACT_EXISTS=$(./tools/check_artifact.sh swxy_output.nc)" >> $GITHUB_ENV
 
@@ -296,6 +311,9 @@ jobs:
       - uses: actions/checkout@v3
         with:
           lfs: false
+
+      - name: activate gcc9
+        run: scl enable gcc-toolset-9 bash
 
       - name: check if artifact exists
         run: echo "ARTIFACT_EXISTS=$(./tools/check_artifact.sh intruder_output.nc)" >> $GITHUB_ENV
@@ -348,8 +366,8 @@ jobs:
         with:
           lfs: false
 
-      - name: install python modules
-        run: pip3 install -r requirements.txt
+      - name: activate gcc9
+        run: scl enable gcc-toolset-9 bash
 
       - name: check if artifact exists
         run: echo "ARTIFACT_EXISTS=$(./tools/check_artifact.sh test_blast_output.nc)" >> $GITHUB_ENV
