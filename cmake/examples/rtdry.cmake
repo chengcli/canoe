@@ -3,11 +3,8 @@
 # athena variables
 set_if_empty(NUMBER_GHOST_CELLS 3)
 
-set(CUBED_SPHERE ON)
-set(NBLOCKS 864)
-# set(COORDINATE_SYSTEM "spherical_polar")
-set(NETCDF OFF)
-set(PNETCDF ON)
+set(NETCDF ON)
+set(PNETCDF OFF)
 set(MPI ON)
 set(DISORT ON)
 set(PYTHON_BINDINGS ON)
