@@ -270,8 +270,15 @@ void RadiationBand::RTSolverDisort::CalBandFlux(MeshBlock const *pmb, int k,
     // transfer spectral grid data
     pmy_band_->unpackSpectralProperties(b, &ds_);
 
-    // run disort
-    c_disort(&ds_, &ds_out_);
+    if (ds_.nmom_nstr == 2) {
+        int nlay = ds_.nlyr;
+        int ierror[TWOSTR_NERR];
+        std::vector<double> gg(nlay, 0.);
+	for (int i = 0; i < nlay; ++i) gg[i] = ds_.pmom[i * (ds_.nmom_nstr + 1) + 1];
+        c_twostr(&ds_, &ds_out_, 0, gg.data(), ierror, 1000.);
+    } else {
+        c_disort(&ds_, &ds_out_);
+    }
 
     // add spectral bin flux
     addDisortFlux(pmb->pcoord, b++, k, j, pmb->is, pmb->ie + 1);
@@ -328,6 +335,13 @@ void RadiationBand::RTSolverDisort::addDisortFlux(Coordinates const *pcoord,
     bflxdn_iu = bflxdn(k, j, i);
     bflxdn(k, j, i) = (bflxdn(k, j, i + 1) * farea_(i + 1) - volh) / farea_(i);
   }
+
+  /*
+  for (int i = iu; i >= il; --i) {
+    std::cout << "i: " << iu-i+1 <<" flxup: " << bflxup(k, j, i) << " flxdn: " << bflxdn(k, j, i) << " fluxdiff: " << bflxup(k, j, i) - bflxdn(k, j, i) << std::endl;
+  }
+*/
+
 }
 
 void RadiationBand::RTSolverDisort::CalBandRadiance(MeshBlock const *pmb, int k,

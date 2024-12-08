@@ -39,6 +39,7 @@ class RadiationBand : public NamedGroup,
   class RTSolver;
   class RTSolverLambert;
   class RTSolverDisort;
+  class RTSolverToon;
 
   std::shared_ptr<LinearExchanger<Real, 2>> pexv;
 

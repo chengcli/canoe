@@ -155,7 +155,7 @@ void RadiationBand::Resize(int nc1, int nc2, int nc3, int nstr,
   int nlayers = GetNumLayers();
   int npmom = GetNumPhaseMoments();
   pexv->send_buffer[0].resize(temf_.size());
-  pexv->send_buffer[1].resize(nlayers * (npmom + 3));
+  pexv->send_buffer[1].resize(pgrid_->spec.size()*nlayers * (npmom + 3));
 
   pexv->Regroup(pmb, X1DIR);
   int nblocks = pexv->GetGroupSize();
@@ -170,7 +170,7 @@ void RadiationBand::Resize(int nc1, int nc2, int nc3, int nstr,
 AbsorberPtr RadiationBand::GetAbsorberByName(std::string const &name) {
   for (auto &absorber : absorbers_) {
     if (absorber->GetName() == name) {
-      return absorber;
+  return absorber;
     }
   }
 
@@ -188,6 +188,7 @@ RadiationBand const *RadiationBand::CalBandFlux(MeshBlock const *pmb, int k,
   }
 
   psolver_->Prepare(pmb, k, j);
+
   psolver_->CalBandFlux(pmb, k, j);
 
   return this;
@@ -286,6 +287,8 @@ std::shared_ptr<RadiationBand::RTSolver> RadiationBand::CreateRTSolverFrom(
 #ifdef RT_DISORT
   } else if (rt_name == "Disort") {
     psolver = std::make_shared<RTSolverDisort>(this, rad);
+  } else if (rt_name == "Toon") {
+    psolver = std::make_shared<RTSolverToon>(this, rad);
 #endif  // RT_DISORT
   } else {
     throw NotFoundError("RadiationBand", rt_name);

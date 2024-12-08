@@ -3,6 +3,13 @@
 
 // C/C++
 #include <string>
+#include <Eigen/Dense>  // Needed for Eigen::VectorXd
+#include <vector>
+#include <cmath>
+#include <algorithm>
+#include <stdexcept>
+#include <chrono>
+#include <utility>
 
 // athena
 #include <athena/athena.hpp>
@@ -96,6 +103,53 @@ class RadiationBand::RTSolverDisort : public RadiationBand::RTSolver,
 
   void addDisortRadiance(int n, int k, int j);
 };
+
+
+class RadiationBand::RTSolverToon : public RadiationBand::RTSolver,
+                                     protected DisortWrapper {
+ public:  // Constructor and Destructor
+  RTSolverToon(RadiationBand *pmy_band, YAML::Node const &rad);
+  ~RTSolverToon() {}
+
+ public:  // Member Functions
+  void Prepare(MeshBlock const *pmb, int k, int j) override;
+  void Resize(int nlyr, int nstr) override;
+
+ public:  // Inbound Functions
+  void CalBandFlux(MeshBlock const *pmb, int k, int j) override;
+
+ protected:
+  void addToonFlux(Coordinates const *pcoord, int b, int k, int j, int il, int iu,
+                  const Eigen::VectorXd &flux_up, const Eigen::VectorXd &flux_down);
+  
+  void toonShortwaveSolver(int nlay, double F0_in,
+                      const Eigen::VectorXd& mu_in,
+                      const Eigen::VectorXd& tau_in,
+              	      const Eigen::VectorXd& w_in,
+             	      const Eigen::VectorXd& g_in,
+             	      double w_surf_in,
+                      Eigen::VectorXd& flx_up,
+                      Eigen::VectorXd& flx_down);
+ 
+  void toonLongwaveSolver(int nlay,
+		      const Eigen::VectorXd& be,
+                      const Eigen::VectorXd& tau_in,
+                      const Eigen::VectorXd& w_in,
+                      const Eigen::VectorXd& g_in,
+                      double a_surf_in,
+                      Eigen::VectorXd& flx_up,
+                      Eigen::VectorXd& flx_down);
+
+  double BB_integrate(double T, double wn1, double wn2);
+
+ private:
+      // Private Tridiagonal Solver using the Thomas Algorithm
+    inline Eigen::VectorXd tridiagonal_solver(const Eigen::VectorXd& a,  // Sub-diagonal (size n-1)
+                                           const Eigen::VectorXd& b,  // Main diagonal (size n)
+                                           const Eigen::VectorXd& c,  // Super-diagonal (size n-1)
+                                           const Eigen::VectorXd& d); // Right-hand side (size n)
+};
+  
 #endif
 
 #endif  // SRC_HARP_RT_SOLVERS_HPP_
