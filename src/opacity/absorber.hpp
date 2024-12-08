@@ -53,6 +53,11 @@ class Absorber : public NamedGroup,
     return 0.;
   }
 
+  //! Get attenuation coefficient for CK
+  virtual Real GetAttenuation(int m, AirParcel const& var) const {
+    return 0.;  
+  }
+
   //! Get single scattering albedo [1]
   virtual Real GetSingleScatteringAlbedo(Real wave1, Real wave2,
                                          AirParcel const& var) const {

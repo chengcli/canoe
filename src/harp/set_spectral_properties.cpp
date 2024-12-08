@@ -19,6 +19,7 @@
 
 // opacity
 #include <opacity/absorber.hpp>
+#include <opacity/absorber_ck.hpp>
 
 // harp
 #include "radiation.hpp"
@@ -45,16 +46,23 @@ void RadiationBand::SetSpectralProperties(AirColumn& ac, Real const* x1f,
     for (auto& a : absorbers_) {
       for (int m = 0; m < nspec; ++m) {
         auto& spec = pgrid_->spec[m];
-        Real kcoeff = a->GetAttenuation(spec.wav1, spec.wav2, air);  // 1/m
+        Real kcoeff;  // Variable to store attenuation coefficient
+        if (auto* ck = dynamic_cast<AbsorberCK*>(a.get())) {
+		kcoeff = ck->GetAttenuation(m, air);
+        } else {
+		kcoeff = a->GetAttenuation(spec.wav1, spec.wav2, air);
+        }
         Real dssalb =
             a->GetSingleScatteringAlbedo(spec.wav1, spec.wav2, air) * kcoeff;
         // tau
         tau_(m, i) += kcoeff;
-        // ssalb
+
+	// ssalb
         ssa_(m, i) += dssalb;
         // pmom
         a->GetPhaseMomentum(mypmom.data(), spec.wav1, spec.wav2, air, npmom);
         for (int p = 0; p <= npmom; ++p) pmom_(m, i, p) += mypmom[p] * dssalb;
+
       }
     }
   }
@@ -94,7 +102,7 @@ void RadiationBand::SetSpectralProperties(AirColumn& ac, Real const* x1f,
   // absorption coefficients -> optical thickness
   for (int m = 0; m < nspec; ++m) {
     for (int i = 0; i < ac.size(); ++i) {
-      if (tau_(m, i) > 1e-6 && ssa_(m, i) > 1e-6) {  // has scattering
+      if (tau_(m, i) > 1e-10 && ssa_(m, i) > 1e-10) {  // has scattering
         for (int p = 0; p <= npmom; ++p) pmom_(m, i, p) /= ssa_(m, i);
         ssa_(m, i) /= tau_(m, i);
       } else {
@@ -102,6 +110,7 @@ void RadiationBand::SetSpectralProperties(AirColumn& ac, Real const* x1f,
         pmom_(m, i, 0) = 1.;
         for (int p = 1; p <= npmom; ++p) pmom_(m, i, p) = 0.;
       }
+
 #ifdef HYDROSTATIC
       auto pthermo = Thermodynamics::GetInstance();
       Real Rgas = get_rovrd(ac[i], pthermo->GetMuRatio()) * pthermo->GetRd();

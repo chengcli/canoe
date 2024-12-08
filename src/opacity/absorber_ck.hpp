@@ -14,19 +14,18 @@ class AbsorberCK : public Absorber {
   virtual ~AbsorberCK() {}
 
   void LoadCoefficient(std::string fname, int bid) override;
-  Real GetAttenuation(Real g1, Real g2, AirParcel const& var) const override;
+  Real GetAttenuation(int m, AirParcel const& var) const override;
+  void ModifySpectralGrid(std::vector<SpectralBin>& spec) const override;
 
  protected:
-  //! shape of interpolation axes, ntemp, npres, ngpoints
-  size_t len_[3];
+  size_t len_[4];
 
-  //! interpolation axes
   std::vector<Real> axis_;
-
-  //! absorption coefficients
+  std::vector<Real> p_;
+  std::vector<Real> t_;
+  std::vector<Real> bin_centers_; 
+  std::vector<Real> bin_edges_;
   std::vector<Real> kcoeff_;
-
-  //! g-point weights
   std::vector<Real> weights_;
 };
 

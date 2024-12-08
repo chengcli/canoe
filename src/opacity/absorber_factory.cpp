@@ -121,6 +121,8 @@ AbsorberPtr AbsorberFactory::createAbsorberPartial(std::string name,
     ab = std::make_shared<JupGasv>(name);
   } else if (type == "JupGasir") {
     ab = std::make_shared<JupGasir>(name);
+  } else if (type == "AbsorberCK") {
+    ab = std::make_shared<AbsorberCK>(name);
   } else if (type == "HeliosCK") {
     ab = std::make_shared<HeliosCK>(name);
   } else if (type == "SimpleCloud") {
