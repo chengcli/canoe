@@ -6,11 +6,19 @@
 #include <stdexcept>
 
 // athena
+#include <athena/athena.hpp>
+#include <athena/athena_arrays.hpp>
+#include <athena/bvals/bvals.hpp>
+#include <athena/coordinates/coordinates.hpp>
 #include <athena/eos/eos.hpp>
 #include <athena/field/field.hpp>
 #include <athena/hydro/hydro.hpp>
 #include <athena/mesh/mesh.hpp>
 #include <athena/parameter_input.hpp>
+
+// application
+#include <application/application.hpp>
+#include <application/exceptions.hpp>
 
 // canoe
 #include <air_parcel.hpp>
@@ -26,6 +34,7 @@
 #include <exo3/cubed_sphere_utility.hpp>
 
 // snap
+#include <snap/thermodynamics/atm_thermodynamics.hpp>
 #include <snap/thermodynamics/thermodynamics.hpp>
 
 // astro
@@ -58,12 +67,13 @@ void MeshBlock::InitUserMeshBlockData(ParameterInput *pin) {
 
 void MeshBlock::UserWorkBeforeOutput(ParameterInput *pin) {
   auto pthermo = Thermodynamics::GetInstance();
+  auto &w = phydro->w;
 
   for (int k = ks; k <= ke; ++k)
     for (int j = js; j <= je; ++j)
       for (int i = is; i <= ie; ++i) {
-        user_out_var(0, k, j, i) = pthermo->GetTemp(this, k, j, i);
-        user_out_var(1, k, j, i) = pthermo->PotentialTemp(this, P0, k, j, i);
+        user_out_var(0, k, j, i) = pthermo->GetTemp(w.at(k, j, i));
+        user_out_var(1, k, j, i) = potential_temp(pthermo, w.at(k, j, i), P0);
         user_out_var(2, k, j, i) = phydro->w(IPR, k, j, i);
       }
 
@@ -188,14 +198,14 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
       air.w[IDN] = Ts;
 
       // half a grid to cell center
-      pthermo->Extrapolate(&air, pcoord->dx1f(is) / 2., "reversible", grav);
+      pthermo->Extrapolate_inplace(pcoord->dx1f(is) / 2., "reversible", grav);
 
       int i = is;
       for (; i <= ie; ++i) {
         air.w[IVX] = 0.001 * (1. * rand() / RAND_MAX - 0.5);
         if (air.w[IDN] < Tmin) break;
         AirParcelHelper::distribute_to_conserved(this, k, j, i, air);
-        pthermo->Extrapolate(&air, pcoord->dx1f(i), "pseudo", grav);
+        pthermo->Extrapolate_inplace(pcoord->dx1f(i), "pseudo", grav);
       }
 
       // Replace adiabatic atmosphere with isothermal atmosphere if temperature
@@ -203,7 +213,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
       for (; i <= ie; ++i) {
         air.w[IVX] = 0.001 * (1. * rand() / RAND_MAX - 0.5);
         AirParcelHelper::distribute_to_conserved(this, k, j, i, air);
-                pthermo->Extrapolate(&air, pcoord->dx1f(i), "isothermal",
+                pthermo->Extrapolate_inplace(pcoord->dx1f(i), "isothermal",
                 grav);
         //pthermo->Extrapolate(&air, pcoord->dx1f(i), "dry", grav, 1.e-4);
       }
