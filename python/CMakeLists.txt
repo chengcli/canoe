@@ -40,6 +40,7 @@ target_include_directories(${namel}
   ${PYBIND11_INCLUDE_DIR}
   ${MPI_CXX_INCLUDE_PATH}
   ${MPI_CXX_HEADER_DIR}
+  ${CANTERA_INCLUDE_DIR}
   )
 
 target_link_libraries(${namel} PRIVATE
