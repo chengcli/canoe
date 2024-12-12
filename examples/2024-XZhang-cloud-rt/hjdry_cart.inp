@@ -1,10 +1,8 @@
 <comment>
 problem   = Hot Jupiter Double Gray Test
-reference = Straka et al., 1993
-configure = --patch=drum --coord=spherical_polar --prob=hjupiter --flux=lmars --nghost=3 --pnetcdf_path=../pnetcdf -pnetcdf -mpi
 
 <job>
-problem_id = shj   # problem ID: basename of output filenames
+problem_id = 2d   # problem ID: basename of output filenames
 tasklist   = ImplicitHydroTasks
 
 <output0>
@@ -71,9 +69,6 @@ grav_acc1   = -1.6667
 gamma       = 1.4         # gamma = C_p/C_v
 implicit_flag = 9
 
-<thermodynamics>
-Rd          = 2188.       # Gas constant
-
 <astronomy>
 planet        = HJ
 HJ.parent     = Sun
@@ -91,7 +86,7 @@ HJ.equinox    = 0.
 <radiation>
 dt            = 300.
 nstr          = 4
-radiation_config = hjdry.yaml
+radiation_config = hjdry_rt.yaml
 relax_time    = 1.E4
 
 <forcing>
@@ -102,6 +97,7 @@ relax_bot_temp.tem     = 1955.7
 relax_bot_temp.tau     = 1.E3
 
 <problem>
+thermodynamics_config = hjdry_thermo.yaml
 T0         = 1955.7        # Reference temperature, K
 P0         = 1.E7          # Reference pressure, Pa
 Omega      = 0.             # Rotational frequency
