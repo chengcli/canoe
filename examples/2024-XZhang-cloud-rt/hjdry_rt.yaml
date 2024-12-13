@@ -28,9 +28,9 @@ vis:
   opacity: [H2-vis]
   rt-solver: Disort
   parameters: {temp0: 768., umu0: 1., phi0: 0.}
-  flags: [broad_band, time_dependent]
+  #flags: [broad_band, time_dependent]
 # parameters: {temp0: 543., umu0: 1., phi0: 0.}
-# flags: [broad_band]
+  flags: [broad_band]
 
 
 Disort-flags:

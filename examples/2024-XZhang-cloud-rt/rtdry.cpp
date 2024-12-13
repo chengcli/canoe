@@ -21,7 +21,6 @@
 #include <application/exceptions.hpp>
 
 // canoe
-#include <air_parcel.hpp>
 #include <athena/coordinates/coordinates.hpp>
 #include <configure.hpp>
 #include <impl.hpp>
@@ -177,7 +176,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
   srand(Globals::my_rank + time(0));
   auto pexo3 = pimpl->pexo3;
   auto pthermo = Thermodynamics::GetInstance();
-  AirParcel air(AirParcel::Type::MoleFrac);
+
   // estimate surface temperature and pressure
   // thermodynamic constants
   // mesh limits
@@ -191,31 +190,35 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
   Real Ps = P0 * pow(Ts / T0, cp / Rd);
 
   // construct atmosphere from bottom up
+  auto &w = phydro->w;
   for (int k = ks; k <= ke; ++k)
     for (int j = js; j <= je; ++j) {
-      air.SetZero();
-      air.w[IPR] = Ps;
-      air.w[IDN] = Ts;
+      pthermo->EquilibrateTP(Ts, Ps);
 
       // half a grid to cell center
       pthermo->Extrapolate_inplace(pcoord->dx1f(is) / 2., "reversible", grav);
 
       int i = is;
       for (; i <= ie; ++i) {
-        air.w[IVX] = 0.001 * (1. * rand() / RAND_MAX - 0.5);
-        if (air.w[IDN] < Tmin) break;
-        AirParcelHelper::distribute_to_conserved(this, k, j, i, air);
+        if (pthermo->GetTemp() < Tmin) break;
+        pthermo->GetPrimitive(w.at(k, j, i));
+        w(IVX, k, j, i) = 0.001 * (1. * rand() / RAND_MAX - 0.5);
+        // set all clouds to zero
+        for (int n = 1 + NVAPOR; n < IVX; ++n) w(n, k, j, i) = 0.;
         pthermo->Extrapolate_inplace(pcoord->dx1f(i), "pseudo", grav);
       }
 
       // Replace adiabatic atmosphere with isothermal atmosphere if temperature
       // is too low
       for (; i <= ie; ++i) {
-        air.w[IVX] = 0.001 * (1. * rand() / RAND_MAX - 0.5);
-        AirParcelHelper::distribute_to_conserved(this, k, j, i, air);
-                pthermo->Extrapolate_inplace(pcoord->dx1f(i), "isothermal",
-                grav);
-        //pthermo->Extrapolate(&air, pcoord->dx1f(i), "dry", grav, 1.e-4);
+        pthermo->GetPrimitive(w.at(k, j, i));
+        w(IVX, k, j, i) = 0.001 * (1. * rand() / RAND_MAX - 0.5);
+        // set all clouds to zero
+        for (int n = 1 + NVAPOR; n < IVX; ++n) w(n, k, j, i) = 0.;
+        pthermo->Extrapolate_inplace(pcoord->dx1f(i), "isothermal", grav);
       }
     }
+
+  peos->PrimitiveToConserved(w, pfield->bcc, phydro->u, pcoord, is, ie, js, je,
+                             ks, ke);
 }

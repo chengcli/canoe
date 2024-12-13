@@ -14,17 +14,17 @@ file_type  = hst          # History data dump
 dt         = 8.64E6      # time increment between outputs
 
 <output2>
-file_type  = pnetcdf      # Binary data dump
+file_type  = netcdf      # Binary data dump
 variable   = prim         # variables to be output
 dt         = 8.64E6      # time increment between outputs
 
 <output3>
-file_type  = pnetcdf
+file_type  = netcdf
 variable   = uov
 dt         = 8.64E6      # time increment between outputs
 
 <output4>
-file_type  = pnetcdf
+file_type  = netcdf
 variable   = rad
 dt         = 8.64E6      # time increment between outputs
 
