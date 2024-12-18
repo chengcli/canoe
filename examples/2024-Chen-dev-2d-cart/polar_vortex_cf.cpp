@@ -28,7 +28,7 @@
 #include <climath/core.h>  // sqr
 
 // global parameters
-Real phi0, dphi, Li, vis, omega, sponge_lat, sponge_tau, max_freq, change_tau;
+Real phi0, dphi, Li, vis, omega, sponge_lat, sponge_tau, max_freq, change_tau, radius;
 int M;
 AthenaArray<Real> As, Bs, Cs;
 
@@ -85,10 +85,10 @@ void PolarVortexForcing(MeshBlock *pmb, const Real time, const Real dt,
       }
 
       // Forcing
-      k = 2.0 * M_PI / Li;
+      Real k = 2.0 * M_PI / Li;
       for (int m = 0; m < M; ++m) {
         Real phi = As(m) * dphi * cos(k * (x1 * cos(Cs(m)) + x2 * sin(Cs(m))) + Bs(m) * time);
-        u(IDN, j, i) += dt * phi * w(IDN, j, i);
+        u(IDN, j, i) += dt * phi;
       }
 
     }
@@ -116,10 +116,11 @@ void Mesh::InitUserMeshData(
   vis = pin->GetOrAddReal("problem", "vis", 0.);
   max_freq = pin->GetReal("problem", "max_freq");
   change_tau = pin->GetReal("problem", "change_tau");
+  radius = pin->GetReal("problem", "radius");
 
-  As->NewAthenaArray(M);
-  Bs->NewAthenaArray(M);
-  Cs->NewAthenaArray(M);
+  As.NewAthenaArray(M);
+  Bs.NewAthenaArray(M);
+  Cs.NewAthenaArray(M);
   for (int m = 0; m < M; ++m) {
     As(m) = 1.0;
     Bs(m) = uniform(gen) * max_freq;
