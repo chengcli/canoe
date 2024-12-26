@@ -18,12 +18,12 @@ dt         = 5.E6
 <output2>
 file_type  = pnetcdf      # netcdf data dump
 variable   = prim         # variables to be output
-dt         = 1.E6         # time increment between outputs
+dt         = 1.E5         # time increment between outputs
 
 <output3>
 file_type  = pnetcdf      # netcdf data dump
 variable   = uov          # variables to be output
-dt         = 1.E6         # time increment between outputs
+dt         = 1.E5         # time increment between outputs
 
 <time>
 cfl_number = 0.8          # The Courant, Friedrichs, & Lewy (CFL) Number
@@ -33,15 +33,15 @@ xorder     = 5            # horizontal reconstruction order
 integrator = rk3          # integration method
 
 <mesh>
-nx1        = 512          # Number of zones in X1-direction (longitude)
-x1min      = -3.5E7       # minimum value of X1
-x1max      = 3.5E7        # maximum value of X1, 120 degree
+nx1        = 1024          # Number of zones in X1-direction (longitude)
+x1min      = -7E7       # minimum value of X1
+x1max      = 7E7        # maximum value of X1, 120 degree
 ix1_bc     = periodic     # inner-X1 boundary flag
 ox1_bc     = periodic     # inner-X1 boundary flag
 
-nx2        = 512          # Number of zones in X2-direction (latitude)
-x2min      = -3.5E7       # minimum value of X2
-x2max      = 3.5E7        # maximum value of X2, 70 degree
+nx2        = 1024          # Number of zones in X2-direction (latitude)
+x2min      = -7E7       # minimum value of X2
+x2max      = 7E7        # maximum value of X2, 70 degree
 ix2_bc     = periodic     # inner-X2 boundary flag
 ox2_bc     = periodic     # inner-X2 boundary flag
 
@@ -55,8 +55,8 @@ ox3_bc     = periodic     # inner-X3 boundary flag
 gamma      = 1.4
 
 <meshblock>
-nx1       = 64
-nx2       = 64
+nx1       = 128
+nx2       = 128
 nx3       = 1
 
 <problem>
@@ -68,10 +68,13 @@ dphi    = 10.
 omega   = 1.74E-4
 Li      = 3.E6
 M       = 15
-max_freq = 0.001 # Angular frequency
+max_freq = 6.28 # Angular frequency
 radius  = 7.14E7
 change_tau = 1.E5
-sponge_lat = 65.
+sponge_lat = 50.
 sponge_tau = 2.5E2
+lambda  = 3.E6
+alpha   = 2
+phi1    = 1.E6
 
 

@@ -28,7 +28,7 @@
 #include <climath/core.h>  // sqr
 
 // global parameters
-Real phi0, dphi, Li, vis, omega, sponge_lat, sponge_tau, max_freq, change_tau, radius;
+Real phi0, dphi, Li, vis, omega, sponge_lat, sponge_tau, max_freq, change_tau, radius, lambda, alpha, phi1;
 int M;
 AthenaArray<Real> As, Bs, Cs;
 
@@ -42,6 +42,13 @@ void FindLatlon(Real *lat, Real *lon, Real x2, Real x1) {
   *lon = asin(x1 / dist);
   if (x2 > 0 && x1 > 0) *lon = M_PI - *lon;
   if (x2 > 0 && x1 < 0) *lon = -M_PI - *lon;
+}
+
+Real Phib(Coordinates *pcoord, int j,
+          int i)  // phi1 determines topography at the pole
+{
+  Real dist = sqrt(sqr(pcoord->x1v(i)) + sqr(pcoord->x2v(j)));
+  return phi1 * exp(-pow(dist / lambda, alpha) / alpha);
 }
 
 void FindXY(Real *x1, Real *x2, Real lat, Real lon) {
@@ -65,6 +72,13 @@ void PolarVortexForcing(MeshBlock *pmb, const Real time, const Real dt,
       u(IM1, j, i) += dt * f * w(IDN, j, i) * w(IVY, j, i);
       u(IM2, j, i) += -dt * f * w(IDN, j, i) * w(IVX, j, i);
 
+      // topography
+      Real phib = Phib(pmb->pcoord, j, i);
+      u(IM1, j, i) +=
+          dt * w(IDN, j, i) * phib * x1 * pow(dist / lambda, alpha) / sqr(dist);
+      u(IM2, j, i) +=
+          dt * w(IDN, j, i) * phib * x2 * pow(dist / lambda, alpha) / sqr(dist);
+
       Real s = (90. - dist / radius / M_PI * 180.) / sponge_lat;
       if (s < 1) {
         u(IM1, j, i) -=
@@ -86,8 +100,11 @@ void PolarVortexForcing(MeshBlock *pmb, const Real time, const Real dt,
 
       // Forcing
       Real k = 2.0 * M_PI / Li;
+      Real s2 = 90. - dist / radius / M_PI * 180.; // Modulation of forcing
+      // Factor is a sigmoid function
+      Real fac = 1.0 / (1.0 + exp((s2 - 65.0) / 3.0));
       for (int m = 0; m < M; ++m) {
-        Real phi = As(m) * dphi * cos(k * (x1 * cos(Cs(m)) + x2 * sin(Cs(m))) + Bs(m) * time);
+        Real phi = As(m) * dphi * fac * cos(k * (x1 * cos(Cs(m)) + x2 * sin(Cs(m))) + Bs(m));
         u(IDN, j, i) += dt * phi;
       }
 
@@ -117,6 +134,9 @@ void Mesh::InitUserMeshData(
   max_freq = pin->GetReal("problem", "max_freq");
   change_tau = pin->GetReal("problem", "change_tau");
   radius = pin->GetReal("problem", "radius");
+  lambda = pin->GetReal("problem", "lambda");
+  alpha = pin->GetReal("problem", "alpha");
+  phi1 = pin->GetReal("problem", "phi1");
 
   As.NewAthenaArray(M);
   Bs.NewAthenaArray(M);
@@ -173,7 +193,7 @@ void MeshBlock::ProblemGenerator(
       FindLatlon(&lat, &lon, pcoord->x2v(j), pcoord->x1v(i));
 
       // background
-      phydro->w(IDN, j, i) = phi0;  // set background
+      phydro->w(IDN, j, i) = phi0 - Phib(pcoord, j, i);;  // set background
 
     }
 
