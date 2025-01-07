@@ -75,6 +75,5 @@ sponge_lat = 50.
 sponge_tau = 2.5E2
 lambda  = 3.E6
 alpha   = 2
-phi1    = 1.E6
-
-
+phi1    = -5.E5
+cool_tau= 1.E7

@@ -28,7 +28,7 @@
 #include <climath/core.h>  // sqr
 
 // global parameters
-Real phi0, dphi, Li, vis, omega, sponge_lat, sponge_tau, max_freq, change_tau, radius, lambda, alpha, phi1;
+Real phi0, dphi, Li, vis, omega, sponge_lat, sponge_tau, max_freq, change_tau, radius, lambda, alpha, phi1, cool_tau;
 int M;
 AthenaArray<Real> As, Bs, Cs;
 
@@ -98,11 +98,21 @@ void PolarVortexForcing(MeshBlock *pmb, const Real time, const Real dt,
              w(IM2, j, i - 1) - 4 * w(IM2, j, i));
       }
 
+      // cooling, newtonian towards a range?
+      if (u(IDN, j, i) < phi0 * 0.95){
+        u(IDN, j, i) -= dt * (w(IDN, j, i) - phi0 * 0.95) / cool_tau;
+      }
+
+      if (u(IDN, j, i) > phi0 * 1.05){
+        u(IDN, j, i) -= dt * (w(IDN, j, i) - phi0 * 1.05) / cool_tau;
+      }
+
       // Forcing
       Real k = 2.0 * M_PI / Li;
       Real s2 = 90. - dist / radius / M_PI * 180.; // Modulation of forcing
       // Factor is a sigmoid function
-      Real fac = 1.0 / (1.0 + exp((s2 - 65.0) / 3.0));
+      // Real fac = 1.0 / (1.0 + exp((s2 - 65.0) / 3.0));
+      Real fac = 1.0;
       for (int m = 0; m < M; ++m) {
         Real phi = As(m) * dphi * fac * cos(k * (x1 * cos(Cs(m)) + x2 * sin(Cs(m))) + Bs(m));
         u(IDN, j, i) += dt * phi;
@@ -137,6 +147,7 @@ void Mesh::InitUserMeshData(
   lambda = pin->GetReal("problem", "lambda");
   alpha = pin->GetReal("problem", "alpha");
   phi1 = pin->GetReal("problem", "phi1");
+  cool_tau = pin->GetReal("problem", "cool_tau");
 
   As.NewAthenaArray(M);
   Bs.NewAthenaArray(M);
