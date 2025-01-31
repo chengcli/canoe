@@ -1,0 +1,71 @@
+<comment>
+problem   = Warm rising bubble test
+reference = Robert et al., 1992
+configure = --prob=robert --nghost=3 -mpi -pnetcdf --pnetcdf_path=${HOME}/opt/
+
+<job>
+problem_id = titan # problem ID: basename of output filenames
+tasklist   = ImplicitHydroTasks
+
+<output1>
+file_type  = hst         # History data dump
+dt         = 180        # time increment between outputs
+
+<output2>
+file_type  = pnetcdf   # Binary data dump
+variable   = prim        # variables to be output
+dt         = 180         # time increment between outputs
+
+<output3>
+file_type  = pnetcdf
+variable   = uov
+dt         = 180.
+
+<time>
+cfl_number = 0.9          # The Courant, Friedrichs, & Lewy (CFL) Number
+nlim       = -1           # cycle limit
+tlim       = 1080         # time limit
+xorder     = 5            # horizontal reconstruction order
+integrator = rk3          # integration method
+ncycle_out = 100          # output frequency
+
+<mesh>
+nx1        = 300          # Number of zones in X1-direction
+x1min      = 0.           # minimum value of X1
+x1max      = 1.5E3        # maximum value of X1
+ix1_bc     = reflecting   # inner-X1 boundary flag
+ox1_bc     = reflecting   # outer-X1 boundary flag
+
+nx2        = 200          # Number of zones in X2-direction
+x2min      = 0.           # minimum value of X2
+x2max      = 1.E3         # maximum value of X2
+ix2_bc     = reflecting   # inner-X2 boundary flag
+ox2_bc     = reflecting   # outer-X2 boundary flag
+
+nx3        = 1            # Number of zones in X3-direction
+x3min      = -0.5         # minimum value of X3
+x3max      = 0.5          # maximum value of X3
+ix3_bc     = periodic     # inner-X3 boundary flag
+ox3_bc     = periodic     # outer-X3 boundary flag
+
+<meshblock>
+nx1        = 150
+nx2        = 50
+nx3        = 1
+
+<hydro>
+grav_acc1   = -9.8
+gamma       = 1.4         # gamma = C_p/C_v
+
+<problem>
+thermodynamics_config = titan.yaml
+
+dT    = 0.5
+xc    = 500.
+yc    = 0.
+zc    = 260.
+s     = 100.
+a     = 50.
+p0    = 1.E5
+Ts    = 303.15
+uniform_bubble = false
