@@ -1,19 +1,28 @@
 diff --git a/src/mesh/meshblock.cpp b/src/mesh/meshblock.cpp
-index f5ae1913..4d14accd 100644
+index 3e3d0e4..3add841 100644
 --- a/src/mesh/meshblock.cpp
 +++ b/src/mesh/meshblock.cpp
-@@ -44,6 +44,10 @@
+@@ -47,6 +47,11 @@
  #include "mesh_refinement.hpp"
  #include "meshblock_tree.hpp"
  
 +// exo3 injection
 +#include <exo3/affine_coordinate.hpp>
 +#include <exo3/gnomonic_equiangle.hpp>
++#include <exo3/warped_coordinate.hpp>
 +
  //----------------------------------------------------------------------------------------
  //! MeshBlock constructor: constructs coordinate, boundary condition, hydro, field
  //!                        and mesh refinement objects.
-@@ -123,6 +127,10 @@ MeshBlock::MeshBlock(int igid, int ilid, LogicalLocation iloc, RegionSize input_
+@@ -112,6 +117,7 @@ MeshBlock::MeshBlock(int igid, int ilid, LogicalLocation iloc, RegionSize input_
+   pbval  = new BoundaryValues(this, input_bcs, pin);
+ 
+   // Coordinates
++
+   if (std::strcmp(COORDINATE_SYSTEM, "cartesian") == 0) {
+     pcoord = new Cartesian(this, pin, false);
+   } else if (std::strcmp(COORDINATE_SYSTEM, "cylindrical") == 0) {
+@@ -126,6 +132,12 @@ MeshBlock::MeshBlock(int igid, int ilid, LogicalLocation iloc, RegionSize input_
      pcoord = new KerrSchild(this, pin, false);
    } else if (std::strcmp(COORDINATE_SYSTEM, "gr_user") == 0) {
      pcoord = new GRUser(this, pin, false);
@@ -21,10 +30,12 @@ index f5ae1913..4d14accd 100644
 +    pcoord = new GnomonicEquiangle(this, pin, false);
 +  } else if (std::strcmp(COORDINATE_SYSTEM, "affine_coordinate") == 0) {
 +    pcoord = new AffineCoordinate(this, pin, false);
++  } else if (std::strcmp(COORDINATE_SYSTEM, "warped_coordinate") == 0) {
++    pcoord = new WarpedCoordinate(this, pin, false);
    }
  
  
-@@ -332,6 +340,10 @@ MeshBlock::MeshBlock(int igid, int ilid, Mesh *pm, ParameterInput *pin,
+@@ -344,6 +356,12 @@ MeshBlock::MeshBlock(int igid, int ilid, Mesh *pm, ParameterInput *pin,
      pcoord = new KerrSchild(this, pin, false);
    } else if (std::strcmp(COORDINATE_SYSTEM, "gr_user") == 0) {
      pcoord = new GRUser(this, pin, false);
@@ -32,6 +43,8 @@ index f5ae1913..4d14accd 100644
 +    pcoord = new GnomonicEquiangle(this, pin, false);
 +  } else if (std::strcmp(COORDINATE_SYSTEM, "affine_coordinate") == 0) {
 +    pcoord = new AffineCoordinate(this, pin, false);
++  } else if (std::strcmp(COORDINATE_SYSTEM, "warped_coordinate") == 0) {
++    pcoord = new WarpedCoordinate(this, pin, false);
    }
  
  
