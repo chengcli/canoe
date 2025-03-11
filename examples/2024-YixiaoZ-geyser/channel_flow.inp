@@ -9,42 +9,42 @@ tasklist    = ImplicitHydroTasks
 
 <output1>
 file_type   = hst           # History data dump
-dt          = 0.1           # time increment between outputs
+dt          = 10.0          # time increment between outputs
 # dcycle = 1
 
 <output2>
 file_type   = pnetcdf       # Netcdf format output
 variable    = prim          # variables to be output
-dt          = 0.1           # time increment between outputs
+dt          = 10.0          # time increment between outputs
 # dcycle = 1
 
 <output3>
 file_type   = pnetcdf       # Netcdf format output
 variable    = uov           # diagnostic variables
-dt          = 0.1           # time increment
+dt          = 10.0          # time increment
 # dcycle = 1
 
 <output4>
 file_type   = rst           # History data dump
-dt          = 20.           # time increment between outputs
+dt          = 1000.         # time increment between outputs
 
 <time>
 cfl_number  = 0.4           # The Courant, Friedrichs, & Lewy (CFL) Number
 nlim        = -1            # cycle limit
-tlim        = 10.           # time limit
+tlim        = 10000.         # time limit
 xorder      = 2             # horizontal reconstruction order
 integrator  = rk3           # integration method
 
 <mesh>
 nx1         = 100           # Number of zones in X1-direction
 x1min       = 0.            # minimum value of X1
-x1max       = 1.E3          # maximum value of X1
+x1max       = 10.E3         # maximum value of X1
 ix1_bc      = reflecting    # inner-X1 boundary flag
 ox1_bc      = outflow       # outer-X1 boundary flag
 
-nx2         = 10            # Number of zones in X2-direction
-x2min       = -50.          # minimum value of X2
-x2max       =  50.          # maximum value of X2
+nx2         = 4             # Number of zones in X2-direction
+x2min       = -200.         # minimum value of X2
+x2max       =  200.         # maximum value of X2
 ix2_bc      = reflecting    # inner-X2 boundary flag
 ox2_bc      = reflecting    # outer-X2 boundary flag
 
@@ -55,12 +55,12 @@ ix3_bc      = periodic      # inner-X3 boundary flag
 ox3_bc      = periodic      # outer-X3 boundary flag
 
 <meshblock>
-nx1         = 100
-nx2         = 10
+nx1         = 25
+nx2         = 4
 nx3         = 1
 
 <hydro>
-grav_acc1   = -0.113
+grav_acc1   = -10.
 gamma      = 1.45        # gamma = C_pd/C_vd
 drag_coef = 2e-3
 implicit_flag = 1
@@ -71,7 +71,7 @@ thermodynamics_config = geyser_h2o.yaml
 Ptriple1 = 611.7
 Ttriple1 = 273.16
 Rd = 4155
-massflux_H2ratio = 0.01 # injected mass ratio of H2
+massflux_H2ratio = 0.5 # injected mass ratio of H2
 massflux_CO2ratio = 0.01 # injected mass ratio of CO2
 
 dT    = 2.0
