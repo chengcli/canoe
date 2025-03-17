@@ -27,3 +27,7 @@ external/*.tar.gz
 
 # cache
 .cache/
+
+# data
+data/*.tar.gz
+data/*.zip

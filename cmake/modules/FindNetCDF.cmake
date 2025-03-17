@@ -26,10 +26,22 @@ if(NETCDF_INCLUDES AND NETCDF_LIBRARIES)
   set(NETCDF_FIND_QUIETLY TRUE)
 endif(NETCDF_INCLUDES AND NETCDF_LIBRARIES)
 
-find_path(NETCDF_INCLUDES netcdf.h HINTS /opt/homebrew/include NETCDF_DIR ENV
-                                         NETCDF_DIR)
+find_path(NETCDF_INCLUDES netcdf.h HINTS 
+    /opt/homebrew/include 
+    NETCDF_DIR
+    $ENV{HOME}/opt/include
+    $ENV{NETCDF}/include
+    $ENV{NETCDF_DIR}/include
+    $ENV{NC_ROOT}/include
+    )
 
-find_library(NETCDF_LIBRARIES_C NAMES netcdf HINTS /opt/homebrew/lib $ENV{NETCDF_DIR}/lib)
+find_library(NETCDF_LIBRARIES_C NAMES netcdf HINTS 
+    /opt/homebrew/lib 
+    $ENV{HOME}/opt/lib
+    $ENV{NETCDF}/lib
+    $ENV{NETCDF_DIR}/lib
+    $ENV{NC_ROOT}/lib
+    )
 mark_as_advanced(NETCDF_LIBRARIES_C)
 
 set(NetCDF_has_interfaces "YES") # will be set to NO if we're missing any

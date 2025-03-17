@@ -1,7 +1,7 @@
 
-option(FETCH_HITRAN "Fetch HITRAN data files" ON)
-option(FETCH_JUPITER "Fetch Jupiter data files" ON)
-option(FETCH_EXOGCM "Fetch ExoGCM data files" ON)
+option(FETCH_HITRAN "Fetch HITRAN data files" OFF)
+option(FETCH_JUPITER "Fetch Jupiter data files" OFF)
+option(FETCH_EXOGCM "Fetch ExoGCM data files" OFF)
 
 # Add a custom command that runs the script
 add_custom_target(CheckDataIntegrity ALL
