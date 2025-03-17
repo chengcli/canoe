@@ -192,7 +192,7 @@ int mppnccombine(int argc, char *argv[]) {
       free(ncoutfile);
       return (1);
     }
-    if ((ncoutfile->ncfid = nccreate(outfilename, NC_NETCDF4)) == (-1)) {
+    if ((ncoutfile->ncfid = nccreate(outfilename, NC_CLASSIC_MODEL)) == (-1)) {
       fprintf(stderr, "Error: cannot create the output netCDF file!\n");
       free(ncoutfile);
       return (1);
