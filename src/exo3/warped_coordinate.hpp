@@ -8,24 +8,31 @@
 class MeshBlock;
 class ParameterInput;
 
-# define w2_c0 1
-# define w2_c1 1e-3
+# define w2_a 2
+# define w2_b 1
+# define w2_k (2 * M_PI / 2e3)
 
 template <typename R> R w2(R x1) {
-    return w2_c0 + w2_c1 * x1;
+  return w2_a + w2_b * cos(w2_k * x1);
 }
 
 template <typename R> R dw2(R x1l, R x1r) {
-    return w2_c1;
+  return (w2(x1l) - w2(x1r)) / (x1l - x1r);
 }
 
 template <typename R> R mean_w2(R x1l, R x1r) {
-    return w2_c0 + w2_c1 * ((x1l + x1r) / 2);
+  return (w2_a
+    + w2_b * (sin(w2_k * x1l) - sin(w2_k * x1r)) / (w2_k * (x1l - x1r))
+  );
+}
+
+template <typename R> R int_w2x1(R x1) {
+  return 0.5 * w2_a * x1 * x1 + (w2_b / (w2_k * w2_k)
+    * (x1 * w2_k * sin(w2_k * x1) + cos(w2_k * x1)));
 }
 
 template <typename R> R mean_w2x1(R x1l, R x1r) {
-    return (w2_c0 * ((x1l + x1r) / 2)
-      + w2_c1 * ((x1l*x1l + x1l*x1r + x1r*x1r) / 3));
+  return (int_w2x1(x1l) - int_w2x1(x1r)) / (x1l - x1r);
 }
 
 class WarpedCoordinate : public Coordinates {

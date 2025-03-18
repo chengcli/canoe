@@ -31,7 +31,7 @@ dt          = 1000.         # time increment between outputs
 <time>
 cfl_number  = 0.4           # The Courant, Friedrichs, & Lewy (CFL) Number
 nlim        = -1            # cycle limit
-tlim        = 10000.         # time limit
+tlim        = 1000.         # time limit
 xorder      = 2             # horizontal reconstruction order
 integrator  = rk3           # integration method
 
@@ -61,7 +61,7 @@ nx3         = 1
 
 <hydro>
 grav_acc1   = -10.
-gamma      = 1.45        # gamma = C_pd/C_vd
+gamma      = 1.4        # gamma = C_pd/C_vd
 drag_coef = 2e-3
 implicit_flag = 1
 

@@ -67,7 +67,7 @@ void BottomInjection(MeshBlock *pmb, Real const time, Real const dt,
 
         // add water vapor
         drhoH2O =
-            dt * 1e-1 /
+            dt * 1e-2 /
             pmb->pcoord->dx1f(is);
         // u(iH2O, k, j, is) += drhoH2O;
         // u(IEN, k, j, is) += drhoH2O * (Rd / (gammad - 1.)) *

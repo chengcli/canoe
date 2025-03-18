@@ -108,7 +108,7 @@ void WarpedCoordinate::Face1Area(const int k, const int j, const int il,
 #pragma omp simd
   for (int i = il; i <= iu; ++i) {
     Real &area_i = area(i);
-    area_i = mean_w2(x1f(i+1), x1f(i)) * dx2f(j) * dx3f(k);
+    area_i = w2(x1f(i)) * dx2f(j) * dx3f(k);
   }
   return;
 }
@@ -137,7 +137,7 @@ void WarpedCoordinate::Face3Area(const int k, const int j, const int il,
 // GetFaceXArea functions: return area of face with normal in X-dir at (i,j,k)
 
 Real WarpedCoordinate::GetFace1Area(const int k, const int j, const int i) {
-  return dx2f(j) * dx3f(k) * mean_w2(x1f(i+1), x1f(i));
+  return dx2f(j) * dx3f(k) * w2(x1f(i));
 }
 
 Real WarpedCoordinate::GetFace2Area(const int k, const int j, const int i) {
