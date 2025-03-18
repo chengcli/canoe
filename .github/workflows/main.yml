@@ -81,12 +81,6 @@ jobs:
           ${{github.workspace}}/build/bin/straka-test-main.nc
           ${{github.workspace}}/examples/2019-Li-snap/straka_output.nc
 
-      - uses: actions/upload-artifact@v3
-        if: env.ARTIFACT_EXISTS == 'false'
-        with:
-          name: straka_output.nc
-          path: ${{github.workspace}}/examples/2019-Li-snap/straka_output.nc
-
   robert-2d:
     if: github.event.pull_request.draft == false
     runs-on: [self-hosted, Linux, 8core]
@@ -134,12 +128,6 @@ jobs:
           python3 ${{github.workspace}}/examples/2019-Li-snap/test_robert.py
           ${{github.workspace}}/build/bin/robert-test-main.nc
           ${{github.workspace}}/examples/2019-Li-snap/robert_output.nc
-
-      - uses: actions/upload-artifact@v3
-        if: env.ARTIFACT_EXISTS == 'false'
-        with:
-          name: robert_output.nc
-          path: ${{github.workspace}}/examples/2019-Li-snap/robert_output.nc
 
   robert-3d:
     if: github.event.pull_request.draft == false
@@ -189,12 +177,6 @@ jobs:
           ${{github.workspace}}/build/bin/robert-test-main.nc
           ${{github.workspace}}/examples/2019-Li-snap/robert3d_output.nc
 
-      - uses: actions/upload-artifact@v3
-        if: env.ARTIFACT_EXISTS == 'false'
-        with:
-          name: robert3d_output.nc
-          path: ${{github.workspace}}/examples/2019-Li-snap/robert3d_output.nc
-
   bryan-2d:
     if: github.event.pull_request.draft == false
     runs-on: [self-hosted, Linux, 4core]
@@ -242,9 +224,3 @@ jobs:
           ${{github.workspace}}/examples/2019-Li-snap/test_bryan.py
           ${{github.workspace}}/build/bin/bryan-test-main.nc
           ${{github.workspace}}/examples/2019-Li-snap/bryan_output.nc
-
-      - uses: actions/upload-artifact@v3
-        if: env.ARTIFACT_EXISTS == 'false'
-        with:
-          name: bryan_output.nc
-          path: ${{github.workspace}}/examples/2019-Li-snap/bryan_output.nc
