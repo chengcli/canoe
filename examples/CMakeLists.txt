@@ -42,6 +42,7 @@ endif()
 
 if (${TASK} STREQUAL "rtdry" OR
     ${TASK} STREQUAL "rtcld" OR
+    ${TASK} STREQUAL "ice_h2s" OR
     ${TASK} STREQUAL "rtcldexo")
   add_subdirectory(2024-XZhang-cloud-rt)
 endif()

@@ -137,10 +137,63 @@ void enroll_vapor_Function_fe(Thermodynamics::SVPFunc1Container &svp_func1,
   }
 }
 
+
+// CH4 svp
+double sat_vapor_p_CH4(double T) {
+  double betal = 10.15, gammal = 1.87, tr = 90.67,
+         pr = 11690.;
+  return SatVaporPresIdeal(T / tr, pr, betal, gammal);
+}
+
+void enroll_vapor_Function_CH4(Thermodynamics::SVPFunc1Container &svp_func1,
+                               std::vector<IndexSet> const &cloud_index_set) {
+  Application::Logger app("snap");
+  app->Log("Enrolling CH4 vapor pressures");
+
+  auto pindex = IndexMap::GetInstance();
+  if (!pindex->HasVapor("CH4")) return;
+  int iCH4 = pindex->GetVaporId("CH4");
+
+  svp_func1[iCH4][0] = [](AirParcel const &qfrac, int, int) {
+    return sat_vapor_p_CH4(qfrac.w[IDN]);
+  };
+
+  for (int n = 1; n < cloud_index_set[iCH4].size(); ++n) {
+    svp_func1[iCH4][n] = NullSatVaporPres1;
+  }
+}
+
+// H2S svp
+double sat_vapor_p_H2S(double T) {
+  double betal = 23.67, gammal = 3.96, tr = 187.7,
+         pr = 23200.;
+  return SatVaporPresIdeal(T / tr, pr, betal, gammal);
+}
+
+void enroll_vapor_Function_H2S(Thermodynamics::SVPFunc1Container &svp_func1,
+                               std::vector<IndexSet> const &cloud_index_set) {
+  Application::Logger app("snap");
+  app->Log("Enrolling H2S vapor pressures");
+
+  auto pindex = IndexMap::GetInstance();
+  if (!pindex->HasVapor("H2S")) return;
+  int iH2S = pindex->GetVaporId("H2S");
+
+  svp_func1[iH2S][0] = [](AirParcel const &qfrac, int, int) {
+    return sat_vapor_p_H2S(qfrac.w[IDN]);
+  };
+
+  for (int n = 1; n < cloud_index_set[iH2S].size(); ++n) {
+    svp_func1[iH2S][n] = NullSatVaporPres1;
+  }
+}
+
 void Thermodynamics::enrollVaporFunctions() {
   enroll_vapor_Function_H2O(svp_func1_, cloud_index_set_);
   enroll_vapor_Function_NH3(svp_func1_, cloud_index_set_);
   enroll_vapor_Function_NH4SH(svp_func1_, cloud_index_set_);
   enroll_vapor_Function_mgsio3(svp_func1_, cloud_index_set_);
   enroll_vapor_Function_fe(svp_func1_, cloud_index_set_);
+  enroll_vapor_Function_H2S(svp_func1_, cloud_index_set_);
+  enroll_vapor_Function_CH4(svp_func1_, cloud_index_set_);
 }
