@@ -328,12 +328,12 @@ void BottomInjection(MeshBlock *pmb, Real const time, Real const dt,
             sqrt(2 * M_PI * Rd * Ttriple1 * pthermo->GetInvMuRatio(iH2O)) /
             pmb->pcoord->dx1f(is);
         u(iH2O, k, j, is) += drhoH2O;
-        u(IEN, k, j, is) += drhoH2O * (Rd / (gammad - 1.)) *
+        u(IEN, k, j, is) += drhoH2O * (Rd * gammad / (gammad - 1.)) *
                             pthermo->GetCvRatio(iH2O) * Ttriple1;
         // add dry air (H2)
         drhoH2 = drhoH2O * massflux_H2ratio;
         u(IDN, k, j, is) += drhoH2;
-        u(IEN, k, j, is) += drhoH2 * (Rd / (gammad - 1.)) * Ttriple1;
+        u(IEN, k, j, is) += drhoH2 * (Rd * gammad / (gammad - 1.)) * Ttriple1;
 
         /* add CO2
         drhoCO2 = drhoH2O * massflux_CO2ratio;
@@ -349,7 +349,7 @@ void Forcing(MeshBlock *pmb, Real const time, Real const dt,
              AthenaArray<Real> const &bcc, AthenaArray<Real> &u,
              AthenaArray<Real> &s) {
   BottomInjection(pmb, time, dt, w, r, bcc, u, s);
-  WallInteraction(pmb, time, dt, w, r, bcc, u, s);
+  // WallInteraction(pmb, time, dt, w, r, bcc, u, s);
 }
 
 void Mesh::InitUserMeshData(ParameterInput *pin) {
