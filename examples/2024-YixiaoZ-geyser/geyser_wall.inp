@@ -94,6 +94,11 @@ wall2_corner_x2 = 50.
 
 sigtanh = 30.
 
+w_x1 = 500.
+c2 = 1.750e-05
+c1 = -1.075e-02
+c0 = 2.000e+0
+
 <initialcondition>
 rho_bottom = 4.0e-4
 ScaleHeight = 100.0
