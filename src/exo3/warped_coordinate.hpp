@@ -8,32 +8,6 @@
 class MeshBlock;
 class ParameterInput;
 
-# define w2_a 2
-# define w2_b 1
-# define w2_k (2 * M_PI / 2e3)
-
-template <typename R> R w2(R x1) {
-  return w2_a + w2_b * cos(w2_k * x1);
-}
-
-template <typename R> R dw2(R x1l, R x1r) {
-  return (w2(x1l) - w2(x1r)) / (x1l - x1r);
-}
-
-template <typename R> R mean_w2(R x1l, R x1r) {
-  return (w2_a
-    + w2_b * (sin(w2_k * x1l) - sin(w2_k * x1r)) / (w2_k * (x1l - x1r))
-  );
-}
-
-template <typename R> R int_w2x1(R x1) {
-  return 0.5 * w2_a * x1 * x1 + (w2_b / (w2_k * w2_k)
-    * (x1 * w2_k * sin(w2_k * x1) + cos(w2_k * x1)));
-}
-
-template <typename R> R mean_w2x1(R x1l, R x1r) {
-  return (int_w2x1(x1l) - int_w2x1(x1r)) / (x1l - x1r);
-}
 
 class WarpedCoordinate : public Coordinates {
  public:
@@ -57,6 +31,13 @@ class WarpedCoordinate : public Coordinates {
                                const AthenaArray<Real> &prim,
                                const AthenaArray<Real> &bcc,
                                AthenaArray<Real> &u) final;
+  private:
+    Real w_x1, c0, c1, c2;
+    Real w2(Real x1);
+    Real int_w2(Real x1);
+    Real int_w2x1(Real x1);
+    Real dw2(Real x1l, Real x1r);
+    Real mean_w2(Real x1l, Real x1r);
 };
 
 #endif  // SRC_EXO3_WRAPED_COORDINATE_HPP_

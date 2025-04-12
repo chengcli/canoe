@@ -86,6 +86,11 @@ tau   = 1e8
 Tm    = 271.0 # melting temperature of ice, water-ice interface temp
 Ts    = 100.0 # ice surface temperature
 
+w_x1 = 5.e3
+c2 = 1.750e-07
+c1 = -1.075e-03
+c0 = 2.000e+0
+
 <initialcondition>
 rho_bottom = 4.0e-4
 ScaleHeight = 100.0

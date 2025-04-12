@@ -17,11 +17,16 @@ WarpedCoordinate::WarpedCoordinate(MeshBlock *pmb, ParameterInput *pin,
   // Send something to confirm that we are using Warped
   std::cout << "===Note===: Warped coordinates activated" << std::endl;
 
+  w_x1 = pin->GetReal("problem", "w_x1");
+  c0 = pin->GetReal("problem", "c0");
+  c1 = pin->GetReal("problem", "c1");
+  c2 = pin->GetReal("problem", "c2");
+
   // initialize volume-averaged coordinates and spacing
   // x1-direction: x1v = dx/2
   for (int i = il - ng; i <= iu + ng; ++i) {
-    // x1v(i) = mean_w2x1(x1f(i+1), x1f(i)) / mean_w2(x1f(i+1), x1f(i));
-    x1v(i) = 0.5 * (x1f(i + 1) + x1f(i));
+    x1v(i) = (int_w2x1(x1f(i+1)) - int_w2x1(x1f(i)))
+      / (int_w2(x1f(i+1)) - int_w2(x1f(i)));
   }
   for (int i = il - ng; i <= iu + ng - 1; ++i) {
       dx1v(i) = x1v(i + 1) - x1v(i);
@@ -94,6 +99,33 @@ WarpedCoordinate::WarpedCoordinate(MeshBlock *pmb, ParameterInput *pin,
     }
   }
 
+}
+
+//----------------------------------------------------------------------------------------
+// Utils for WarpedCoordinate
+
+Real WarpedCoordinate::w2(Real x1) {
+  return (x1 < w_x1) ? (c0 + x1 * (c1 + c2 * x1)) : 1.0;
+}
+
+Real WarpedCoordinate::int_w2(Real x1) {
+  Real x;
+  x = (x1 < w_x1) ? x1 : w_x1;
+  return x * (c0 + x * (c1/2. + c2/3. * x)) + (x1 - x);
+}
+
+Real WarpedCoordinate::int_w2x1(Real x1) {
+  Real x;
+  x = (x1 < w_x1) ? x1 : w_x1;
+  return x * x * (c0/2. + x * (c1/3. + c2/4. * x)) + 0.5 * (x1 + x) * (x1 - x);
+}
+
+Real WarpedCoordinate::dw2(Real x1l, Real x1r) {
+  return (w2(x1l) - w2(x1r)) / (x1l - x1r);
+}
+
+Real WarpedCoordinate::mean_w2(Real x1l, Real x1r) {
+  return (int_w2(x1l) - int_w2(x1r)) / (x1l - x1r);
 }
 
 // Put in the changes in face2area etc, similar to cylindrical.cpp
