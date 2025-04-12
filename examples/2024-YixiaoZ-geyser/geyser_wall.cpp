@@ -40,6 +40,65 @@ inline double sat_vapor_p_H2O(double T) {
   return SatVaporPresIdeal(T / tr, pr, betal, gammal);
 }
 
+const double stefan_boltzmann_consant = 5.67e-8;
+const double ice_diffusivity = 3.;
+const double temp_eff = 68.;
+const double specific_latent_heat = 2.6e6;
+
+inline Real power4(Real x) {
+    Real x2 = x * x;
+    return x2 * x2;
+}
+
+inline Real d_power4(Real x) {
+    return 3 * x * x * x;
+}
+
+Real wall_condensation_rate(Real temp_wall, Real distance,
+        int max_iter = 32, Real rel_tol = 1e-5) {
+
+    if (temp_wall < temp_eff) {
+        std::cout<<"Wall Condensation: wall temperature is lower than "
+            <<temp_eff<<". will return zero."<<std::endl;
+        return 0.;
+    }
+
+    Real bulk_diffusivity = ice_diffusivity / (0.5 * M_PI * distance);
+
+    Real temp_surf = temp_eff;
+    Real heat_flux = 0.;
+    int iter;
+
+    for (iter = 0; iter < max_iter; ++iter) {
+
+        Real heat_flux_rad = stefan_boltzmann_consant * (
+            power4(temp_surf) - power4(temp_eff)
+        );
+
+        Real heat_flux_diff = bulk_diffusivity * (temp_wall - temp_surf);
+
+        Real f = heat_flux_rad - heat_flux_diff;
+
+        if (abs(f) < rel_tol * (abs(heat_flux_rad) + abs(heat_flux_diff))/2) {
+            heat_flux = heat_flux_diff + f/2;
+            break;
+        }
+
+        Real d_heat_flux_rad = stefan_boltzmann_consant * d_power4(temp_surf);
+        Real d_heat_flux_diff = - bulk_diffusivity;
+        Real d_f = d_heat_flux_rad - d_heat_flux_diff;
+
+        temp_surf -= f / d_f;
+    }
+
+    if (iter >= max_iter) {
+        std::cout<<"Wall Condensation: max_iter reached. will return zero."
+            <<std::endl;
+    };
+
+    return heat_flux / specific_latent_heat;
+}
+
 void reflecting_x2_left(MeshBlock *pmb, Coordinates *pco,
                         AthenaArray<Real> &prim, FaceField &b, Real time,
                         Real dt, int il, int iu, int jl, int ju, int kl, int ku,
@@ -200,43 +259,6 @@ void WallInteraction(MeshBlock *pmb, Real const time, Real const dt,
       if (x1f_center < wall1_corner_x1) {
         continue;
       }
-
-      if (x1f_left - 2 * pmb->pcoord->dx1f(is) < wall1_corner_x1) {
-        for (int k = pmb->ks; k <= pmb->ke; ++k)
-          for (int j = pmb->js; j <= pmb->je; ++j) {
-            Ta = pthermo->GetTemp(w.at(k, j, is));
-            p_H2O = (pmb->phydro->w(IDN, k, j, is) *
-                     pmb->phydro->w(iH2O, k, j, is) * Rd * Ta *
-                     pthermo->GetInvMuRatio(iH2O));
-            Pw = sat_vapor_p_H2O(Ts);
-            csw = sqrt(2 * M_PI * Rd * Ts * pthermo->GetInvMuRatio(iH2O));
-            csa = sqrt(2 * M_PI * Rd * Ta * pthermo->GetInvMuRatio(iH2O));
-            // drhoH2O = dt * (Pw/csw - p_H2O/csa) / pmb->pcoord->dx1f(is);
-            drhoH2O = dt * (-p_H2O / csa) / pmb->pcoord->dx1f(is);
-            u(iH2O, k, j, is) += drhoH2O;
-            // std::cout << "x1min" << x1f_left << "x2min" << x2f_left << "Add
-            // upper wall" << std::endl;
-
-            if (drhoH2O < 0) {
-              KE = 0.5f * (pmb->phydro->w(IVX, k, j, is) *
-                               pmb->phydro->w(IVX, k, j, is) +
-                           pmb->phydro->w(IVY, k, j, is) *
-                               pmb->phydro->w(IVY, k, j, is) +
-                           pmb->phydro->w(IVZ, k, j, is) *
-                               pmb->phydro->w(IVZ, k, j, is));
-              u(IEN, k, j, is) +=
-                  drhoH2O *
-                  (KE + (Rd / (gammad - 1.)) * pthermo->GetCvRatio(iH2O) * Ta);
-              u(IVZ, k, j, is) += drhoH2O * pmb->phydro->w(IVZ, k, j, is);
-              u(IVY, k, j, is) += drhoH2O * pmb->phydro->w(IVY, k, j, is);
-              u(IVX, k, j, is) += drhoH2O * pmb->phydro->w(IVX, k, j, is);
-            } else {
-              u(IEN, k, j, is) += drhoH2O * ((Rd / (gammad - 1.)) *
-                                             pthermo->GetCvRatio(iH2O) * Tw);
-            }
-          }
-      }
-      continue;
     }
 
     if (x1f_center > wall1_corner_x1) {
@@ -271,8 +293,9 @@ void WallInteraction(MeshBlock *pmb, Real const time, Real const dt,
           csw = sqrt(2 * M_PI * Rd * Tw * pthermo->GetInvMuRatio(iH2O));
           csa = sqrt(2 * M_PI * Rd * Ta * pthermo->GetInvMuRatio(iH2O));
 
-          drhoH2O = dt * (Pw / csw - p_H2O / csa) / pmb->pcoord->dx2f(jw);
-          drhoH2O *= tanhweight;
+          // drhoH2O = dt * (Pw / csw - p_H2O / csa) / pmb->pcoord->dx2f(jw);
+          // drhoH2O *= tanhweight;
+          drhoH2O = dt * wall_condensation_rate(Ta, wall1_corner_x1 - x1f_center);
 
           u(iH2O, k, jw, i) += drhoH2O;
 
@@ -349,7 +372,7 @@ void Forcing(MeshBlock *pmb, Real const time, Real const dt,
              AthenaArray<Real> const &bcc, AthenaArray<Real> &u,
              AthenaArray<Real> &s) {
   BottomInjection(pmb, time, dt, w, r, bcc, u, s);
-  // WallInteraction(pmb, time, dt, w, r, bcc, u, s);
+  WallInteraction(pmb, time, dt, w, r, bcc, u, s);
 }
 
 void Mesh::InitUserMeshData(ParameterInput *pin) {
