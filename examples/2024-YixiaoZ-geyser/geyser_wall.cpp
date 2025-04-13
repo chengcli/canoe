@@ -295,7 +295,7 @@ void WallInteraction(MeshBlock *pmb, Real const time, Real const dt,
 
           // drhoH2O = dt * (Pw / csw - p_H2O / csa) / pmb->pcoord->dx2f(jw);
           // drhoH2O *= tanhweight;
-          drhoH2O = dt * wall_condensation_rate(Ta, wall1_corner_x1 - x1f_center);
+          drhoH2O - dt * wall_condensation_rate(Ta, wall1_corner_x1 - x1f_center);
 
           u(iH2O, k, jw, i) += drhoH2O;
 

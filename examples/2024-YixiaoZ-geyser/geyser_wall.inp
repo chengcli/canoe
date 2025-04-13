@@ -29,7 +29,7 @@ file_type   = rst           # History data dump
 dt          = 20.           # time increment between outputs
 
 <time>
-cfl_number  = 0.1           # The Courant, Friedrichs, & Lewy (CFL) Number
+cfl_number  = 0.4           # The Courant, Friedrichs, & Lewy (CFL) Number
 nlim        = -1            # cycle limit
 tlim        = 20.           # time limit
 xorder      = 2             # horizontal reconstruction order
@@ -42,11 +42,11 @@ x1max       = 1.E3          # maximum value of X1
 ix1_bc      = reflecting    # inner-X1 boundary flag
 ox1_bc      = outflow       # outer-X1 boundary flag
 
-nx2         = 50            # Number of zones in X2-direction
-x2min       = -250.         # minimum value of X2
-x2max       =  250.         # maximum value of X2
-ix2_bc      = outflow      # inner-X2 boundary flag
-ox2_bc      = outflow      # outer-X2 boundary flag
+nx2         = 196           # Number of zones in X2-direction
+x2min       = -245.         # minimum value of X2
+x2max       =  245.         # maximum value of X2
+ix2_bc      = outflow       # inner-X2 boundary flag
+ox2_bc      = outflow       # outer-X2 boundary flag
 
 nx3         = 1             # Number of zones in X3-direction
 x3min       = -0.5          # minimum value of X3
@@ -56,7 +56,7 @@ ox3_bc      = periodic      # outer-X3 boundary flag
 
 <meshblock>
 nx1         = 50
-nx2         = 10
+nx2         = 4
 nx3         = 1
 
 <hydro>
@@ -87,10 +87,10 @@ Tm    = 271.0 # melting temperature of ice, water-ice interface temp
 Ts    = 100.0 # ice surface temperature
 
 wall1_corner_x1 = 500.
-wall1_corner_x2 = -50.
+wall1_corner_x2 = -5.
 
 wall2_corner_x1 = 500.
-wall2_corner_x2 = 50.
+wall2_corner_x2 = 5.
 
 sigtanh = 30.
 
