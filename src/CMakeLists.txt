@@ -3,9 +3,7 @@
 # climath : math library in c
 # astro: astronomy library in cpp
 # utils: utility library in c/cpp
-# harp: radiation library in c/cpp (backed by cdisort)
 # outputs: write netcdf/pnetcdf outputs
-# opacity: opacity library
 
 include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}
@@ -46,9 +44,7 @@ add_subdirectory(climath)
 add_subdirectory(astro)
 add_subdirectory(utils)
 add_subdirectory(snap)
-add_subdirectory(harp)
 add_subdirectory(outputs)
-add_subdirectory(opacity)
 add_subdirectory(microphysics)
 add_subdirectory(flask)
 add_subdirectory(tracer)
@@ -71,9 +67,7 @@ set(CANOE_LIBRARY_${buildu}
   "astro_${buildl}"
   "utils_${buildl}"
   "snap_${buildl}"
-  "harp_${buildl}"
   "outputs_${buildl}"
-  "opacity_${buildl}"
   "dusts_${buildl}"
   "flask_${buildl}"
   "tracer_${buildl}"
@@ -97,6 +91,7 @@ set(CANOE_LIBRARY_${buildu}
   ${TORCH_CPU_LIBRARY}
   ${C10_LIBRARY}
   ${EXTRA_LIBS}
+  pyharp::harp
   CACHE INTERNAL "canoe library")
 
 set(CANOE_INCLUDE_DIR
