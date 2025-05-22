@@ -9,7 +9,7 @@
 #include <application/exceptions.hpp>
 
 // canoe
-#include <configure.hpp>
+#include <configure.h>
 
 void read_thermo_property(Real var[], char const name[], int len, Real v0,
                           ParameterInput* pin) {

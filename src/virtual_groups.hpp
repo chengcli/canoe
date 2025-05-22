@@ -10,7 +10,8 @@
 #include <athena/athena.hpp>  // Real
 
 // canoe
-#include <configure.hpp>
+#include <configure.h>
+
 #include <index_map.hpp>
 
 class Mesh;

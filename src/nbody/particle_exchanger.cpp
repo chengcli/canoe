@@ -14,7 +14,7 @@
 #include <athena/mesh/mesh.hpp>
 
 // canoe
-#include <configure.hpp>
+#include <configure.h>
 
 // n-body
 #include "particle_data.hpp"

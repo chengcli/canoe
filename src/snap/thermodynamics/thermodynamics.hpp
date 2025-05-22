@@ -20,8 +20,9 @@
 #include <athena/mesh/mesh.hpp>
 
 // canoe
+#include <configure.h>
+
 #include <air_parcel.hpp>
-#include <configure.hpp>
 #include <constants.hpp>
 
 class MeshBlock;
@@ -36,7 +37,7 @@ using RealArrayX = std::vector<Real>;
 using SatVaporPresFunc1 = Real (*)(AirParcel const &, int i, int j);
 using SatVaporPresFunc2 = Real (*)(AirParcel const &, int i, int j, int k);
 
-//! \todo(CLI): move to configure.hpp
+//! \todo(CLI): move to configure.h
 enum { MAX_REACTANT = 3 };
 using ReactionIndx = std::array<int, MAX_REACTANT>;
 using ReactionStoi = std::array<int, MAX_REACTANT>;
@@ -294,8 +295,8 @@ class Thermodynamics {
     return w(IPR, k, j, i) / (w(IDN, k, j, i) * Rd_ * RovRd(pmb, k, j, i));
   }
 
-  template<typename T>
-  Real GetTemp(T const& w) const {
+  template <typename T>
+  Real GetTemp(T const &w) const {
     return w[IPR] / (w[IDN] * Rd_ * RovRd(w));
   }
 
@@ -319,11 +320,10 @@ class Thermodynamics {
     return feps;
   }
 
-  template<typename T>
-  Real RovRd(T const& w) const {
+  template <typename T>
+  Real RovRd(T const &w) const {
     Real feps = 1.;
-    for (int n = 1; n <= NVAPOR; ++n)
-      feps += w[n] * (inv_mu_ratio_[n] - 1.);
+    for (int n = 1; n <= NVAPOR; ++n) feps += w[n] * (inv_mu_ratio_[n] - 1.);
     return feps;
   }
 

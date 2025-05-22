@@ -2,7 +2,7 @@
 #define SRC_TRANSPORT_STREAM_TRANSPORT_HPP_
 
 // canoe
-#include <configure.hpp>
+#include <configure.h>
 
 // dealii headers
 #include <deal.II/lac/solver_gmres.h>

@@ -2,7 +2,7 @@
 #include <iostream>
 
 // canoe
-#include <configure.hpp>
+#include <configure.h>
 
 // athena
 #include <athena/coordinates/coordinates.hpp>

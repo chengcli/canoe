@@ -11,7 +11,8 @@
 #include <athena/mesh/mesh.hpp>
 
 // canoe
-#include <configure.hpp>
+#include <configure.h>
+
 #include <impl.hpp>
 #include <virtual_groups.hpp>
 

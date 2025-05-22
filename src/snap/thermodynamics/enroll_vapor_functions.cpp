@@ -1,6 +1,7 @@
 // canoe
+#include <configure.h>
+
 #include <air_parcel.hpp>
-#include <configure.hpp>
 
 // snap
 #include "thermodynamics.hpp"

@@ -5,7 +5,7 @@
 #include <application/application.hpp>
 
 // canoe
-#include <configure.hpp>
+#include <configure.h>
 
 // snap
 #include <snap/thermodynamics/thermodynamics.hpp>

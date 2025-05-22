@@ -2,8 +2,9 @@
 #include <application/application.hpp>
 
 // canoe
+#include <configure.h>
+
 #include <air_parcel.hpp>
-#include <configure.hpp>
 #include <index_map.hpp>
 
 // thermodynamics

@@ -1,5 +1,4 @@
-#ifndef CONFIGURE_HPP_
-#define CONFIGURE_HPP_
+#pragma once
 
 enum {
   //cubesphere nblocks data
@@ -58,4 +57,10 @@ enum {
 
 #define ENABLE_FIX
 
-#endif  // CONFIGURE_HPP_
+#ifdef __CUDACC__
+  #define DISPATCH_MACRO __host__ __device__
+#else
+  #define DISPATCH_MACRO
+#endif
+
+constexpr char HARP_ROOT_DIR[] = "@HARP_INCLUDE_DIR@";

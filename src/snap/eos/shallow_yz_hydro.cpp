@@ -14,7 +14,8 @@
 #include <athena/parameter_input.hpp>
 
 // canoe
-#include <configure.hpp>
+#include <configure.h>
+
 #include <snap/stride_iterator.hpp>
 
 // exo3

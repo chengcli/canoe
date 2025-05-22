@@ -8,7 +8,8 @@
 #include <string>
 
 // canoe
-#include <configure.hpp>
+#include <configure.h>
+
 #include <impl.hpp>
 
 // athena

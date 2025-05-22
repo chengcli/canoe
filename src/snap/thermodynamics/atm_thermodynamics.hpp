@@ -2,8 +2,9 @@
 #define SRC_SNAP_THERMODYNAMICS_ATM_THERMODYNAMICS_HPP_
 
 // canoe
+#include <configure.h>
+
 #include <air_parcel.hpp>
-#include <configure.hpp>
 
 // snap
 #include "thermodynamics.hpp"

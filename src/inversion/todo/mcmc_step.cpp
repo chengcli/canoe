@@ -6,7 +6,7 @@
 #include <iostream>
 
 // canoe
-#include <configure.hpp>
+#include <configure.h>
 
 // climath
 #include <climath/core.h>

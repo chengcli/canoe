@@ -18,7 +18,8 @@
 #include <athena/parameter_input.hpp>
 
 // canoe
-#include <configure.hpp>
+#include <configure.h>
+
 #include <impl.hpp>
 
 // exo3

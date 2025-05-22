@@ -20,8 +20,9 @@
 #include <application/exceptions.hpp>
 
 // canoe
+#include <configure.h>
+
 #include <air_parcel.hpp>
-#include <configure.hpp>
 #include <constants.hpp>
 // #include <dirty.hpp>
 #include <impl.hpp>

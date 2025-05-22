@@ -7,7 +7,7 @@
 #include <application/globals.hpp>
 
 // canoe
-#include <configure.hpp>
+#include <configure.h>
 
 // exchanger
 #include "exchanger.hpp"

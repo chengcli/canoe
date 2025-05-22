@@ -9,7 +9,7 @@
 #include <athena/mesh/mesh.hpp>
 
 // canoe
-#include <configure.hpp>
+#include <configure.h>
 
 class CubedSphere {
  public:

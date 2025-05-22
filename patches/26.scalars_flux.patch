@@ -20,7 +20,7 @@ index 25e16d23..416bfb31 100644
  #endif
  
 +// canoe injection
-+#include <configure.hpp>
++#include <configure.h>
 +#include <impl.hpp>
 +#include <microphysics/microphysics.hpp>
 +

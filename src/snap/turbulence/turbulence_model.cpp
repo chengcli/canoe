@@ -13,7 +13,7 @@
 #include <application/exceptions.hpp>
 
 // canoe
-#include <configure.hpp>
+#include <configure.h>
 
 // snap
 #include "turbulence_model.hpp"

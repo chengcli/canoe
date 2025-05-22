@@ -10,7 +10,7 @@
 #include <athena/mesh/mesh.hpp>
 
 // canoe
-#include <configure.hpp>
+#include <configure.h>
 
 // exo3
 #include "cubed_sphere.hpp"
@@ -539,14 +539,10 @@ void CubedSphere::sendNeighborBlocks(int ox2, int ox3, int tg_rank,
 
   // Calculate the tag of destination
 #ifdef USE_NBLOCKS
-  if (tox2 == -1)
-    DirTag = 0 + 4 * pmb->gid + 24 * (bound_lim + 1) * tg_gid;
-  if (tox2 == 1)
-    DirTag = 1 + 4 * pmb->gid + 24 * (bound_lim + 1) * tg_gid;
-  if (tox3 == -1)
-    DirTag = 2 + 4 * pmb->gid + 24 * (bound_lim + 1) * tg_gid;
-  if (tox3 == 1)
-    DirTag = 3 + 4 * pmb->gid + 24 * (bound_lim + 1) * tg_gid;
+  if (tox2 == -1) DirTag = 0 + 4 * pmb->gid + 24 * (bound_lim + 1) * tg_gid;
+  if (tox2 == 1) DirTag = 1 + 4 * pmb->gid + 24 * (bound_lim + 1) * tg_gid;
+  if (tox3 == -1) DirTag = 2 + 4 * pmb->gid + 24 * (bound_lim + 1) * tg_gid;
+  if (tox3 == 1) DirTag = 3 + 4 * pmb->gid + 24 * (bound_lim + 1) * tg_gid;
 #else
   if (tox2 == -1)
     DirTag = 0 + 4 * pmb->gid + 24 * (1 << (loc.level - 2)) * tg_gid;
@@ -645,14 +641,10 @@ void CubedSphere::recvNeighborBlocks(int ox2, int ox3, int tg_rank,
   Real *data = new Real[dsize];
   // Calculate the tag for receiving
 #ifdef USE_NBLOCKS
-  if (ox2 == -1)
-    DirTag = 0 + 4 * tg_gid + 24 * (bound_lim + 1) * pmb->gid;
-  if (ox2 == 1)
-    DirTag = 1 + 4 * tg_gid + 24 * (bound_lim + 1) * pmb->gid;
-  if (ox3 == -1)
-    DirTag = 2 + 4 * tg_gid + 24 * (bound_lim + 1) * pmb->gid;
-  if (ox3 == 1)
-    DirTag = 3 + 4 * tg_gid + 24 * (bound_lim + 1) * pmb->gid;
+  if (ox2 == -1) DirTag = 0 + 4 * tg_gid + 24 * (bound_lim + 1) * pmb->gid;
+  if (ox2 == 1) DirTag = 1 + 4 * tg_gid + 24 * (bound_lim + 1) * pmb->gid;
+  if (ox3 == -1) DirTag = 2 + 4 * tg_gid + 24 * (bound_lim + 1) * pmb->gid;
+  if (ox3 == 1) DirTag = 3 + 4 * tg_gid + 24 * (bound_lim + 1) * pmb->gid;
 #else
   if (ox2 == -1)
     DirTag = 0 + 4 * tg_gid + 24 * (1 << (loc.level - 2)) * pmb->gid;

@@ -10,7 +10,7 @@
 #include <athena/athena.hpp>
 
 // canoe
-#include <configure.hpp>
+#include <configure.h>
 
 #ifdef MPI_PARALLEL
 #include <mpi.h>

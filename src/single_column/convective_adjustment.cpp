@@ -12,7 +12,7 @@
 #include <athena/hydro/hydro.hpp>
 
 // canoe
-#include <configure.hpp>
+#include <configure.h>
 
 // climath
 #include <climath/broyden_root.h>

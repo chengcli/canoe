@@ -4,11 +4,11 @@
 #include <athena/parameter_input.hpp>
 
 // canoe
-#include <configure.hpp>
+#include <configure.h>
 
 // harp
-#include "harp/radiation.hpp"
-#include "harp/radiation_band.hpp"
+// #include <harp/radiation.hpp>
+// #include <harp/radiation_band.hpp>
 
 // snap
 #include "snap/decomposition/decomposition.hpp"
@@ -64,7 +64,7 @@ MeshBlock::Impl::Impl(MeshBlock *pmb, ParameterInput *pin) : pmy_block_(pmb) {
   pmicro = std::make_shared<Microphysics>(pmb, pin);
 
   // radiation
-  prad = std::make_shared<Radiation>(pmb, pin);
+  // prad = harp::Radiation();
 
   // chemistry
   pchem = std::make_shared<Chemistry>(pmb, pin);

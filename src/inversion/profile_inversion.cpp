@@ -9,7 +9,8 @@
 #include <yaml-cpp/yaml.h>
 
 // canoe
-#include <configure.hpp>
+#include <configure.h>
+
 #include <impl.hpp>
 
 // climath

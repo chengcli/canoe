@@ -6,7 +6,7 @@ index 223962de..74b3ab79 100644
  #include "../bvals.hpp"
  #include "bvals_cc.hpp"
  
-+#include <configure.hpp>
++#include <configure.h>
 +#include <exo3/cubed_sphere_utility.hpp>
 +
  // MPI header

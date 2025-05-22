@@ -6,7 +6,7 @@
 #include <application/exceptions.hpp>
 
 // canoe
-#include <configure.hpp>
+#include <configure.h>
 
 // exo3
 #include <exo3/cubed_sphere_utility.hpp>
@@ -106,7 +106,7 @@ void ImplicitSolver::SolveImplicit3D(AthenaArray<Real> &du,
 
     for (int k = ks; k <= ke; ++k)
       for (int j = js; j <= je; ++j) {
-        // project velocity
+      // project velocity
 #ifdef CUBED_SPHERE
         auto pco = static_cast<GnomonicEquiangle *>(pmb->pcoord);
         Real cos_theta = pco->GetCosineCell(k, j);
@@ -129,7 +129,7 @@ void ImplicitSolver::SolveImplicit3D(AthenaArray<Real> &du,
           PartialCorrection(du_, w, dt, k, j, is, ie);
         }
 
-        // de-project velocity
+      // de-project velocity
 #ifdef CUBED_SPHERE
         for (int i = 0; i < w.GetDim1(); ++i) {
           w(IVZ, k, j, i) /= sin_theta;

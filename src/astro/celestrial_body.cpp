@@ -16,7 +16,7 @@
 #include <climath/interpolation.h>
 
 // harp
-#include <harp/spectral_grid.hpp>
+// #include <harp/spectral_grid.hpp>
 
 // utils
 #include <utils/fileio.hpp>

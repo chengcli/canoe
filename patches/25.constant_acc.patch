@@ -11,7 +11,7 @@ index c43e04f7..3afbadcf 100644
  #include "hydro_srcterms.hpp"
  
 +// canoe
-+#include <configure.hpp>
++#include <configure.h>
 +
  //----------------------------------------------------------------------------------------
  //! \fn void HydroSourceTerms::ConstantAcceleration

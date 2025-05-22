@@ -9,7 +9,8 @@
 #include <athena/hydro/hydro.hpp>
 
 // canoe
-#include <configure.hpp>
+#include <configure.h>
+
 #include <impl.hpp>
 
 // exo3
@@ -256,9 +257,9 @@ void Hydro::RiemannSolver(const int k, const int j, const int il, const int iu,
       tfl[n] = wli[IDN] * rdl * vxl;
       tfr[n] = wri[IDN] * rdr * vxr;
       tflxi[n] = sl * tfl[n] + sr * tfr[n];
-      if (dir==0){ // The direction of the sedimentation velocity
+      if (dir == 0) {  // The direction of the sedimentation velocity
         pmicro->mass_flux[dir](n, k, j, i) = tflxi[n] + vsed * wri[IDN] * rdr;
-      }else{
+      } else {
         pmicro->mass_flux[dir](n, k, j, i) = tflxi[n];
       }
     }

@@ -7,7 +7,7 @@
 #include <iostream>
 
 // canoe
-#include <configure.hpp>
+#include <configure.h>
 
 #ifdef FITSOUTPUT
 extern "C" {
@@ -285,7 +285,7 @@ void mcmc_save_fits(char const *fname, mcmc_opts *opts, mcmc_recs *recs,
     fits_create_img(fp, DOUBLE_IMG, naxis, naxes, &status);
     if (status) fits_report_error(stderr, status);
 
-      // 6.2 write parameter fields
+    // 6.2 write parameter fields
 #ifdef MPI_PARALLEL
     fits_write_img(fp, TDOUBLE, fpixel, nelements, **par, &status);
 #else
@@ -321,7 +321,7 @@ void mcmc_save_fits(char const *fname, mcmc_opts *opts, mcmc_recs *recs,
     fits_create_img(fp, DOUBLE_IMG, naxis, naxes, &status);
     if (status) fits_report_error(stderr, status);
 
-      // write function values
+    // write function values
 #ifdef MPI_PARALLEL
     fits_write_img(fp, TDOUBLE, fpixel, nelements, **val, &status);
 #else
