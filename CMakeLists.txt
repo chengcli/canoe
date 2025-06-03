@@ -10,6 +10,25 @@ project(canoe
 # search for <Package>_ROOT
 cmake_policy(SET CMP0074 NEW)
 
+find_program(Python3_EXECUTABLE NAMES python)
+find_package(Python3 REQUIRED COMPONENTS Interpreter Development.Module)
+execute_process(
+  COMMAND ${Python3_EXECUTABLE} -c "import torch; print(int(torch._C._GLIBCXX_USE_CXX11_ABI))"
+  RESULT_VARIABLE _ABI_RESULT
+  OUTPUT_VARIABLE _ABI_OUTPUT
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+if(NOT _ABI_RESULT EQUAL 0)
+  message(FATAL_ERROR "Failed to detect Torch GLIBCXX ABI")
+endif()
+
+# Set the _GLIBCXX_USE_CXX11_ABI flag
+add_compile_definitions(_GLIBCXX_USE_CXX11_ABI=${_ABI_OUTPUT})
+
+# Set MacOS deployment target
+set(CMAKE_OSX_DEPLOYMENT_TARGET "15.0")
+
 string(ASCII 27 Esc)
 set(ColorReset "${Esc}[m")
 set(Green      "${Esc}[32m")

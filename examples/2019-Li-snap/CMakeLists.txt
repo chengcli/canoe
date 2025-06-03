@@ -16,5 +16,5 @@ endif()
 # 4. Copy input files to run directory
 file(GLOB inputs *.inp *.yaml)
 foreach(input ${inputs})
-  execute_process(COMMAND ln -sf ${input} ${CMAKE_BINARY_DIR}/bin/${input})
+  execute_process(COMMAND ln -sf ${input} ${CMAKE_BINARY_DIR}/bin/)
 endforeach()
