@@ -64,8 +64,6 @@ gamma       = 1.4         # gamma = C_p/C_v
 implicit_flag = 1
 
 <thermodynamics>
-thermodynamics_config = hot-jupiter.yaml
-
 Rd          = 3779.       # Gas constant
 dT_e2p      = 300.        # Temperature contrast from equator to pole, K
 dT_stra     = 10.         # Temperature contrast, K
@@ -73,6 +71,8 @@ z_stra      = 2.E6        # Stratosphere height, m
 Gamma_trop  = 2.E-4       # Lapse rate, K/m
 
 <problem>
+thermodynamics_config = hot-jupiter.yaml
+
 Kt         = 1.5E5            # Damping timescale, s
 Ts         = 1600.            # Surface temperature, K
 p0         = 1.E5             # Surface pressure, Pa

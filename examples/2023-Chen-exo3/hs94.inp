@@ -64,16 +64,15 @@ gamma          = 1.4         # gamma = C_p/C_v
 grav_acc1      = -9.81         # gravity accelaration
 implicit_flag  = 1
 
-
 <thermodynamics>
-thermodynamics_config = earth-dry.yaml
-
 dT         = 60.       # horizontal temperature difference
 dtheta     = 10.       # vertical potential temperature difference
 Rd         = 287.
 cp         = 1004.
 
 <problem>
+thermodynamics_config = earth-dry.yaml
+
 Omega      = 7.292E-5
 Rp         = 6.371E6
 p0         = 1.E5      # surface pressure
