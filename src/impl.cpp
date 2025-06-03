@@ -4,7 +4,7 @@
 #include <athena/parameter_input.hpp>
 
 // canoe
-#include <configure.hpp>
+#include <configure.h>
 
 // harp
 #include "harp/radiation.hpp"

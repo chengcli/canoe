@@ -10,7 +10,7 @@
 #include <athena/athena.hpp>  // Real
 
 // canoe
-#include <configure.hpp>
+#include <configure.h>
 
 //! \class AirParcel
 //  \brief a collection of all physical data in a computational cell

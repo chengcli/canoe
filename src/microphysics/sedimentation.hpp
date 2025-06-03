@@ -10,7 +10,7 @@
 
 // share
 // clang-format off
-#include <configure.hpp>
+#include <configure.h>
 #include <add_arg.h>
 // clang-format on
 
@@ -19,8 +19,8 @@ using SharedData = std::shared_ptr<
 
 struct SedimentationOptions {
   //! radius and density of particles
-  ADD_ARG(std::vector<double>, radius) = {10.0e-6};
-  ADD_ARG(std::vector<double>, density) = {1.0e3};
+  ADD_ARG(std::vector<double>, radius) = { 10.0e-6 };
+  ADD_ARG(std::vector<double>, density) = { 1.0e3 };
 
   //! additional constant sedimentation velocity
   ADD_ARG(std::vector<double>, const_vsed) = {};

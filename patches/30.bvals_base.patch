@@ -6,7 +6,7 @@ index 70f2d2f3..55b34df7 100644
  #include "../utils/buffer_utils.hpp"
  #include "bvals.hpp"
  
-+#include <configure.hpp>
++#include <configure.h>
 +#include <exo3/cubed_sphere.hpp>
 +
  // required definitions of static data members of BoundaryBase outside class definition

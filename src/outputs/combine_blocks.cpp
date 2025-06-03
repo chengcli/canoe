@@ -12,7 +12,7 @@
 #include <athena/outputs/user_outputs.hpp>
 
 // canoe
-#include <configure.hpp>
+#include <configure.h>
 
 int mppnccombine(int argc, char *argv[]);
 

@@ -6,7 +6,7 @@ index e1018851..d69fa8f3 100644
  #include "../parameter_input.hpp"
  #include "coordinates.hpp"
  
-+#include <configure.hpp>
++#include <configure.h>
 +#include <impl.hpp>
 +#include <exo3/cubed_sphere.hpp>
 +

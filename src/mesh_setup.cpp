@@ -8,7 +8,7 @@
 #include <application/exceptions.hpp>
 
 // canoe
-#include <configure.hpp>
+#include <configure.h>
 
 #include "impl.hpp"
 #include "index_map.hpp"

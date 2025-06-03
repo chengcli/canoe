@@ -9,7 +9,7 @@ index eeaf381b..76737a81 100644
 +// snap injection
 +#include <impl.hpp>
 +#include <snap/decomposition/decomposition.hpp>
-+#include <configure.hpp>
++#include <configure.h>
 +#include <exo3/cubed_sphere.hpp>
 +#include <checks.hpp>
 +

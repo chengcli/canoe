@@ -7,7 +7,7 @@
 #include <application/application.hpp>
 
 // canoe
-#include <configure.hpp>
+#include <configure.h>
 
 // tracer
 #include "tracer.hpp"

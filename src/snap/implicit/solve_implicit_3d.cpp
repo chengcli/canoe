@@ -6,7 +6,7 @@
 #include <application/exceptions.hpp>
 
 // canoe
-#include <configure.hpp>
+#include <configure.h>
 
 // exo3
 #include <exo3/cubed_sphere_utility.hpp>

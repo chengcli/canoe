@@ -56,8 +56,6 @@ enum {
 // nblocks for exo3 option (USE_NBLOCKS or NOT_USE_NBLOCKS)
 #define @USE_NBLOCKS@
 
-//#define ENABLE_FIX
-
 // logger
 #define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_@LOGGER_LEVEL@
 #define LOG_TRACE(...) SPDLOG_LOGGER_TRACE(__VA_ARGS__)
@@ -72,3 +70,5 @@ enum {
 #else
   #define DISPATCH_MACRO
 #endif
+
+constexpr char HARP_ROOT_DIR[] = "@HARP_INCLUDE_DIR@";

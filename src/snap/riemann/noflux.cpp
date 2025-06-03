@@ -7,7 +7,8 @@
 #include <athena/hydro/hydro.hpp>
 
 // canoe
-#include <configure.hpp>
+#include <configure.h>
+
 #include <exo3/cubed_sphere.hpp>
 #include <impl.hpp>
 

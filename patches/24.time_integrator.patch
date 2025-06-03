@@ -7,7 +7,7 @@ index 2bfc5178..173b2566 100644
  #include "task_list.hpp"
  
 +// canoe injection
-+#include <configure.hpp>
++#include <configure.h>
 +#include <impl.hpp>
 +
 +// diagnostics

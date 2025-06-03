@@ -8,8 +8,7 @@
 // exo3
 #include "cubed_sphere.hpp"
 
-int CubedSphere::FindBlockID(LogicalLocation const& loc) {
-
+int CubedSphere::FindBlockID(LogicalLocation const &loc) {
   int lv2_lx2, lv2_lx3, local_lx2, local_lx3, bound_lim;
   GetLocalIndex(&lv2_lx2, &lv2_lx3, &local_lx2, &local_lx3, &bound_lim, loc);
 
@@ -28,7 +27,9 @@ int CubedSphere::FindBlockID(LogicalLocation const& loc) {
           std::stringstream msg;
           msg << "Error: something wrong, check the geometry setup of the "
                  "cubed sphere. \n";
-          msg << "lv2_lx2: " << lv2_lx2 << " lv2_lx3: " << lv2_lx3 << "bound_lim: " << bound_lim << "loc.lx2: " << loc.lx2 << "loc.lx3: " << loc.lx3 << std::endl;
+          msg << "lv2_lx2: " << lv2_lx2 << " lv2_lx3: " << lv2_lx3
+              << "bound_lim: " << bound_lim << "loc.lx2: " << loc.lx2
+              << "loc.lx3: " << loc.lx3 << std::endl;
           msg << "----------------------------------" << std::endl;
           ATHENA_ERROR(msg);
       }
@@ -76,12 +77,14 @@ int CubedSphere::FindBlockID(LogicalLocation const& loc) {
   return block_id;
 }
 
-void CubedSphere::GetLocalIndex(int *lv2_lx2, int *lv2_lx3, int *local_lx2, int *local_lx3, int *bound_lim, LogicalLocation const& loc) {
+void CubedSphere::GetLocalIndex(int *lv2_lx2, int *lv2_lx3, int *local_lx2,
+                                int *local_lx3, int *bound_lim,
+                                LogicalLocation const &loc) {
 #ifdef USE_NBLOCKS
-  // Updated method, need to manually setup in configure.hpp, allow 6*n^2 blocks
+  // Updated method, need to manually setup in configure.h, allow 6*n^2 blocks
   *bound_lim = (int)(sqrt(NBLOCKS / 6) - 0.5);
   // Find relative location within block
-  
+
   *lv2_lx2 = loc.lx2 / (*bound_lim + 1);
   *lv2_lx3 = loc.lx3 / (*bound_lim + 1);
   *local_lx2 = loc.lx2 - (*lv2_lx2 * (*bound_lim + 1));
@@ -89,7 +92,7 @@ void CubedSphere::GetLocalIndex(int *lv2_lx2, int *lv2_lx3, int *local_lx2, int 
 #else
   // Old method, suitable for 6*4^n blocks
   *bound_lim = (1 << (loc.level - 2)) - 1;
-    // Find relative location within block
+  // Find relative location within block
   *lv2_lx2 = loc.lx2 >> (loc.level - 2);
   *lv2_lx3 = loc.lx3 >> (loc.level - 2);
   *local_lx2 = loc.lx2 - (*lv2_lx2 << (loc.level - 2));

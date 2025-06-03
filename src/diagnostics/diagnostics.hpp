@@ -9,7 +9,8 @@
 #include <athena/mesh/mesh.hpp>
 
 // canoe
-#include <configure.hpp>
+#include <configure.h>
+
 #include <virtual_groups.hpp>
 
 class ParameterInput;
