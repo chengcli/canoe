@@ -66,6 +66,8 @@ implicit_flag  = 1
 
 
 <thermodynamics>
+thermodynamics_config = earth-dry.yaml
+
 dT         = 60.       # horizontal temperature difference
 dtheta     = 10.       # vertical potential temperature difference
 Rd         = 287.

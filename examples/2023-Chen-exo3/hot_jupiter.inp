@@ -64,6 +64,8 @@ gamma       = 1.4         # gamma = C_p/C_v
 implicit_flag = 1
 
 <thermodynamics>
+thermodynamics_config = hot-jupiter.yaml
+
 Rd          = 3779.       # Gas constant
 dT_e2p      = 300.        # Temperature contrast from equator to pole, K
 dT_stra     = 10.         # Temperature contrast, K
