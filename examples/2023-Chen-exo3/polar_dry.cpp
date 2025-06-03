@@ -210,14 +210,16 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
   z_iso = pin->GetReal("problem", "z_iso");
   sponge_lat = pin->GetReal("problem", "sponge_lat");
   heat_flux = pin->GetReal("problem", "heat_flux");
+
   // construct an adiabatic atmosphere
   auto pthermo = Thermodynamics::GetInstance();
-  AirParcel air(AirParcel::Type::MoleFrac);
+  auto &w = phydro->w;
+  std::vector<Real> yfrac(1, 1.);
 
   for (int k = ks; k <= ke; ++k)
     for (int j = js; j <= je; ++j) {
-      air.w[IPR] = p0;
-      air.w[IDN] = Ts;
+      pthermo->SetMassFractions<Real>(yfrac.data());
+      pthermo->EquilibrateTP(Ts, p0);
 
       int i = is;
       // for (; i <= ie; ++i) {
@@ -232,11 +234,12 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
 
       // construct isothermal atmosphere
       for (; i <= ie; ++i) {
-        AirParcelHelper::distribute_to_conserved(this, k, j, i, air);
-        pthermo->Extrapolate(&air, pcoord->dx1f(i), "isothermal", grav, 0.001);
+        pthermo->GetPrimitive(w.at(k, j, i));
+        pthermo->Extrapolate_inplace(pcoord->dx1f(i), "isothermal", grav,
+                                     0.001);
         // add noise
-        air.w[IVY] = 0.00001 * distribution(generator);
-        air.w[IVZ] = 0.00001 * distribution(generator);
+        w(IVY, k, j, i) = 0.00001 * distribution(generator);
+        w(IVZ, k, j, i) = 0.00001 * distribution(generator);
       }
     }
 }

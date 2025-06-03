@@ -17,9 +17,6 @@
 // snap
 #include <snap/thermodynamics/thermodynamics.hpp>
 
-// single column
-#include <single_column/single_column.hpp>
-
 #ifdef ENABLE_GLOG
 #include <glog/logging.h>
 #endif
@@ -160,7 +157,6 @@ void fix_eos_cons2prim(MeshBlock* pmb, AthenaArray<Real>& prim,
 #ifdef ENABLE_FIX
   auto pthermo = Thermodynamics::GetInstance();
   auto pcoord = pmb->pcoord;
-  auto pscm = pmb->pimpl->pscm;
 
   Real Rd = pthermo->GetRd();
   Real grav = pmb->phydro->hsrc.GetG1();
@@ -180,8 +176,6 @@ void fix_eos_cons2prim(MeshBlock* pmb, AthenaArray<Real>& prim,
       ac[i].w[n] = prim(n, k, j, i);
     }
   }
-
-  // pscm->ConvectiveAdjustment(ac, k, j, ifix - 1, iu);
 
   for (int i = ifix - 1; i <= iu; ++i) {
     ac[i].ToMassFraction();
@@ -245,7 +239,6 @@ void fix_implicit_cons(MeshBlock* pmb, AthenaArray<Real>& cons, int il, int iu,
 #ifdef ENABLE_FIX
   auto pthermo = Thermodynamics::GetInstance();
   auto pcoord = pmb->pcoord;
-  auto pscm = pmb->pimpl->pscm;
 
   Real Rd = pthermo->GetRd();
   Real grav = pmb->phydro->hsrc.GetG1();
@@ -268,8 +261,6 @@ void fix_implicit_cons(MeshBlock* pmb, AthenaArray<Real>& cons, int il, int iu,
           ac[i].w[n] = cons(n, k, j, i);
         }
       }
-
-      // pscm->ConvectiveAdjustment(ac, k, j, ifix - 1, iu);
 
       for (int i = ifix - 1; i <= iu; ++i) {
         for (int n = 0; n < NHYDRO; ++n) {

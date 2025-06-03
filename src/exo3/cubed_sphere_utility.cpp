@@ -20,7 +20,7 @@
 #include "cubed_sphere.hpp"
 #include "cubed_sphere_utility.hpp"
 
-namespace CubedSphereUtility {
+namespace cs {
 
 void PackDataR3(const AthenaArray<Real> &src, Real *buf, int sn, int en, int si,
                 int ei, int sj, int ej, int sk, int ek, int &offset) {
@@ -103,7 +103,8 @@ void InteprolateX2(const AthenaArray<Real> &src, AthenaArray<Real> &tgt,
   // Interpolation along X2 (j) axis, used before sending data to X3 (k) axis
   // Get the local indices
   int lv2_lx2, lv2_lx3, local_lx2, local_lx3, bound_lim;
-  CubedSphere::GetLocalIndex(&lv2_lx2, &lv2_lx3, &local_lx2, &local_lx3, &bound_lim, loc);
+  CubedSphere::GetLocalIndex(&lv2_lx2, &lv2_lx3, &local_lx2, &local_lx3,
+                             &bound_lim, loc);
 
   int meshblock_size = ej - sj + 1;
   int N_blk = meshblock_size *
@@ -233,7 +234,8 @@ void InteprolateX3(const AthenaArray<Real> &src, AthenaArray<Real> &tgt,
   // Interpolation along X3 (k) axis, used before sending data to ghost zone in
   // X2 (j) direction Get the local indices
   int lv2_lx2, lv2_lx3, local_lx2, local_lx3, bound_lim;
-  CubedSphere::GetLocalIndex(&lv2_lx2, &lv2_lx3, &local_lx2, &local_lx3, &bound_lim, loc);
+  CubedSphere::GetLocalIndex(&lv2_lx2, &lv2_lx3, &local_lx2, &local_lx3,
+                             &bound_lim, loc);
 
   int meshblock_size = ek - sk + 1;
   int N_blk = meshblock_size *
@@ -286,7 +288,7 @@ void InteprolateX3(const AthenaArray<Real> &src, AthenaArray<Real> &tgt,
           Real y1 = src_x3[src_pointer];
           Real y2 = src_x3[src_pointer + 1];
           Real yq = tgt_x3[k - sk];
-          if ((n == IVY || n == IVZ) && (TypeFlag == 2)){
+          if ((n == IVY || n == IVZ) && (TypeFlag == 2)) {
             // Projection needed, find the tgt locations first
             Real v1y = src(IVY, src_pointer - n_start - N_blk / 2 + sk, j, i);
             Real v1z = src(IVZ, src_pointer - n_start - N_blk / 2 + sk, j, i);
@@ -402,7 +404,8 @@ void PackData(const AthenaArray<Real> &src, Real *buf, int sn, int en, int si,
 
   // Get the local indices
   int lv2_lx2, lv2_lx3, local_lx2, local_lx3, bound_lim;
-  CubedSphere::GetLocalIndex(&lv2_lx2, &lv2_lx3, &local_lx2, &local_lx3, &bound_lim, loc);
+  CubedSphere::GetLocalIndex(&lv2_lx2, &lv2_lx3, &local_lx2, &local_lx3,
+                             &bound_lim, loc);
 
   // Work on interpolation
   AthenaArray<Real> interpolatedSrc;
@@ -635,4 +638,4 @@ void get_latlon_on_sphere(Real *lat, Real *lon, MeshBlock const *pmb, int k,
 #endif  // CUBED_SPHERE
 }
 
-}  // namespace CubedSphereUtility
+}  // namespace cs

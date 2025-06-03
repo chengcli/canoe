@@ -25,26 +25,17 @@
 // tracer
 #include "tracer/tracer.hpp"
 
-// n-body
-// #include "nbody/particles.hpp"
-
 // astro
 #include "astro/celestrial_body.hpp"
 
 // exo3
 #include "exo3/cubed_sphere.hpp"
 
-// single column
-#include "single_column/single_column.hpp"
-
 // diagnostics
 #include "diagnostics/diagnostics.hpp"
 
 // forcing
 #include "forcing/forcing.hpp"
-
-// surface
-// #include "surface/surface.hpp"
 
 // canoe
 #include "impl.hpp"
@@ -75,9 +66,6 @@ MeshBlock::Impl::Impl(MeshBlock *pmb, ParameterInput *pin) : pmy_block_(pmb) {
   // turbulence
   pturb = TurbulenceFactory::Create(pmb, pin);
 
-  // particle queue
-  // all_particles = ParticlesFactory::Create(pmb, pin);
-
   // diagnostics
   all_diags = DiagnosticsFactory::CreateFrom(pmb, pin);
 
@@ -86,12 +74,6 @@ MeshBlock::Impl::Impl(MeshBlock *pmb, ParameterInput *pin) : pmy_block_(pmb) {
 
   // cubed sphere
   pexo3 = std::make_shared<CubedSphere>(pmb);
-
-  // single column model
-  // pscm = std::make_shared<SingleColumn>(pmb, pin);
-
-  // surface
-  // psurf = std::make_shared<Surface>(pmb, pin);
 
   // planet
   planet = PlanetFactory::CreateFrom(pmb, pin);

@@ -71,6 +71,8 @@ z_stra      = 2.E6        # Stratosphere height, m
 Gamma_trop  = 2.E-4       # Lapse rate, K/m
 
 <problem>
+thermodynamics_config = hot-jupiter.yaml
+
 Kt         = 1.5E5            # Damping timescale, s
 Ts         = 1600.            # Surface temperature, K
 p0         = 1.E5             # Surface pressure, Pa

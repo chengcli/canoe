@@ -10,6 +10,10 @@
 
 // canoe
 #include <configure.hpp>
+#include <snap/stride_iterator.hpp>
+
+#include "cubed_sphere_utility.hpp"
+#include "gnomonic_equiangle.hpp"
 
 class CubedSphere {
  public:

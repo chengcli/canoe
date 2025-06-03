@@ -28,9 +28,6 @@
 // forcing
 #include <forcing/forcing.hpp>
 
-// scm
-#include <single_column/single_column.hpp>
-
 // checks
 #include <checks.hpp>
 

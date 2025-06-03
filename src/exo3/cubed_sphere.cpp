@@ -23,8 +23,6 @@
 #include <mpi.h>
 #endif
 
-namespace cs = CubedSphereUtility;
-
 CubedSphere::CubedSphere(MeshBlock *pmb) : pmy_block_(pmb) {
   int nc1 = pmb->ncells1, nc2 = pmb->ncells2, nc3 = pmb->ncells3;
 
@@ -539,14 +537,10 @@ void CubedSphere::sendNeighborBlocks(int ox2, int ox3, int tg_rank,
 
   // Calculate the tag of destination
 #ifdef USE_NBLOCKS
-  if (tox2 == -1)
-    DirTag = 0 + 4 * pmb->gid + 24 * (bound_lim + 1) * tg_gid;
-  if (tox2 == 1)
-    DirTag = 1 + 4 * pmb->gid + 24 * (bound_lim + 1) * tg_gid;
-  if (tox3 == -1)
-    DirTag = 2 + 4 * pmb->gid + 24 * (bound_lim + 1) * tg_gid;
-  if (tox3 == 1)
-    DirTag = 3 + 4 * pmb->gid + 24 * (bound_lim + 1) * tg_gid;
+  if (tox2 == -1) DirTag = 0 + 4 * pmb->gid + 24 * (bound_lim + 1) * tg_gid;
+  if (tox2 == 1) DirTag = 1 + 4 * pmb->gid + 24 * (bound_lim + 1) * tg_gid;
+  if (tox3 == -1) DirTag = 2 + 4 * pmb->gid + 24 * (bound_lim + 1) * tg_gid;
+  if (tox3 == 1) DirTag = 3 + 4 * pmb->gid + 24 * (bound_lim + 1) * tg_gid;
 #else
   if (tox2 == -1)
     DirTag = 0 + 4 * pmb->gid + 24 * (1 << (loc.level - 2)) * tg_gid;
@@ -645,14 +639,10 @@ void CubedSphere::recvNeighborBlocks(int ox2, int ox3, int tg_rank,
   Real *data = new Real[dsize];
   // Calculate the tag for receiving
 #ifdef USE_NBLOCKS
-  if (ox2 == -1)
-    DirTag = 0 + 4 * tg_gid + 24 * (bound_lim + 1) * pmb->gid;
-  if (ox2 == 1)
-    DirTag = 1 + 4 * tg_gid + 24 * (bound_lim + 1) * pmb->gid;
-  if (ox3 == -1)
-    DirTag = 2 + 4 * tg_gid + 24 * (bound_lim + 1) * pmb->gid;
-  if (ox3 == 1)
-    DirTag = 3 + 4 * tg_gid + 24 * (bound_lim + 1) * pmb->gid;
+  if (ox2 == -1) DirTag = 0 + 4 * tg_gid + 24 * (bound_lim + 1) * pmb->gid;
+  if (ox2 == 1) DirTag = 1 + 4 * tg_gid + 24 * (bound_lim + 1) * pmb->gid;
+  if (ox3 == -1) DirTag = 2 + 4 * tg_gid + 24 * (bound_lim + 1) * pmb->gid;
+  if (ox3 == 1) DirTag = 3 + 4 * tg_gid + 24 * (bound_lim + 1) * pmb->gid;
 #else
   if (ox2 == -1)
     DirTag = 0 + 4 * tg_gid + 24 * (1 << (loc.level - 2)) * pmb->gid;
