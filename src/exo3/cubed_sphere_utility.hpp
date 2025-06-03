@@ -5,7 +5,7 @@
 #include <athena/athena.hpp>
 #include <athena/coordinates/coordinates.hpp>
 
-namespace CubedSphereUtility {
+namespace cs {
 
 void PackData(const AthenaArray<Real> &src, Real *buf, int sn, int en, int si,
               int ei, int sj, int ej, int sk, int ek, int &offset, int ox1,
@@ -40,6 +40,6 @@ void ContravariantToCovariant(A a, Real cth) {
 void get_latlon_on_sphere(Real *lat, Real *lon, MeshBlock const *pmb, int k,
                           int j, int i);
 
-}  // namespace CubedSphereUtility
+}  // namespace cs
 
 #endif  // SRC_EXO3_CUBED_SPHERE_UTILITY_HPP_

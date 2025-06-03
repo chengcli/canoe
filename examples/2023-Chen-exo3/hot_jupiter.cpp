@@ -29,7 +29,6 @@
 #include <application/exceptions.hpp>
 
 // canoe
-#include <air_parcel.hpp>
 #include <configure.hpp>
 #include <impl.hpp>
 
@@ -234,20 +233,23 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
 
   // construct an isothermal atmosphere
   auto pthermo = Thermodynamics::GetInstance();
-  AirParcel air(AirParcel::Type::MoleFrac);
+  auto &w = phydro->w;
+  std::vector<Real> yfrac(1, 1.);
 
   for (int k = ks; k <= ke; ++k)
     for (int j = js; j <= je; ++j) {
-      air.w[IPR] = p0;
-      air.w[IDN] = Ts;
+      pthermo->SetMassFractions<Real>(yfrac.data());
+      pthermo->EquilibrateTP(Ts, p0);
 
       int i = is;
       for (; i <= ie; ++i) {
-        AirParcelHelper::distribute_to_conserved(this, k, j, i, air);
-        pthermo->Extrapolate(&air, pcoord->dx1f(i), "isothermal", grav, 0.001);
+        pthermo->GetPrimitive(w.at(k, j, i));
+        pthermo->Extrapolate_inplace(pcoord->dx1f(i), "isothermal", grav,
+                                     0.001);
+
         // add noise
-        air.w[IVY] = 10. * distribution(generator);
-        air.w[IVZ] = 10. * distribution(generator);
+        w(IVY, k, j, i) = 10. * distribution(generator);
+        w(IVZ, k, j, i) = 10. * distribution(generator);
       }
     }
 
@@ -277,8 +279,8 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
 
   // transfer to conservative variables
   // bcc is cell-centered magnetic fields, it is only a place holder here
-  // peos->PrimitiveToConserved(phydro->w, pfield->bcc, phydro->u, pcoord, is,
-  // ie, js, je, ks, ke);
+  peos->PrimitiveToConserved(phydro->w, pfield->bcc, phydro->u, pcoord, is, ie,
+                             js, je, ks, ke);
 }
 
 void MeshBlock::InitUserMeshBlockData(ParameterInput *pin) {

@@ -4,7 +4,7 @@
 // athena
 #include <athena/athena.hpp>
 
-namespace CubedSphereUtility {
+namespace cs {
 
 #define DBL_EPSILON 1.0e-10
 
@@ -197,4 +197,4 @@ void XYPFromRLL(Real lon, Real lat, Real &dX, Real &dY, int &nP) {
   dY = sy / sz;
 }
 
-}  // namespace CubedSphereUtility
+}  // namespace cs

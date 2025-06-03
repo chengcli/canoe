@@ -29,7 +29,6 @@
 #include <application/exceptions.hpp>
 
 // canoe
-#include <air_parcel.hpp>
 #include <configure.hpp>
 #include <impl.hpp>
 
@@ -52,8 +51,6 @@ Real piso = 1E4;
 
 std::default_random_engine generator;
 std::normal_distribution<double> distribution(0.0, 1.0);
-
-namespace cs = CubedSphereUtility;
 
 // \brief Held-Suarez atmosphere benchmark test. Refernce: Held & Suarez,
 // (1994). Forcing parameters are given in the paper.
@@ -265,30 +262,38 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
 
   // construct an adiabatic atmosphere
   auto pthermo = Thermodynamics::GetInstance();
-  AirParcel air(AirParcel::Type::MoleFrac);
+  auto &w = phydro->w;
+  std::vector<Real> yfrac(1, 1.);
 
   for (int k = ks; k <= ke; ++k)
     for (int j = js; j <= je; ++j) {
-      air.w[IPR] = p0;
-      air.w[IDN] = Ts;
+      pthermo->SetMassFractions<Real>(yfrac.data());
+      pthermo->EquilibrateTP(Ts, p0);
+
+      // half a grid to cell center
+      pthermo->Extrapolate_inplace(pcoord->dx1f(is) / 2., "dry", grav);
 
       int i = is;
       for (; i <= ie; ++i) {
         if (pcoord->x1v(i) - Rp > z_iso) break;
 
-        AirParcelHelper::distribute_to_conserved(this, k, j, i, air);
-        pthermo->Extrapolate(&air, pcoord->dx1f(i), "dry", grav, 0.001);
+        pthermo->GetPrimitive(w.at(k, j, i));
+        pthermo->Extrapolate_inplace(pcoord->dx1f(i), "dry", grav);
+
         // add noise
-        air.w[IVY] = 10. * distribution(generator);
-        air.w[IVZ] = 10. * distribution(generator);
+        w(IVY, k, j, i) = 10. * distribution(generator);
+        w(IVZ, k, j, i) = 10. * distribution(generator);
       }
 
       // construct isothermal atmosphere
       for (; i <= ie; ++i) {
-        AirParcelHelper::distribute_to_conserved(this, k, j, i, air);
-        pthermo->Extrapolate(&air, pcoord->dx1f(i), "isothermal", grav);
+        pthermo->GetPrimitive(w.at(k, j, i));
+        pthermo->Extrapolate_inplace(pcoord->dx1f(i), "isothermal", grav);
       }
     }
+
+  peos->PrimitiveToConserved(w, pfield->bcc, phydro->u, pcoord, is, ie, js, je,
+                             ks, ke);
 }
 
 void MeshBlock::InitUserMeshBlockData(ParameterInput *pin) {

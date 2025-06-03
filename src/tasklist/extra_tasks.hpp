@@ -12,28 +12,6 @@ class TaskID;
 class TaskList;
 class ParameterInput;
 
-class InversionTasks : public TaskList {
- public:
-  InversionTasks(ParameterInput *pin, Mesh *pm);
-  ~InversionTasks() {}
-  // void AddInversionTask(uint64_t id, uint64_t dep);
-
-  TaskStatus CalculateGradient(MeshBlock *pmb, int step);
-  TaskStatus Sample(MeshBlock *pmb, int step);
-  TaskStatus Optimize(MeshBlock *pmb, int step);
-
- private:
-  void AddTask(const TaskID &id, const TaskID &dep) override;
-  void StartupTaskList(MeshBlock *pmb, int stage) override;
-};
-
-namespace InversionTaskNames {
-const TaskID NONE(0);
-const TaskID CALC_GRAD(1);
-const TaskID OPTIMIZE(2);
-const TaskID SAMPLE(3);
-}  // namespace InversionTaskNames
-
 class ImplicitHydroTasks : public TimeIntegratorTaskList {
  public:
   ImplicitHydroTasks(ParameterInput *pin, Mesh *pm);

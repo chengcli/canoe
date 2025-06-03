@@ -28,8 +28,6 @@ class TaskListFactory {
         ptlist = std::make_unique<TimeIntegratorTaskList>(pin, mesh);
       } else if (tasklist_name == "ImplicitHydroTasks") {
         ptlist = std::make_unique<ImplicitHydroTasks>(pin, mesh);
-      } else if (tasklist_name == "InversionTasks") {
-        ptlist = std::make_unique<InversionTasks>(pin, mesh);
       } else {
         throw RuntimeError("main", "Unknown tasklist name: " + tasklist_name);
       }
