@@ -70,8 +70,8 @@ particle_density = 1.e3, 1.e3
 particle_vsed2 = -20.
 
 <forcing>
-packages = bot_heating, body_heating
-bot_heating.flux = 50.
+packages = bot_heating #, body_heating
+bot_heating.flux = 2000.
 body_heating.dTdt.Kday = -2
 body_heating.pmin = 0.
 body_heating.pmax = 5.e5
@@ -79,7 +79,7 @@ body_heating.pmax = 5.e5
 <problem>
 thermodynamics_config = hywater-precip.yaml
 
-qH2O        = 0.10
+qH2O        = 0.50
 
 P0          = 1.E5
 T0          = 169.
