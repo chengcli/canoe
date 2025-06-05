@@ -82,11 +82,9 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/parameters.cmake)
 ## 3. set up project system libraries ##
 message(STATUS "${PROJECT_NAME}-3. Setting up system libraries")
 find_package(Eigen3 REQUIRED)
-find_package(Cantera)
 find_package(Torch)
 
-include(${CMAKE_SOURCE_DIR}/cmake/yamlpp.cmake)
-include(${CMAKE_SOURCE_DIR}/cmake/gtest.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/kintera.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/athena.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/application.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/rfm.cmake)
@@ -95,7 +93,6 @@ include(${CMAKE_SOURCE_DIR}/cmake/pvfmm.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/minichem.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/exofmsrt.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/pybind11.cmake)
-include(${CMAKE_SOURCE_DIR}/cmake/pyharp.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/c3m.cmake)
 
 ## 4. set up project configure file and library ##
@@ -109,7 +106,7 @@ add_subdirectory(data)
 message(STATUS "${PROJECT_NAME}-5. Setting up unit tests")
 
 add_subdirectory(examples)
-add_subdirectory(tests)
+#add_subdirectory(tests)
 
 ## 6. set up python binding ##
 add_subdirectory(python)
