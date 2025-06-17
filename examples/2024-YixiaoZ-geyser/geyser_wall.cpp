@@ -259,6 +259,41 @@ void WallInteraction(MeshBlock *pmb, Real const time, Real const dt,
       if (x1f_center < wall1_corner_x1) {
         continue;
       }
+      // if (x1f_left - 2 * pmb->pcoord->dx1f(is) < wall1_corner_x1) {
+      //   for (int k = pmb->ks; k <= pmb->ke; ++k)
+      //     for (int j = pmb->js; j <= pmb->je; ++j) {
+      //       Ta = pthermo->GetTemp(w.at(k, j, is));
+      //       p_H2O = (pmb->phydro->w(IDN, k, j, is) *
+      //                pmb->phydro->w(iH2O, k, j, is) * Rd * Ta *
+      //                pthermo->GetInvMuRatio(iH2O));
+      //       Pw = sat_vapor_p_H2O(Ts);
+      //       csw = sqrt(2 * M_PI * Rd * Ts * pthermo->GetInvMuRatio(iH2O));
+      //       csa = sqrt(2 * M_PI * Rd * Ta * pthermo->GetInvMuRatio(iH2O));
+      //       drhoH2O = dt * (Pw/csw - p_H2O/csa) / pmb->pcoord->dx1f(is);
+      //       // drhoH2O = dt * (-p_H2O / csa) / pmb->pcoord->dx1f(is);
+      //       u(iH2O, k, j, is) += drhoH2O;
+      //       // std::cout << "x1min" << x1f_left << "x2min" << x2f_left << "Add
+      //       // upper wall" << std::endl;
+
+      //       if (drhoH2O < 0) {
+      //         KE = 0.5f * (pmb->phydro->w(IVX, k, j, is) *
+      //                          pmb->phydro->w(IVX, k, j, is) +
+      //                      pmb->phydro->w(IVY, k, j, is) *
+      //                          pmb->phydro->w(IVY, k, j, is) +
+      //                      pmb->phydro->w(IVZ, k, j, is) *
+      //                          pmb->phydro->w(IVZ, k, j, is));
+      //         u(IEN, k, j, is) +=
+      //             drhoH2O *
+      //             (KE + (Rd / (gammad - 1.)) * pthermo->GetCvRatio(iH2O) * Ta);
+      //         u(IVZ, k, j, is) += drhoH2O * pmb->phydro->w(IVZ, k, j, is);
+      //         u(IVY, k, j, is) += drhoH2O * pmb->phydro->w(IVY, k, j, is);
+      //         u(IVX, k, j, is) += drhoH2O * pmb->phydro->w(IVX, k, j, is);
+      //       } else {
+      //         u(IEN, k, j, is) += drhoH2O * ((Rd / (gammad - 1.)) *
+      //                                        pthermo->GetCvRatio(iH2O) * Tw);
+      //       }
+      //     }
+      // }
     }
 
     if (x1f_center > wall1_corner_x1) {
@@ -295,7 +330,7 @@ void WallInteraction(MeshBlock *pmb, Real const time, Real const dt,
 
           // drhoH2O = dt * (Pw / csw - p_H2O / csa) / pmb->pcoord->dx2f(jw);
           // drhoH2O *= tanhweight;
-          drhoH2O - dt * wall_condensation_rate(Ta, wall1_corner_x1 - x1f_center);
+          drhoH2O = dt * (-wall_condensation_rate(Ta, wall1_corner_x1 - x1f_center));
 
           u(iH2O, k, jw, i) += drhoH2O;
 
