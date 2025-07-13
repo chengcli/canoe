@@ -7,6 +7,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 project(canoe
   LANGUAGES CXX C Fortran
 	)
+
 # search for <Package>_ROOT
 cmake_policy(SET CMP0074 NEW)
 
@@ -27,11 +28,12 @@ endif()
 add_compile_definitions(_GLIBCXX_USE_CXX11_ABI=${_ABI_OUTPUT})
 
 # Set MacOS deployment target
-set(CMAKE_OSX_DEPLOYMENT_TARGET "15.0")
+set(CMAKE_OSX_DEPLOYMENT_TARGET "14.0")
 
 string(ASCII 27 Esc)
 set(ColorReset "${Esc}[m")
 set(Green      "${Esc}[32m")
+set(Blue       "${Esc}[34m")
 
 message(STATUS "")
 message(STATUS "${Green}==== ${PROJECT_NAME} configure begin ====${ColorReset}")
@@ -54,12 +56,12 @@ foreach(_file ${_macro_files})
 endforeach()
 
 ## 1. set up compiler flags ##
-message(STATUS "${PROJECT_NAME}-1. Setting up project compiler flags ...")
+message(STATUS "${Blue}${PROJECT_NAME}-1. Setting up project compiler flags ...${ColorReset}")
 message(STATUS "Include ${CMAKE_SOURCE_DIR}/cmake/compilers.cmake")
 include(${CMAKE_SOURCE_DIR}/cmake/compilers.cmake)
 
 ## 2. set up project specific configuration ##
-message(STATUS "${PROJECT_NAME}-2. Setting up project parameters ...")
+message(STATUS "${Blue}${PROJECT_NAME}-2. Setting up project parameters ...${ColorReset}")
 
 # load custom task
 message(STATUS "Load custom task = ${TASK}")
@@ -80,11 +82,14 @@ message(STATUS "Include ${CMAKE_CURRENT_SOURCE_DIR}/cmake/parameters.cmake")
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/parameters.cmake)
 
 ## 3. set up project system libraries ##
-message(STATUS "${PROJECT_NAME}-3. Setting up system libraries")
+message(STATUS "${Blue}${PROJECT_NAME}-3. Setting up system libraries ...${ColorReset}")
+find_package(Torch REQUIRED)
 find_package(Eigen3 REQUIRED)
-find_package(Torch)
+find_package(Disort REQUIRED)
+find_package(Harp REQUIRED)
+find_package(Kintera REQUIRED)
+find_package(Snap REQUIRED)
 
-include(${CMAKE_SOURCE_DIR}/cmake/kintera.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/athena.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/application.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/rfm.cmake)
@@ -96,20 +101,20 @@ include(${CMAKE_SOURCE_DIR}/cmake/pybind11.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/c3m.cmake)
 
 ## 4. set up project configure file and library ##
-message(STATUS "${PROJECT_NAME}-4. Setting up project libraries")
+message(STATUS "${Blue}${PROJECT_NAME}-4. Setting up project libraries ...${ColorReset}")
 configure_file(${CMAKE_SOURCE_DIR}/configure.h.in configure.h @ONLY)
 add_subdirectory(src)
 add_subdirectory(tools)
 add_subdirectory(data)
 
 ## 5. set up examples and tests
-message(STATUS "${PROJECT_NAME}-5. Setting up unit tests")
+message(STATUS "${Blue}${PROJECT_NAME}-5. Setting up unit tests ..${ColorReset}")
 
 add_subdirectory(examples)
 #add_subdirectory(tests)
 
 ## 6. set up python binding ##
-add_subdirectory(python)
+#add_subdirectory(python)
 
 ## 7. add uninstall targets ##
 configure_file(
