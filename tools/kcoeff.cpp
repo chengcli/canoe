@@ -10,7 +10,7 @@
 #include <vector>
 
 // canoe
-#include <configure.hpp>
+#include <configure.h>
 
 #ifdef NETCDFOUTPUT
 extern "C" {

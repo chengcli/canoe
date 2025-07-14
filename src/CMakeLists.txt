@@ -12,9 +12,13 @@ include_directories(
   ${MPI_CXX_HEADER_DIR}
   ${NETCDF_INCLUDES}
   ${PNETCDF_INCLUDE_DIR}
-  SYSTEM ${CANTERA_INCLUDE_DIR}
   SYSTEM ${TORCH_API_INCLUDE_DIR}
   SYSTEM ${TORCH_INCLUDE_DIR}
+  SYSTEM ${EIGEN3_INCLUDE_DIR}
+  SYSTEM ${DISORT_INCLUDE_DIR}
+  SYSTEM ${HARP_INCLUDE_DIR}
+  SYSTEM ${KINTERA_INCLUDE_DIR}
+  SYSTEM ${SNAP_INCLUDE_DIR}
   )
 
 set(namel canoe)
@@ -30,11 +34,6 @@ add_library(${namel}_${buildl}
     ${src_files}
     )
 
-target_include_directories(${namel}_${buildl}
-    PRIVATE
-    ${EIGEN3_INCLUDE_DIR}
-    )
-
 set_target_properties(${namel}_${buildl}
     PROPERTIES
     COMPILE_FLAGS ${CMAKE_CXX_FLAGS_${buildu}}
@@ -45,8 +44,6 @@ add_subdirectory(astro)
 add_subdirectory(utils)
 add_subdirectory(snap)
 add_subdirectory(outputs)
-add_subdirectory(microphysics)
-add_subdirectory(flask)
 add_subdirectory(tracer)
 add_subdirectory(tasklist)
 add_subdirectory(exo3)
@@ -90,8 +87,10 @@ set(CANOE_LIBRARY_${buildu}
   ${TORCH_LIBRARY}
   ${TORCH_CPU_LIBRARY}
   ${C10_LIBRARY}
+  ${DISORT_LIBRARY}
+  ${HARP_LIBRARY}
+  ${KINTERA_LIBRARY}
   ${EXTRA_LIBS}
-  pyharp::harp
   CACHE INTERNAL "canoe library")
 
 set(CANOE_INCLUDE_DIR

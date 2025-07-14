@@ -44,18 +44,9 @@ class BotForcing : public Forcing {
   AthenaArray<Real> bot_data_;
 };
 
-class RelaxBotTemp : public BotForcing {
+/*class RelaxBotTemp : public BotForcing {
  public:
   RelaxBotTemp(MeshBlock *pmb, ParameterInput *pin);
-
-  void Initialize(MeshBlock *pmb) override;
-  void Apply(AthenaArray<Real> &du, MeshBlock *pmb, Real time,
-             Real dt) override;
-};
-
-class RelaxBotVelo : public BotForcing {
- public:
-  RelaxBotVelo(MeshBlock *pmb, ParameterInput *pin);
 
   void Initialize(MeshBlock *pmb) override;
   void Apply(AthenaArray<Real> &du, MeshBlock *pmb, Real time,
@@ -65,6 +56,15 @@ class RelaxBotVelo : public BotForcing {
 class RelaxBotComp : public BotForcing {
  public:
   RelaxBotComp(MeshBlock *pmb, ParameterInput *pin);
+
+  void Initialize(MeshBlock *pmb) override;
+  void Apply(AthenaArray<Real> &du, MeshBlock *pmb, Real time,
+             Real dt) override;
+};*/
+
+class RelaxBotVelo : public BotForcing {
+ public:
+  RelaxBotVelo(MeshBlock *pmb, ParameterInput *pin);
 
   void Initialize(MeshBlock *pmb) override;
   void Apply(AthenaArray<Real> &du, MeshBlock *pmb, Real time,

@@ -28,8 +28,8 @@ DiagnosticsContainer DiagnosticsFactory::CreateFrom(MeshBlock *pmb,
       diag.push_back(std::make_shared<HydroMean>(pmb));
     } else if (name == "anomaly") {  // 5.
       diag.push_back(std::make_shared<Anomaly>(pmb));
-    } else if (name == "radflux") {  // 6.
-      diag.push_back(std::make_shared<RadiativeFlux>(pmb));
+      //} else if (name == "radflux") {  // 6.
+      //  diag.push_back(std::make_shared<RadiativeFlux>(pmb));
     } else if (name == "hydroflux") {  // 7.
       diag.push_back(std::make_shared<HydroFlux>(pmb));
     } else if (name == "w_avg") {  // 8.

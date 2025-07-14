@@ -14,14 +14,8 @@
 
 #include "index_map.hpp"
 
-// snap
-#include "snap/thermodynamics/thermodynamics.hpp"
-
 // outputs
 #include "outputs/output_utils.hpp"
-
-// n-body
-// #include "nbody/particle_data.hpp"
 
 void mesh_destroy(ParameterInput *&pinput, Mesh *&pmesh, int mbcnt) {
   clock_t tstop = clock();
@@ -69,8 +63,6 @@ void mesh_destroy(ParameterInput *&pinput, Mesh *&pmesh, int mbcnt) {
   delete pinput;
   delete pmesh;
 
-  Thermodynamics::Destroy();
   IndexMap::Destroy();
   MetadataTable::Destroy();
-  // ParticleHelper::free_mpi_particle_data();
 }

@@ -3,11 +3,16 @@
 #include <athena/hydro/hydro.hpp>
 
 // snap
+#include <snap/eos/ideal_moist.hpp>
+
+// snap
 #include <snap/stride_iterator.hpp>
-#include <snap/thermodynamics/thermodynamics.hpp>
 
 // exchanger
 #include <exchanger/exchanger.hpp>
+
+// canoe
+#include <interface/eos.hpp>
 
 // diagnostics
 #include "diagnostics.hpp"
@@ -32,7 +37,7 @@ void Anomaly::Finalize(MeshBlock *pmb) {
   Coordinates *pcoord = pmb->pcoord;
   auto const &w = pmb->phydro->w;
 
-  auto pthermo = Thermodynamics::GetInstance();
+  auto peos = pmb->pimpl->peos;
 
   int is = pmb->is, js = pmb->js, ks = pmb->ks;
   int ie = pmb->ie, je = pmb->je, ke = pmb->ke;
@@ -41,6 +46,8 @@ void Anomaly::Finalize(MeshBlock *pmb) {
   std::fill(mean_.begin(), mean_.end(), 0.);
 
   // calculate horizontal mean
+  auto temp = get_temp(peos, w);
+
   for (int k = ks; k <= ke; ++k)
     for (int j = js; j <= je; ++j) {
       pcoord->CellVolume(k, j, is, ie, vol_);
@@ -50,7 +57,7 @@ void Anomaly::Finalize(MeshBlock *pmb) {
         // density anomaly
         mean_[i] += vol_(i) * w(IDN, k, j, i);
         // temperature anomaly
-        mean_[ncells1_ + i] += vol_(i) * pthermo->GetTemp(w.at(k, j, i));
+        mean_[ncells1_ + i] += vol_(i) * temp.at(k, j, i)[0];
         // vertical velocity anomaly
         mean_[2 * ncells1_ + i] += vol_(i) * w(IVX, k, j, i);
         // pressure anomaly
@@ -70,8 +77,8 @@ void Anomaly::Finalize(MeshBlock *pmb) {
         // density anomaly
         data(0, k, j, i) = w(IDN, k, j, i) - mean_[i] / total_vol_[i];
         // temperature anomaly
-        data(1, k, j, i) = pthermo->GetTemp(w.at(k, j, i)) -
-                           mean_[ncells1_ + i] / total_vol_[i];
+        data(1, k, j, i) =
+            temp.at(k, j, i)[0] - mean_[ncells1_ + i] / total_vol_[i];
         // vertical velocity anomaly
         data(2, k, j, i) =
             w(IVX, k, j, i) - mean_[2 * ncells1_ + i] / total_vol_[i];

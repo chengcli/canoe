@@ -1,22 +1,21 @@
+// kintera
+#include <kintera/thermo/thermo.hpp>
+
 // athena
 #include <athena/athena.hpp>
 #include <athena/hydro/hydro.hpp>
 #include <athena/mesh/mesh.hpp>
 #include <athena/outputs/outputs.hpp>
 
+// snap
+#include <snap/eos/ideal_moist.hpp>
+
 // canoe
 #include <impl.hpp>
 #include <virtual_groups.hpp>
 
-// harp
-#include <harp/radiation.hpp>
-#include <harp/radiation_band.hpp>
-
 // diagnostics
 #include <diagnostics/diagnostics.hpp>
-
-// snap
-#include <snap/thermodynamics/thermodynamics.hpp>
 
 // outputs
 #include "output_utils.hpp"
@@ -41,12 +40,12 @@ void OutputType::loadUserOutputData(MeshBlock *pmb) {
   }
 
   // vapor/cloud
-  auto pthermo = Thermodynamics::GetInstance();
+  auto pthermo = pmb->pimpl->peos->pthermo;
   if (output_params.variable.compare("prim") == 0) {
     for (int n = 1; n < IVX; ++n) {
       pod = new OutputData;
       pod->type = "SCALARS";
-      pod->name = pthermo->SpeciesName(n);
+      pod->name = pthermo->options.species()[n];
       pod->data.InitWithShallowSlice(phyd->w, 4, n, 1);
       AppendOutputDataNode(pod);
       num_vars_ += 1;
@@ -57,14 +56,14 @@ void OutputType::loadUserOutputData(MeshBlock *pmb) {
     for (int n = 1; n < IVX; ++n) {
       pod = new OutputData;
       pod->type = "SCALARS";
-      pod->name = pthermo->SpeciesName(n);
+      pod->name = pthermo->options.species()[n];
       pod->data.InitWithShallowSlice(phyd->u, 4, n, 1);
       AppendOutputDataNode(pod);
       num_vars_ += 1;
     }
   }
 
-  // radiation
+  /* radiation
   if (output_params.variable.compare("rad") == 0 ||
       output_params.variable.compare("radtau") == 0) {
     for (int b = 0; b < prad->GetNumBands(); ++b) {
@@ -127,13 +126,6 @@ void OutputType::loadUserOutputData(MeshBlock *pmb) {
 
       // for (auto p : prad->bands) p->writeBinRadiance(&output_params);
     }
-  }
-
-  /* mcmc inversion
-  if (output_params.variable.compare("mcmc")) {
-    pod = new OutputData;
-    AppendOutputDataNode(pod);
-    num_vars_ += 1;
   }*/
 
   // fits output groups

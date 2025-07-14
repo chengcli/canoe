@@ -2,10 +2,12 @@
 #include <iostream>
 #include <vector>
 
-// canoe
-#include <configure.h>
+// kintera
+#include <kintera/thermo/thermo.hpp>
 
+// canoe
 #include <impl.hpp>
+#include <interface/thermo.hpp>
 
 // Eigen
 #include <Eigen/Core>
@@ -23,7 +25,6 @@
 #include <application/application.hpp>
 
 // snap
-#include "../thermodynamics/thermodynamics.hpp"
 #include "flux_decomposition.hpp"
 #include "forward_backward.hpp"
 #include "implicit_solver.hpp"
@@ -75,13 +76,12 @@ void ImplicitSolver::FullCorrection(AthenaArray<Real>& du,
   Real* gamma_m1 = new Real[nc];
 
   Real wl[NHYDRO], wr[NHYDRO];
-  auto pthermo = Thermodynamics::GetInstance();
 
   // 3. calculate and save flux Jacobian matrix
   for (int i = is - 2; i <= ie + 1; ++i) {
     Real fsig = 1., feps = 1.;
     CopyPrimitives(wl, wr, w, k, j, i, mydir_);
-    gamma_m1[i] = pthermo->GetGamma(wr) - 1.;
+    gamma_m1[i] = get_gammad() - 1.;
     FluxJacobian(dfdq[i], gamma_m1[i], wr, mydir_);
   }
 

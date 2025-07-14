@@ -1,3 +1,6 @@
+// yaml
+#include <yaml-cpp/yaml.h>
+
 // athena
 #include <athena/athena.hpp>
 #include <athena/hydro/hydro.hpp>
@@ -6,21 +9,20 @@
 // canoe
 #include <configure.h>
 
+// kintera
+#include <kintera/kinetics/kinetics.hpp>
+
 // harp
-#include "harp/radiation.hpp"
-#include "harp/radiation_band.hpp"
+#include <harp/radiation/radiation.hpp>
+
+// snap
+#include <snap/eos/ideal_moist.hpp>
+#include <snap/sedimentation/sedimentation.hpp>
 
 // snap
 #include "snap/decomposition/decomposition.hpp"
 #include "snap/implicit/implicit_solver.hpp"
-#include "snap/thermodynamics/thermodynamics.hpp"
 #include "snap/turbulence/turbulence_model.hpp"
-
-// microphysics
-#include "microphysics/microphysics.hpp"
-
-// flask
-#include "flask/chemistry.hpp"
 
 // tracer
 #include "tracer/tracer.hpp"
@@ -51,17 +53,34 @@ MeshBlock::Impl::Impl(MeshBlock *pmb, ParameterInput *pin) : pmy_block_(pmb) {
   // implicit methods
   phevi = std::make_shared<ImplicitSolver>(pmb, pin);
 
+  // thermodynamcis
+  auto yaml_file = pin->GetOrAddString("problem", "config_file", "");
+  auto op_thermo = kintera::ThermoOptions::from_yaml(yaml_file);
+
   // microphysics
-  pmicro = std::make_shared<Microphysics>(pmb, pin);
+  auto op_kinet = kintera::KineticsOptions::from_yaml(yaml_file);
+  pkinet = std::make_shared<kintera::KineticsImpl>(op_kinet);
 
   // radiation
-  prad = std::make_shared<Radiation>(pmb, pin);
+  auto op_rad = harp::RadiationOptions::from_yaml(yaml_file);
+  prad = std::make_shared<harp::RadiationImpl>(op_rad);
 
-  // chemistry
-  pchem = std::make_shared<Chemistry>(pmb, pin);
+  // coordinate
+  auto config = YAML::LoadFile(yaml_file);
+  auto op_coord = snap::CoordinateOptions::from_yaml(config["geometry"]);
 
-  // tracer
-  ptracer = std::make_shared<Tracer>(pmb, pin);
+  // eos
+  auto op_eos = snap::EquationOfStateOptions::from_yaml(
+      config["dynamics"]["equation-of-state"]);
+  op_eos.coord() = op_coord;
+  op_eos.thermo() = op_thermo;
+  peos = std::make_shared<snap::IdealMoistImpl>(op_eos);
+
+  // sedimentation
+  snap::SedHydroOptions op_sed;
+  op_sed.sedvel() = snap::SedVelOptions::from_yaml(config);
+  op_sed.eos() = op_eos;
+  psed = std::make_shared<snap::SedHydroImpl>(op_sed);
 
   // turbulence
   pturb = TurbulenceFactory::Create(pmb, pin);

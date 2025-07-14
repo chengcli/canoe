@@ -90,6 +90,10 @@ find_package(Harp REQUIRED)
 find_package(Kintera REQUIRED)
 find_package(Snap REQUIRED)
 
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/fmt.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/gtest.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/yamlpp.cmake)
+
 include(${CMAKE_SOURCE_DIR}/cmake/athena.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/application.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/rfm.cmake)

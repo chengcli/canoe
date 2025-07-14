@@ -137,7 +137,7 @@ class Anomaly : public Diagnostics {
 };
 
 // 8. total radiative flux
-class RadiativeFlux : public Diagnostics {
+/*class RadiativeFlux : public Diagnostics {
  public:
   std::shared_ptr<PlanarExchanger<Real, 2>> pexh;
 
@@ -154,7 +154,7 @@ class RadiativeFlux : public Diagnostics {
   void unpackData(MeshBlock const *pmb);
 
   int ncycle_;
-};
+};*/
 
 // 9. hydro flux
 class HydroFlux : public Diagnostics {

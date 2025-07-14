@@ -29,15 +29,15 @@ ForcingContainer ForcingFactory::CreateFrom(MeshBlock *pmb,
 
   while (p != NULL) {
     if (std::strcmp(p, "relax_bot_temp") == 0) {
-      auto nb = ExchangeUtils::find_bot_neighbor(pmb);
-      if (nb == nullptr) {  // no bottom neighbor
-        forcing.push_back(std::make_shared<RelaxBotTemp>(pmb, pin));
-      }
+      // auto nb = ExchangeUtils::find_bot_neighbor(pmb);
+      // if (nb == nullptr) {  // no bottom neighbor
+      //   forcing.push_back(std::make_shared<RelaxBotTemp>(pmb, pin));
+      // }
     } else if (std::strcmp(p, "relax_bot_comp") == 0) {
-      auto nb = ExchangeUtils::find_bot_neighbor(pmb);
-      if (nb == nullptr) {  // no bottom neighbor
-        forcing.push_back(std::make_shared<RelaxBotComp>(pmb, pin));
-      }
+      // auto nb = ExchangeUtils::find_bot_neighbor(pmb);
+      // if (nb == nullptr) {  // no bottom neighbor
+      //   forcing.push_back(std::make_shared<RelaxBotComp>(pmb, pin));
+      // }
     } else if (std::strcmp(p, "relax_bot_velo") == 0) {
       auto nb = ExchangeUtils::find_bot_neighbor(pmb);
       if (nb == nullptr) {  // no bottom neighbor

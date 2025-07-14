@@ -13,8 +13,12 @@
 
 class ParameterInput;
 struct float_triplet;
-struct Direction;
 class Meshblock;
+
+//! radiation direction
+struct Direction {
+  Real mu, phi;
+};
 
 class CelestrialBody : public NamedGroup {
  public:

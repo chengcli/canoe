@@ -10,17 +10,24 @@
 #include <athena/hydro/srcterms/hydro_srcterms.hpp>
 #include <athena/mesh/mesh.hpp>
 
+// snap
+#include <snap/eos/ideal_moist.hpp>
+
 // application
 #include <application/application.hpp>
 
+// canoe
+#include <interface/eos.hpp>
+#include <interface/thermo.hpp>
+
 // snap
 #include <snap/stride_iterator.hpp>
-#include <snap/thermodynamics/thermodynamics.hpp>
 
 void check_hydro_variables(MeshBlock *pmb) {
   Application::Logger app("snap");
-  auto pthermo = Thermodynamics::GetInstance();
+
   auto &w = pmb->phydro->w;
+  auto temp = get_temp(pmb->pimpl->peos, w);
 
   for (int k = pmb->ks; k <= pmb->ke; ++k)
     for (int j = pmb->js; j <= pmb->je; ++j)
@@ -39,11 +46,11 @@ void check_hydro_variables(MeshBlock *pmb) {
           }
         }
 
-        Real temp = pthermo->GetTemp(w.at(k, j, i));
         Real grav = -pmb->phydro->hsrc.GetG1();
+        Real Rd = get_rd();
         if (grav != 0) {
-          Real Tmin = grav * pmb->pcoord->dx1f(i) / pthermo->GetRd();
-          if (temp < Tmin) {
+          Real Tmin = grav * pmb->pcoord->dx1f(i) / Rd;
+          if (temp(k, j, i) < Tmin) {
             app->Error("temperature is less than minimum temperature at (" +
                        std::to_string(k) + ", " + std::to_string(j) + ", " +
                        std::to_string(i) + ")");

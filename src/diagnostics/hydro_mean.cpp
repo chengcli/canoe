@@ -1,10 +1,19 @@
 // athena
 #include <athena/coordinates/coordinates.hpp>
+#include <athena/hydro/hydro.hpp>
 #include <athena/reconstruct/interpolation.hpp>
 
 // snap
+#include <snap/eos/ideal_moist.hpp>
+
+// exchanger
+#include <exchanger/exchanger.hpp>
+
+// snap
 #include <snap/stride_iterator.hpp>
-#include <snap/thermodynamics/thermodynamics.hpp>
+
+// canoe
+#include <interface/eos.hpp>
 
 // canoe
 #include "diagnostics.hpp"
@@ -30,7 +39,7 @@ void HydroMean::Progress(MeshBlock *pmb) {
   int is = pmb->is, js = pmb->js, ks = pmb->ks;
   int ie = pmb->ie, je = pmb->je, ke = pmb->ke;
 
-  auto pthermo = Thermodynamics::GetInstance();
+  auto peos = pmb->pimpl->peos;
 
   if (ncycle_ == 0) {
     std::fill(data.data(), data.data() + data.GetSize(), 0.);
@@ -44,10 +53,12 @@ void HydroMean::Progress(MeshBlock *pmb) {
         }
 
   // Temperature field is save in IPR
+  auto temp = get_temp(peos, w);
+
   for (int k = ks; k <= ke; ++k)
     for (int j = js; j <= je; ++j)
       for (int i = is; i <= ie; ++i) {
-        data(IPR, k, j, i) += pthermo->GetTemp(w.at(k, j, i));
+        data(IPR, k, j, i) += temp.at(k, j, i)[0];
       }
 
   ncycle_++;
@@ -60,7 +71,8 @@ void HydroMean::Finalize(MeshBlock *pmb) {
   int is = pmb->is, js = pmb->js, ks = pmb->ks;
   int ie = pmb->ie, je = pmb->je, ke = pmb->ke;
 
-  auto pthermo = Thermodynamics::GetInstance();
+  auto peos = pmb->pimpl->peos;
+  auto temp = get_temp(peos, w);
 
   // hydro mean
   if (ncycle_ > 0) {
@@ -81,7 +93,7 @@ void HydroMean::Finalize(MeshBlock *pmb) {
     for (int k = ks; k <= ke; ++k)
       for (int j = js; j <= je; ++j)
         for (int i = is; i <= ie; ++i) {
-          data(IPR, k, j, i) = pthermo->GetTemp(w.at(k, j, i));
+          data(IPR, k, j, i) = temp.at(k, j, i)[0];
         }
   }
 

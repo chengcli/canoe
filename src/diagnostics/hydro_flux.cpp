@@ -2,12 +2,17 @@
 #include <athena/coordinates/coordinates.hpp>
 #include <athena/hydro/hydro.hpp>
 
+// snap
+#include <snap/eos/ideal_moist.hpp>
+
 // exchanger
 #include <exchanger/exchanger.hpp>
 
 // snap
 #include <snap/stride_iterator.hpp>
-#include <snap/thermodynamics/thermodynamics.hpp>
+
+// canoe
+#include <interface/eos.hpp>
 
 // diagnostics
 #include "diagnostics.hpp"
@@ -38,7 +43,7 @@ void HydroFlux::Progress(MeshBlock *pmb) {
   Coordinates *pcoord = pmb->pcoord;
   auto const &w = pmb->phydro->w;
 
-  auto pthermo = Thermodynamics::GetInstance();
+  auto peos = pmb->pimpl->peos;
 
   int is = pmb->is, js = pmb->js, ks = pmb->ks;
   int ie = pmb->ie, je = pmb->je, ke = pmb->ke;
@@ -46,6 +51,8 @@ void HydroFlux::Progress(MeshBlock *pmb) {
   if (ncycle_ == 0) {
     std::fill(data.data(), data.data() + data.GetSize(), 0.);
   }
+
+  auto temp = get_temp(peos, w);
 
   // sum over horizontal grids weighted by volume
   for (int k = ks; k <= ke; ++k)
@@ -56,8 +63,7 @@ void HydroFlux::Progress(MeshBlock *pmb) {
         data(0, i) += vol_(i) * w(IDN, k, j, i) * w(IVX, k, j, i);
         for (int n = 1; n < IPR; ++n)
           data(n, i) += vol_(i) * w(n, k, j, i) * w(IVX, k, j, i);
-        data(IPR, i) +=
-            vol_(i) * pthermo->GetTemp(w.at(k, j, i)) * w(IVX, k, j, i);
+        data(IPR, i) += vol_(i) * temp.at(k, j, i)[0] * w(IVX, k, j, i);
       }
     }
 

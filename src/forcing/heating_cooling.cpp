@@ -8,9 +8,14 @@
 #include <athena/mesh/mesh.hpp>
 
 // snap
-#include <snap/interface/torch.hpp>
+#include <snap/eos/ideal_moist.hpp>
+
+// snap
 #include <snap/stride_iterator.hpp>
-#include <snap/thermodynamics/thermodynamics.hpp>
+
+// canoe
+#include <impl.hpp>
+#include <interface/hydro.hpp>
 
 // forcing
 #include "forcing.hpp"
@@ -79,7 +84,7 @@ void BodyHeating::Apply(AthenaArray<Real> &du, MeshBlock *pmb, Real time,
                         Real dt) {
   Coordinates *pcoord = pmb->pcoord;
   auto const &w = pmb->phydro->w;
-  auto pthermo = Thermodynamics::GetInstance();
+  auto pthermo = pmb->pimpl->peos->pthermo;
 
   int is = pmb->is, js = pmb->js, ks = pmb->ks;
   int ie = pmb->ie, je = pmb->je, ke = pmb->ke;

@@ -12,11 +12,7 @@
 // canoe
 #include <configure.h>
 
-#include <air_parcel.hpp>
 #include <impl.hpp>
-
-// snap
-#include <snap/thermodynamics/thermodynamics.hpp>
 
 #ifdef ENABLE_GLOG
 #include <glog/logging.h>
@@ -152,59 +148,6 @@ void check_implicit_cons(AthenaArray<Real> const& cons, int il, int iu, int jl,
 #endif  // ENABLE_GLOG
 }
 
-// dirty fix for negative pressure and density
-void fix_eos_cons2prim(MeshBlock* pmb, AthenaArray<Real>& prim,
-                       AthenaArray<Real>& cons, int k, int j, int il, int iu) {
-#ifdef ENABLE_FIX
-  auto pthermo = Thermodynamics::GetInstance();
-  auto pcoord = pmb->pcoord;
-
-  Real Rd = pthermo->GetRd();
-  Real grav = pmb->phydro->hsrc.GetG1();
-
-  int ifix = il;
-  for (; ifix <= iu; ++ifix) {
-    if ((prim(IDN, k, j, ifix) < 0.) || std::isnan(prim(IDN, k, j, ifix)) ||
-        (prim(IPR, k, j, ifix) < 0.) || std::isnan(prim(IPR, k, j, ifix))) {
-      break;
-    }
-  }
-
-  AirColumn ac(pmb->ncells1);
-  for (int i = ifix - 1; i <= iu; ++i) {
-    ac[i].SetType(AirParcel::Type::MassFrac);
-    for (int n = 0; n < NHYDRO; ++n) {
-      ac[i].w[n] = prim(n, k, j, i);
-    }
-  }
-
-  for (int i = ifix - 1; i <= iu; ++i) {
-    ac[i].ToMassFraction();
-    for (int n = 0; n < NHYDRO; ++n) {
-      prim(n, k, j, i) = ac[i].w[n];
-    }
-
-    ac[i].ToMassConcentration();
-    for (int n = 0; n < NHYDRO; ++n) {
-      cons(n, k, j, i) = ac[i].w[n];
-    }
-  }
-
-  Real temp = pthermo->GetTemp(pmb->phydro->w.at(k, j, ifix - 1));
-  for (int i = ifix; i <= iu; ++i) {
-    Real z = pcoord->x1v(i) - pcoord->x1v(ifix - 1);
-    prim(IDN, k, j, i) =
-        prim(IDN, k, j, ifix - 1) * exp(grav * z / (Rd * temp));
-    prim(IPR, k, j, i) =
-        prim(IPR, k, j, ifix - 1) * exp(grav * z / (Rd * temp));
-    prim(IVX, k, j, i) /= 2.;
-    prim(IVY, k, j, i) /= 2.;
-    prim(IVZ, k, j, i) /= 2.;
-  }
-
-#endif  // ENABLE_FIX
-}
-
 void fix_reconstruct_x1(MeshBlock* pmb, AthenaArray<Real>& wl,
                         AthenaArray<Real>& wr, AthenaArray<Real> const& w,
                         int k, int j, int il, int iu) {}
@@ -232,65 +175,5 @@ void fix_reconstruct_x3(AthenaArray<Real>& wl, AthenaArray<Real>& wr,
     if (wl(IPR, i) < 0.) wl(IPR, i) = w(IPR, k - 1, j, i);
     if (wr(IPR, i) < 0.) wr(IPR, i) = w(IPR, k, j, i);
   }
-#endif  // ENABLE_FIX
-}
-
-void fix_implicit_cons(MeshBlock* pmb, AthenaArray<Real>& cons, int il, int iu,
-                       int jl, int ju, int kl, int ku) {
-#ifdef ENABLE_FIX
-  auto pthermo = Thermodynamics::GetInstance();
-  auto pcoord = pmb->pcoord;
-
-  Real Rd = pthermo->GetRd();
-  Real grav = pmb->phydro->hsrc.GetG1();
-
-  for (int k = kl; k <= ku; ++k)
-    for (int j = jl; j <= ju; ++j) {
-      int ifix = il;
-
-      for (; ifix <= iu; ++ifix) {
-        if ((cons(IDN, k, j, ifix) < 0.) || std::isnan(cons(IDN, k, j, ifix)) ||
-            (cons(IEN, k, j, ifix) < 0.) || std::isnan(cons(IEN, k, j, ifix))) {
-          break;
-        }
-      }
-
-      AirColumn ac(pmb->ncells1);
-      for (int i = ifix - 1; i <= iu; ++i) {
-        ac[i].SetType(AirParcel::Type::MassConc);
-        for (int n = 0; n < NHYDRO; ++n) {
-          ac[i].w[n] = cons(n, k, j, i);
-        }
-      }
-
-      for (int i = ifix - 1; i <= iu; ++i) {
-        for (int n = 0; n < NHYDRO; ++n) {
-          cons(n, k, j, i) = ac[i].w[n];
-        }
-      }
-
-      AirParcel air0(AirParcel::Type::MassConc);
-      for (int n = 0; n < NHYDRO; ++n) air0.w[n] = cons(n, k, j, ifix - 1);
-      air0.ToMoleFraction();
-      Real temp = air0.w[IDN];
-      air0.ToMassFraction();
-
-      AirParcel air(AirParcel::Type::MassConc);
-
-      for (int i = ifix; i <= iu; ++i) {
-        for (int n = 0; n < NHYDRO; ++n) air.w[n] = cons(n, k, j, i);
-        air.ToMassFraction();
-
-        Real z = pcoord->x1v(i) - pcoord->x1v(ifix - 1);
-        air.w[IDN] = air0.w[IDN] * exp(grav * z / (Rd * temp));
-        air.w[IPR] = air0.w[IPR] * exp(grav * z / (Rd * temp));
-        air.w[IVX] /= 2.;
-        air.w[IVY] /= 2.;
-        air.w[IVZ] /= 2.;
-
-        air.ToMassConcentration();
-        for (int n = 0; n < NHYDRO; ++n) cons(n, k, j, i) = air.w[n];
-      }
-    }
 #endif  // ENABLE_FIX
 }

@@ -56,10 +56,6 @@ class Decomposition {
                                AthenaArray<Real> &wr, int k, int j, int il,
                                int iu);
 
-  void ChangeToBuoyancy(AthenaArray<Real> &w, int kl, int ku, int jl, int ju);
-  void RestoreFromBuoyancy(AthenaArray<Real> &w, AthenaArray<Real> &wl,
-                           AthenaArray<Real> &wr, int k, int j, int il, int iu);
-
   void ChangeToEntropy(AthenaArray<Real> &w, int kl, int ku, int jl, int ju);
   void RestoreFromEntropy(AthenaArray<Real> &w, AthenaArray<Real> &wl,
                           AthenaArray<Real> &wr, int k, int j, int il, int iu);
