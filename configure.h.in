@@ -1,6 +1,8 @@
 #pragma once
 
 enum {
+  NMASS = @NMASS@, // Number of mass variables in hydro
+  NCHEM = @NCHEM@, // Number of chemical variables in scalar
   NBLOCKS = @NBLOCKS@, // Number of blocks in cubed sphere configuration
 };
 

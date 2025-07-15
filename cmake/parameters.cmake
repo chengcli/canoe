@@ -3,6 +3,8 @@
 list(APPEND CMAKE_PREFIX_PATH "/usr/include/mpich-x84_64" "/usr/lib64/mpich/")
 
 # dirty
+set_if_empty(NMASS 0)
+set_if_empty(NCHEM 0)
 set_if_empty(NBLOCKS 0)
 
 if(NOT AFFINE OR NOT DEFINED AFFINE)

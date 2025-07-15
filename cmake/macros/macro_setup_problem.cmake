@@ -19,16 +19,24 @@ macro(setup_problem namel)
     ${namel}.${buildl}
     PRIVATE ${CMAKE_BINARY_DIR}
             ${CANOE_INCLUDE_DIR}
-            SYSTEM
             ${CANTERA_INCLUDE_DIR}
+            ${EIGEN3_INCLUDE_DIR}
+            ${MPI_CXX_HEADER_DIR}
+            ${MPI_CXX_INCLUDE_PATH}
+            ${NETCDF_INCLUDES}
+            ${PNETCDF_INCLUDE_DIR}
+            SYSTEM
+            ${TORCH_API_INCLUDE_DIR}
+            SYSTEM
+            ${TORCH_INCLUDE_DIR}
             SYSTEM
             ${EIGEN3_INCLUDE_DIR}
             SYSTEM
-            ${MPI_CXX_HEADER_DIR}
+            ${DISORT_INCLUDE_DIR}
             SYSTEM
-            ${MPI_CXX_INCLUDE_PATH}
+            ${HARP_INCLUDE_DIR}
             SYSTEM
-            ${NETCDF_INCLUDES}
+            ${KINTERA_INCLUDE_DIR}
             SYSTEM
-            ${PNETCDF_INCLUDE_DIR})
+            ${SNAP_INCLUDE_DIR})
 endmacro()

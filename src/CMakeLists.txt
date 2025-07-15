@@ -62,9 +62,6 @@ set(CANOE_LIBRARY_${buildu}
   "utils_${buildl}"
   "snap_${buildl}"
   "outputs_${buildl}"
-  "dusts_${buildl}"
-  "flask_${buildl}"
-  "tracer_${buildl}"
   "tasklist_${buildl}"
   "exo3_${buildl}"
   "exchanger_${buildl}"
@@ -85,6 +82,7 @@ set(CANOE_LIBRARY_${buildu}
   ${DISORT_LIBRARY}
   ${HARP_LIBRARY}
   ${KINTERA_LIBRARY}
+  ${SNAP_LIBRARY}
   ${EXTRA_LIBS}
   CACHE INTERNAL "canoe library")
 

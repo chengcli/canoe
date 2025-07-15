@@ -11,15 +11,10 @@
 
 // canoe
 #include <impl.hpp>
+#include <interface/eos.hpp>
 
 // exo3
 #include <exo3/exo3.hpp>
-
-// snap
-#include <snap/thermodynamics/thermodynamics.hpp>
-
-// microphysics
-#include <microphysics/microphysics.hpp>
 
 void Hydro::RiemannSolver(int const k, int const j, int const il, int const iu,
                           int const ivx, AthenaArray<Real> &wl,
@@ -29,14 +24,13 @@ void Hydro::RiemannSolver(int const k, int const j, int const il, int const iu,
   int ivz = IVX + ((ivx - IVX) + 2) % 3;
   int dir = ivx - IVX;
 
-  auto pthermo = Thermodynamics::GetInstance();
-  auto pmicro = pmy_block->pimpl->pmicro;
   MeshBlock *pmb = pmy_block;
 
   Real rhobar, pbar, cbar, ubar, hl, hr;
-  Real gamma = pthermo->GetGammad();
+  Real gamma = pmb->peos->GetGamma();
   Real wli[NHYDRO], wri[NHYDRO];
 
+  auto peos = pmb->pimpl->peos;
   for (int i = il; i <= iu; ++i) {
     // copy local variables
     for (int n = 0; n < NHYDRO; ++n) {
@@ -45,8 +39,8 @@ void Hydro::RiemannSolver(int const k, int const j, int const il, int const iu,
     }
 
     // correction for gamma
-    Real kappal = 1. / (pthermo->GetGamma(wli) - 1.);
-    Real kappar = 1. / (pthermo->GetGamma(wri) - 1.);
+    Real kappal = 1. / (get_gamma(peos, wli) - 1.);
+    Real kappar = 1. / (get_gamma(peos, wri) - 1.);
 
     // enthalpy
     // FIXME: m should be at cell interface
@@ -86,27 +80,6 @@ void Hydro::RiemannSolver(int const k, int const j, int const il, int const iu,
       flx(ivy, k, j, i) = ubar * wri[IDN] * wri[ivy];
       flx(ivz, k, j, i) = ubar * wri[IDN] * wri[ivz];
       flx(IEN, k, j, i) = ubar * wri[IDN] * hr;
-    }
-
-    // sedimentation flux
-    // In Athena++ passive tracer module, the tracer mixing ratio is defined as
-    // the ratio of the density of the tracer to the density of the "dry"
-    // species. This ensures conservation of the tracer concentration even with
-    // condensation However, the first component of the primitive variable is
-    // the "total" density To get the denisty of the dry species, the "dry
-    // mixing ratio" (rdl/rdr) is multiplied
-    // FIXME: remove this?
-    if (ivx == IVX) {
-      if (i == iu) return;
-      for (int n = 0; n < NCLOUD + NPRECIP; ++n) {
-        Real rho = wri[IDN] * wri[1 + NVAPOR + n];
-        auto vsed = pmicro->vsedf[0](n, k, j, i);
-        flx(1 + NVAPOR + n, k, j, i) += vsed * rho;
-        flx(ivx, k, j, i) += vsed * rho * wri[ivx];
-        flx(ivy, k, j, i) += vsed * rho * wri[ivy];
-        flx(ivz, k, j, i) += vsed * rho * wri[ivz];
-        flx(IEN, k, j, i) += vsed * rho * hr;
-      }
     }
   }
 }

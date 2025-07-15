@@ -3,7 +3,7 @@
 #include "thermodynamics.hpp"
 
 template <typename T>
-Real potential_temp(Thermodynamics const *pthermo, T w, Real p0) {
+Real potential_temp(snap::IdealMoist const &peos, T w, Real p0) {
   return pthermo->GetTemp(w) * pow(p0 / w[IPR], pthermo->GetChi(w));
 }
 
