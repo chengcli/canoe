@@ -210,7 +210,7 @@ void Mesh::InitUserMeshData(ParameterInput *pin) {
 
   // This line code enrolls the forcing function we wrote in
   // section <a href="#Forcingfunction">Forcing function</a>
-  // EnrollUserExplicitSourceFunction(Diffusion);
+  EnrollUserExplicitSourceFunction(Diffusion);
 }
 
 // @sect3{Initial condition}
