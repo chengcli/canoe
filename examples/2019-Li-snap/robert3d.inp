@@ -59,7 +59,7 @@ gamma       = 1.4         # gamma = C_p/C_v
 implicit_flag   = 1
 
 <problem>
-thermodynamics_config = earth-dry.yaml
+config_file = earth-dry.yaml
 
 dT    = 5.
 xc    = 500.

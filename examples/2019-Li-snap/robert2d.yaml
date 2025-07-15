@@ -1,0 +1,17 @@
+reference-state:
+  Tref: 0.
+  Pref: 1.e5
+
+species:
+  - name: dry
+    composition: {O: 0.42, N: 1.56, Ar: 0.01}
+    cv_R: 2.5
+
+geometry:
+  type: cartesian
+  bounds: {x1min: 0., x1max: 1.5E3, x2min: 0., x2max: 1.E3, x3min: -0.5, x3max: 0.5}
+  cells: {nx1: 150, nx2: 50, nx3: 1, nghost: 3}
+
+dynamics:
+  equation-of-state:
+    type: ideal-gas
