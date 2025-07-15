@@ -18,23 +18,25 @@ class FITSOutputGroup;
 
 class Decomposition;
 class ImplicitSolver;
-class Microphysics;
-class Radiation;
-class Chemistry;
 class Tracer;
-class TurbulenceModel;
 class CelestrialBody;
 class CubedSphere;
-class SingleColumn;
 // class Surface;
 
-class ParticleBase;
-class Scheduler;
-
-class Diagnostics;
-class Forcing;
-
 class ExchangerBase;
+
+namespace harp {
+class RadiationImpl;
+}  // namespace harp
+
+namespace kintera {
+class KineticsImpl;
+}  // namespace kintera
+
+namespace snap {
+class IdealMoistImpl;
+class SedHydroImpl;
+}  // namespace snap
 
 //! \class MeshBlock::Impl
 //! \brief opaque pointer class implements all physics on a MeshBlock
@@ -45,21 +47,14 @@ class MeshBlock::Impl {
 
   std::shared_ptr<Decomposition> pdec;
   std::shared_ptr<ImplicitSolver> phevi;
-  std::shared_ptr<Microphysics> pmicro;
-  std::shared_ptr<Radiation> prad;
-  std::shared_ptr<Chemistry> pchem;
-  std::shared_ptr<Tracer> ptracer;
-  std::shared_ptr<TurbulenceModel> pturb;
+
+  std::shared_ptr<snap::IdealMoistImpl> peos;
+  std::shared_ptr<kintera::KineticsImpl> pkinet;
+  std::shared_ptr<harp::RadiationImpl> prad;
+  std::shared_ptr<snap::SedHydroImpl> psed;
+
   std::shared_ptr<CelestrialBody> planet;
   std::shared_ptr<CubedSphere> pexo3;
-  std::shared_ptr<SingleColumn> pscm;
-  // std::shared_ptr<Surface> psurf;
-
-  // StaticVariablePtr pstatic;
-
-  std::vector<std::shared_ptr<ParticleBase>> all_particles;
-  std::vector<std::shared_ptr<Diagnostics>> all_diags;
-  std::vector<std::shared_ptr<Forcing>> all_forcings;
 
  public:  // constructor and destructor
   Impl(MeshBlock *pmb, ParameterInput *pin);

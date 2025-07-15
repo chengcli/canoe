@@ -3,9 +3,7 @@
 # climath : math library in c
 # astro: astronomy library in cpp
 # utils: utility library in c/cpp
-# harp: radiation library in c/cpp (backed by cdisort)
 # outputs: write netcdf/pnetcdf outputs
-# opacity: opacity library
 
 include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}
@@ -14,9 +12,13 @@ include_directories(
   ${MPI_CXX_HEADER_DIR}
   ${NETCDF_INCLUDES}
   ${PNETCDF_INCLUDE_DIR}
-  SYSTEM ${CANTERA_INCLUDE_DIR}
   SYSTEM ${TORCH_API_INCLUDE_DIR}
   SYSTEM ${TORCH_INCLUDE_DIR}
+  SYSTEM ${EIGEN3_INCLUDE_DIR}
+  SYSTEM ${DISORT_INCLUDE_DIR}
+  SYSTEM ${HARP_INCLUDE_DIR}
+  SYSTEM ${KINTERA_INCLUDE_DIR}
+  SYSTEM ${SNAP_INCLUDE_DIR}
   )
 
 set(namel canoe)
@@ -32,11 +34,6 @@ add_library(${namel}_${buildl}
     ${src_files}
     )
 
-target_include_directories(${namel}_${buildl}
-    PRIVATE
-    ${EIGEN3_INCLUDE_DIR}
-    )
-
 set_target_properties(${namel}_${buildl}
     PROPERTIES
     COMPILE_FLAGS ${CMAKE_CXX_FLAGS_${buildu}}
@@ -46,18 +43,11 @@ add_subdirectory(climath)
 add_subdirectory(astro)
 add_subdirectory(utils)
 add_subdirectory(snap)
-add_subdirectory(harp)
 add_subdirectory(outputs)
-add_subdirectory(opacity)
-add_subdirectory(microphysics)
-add_subdirectory(flask)
-add_subdirectory(tracer)
 add_subdirectory(tasklist)
 add_subdirectory(exo3)
 add_subdirectory(exchanger)
 add_subdirectory(special)
-add_subdirectory(diagnostics)
-add_subdirectory(forcing)
 
 if(UNIX AND NOT APPLE)
   set(EXTRA_LIBS dl stdc++fs)
@@ -71,17 +61,10 @@ set(CANOE_LIBRARY_${buildu}
   "astro_${buildl}"
   "utils_${buildl}"
   "snap_${buildl}"
-  "harp_${buildl}"
   "outputs_${buildl}"
-  "opacity_${buildl}"
-  "dusts_${buildl}"
-  "flask_${buildl}"
-  "tracer_${buildl}"
   "tasklist_${buildl}"
   "exo3_${buildl}"
   "exchanger_${buildl}"
-  "diagnostics_${buildl}"
-  "forcing_${buildl}"
   $<$<BOOL:${MINICHEM}>:minichem::minichem++>
   $<$<BOOL:${EXOFMSRT}>:exofmsrt::exofmsrt++>
   ${YAML_CPP_LIBRARIES}
@@ -96,6 +79,10 @@ set(CANOE_LIBRARY_${buildu}
   ${TORCH_LIBRARY}
   ${TORCH_CPU_LIBRARY}
   ${C10_LIBRARY}
+  ${DISORT_LIBRARY}
+  ${HARP_LIBRARY}
+  ${KINTERA_LIBRARY}
+  ${SNAP_LIBRARY}
   ${EXTRA_LIBS}
   CACHE INTERNAL "canoe library")
 

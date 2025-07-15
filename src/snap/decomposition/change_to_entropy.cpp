@@ -2,23 +2,20 @@
 #include <iomanip>
 #include <sstream>
 
-// Athena++ headers
+// athena
 #include <athena/coordinates/coordinates.hpp>
 #include <athena/eos/eos.hpp>
 #include <athena/hydro/hydro.hpp>
 
-// utils
-#include <utils/ndarrays.hpp>
-
-// exchanger
-#include <exchanger/exchanger.hpp>
+// snap
+#include <snap/eos/ideal_moist.hpp>
 
 // canoe
 #include <checks.hpp>
 #include <impl.hpp>
+#include <interface/eos.hpp>
 
 // snap
-#include "../thermodynamics/thermodynamics.hpp"
 #include "decomposition.hpp"
 
 inline void IntegrateUpwards(AthenaArray<Real> &psf, AthenaArray<Real> const &w,
@@ -44,12 +41,11 @@ void Decomposition::ChangeToEntropy(AthenaArray<Real> &w, int kl, int ku,
                                     int jl, int ju) {
   MeshBlock *pmb = pmy_block_;
   Coordinates *pco = pmb->pcoord;
-  auto pthermo = Thermodynamics::GetInstance();
 
   // positive in the x-increasing direction
   Real grav = pmb->phydro->hsrc.GetG1();
   Real gamma = pmb->peos->GetGamma();
-  Real Rd = pthermo->GetRd();
+  Real Rd = get_rd();
 
   int is = pmb->is, ie = pmb->ie;
   if (grav == 0.) return;
@@ -87,6 +83,11 @@ void Decomposition::ChangeToEntropy(AthenaArray<Real> &w, int kl, int ku,
   }
 
   // decompose pressure and density
+  auto peos = pmb->pimpl->peos;
+  auto cv_ratio_m1 = peos->cv_ratio_m1.accessor<Real, 1>();
+  auto inv_mu_ratio_m1 = peos->inv_mu_ratio_m1.accessor<Real, 1>();
+  int nvapor = peos->pthermo->options.vapor_ids().size() - 1;
+
   for (int k = kl; k <= ku; ++k)
     for (int j = jl; j <= ju; ++j) {
       // 1. change density and pressure (including ghost cells)
@@ -100,9 +101,9 @@ void Decomposition::ChangeToEntropy(AthenaArray<Real> &w, int kl, int ku,
 
         // calculate local polytropic index
         Real fsig = 1., feps = 1.;
-        for (int n = 1; n <= NVAPOR; ++n) {
-          fsig += w(n, k, j, i) * (pthermo->GetCvRatio(n) - 1.);
-          feps += w(n, k, j, i) * (pthermo->GetInvMuRatio(n) - 1.);
+        for (int n = 1; n <= nvapor; ++n) {
+          fsig += w(n, k, j, i) * cv_ratio_m1[n - 1];
+          feps += w(n, k, j, i) * inv_mu_ratio_m1[n - 1];
         }
         gamma_(k, j, i) = 1. + (gamma - 1.) * feps / fsig;
 
@@ -131,7 +132,7 @@ void Decomposition::ChangeToEntropy(AthenaArray<Real> &w, int kl, int ku,
       }
     }
 
-    // finish send top pressure
+  // finish send top pressure
 #ifdef MPI_PARALLEL
   MPI_Status status;
   if (has_bot_neighbor && (bblock.snb.rank != Globals::my_rank))
@@ -145,9 +146,8 @@ void Decomposition::RestoreFromEntropy(AthenaArray<Real> &w,
                                        int il, int iu) {
   MeshBlock *pmb = pmy_block_;
   Hydro *phydro = pmb->phydro;
-  auto pthermo = Thermodynamics::GetInstance();
 
-  Real Rd = pthermo->GetRd();
+  Real Rd = get_rd();
   Real grav = phydro->hsrc.GetG1();
   int is = pmb->is, ie = pmb->ie;
   if (grav == 0.) return;

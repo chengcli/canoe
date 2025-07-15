@@ -2,23 +2,20 @@
 #include <iomanip>
 #include <sstream>
 
-// Athena++ headers
+// athena
 #include <athena/coordinates/coordinates.hpp>
 #include <athena/eos/eos.hpp>
 #include <athena/hydro/hydro.hpp>
 
-// utils
-#include <utils/ndarrays.hpp>
-
-// exchanger
-#include <exchanger/exchanger.hpp>
+// snap
+#include <snap/eos/ideal_moist.hpp>
 
 // canoe
 #include <checks.hpp>
 #include <impl.hpp>
+#include <interface/eos.hpp>
 
 // snap
-#include "../thermodynamics/thermodynamics.hpp"
 #include "decomposition.hpp"
 
 inline void IntegrateUpwards(AthenaArray<Real> &psf, AthenaArray<Real> const &w,
@@ -44,12 +41,11 @@ void Decomposition::ChangeToAnomaly(AthenaArray<Real> &w, int kl, int ku,
                                     int jl, int ju) {
   MeshBlock *pmb = pmy_block_;
   Coordinates *pco = pmb->pcoord;
-  auto pthermo = Thermodynamics::GetInstance();
 
   // positive in the x-increasing direction
   Real grav = pmb->phydro->hsrc.GetG1();
   Real gammad = pmb->peos->GetGamma();
-  Real Rd = pthermo->GetRd();
+  Real Rd = get_rd();
 
   int is = pmb->is, ie = pmb->ie;
   if (grav == 0.) return;
@@ -95,14 +91,19 @@ void Decomposition::ChangeToAnomaly(AthenaArray<Real> &w, int kl, int ku,
   }
 
   // decompose pressure and density
+  auto peos = pmb->pimpl->peos;
+  auto cv_ratio_m1 = peos->cv_ratio_m1.accessor<Real, 1>();
+  auto inv_mu_ratio_m1 = peos->inv_mu_ratio_m1.accessor<Real, 1>();
+  int nvapor = peos->pthermo->options.vapor_ids().size() - 1;
+
   for (int k = kl; k <= ku; ++k)
     for (int j = jl; j <= ju; ++j) {
       // adiabatic to bottom boundary
       // calculate local polytropic index
       Real fsig = 1., feps = 1.;
-      for (int n = 1; n <= NVAPOR; ++n) {
-        fsig += w(n, k, j, is) * (pthermo->GetCvRatio(n) - 1.);
-        feps += w(n, k, j, is) * (pthermo->GetInvMuRatio(n) - 1.);
+      for (int n = 1; n <= nvapor; ++n) {
+        fsig += w(n, k, j, is) * cv_ratio_m1[n - 1];
+        feps += w(n, k, j, is) * inv_mu_ratio_m1[n - 1];
       }
       Real gammas = 1. + (gammad - 1.) * feps / fsig;
       dsf_(k, j, is) = w(IDN, k, j, is) *
@@ -162,41 +163,41 @@ void Decomposition::ChangeToAnomaly(AthenaArray<Real> &w, int kl, int ku,
       }*/
     }
 
-    /* debug
-    if (Globals::my_rank == 0) {
-      //int km = (kl + ku)/2;
-      //int jm = (jl + ju)/2;
-      int km = kl;
-      int jm = jl;
-      std::cout << "my.gid = " << pmb->gid << std::endl;
-      std::cout << "bblock.gid = " << bblock.snb.gid << std::endl;
-      std::cout << "===== k = " << km << " j = " << jm << std::endl;
-      for (int i = is - NGHOST; i <= ie + NGHOST; ++i) {
-        if (i == is)
-          std::cout << "-------- ";
-        if (i == 0)
-          std::cout << "i = " << "-1/2 ";
-        else if (i == 1)
-          std::cout << "i = " << "+1/2 ";
-        else
-          std::cout << "i = " << i-1 << "+1/2 ";
-        std::cout << "psf = " << psf_(km,jm,i) << ", ";
-        std::cout << "dsf = " << dsf_(km,jm,i) << std::endl;
-        std::cout << "i = " << i  << "    ";
-        std::cout << " pre = " << w(IPR,km,jm,i)
-                  << " den = " << w(IDN,km,jm,i) << std::endl;
-        if (i == ie)
-          std::cout << "-------- ";
-        if (i == ie + NGHOST) {
-          std::cout << "i = " << i+1 << "+1/2 ";
-          std::cout << "psf = " << psf_(km,jm,i+1) << ", ";
-          std::cout << "dsf = " << dsf_(km,jm,i+1) << std::endl;
-        }
+  /* debug
+  if (Globals::my_rank == 0) {
+    //int km = (kl + ku)/2;
+    //int jm = (jl + ju)/2;
+    int km = kl;
+    int jm = jl;
+    std::cout << "my.gid = " << pmb->gid << std::endl;
+    std::cout << "bblock.gid = " << bblock.snb.gid << std::endl;
+    std::cout << "===== k = " << km << " j = " << jm << std::endl;
+    for (int i = is - NGHOST; i <= ie + NGHOST; ++i) {
+      if (i == is)
+        std::cout << "-------- ";
+      if (i == 0)
+        std::cout << "i = " << "-1/2 ";
+      else if (i == 1)
+        std::cout << "i = " << "+1/2 ";
+      else
+        std::cout << "i = " << i-1 << "+1/2 ";
+      std::cout << "psf = " << psf_(km,jm,i) << ", ";
+      std::cout << "dsf = " << dsf_(km,jm,i) << std::endl;
+      std::cout << "i = " << i  << "    ";
+      std::cout << " pre = " << w(IPR,km,jm,i)
+                << " den = " << w(IDN,km,jm,i) << std::endl;
+      if (i == ie)
+        std::cout << "-------- ";
+      if (i == ie + NGHOST) {
+        std::cout << "i = " << i+1 << "+1/2 ";
+        std::cout << "psf = " << psf_(km,jm,i+1) << ", ";
+        std::cout << "dsf = " << dsf_(km,jm,i+1) << std::endl;
       }
-      std::cout << "==========" << std::endl;
-    }*/
+    }
+    std::cout << "==========" << std::endl;
+  }*/
 
-    // finish send top pressure
+  // finish send top pressure
 #ifdef MPI_PARALLEL
   MPI_Status status;
   if (has_bot_neighbor && (bblock.snb.rank != Globals::my_rank))
@@ -210,9 +211,8 @@ void Decomposition::RestoreFromAnomaly(AthenaArray<Real> &w,
                                        int il, int iu) {
   MeshBlock *pmb = pmy_block_;
   Hydro *phydro = pmb->phydro;
-  auto pthermo = Thermodynamics::GetInstance();
 
-  Real Rd = pthermo->GetRd();
+  Real Rd = get_rd();
   Real grav = phydro->hsrc.GetG1();
   int is = pmb->is, ie = pmb->ie;
   if (grav == 0.) return;

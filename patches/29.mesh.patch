@@ -7,7 +7,7 @@ index 082eaf1e..9fc59d8c 100644
  #endif
  
 +// canoe injection
-+#include <configure.hpp>
++#include <configure.h>
 +
  //----------------------------------------------------------------------------------------
  //! Mesh constructor, builds mesh at start of calculation using parameters in input file

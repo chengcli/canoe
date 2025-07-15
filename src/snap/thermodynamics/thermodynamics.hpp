@@ -16,7 +16,8 @@
 #include <athena/mesh/mesh.hpp>
 
 // canoe
-#include <configure.hpp>
+#include <configure.h>
+
 #include <constants.hpp>
 
 // snap

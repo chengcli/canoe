@@ -3,14 +3,7 @@
 #include <memory>
 
 // canoe
-#include <configure.hpp>
-
-#ifdef ENABLE_GLOG
-#include <glog/logging.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#endif
+#include <configure.h>
 
 // athena
 #include <athena/parameter_input.hpp>

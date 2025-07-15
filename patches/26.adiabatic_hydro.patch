@@ -6,7 +6,7 @@ index e61ff205..c0e9d960 100644
  #include "../parameter_input.hpp"
  #include "eos.hpp"
  
-+#include <configure.hpp>
++#include <configure.h>
 +#include <impl.hpp>
 +#include <exo3/cubed_sphere.hpp>
 +

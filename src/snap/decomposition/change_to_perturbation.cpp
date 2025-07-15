@@ -2,19 +2,16 @@
 #include <iomanip>
 #include <sstream>
 
-// Athena++ headers
+// athena
 #include <athena/coordinates/coordinates.hpp>
 #include <athena/eos/eos.hpp>
 #include <athena/hydro/hydro.hpp>
 
-// utils
-#include <utils/ndarrays.hpp>
-
 // canoe
 #include <impl.hpp>
+#include <interface/eos.hpp>
 
 // snap
-#include "../thermodynamics/thermodynamics.hpp"
 #include "decomposition.hpp"
 
 inline void IntegrateUpwards(AthenaArray<Real> &psf, AthenaArray<Real> const &w,
@@ -43,7 +40,7 @@ void Decomposition::ChangeToPerturbation(AthenaArray<Real> &w, int kl, int ku,
   Coordinates *pco = pmb->pcoord;
 
   Real grav = -pmb->phydro->hsrc.GetG1();  // positive downward pointing
-  Real Rd = Thermodynamics::GetInstance()->GetRd();
+  Real Rd = get_rd();
   int is = pmb->is, ie = pmb->ie;
   if (grav == 0.) return;
 
@@ -159,8 +156,8 @@ void Decomposition::RestoreFromPerturbation(AthenaArray<Real> &w,
                                             int il, int iu) {
   MeshBlock *pmb = pmy_block_;
   Hydro *phydro = pmb->phydro;
-  auto pthermo = Thermodynamics::GetInstance();
-  Real Rd = pthermo->GetRd();
+
+  Real Rd = get_rd();
   Real gammad = pmb->peos->GetGamma();
   int is = pmb->is, ie = pmb->ie;
   if (phydro->hsrc.GetG1() == 0.) return;

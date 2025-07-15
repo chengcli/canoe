@@ -16,9 +16,9 @@
 
 // canoe
 #include <impl.hpp>
+#include <interface/eos.hpp>
 
 // snap
-#include "../thermodynamics/thermodynamics.hpp"
 #include "flux_decomposition.hpp"
 #include "forward_backward.hpp"
 #include "periodic_forward_backward.hpp"
@@ -67,13 +67,12 @@ void ImplicitSolver::PartialCorrection(AthenaArray<Real>& du,
   Bnd << 1., 0., 0., 0., -1., 0., 0., 0., 1.;
 
   Real wl[NHYDRO], wr[NHYDRO];
-  auto pthermo = Thermodynamics::GetInstance();
 
   // calculate and save flux Jacobian matrix
   for (int i = is - 2; i <= ie + 1; ++i) {
     Real fsig = 1., feps = 1.;
     CopyPrimitives(wl, wr, w, k, j, i, mydir_);
-    gamma_m1[i] = pthermo->GetGamma(wr) - 1.;
+    gamma_m1[i] = get_gammad() - 1.;
     // FluxJacobian(dfdq1[i], dfdq2[i], gamma_m1[i], w, k, j, i);
     FluxJacobian(dfdq, gamma_m1[i], wr, mydir_);
     dfdq1[i] << dfdq(idn, ivy), dfdq(idn, ivz), dfdq(ivx, ivy), dfdq(ivx, ivz),

@@ -14,7 +14,7 @@
 #include <string>
 
 // canoe
-#include <configure.hpp>
+#include <configure.h>
 
 // athena
 #include <athena/athena.hpp>

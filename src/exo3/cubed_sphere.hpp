@@ -9,8 +9,7 @@
 #include <athena/mesh/mesh.hpp>
 
 // canoe
-#include <configure.hpp>
-#include <snap/stride_iterator.hpp>
+#include <configure.h>
 
 #include "cubed_sphere_utility.hpp"
 #include "gnomonic_equiangle.hpp"

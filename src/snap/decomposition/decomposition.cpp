@@ -8,6 +8,7 @@
 #include <athena/bvals/bvals.hpp>
 #include <athena/globals.hpp>
 #include <athena/mesh/mesh.hpp>
+#include <athena/stride_iterator.hpp>
 
 // application
 #include <application/application.hpp>
@@ -16,10 +17,7 @@
 // canoe
 #include <constants.hpp>
 #include <impl.hpp>
-
-// snap
-#include <snap/stride_iterator.hpp>
-#include <snap/thermodynamics/thermodynamics.hpp>
+#include <interface/eos.hpp>
 
 #include "decomposition.hpp"
 
@@ -353,11 +351,10 @@ void Decomposition::PopulateBotEntropy(AthenaArray<Real> const &w, int kl,
   }
 
   int ssize = 2 * (ku - kl + 1) * (ju - jl + 1), p = 0;
-  auto pthermo = Thermodynamics::GetInstance();
   if (!has_bot_neighbor) {
     for (int k = kl; k <= ku; ++k)
       for (int j = jl; j <= ju; ++j) {
-        Real gamma = pthermo->GetGamma(w.at(k, j, pmb->is));
+        Real gamma = get_gammad();
         buffer_[p++] = gamma;
         buffer_[p++] =
             log(w(IPR, k, j, pmb->is)) - gamma * log(w(IDN, k, j, pmb->is));

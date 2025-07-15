@@ -8,7 +8,8 @@
 #include <string>
 
 // canoe
-#include <configure.hpp>
+#include <configure.h>
+
 #include <impl.hpp>
 
 // athena
@@ -20,10 +21,6 @@
 
 // math
 #include <climath/core.h>
-
-// harp
-#include <harp/radiation.hpp>
-#include <harp/radiation_band.hpp>
 
 // utils
 #include <utils/vectorize.hpp>
@@ -108,7 +105,8 @@ void PnetcdfOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) {
   if (nx3 > 1) nx3f++;
   //! \todo This applies to the first block. Does it work for all blocks?
 
-  size_t nrays = pm->my_blocks(0)->pimpl->prad->GetNumOutgoingRays();
+  size_t nrays = 0.; /*pm->my_blocks(0)->pimpl->prad->GetNumOutgoingRays()*/
+  ;
 
   // 2. define coordinate
   int idt, idx1, idx2, idx3, idx1f, idx2f, idx3f, iray;
@@ -489,7 +487,7 @@ void PnetcdfOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) {
     }
 
     if (nrays > 0) {
-      auto prad = pmb->pimpl->prad;
+      /*auto prad = pmb->pimpl->prad;
       int m = 0;
       for (int b = 0; b < prad->GetNumBands(); ++b) {
         auto p = prad->GetBand(b);
@@ -506,7 +504,7 @@ void PnetcdfOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) {
           (*ib)[m++] = (float)(p->GetAzimuthalAngle(n));
       }
       err = ncmpi_iput_var_float(ifile, iphi, *ib++, ir++);
-      ERR;
+      ERR;*/
     }
 
     ivar = var_ids;

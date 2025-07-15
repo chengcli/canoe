@@ -49,7 +49,7 @@
 #include <unistd.h>
 
 // canoe
-#include <configure.hpp>
+#include <configure.h>
 
 // Only proceed if NETCDF output enabled
 #ifdef NETCDFOUTPUT

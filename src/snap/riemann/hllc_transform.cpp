@@ -9,7 +9,8 @@
 #include <athena/hydro/hydro.hpp>
 
 // canoe
-#include <configure.hpp>
+#include <configure.h>
+
 #include <impl.hpp>
 
 // exo3

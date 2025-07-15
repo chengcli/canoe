@@ -13,7 +13,8 @@
 #include <application/exceptions.hpp>
 
 // canoe
-#include <configure.hpp>
+#include <configure.h>
+
 #include <impl.hpp>
 
 // exo3

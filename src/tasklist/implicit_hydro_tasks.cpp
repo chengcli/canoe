@@ -6,27 +6,25 @@
 #include <athena/mesh/mesh.hpp>
 #include <athena/parameter_input.hpp>
 #include <athena/scalars/scalars.hpp>
+#include <athena/stride_iterator.hpp>
+
+// kintera
+#include <kintera/thermo/thermo.hpp>
+
+// snap
+#include <snap/eos/ideal_moist.hpp>
 
 // application
 #include <application/exceptions.hpp>
 
 // canoe
-#include <configure.hpp>
+#include <configure.h>
+
 #include <impl.hpp>
+#include <interface/hydro.hpp>
 
 // snap
 #include <snap/implicit/implicit_solver.hpp>
-#include <snap/stride_iterator.hpp>
-#include <snap/thermodynamics/thermodynamics.hpp>
-
-// harp
-#include <harp/radiation.hpp>
-
-// microphysics
-#include <microphysics/microphysics.hpp>
-
-// forcing
-#include <forcing/forcing.hpp>
 
 // checks
 #include <checks.hpp>
@@ -210,11 +208,6 @@ TaskStatus ImplicitHydroTasks::AddSourceTerms(MeshBlock *pmb, int stage) {
       // Evaluate the source terms at the time at the beginning of the stage
       ph->hsrc.AddSourceTerms(t_start_stage, dt, ph->flux, ph->w, ps->r,
                               pf->bcc, pmb->pimpl->du, ps->s);
-      for (auto &f : pmb->pimpl->all_forcings) {
-        f->Apply(pmb->pimpl->du, pmb, t_start_stage, dt);
-      }
-      // pmb->pphy->ApplyPhysicsPackages(phevi->du, ph->w, pmb->pmy_mesh->time,
-      // pmb->pmy_mesh->dt);
     }
     return TaskStatus::next;
   }
@@ -228,7 +221,7 @@ TaskStatus ImplicitHydroTasks::AddFluxToConserved(MeshBlock *pmb, int stage) {
   auto prad = pmb->pimpl->prad;
 
   if (stage <= nstages) {
-    if (stage_wghts[stage - 1].main_stage) {
+    /*if (stage_wghts[stage - 1].main_stage) {
       for (int k = ks; k <= ke; ++k)
         for (int j = js; j <= je; ++j) {
           prad->AddRadiativeFlux(pmb->phydro, k, j, is, ie + 1);
@@ -243,7 +236,7 @@ TaskStatus ImplicitHydroTasks::AddFluxToConserved(MeshBlock *pmb, int stage) {
             for (int j = js; j <= je; ++j) prad->CalFlux(pmb, k, j);
         }
       }
-    }
+    }*/
     return TaskStatus::next;
   }
   return TaskStatus::fail;
@@ -266,11 +259,6 @@ TaskStatus ImplicitHydroTasks::ImplicitCorrection(MeshBlock *pmb, int stage) {
       wghts[3] = 0.;
       wghts[4] = 0.;
       pmb->WeightedAve(ph->u, pmb->pimpl->du, ph->u2, ph->u2, ph->u2, wghts);
-
-      fix_implicit_cons(pmb, ph->u, pmb->is, pmb->ie, pmb->js, pmb->je, pmb->ks,
-                        pmb->ke);
-      check_implicit_cons(ph->u, pmb->is, pmb->ie, pmb->js, pmb->je, pmb->ks,
-                          pmb->ke);
     }
     return TaskStatus::next;
   }
@@ -279,7 +267,7 @@ TaskStatus ImplicitHydroTasks::ImplicitCorrection(MeshBlock *pmb, int stage) {
 
 TaskStatus ImplicitHydroTasks::UpdateAllConserved(MeshBlock *pmb, int stage) {
   if (stage <= nstages) {
-    pmb->pimpl->pmicro->SetVsedFromConserved(pmb->phydro);
+    // pmb->pimpl->pmicro->SetVsedFromConserved(pmb->phydro);
   } else {
     return TaskStatus::fail;
   }
@@ -287,34 +275,17 @@ TaskStatus ImplicitHydroTasks::UpdateAllConserved(MeshBlock *pmb, int stage) {
   // only do chemistry and thermodynamcis at last rk step
   if (stage != nstages) return TaskStatus::next;
 
-  int is = pmb->is, js = pmb->js, ks = pmb->ks;
-  int ie = pmb->ie, je = pmb->je, ke = pmb->ke;
+  auto peos = pmb->pimpl->peos;
 
-  auto pthermo = Thermodynamics::GetInstance();
+  int ny = IVX - 1;
+  auto u = get_all(pmb->phydro->u);
+  auto rho = u.narrow(0, IDN, 1 + ny).sum(0);
+  auto ke = peos->compute("U->K", {u});
+  auto ie = u[IPR] - ke;
+  auto yfrac = u.narrow(0, 1, ny) / rho;
+  peos->pthermo->forward(rho, ie, yfrac);
 
-  auto &u = pmb->phydro->u;
-  auto &m = pmb->pcoord->m;
-
-  for (int k = ks; k <= ke; k++)
-    for (int j = js; j <= je; j++)
-      for (int i = is; i <= ie; i++) {
-        /*std::cout << "before: " << std::endl;
-        for (int n = 0; n < NHYDRO; n++) {
-          std::cout << u(n, k, j, i) << ", ";
-        }
-        std::cout << std::endl;*/
-
-        pthermo->SetConserved(u.at(k, j, i), m.at(k, j, i));
-        // pthermo->Evolve(pmb->pmy_mesh->time, pmb->pmy_mesh->dt);
-        pthermo->EquilibrateUV(pmb->pmy_mesh->dt);
-        pthermo->GetConserved(u.at(k, j, i), m.at(k, j, i));
-
-        /*std::cout << "after: " << std::endl;
-        for (int n = 0; n < NHYDRO; n++) {
-          std::cout << u(n, k, j, i) << ", ";
-        }
-        std::cout << std::endl;*/
-      }
+  u.narrow(0, 1, ny) = yfrac * rho;  // update mass fractions
 
   return TaskStatus::success;
 }

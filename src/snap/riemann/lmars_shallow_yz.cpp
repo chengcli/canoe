@@ -13,7 +13,7 @@
 #include <athena/mesh/mesh.hpp>
 
 // canoe
-#include <configure.hpp>
+#include <configure.h>
 
 void Hydro::RiemannSolver(int const k, int const j, int const il, int const iu,
                           int const ivx, AthenaArray<Real> &wl,

@@ -45,11 +45,8 @@
 // class
 #include <impl.hpp>
 
-// Finally, the Thermodynamics class works with thermodynamic aspects of the
-// problem such as the temperature, potential temperature, condensation of
-// vapor, etc.
-#include <snap/thermodynamics/atm_thermodynamics.hpp>
-#include <snap/thermodynamics/thermodynamics.hpp>
+// Finally, load the interface subroutines
+#include <interface/eos.hpp>
 
 // Functions in the math library are protected by a specific namespace because
 // math functions are usually concise in the names, such as <code>min</code>,
@@ -89,21 +86,29 @@ void MeshBlock::InitUserMeshBlockData(ParameterInput *pin) {
 // managed by MeshBlock. As long as you have a pointer to a MeshBlock, you can
 // access all physics in the simulation.
 void MeshBlock::UserWorkBeforeOutput(ParameterInput *pin) {
-  auto pthermo = Thermodynamics::GetInstance();
   auto &w = phydro->w;
+
+  auto temp = get_temp(pimpl->peos, w);
+  auto pres = get_pres(w);
+  auto chi = (get_gammad() - 1.) / get_gammad();
+  auto theta = temp * pow(p0 / pres, chi);
 
   // Loop over the grids. <code>js,je,is,ie</code> are members of the MeshBlock
   // class. They are integer values representing the start index and the end
   // index of the grids in each dimension.
   int k = ks;
+
+  auto temp_a = temp.accessor<Real, 3>();
+  auto theta_a = theta.accessor<Real, 3>();
+
   for (int j = js; j <= je; ++j)
     for (int i = is; i <= ie; ++i) {
       // <code>user_out_var</code> stores the actual data.
       // <code>phydro</code> is a pointer to the Hydro class, which has a member
       // <code>w</code> that stores density, pressure, and velocities at each
       // grid.
-      user_out_var(0, j, i) = pthermo->GetTemp(w.at(k, j, i));
-      user_out_var(1, j, i) = potential_temp(pthermo, w.at(k, j, i), p0);
+      user_out_var(0, j, i) = temp_a[k][j][i];
+      user_out_var(1, j, i) = theta_a[k][j][i];
     }
 }
 
@@ -129,9 +134,13 @@ void Diffusion(MeshBlock *pmb, Real const time, Real const dt,
   Real dx = pmb->pcoord->dx1f(pmb->is);
   Real dy = pmb->pcoord->dx2f(pmb->js);
 
-  // Similarly, we use <code>pmb</code> to find the pointer to the
-  // Thermodynamics class, <code>pthermo</code>.
-  auto pthermo = Thermodynamics::GetInstance();
+  auto temp = get_temp(pmb->pimpl->peos, w);
+  auto pres = get_pres(w);
+  auto chi = (get_gammad() - 1.) / get_gammad();
+  auto theta = temp * pow(p0 / pres, chi);
+
+  auto temp_a = temp.accessor<Real, 3>();
+  auto theta_a = theta.accessor<Real, 3>();
 
   // Loop over the grids.
   int k = pmb->ks;
@@ -140,16 +149,16 @@ void Diffusion(MeshBlock *pmb, Real const time, Real const dt,
       // Similar to what we have done in MeshBlock::UserWorkBeforeOutput, we use
       // the Thermodynamics class to calculate temperature and potential
       // temperature.
-      Real temp = pthermo->GetTemp(w.at(pmb->ks, j, i));
-      Real theta = potential_temp(pthermo, w.at(pmb->ks, j, i), p0);
+      Real temp = temp_a[k][j][i];
+      Real theta = theta_a[k][j][i];
 
       // The thermal diffusion is applied to the potential temperature field,
       // which is not exactly correct. But this is the setting of the test
       // program.
-      Real theta_ip1_j = potential_temp(pthermo, w.at(k, j + 1, i), p0);
-      Real theta_im1_j = potential_temp(pthermo, w.at(k, j - 1, i), p0);
-      Real theta_i_jp1 = potential_temp(pthermo, w.at(k, j, i + 1), p0);
-      Real theta_i_jm1 = potential_temp(pthermo, w.at(k, j, i - 1), p0);
+      Real theta_ip1_j = theta_a[k][j + 1][i];
+      Real theta_im1_j = theta_a[k][j - 1][i];
+      Real theta_i_jp1 = theta_a[k][j][i + 1];
+      Real theta_i_jm1 = theta_a[k][j][i - 1];
 
       // Add viscous dissipation to the velocities. Now you encounter another
       // variable called <code>u</code>. <code>u</code> stands for `conserved
@@ -191,14 +200,12 @@ void Diffusion(MeshBlock *pmb, Real const time, Real const dt,
 // first and then it instantiates all MeshBlocks inside it. Therefore, this
 // subroutine runs before any MeshBlock.
 void Mesh::InitUserMeshData(ParameterInput *pin) {
-  auto pthermo = Thermodynamics::GetInstance();
-
   // The program specific forcing parameters are set here.
   // They come from the input file, which is parsed by the ParameterInput class
   Real gamma = pin->GetReal("hydro", "gamma");
   K = pin->GetReal("problem", "K");
   p0 = pin->GetReal("problem", "p0");
-  Rd = pthermo->GetRd();
+  Rd = pin->GetReal("hydro", "Rd");
   cp = gamma / (gamma - 1.) * Rd;
 
   // This line code enrolls the forcing function we wrote in

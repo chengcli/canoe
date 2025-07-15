@@ -10,7 +10,7 @@
 #include <athena/mesh/mesh.hpp>
 
 // canoe
-#include <configure.hpp>
+#include <configure.h>
 
 // exo3
 #include "cubed_sphere.hpp"

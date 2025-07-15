@@ -25,10 +25,7 @@
 
 // canoe
 #include <impl.hpp>
-
-// snap
-#include <snap/thermodynamics/atm_thermodynamics.hpp>
-#include <snap/thermodynamics/thermodynamics.hpp>
+#include <interface/eos.hpp>
 
 // @sect3{Preamble}
 
@@ -45,15 +42,21 @@ void MeshBlock::InitUserMeshBlockData(ParameterInput *pin) {
 
 // Set temperature and potential temperature.
 void MeshBlock::UserWorkBeforeOutput(ParameterInput *pin) {
-  auto pthermo = Thermodynamics::GetInstance();
   auto &w = phydro->w;
 
-  Real gamma = peos->GetGamma();
+  auto temp = get_temp(pimpl->peos, w);
+  auto pres = get_pres(w);
+  auto chi = (get_gammad() - 1.) / get_gammad();
+  auto theta = temp * pow(p0 / pres, chi);
+
+  auto temp_a = temp.accessor<Real, 3>();
+  auto theta_a = theta.accessor<Real, 3>();
+
   for (int k = ks; k <= ke; ++k)
     for (int j = js; j <= je; ++j)
       for (int i = is; i <= ie; ++i) {
-        user_out_var(0, k, j, i) = pthermo->GetTemp(w.at(k, j, i));
-        user_out_var(1, k, j, i) = potential_temp(pthermo, w.at(k, j, i), p0);
+        user_out_var(0, k, j, i) = temp_a[k][j][i];
+        user_out_var(1, k, j, i) = theta_a[k][j][i];
       }
 }
 
@@ -67,13 +70,11 @@ void Mesh::InitUserMeshData(ParameterInput *pin) {
 // We do not need forcings other than gravity in this problem,
 // so we go directly to the initial condition.
 void MeshBlock::ProblemGenerator(ParameterInput *pin) {
-  auto pthermo = Thermodynamics::GetInstance();
-
   // Similar to @ref straka, read variables in the input file
   Real gamma = pin->GetReal("hydro", "gamma");
   Real grav = -phydro->hsrc.GetG1();
   Real Ts = pin->GetReal("problem", "Ts");
-  Real Rd = pthermo->GetRd();
+  Real Rd = kintera::constants::Rgas / kintera::species_weights[0];
   Real cp = gamma / (gamma - 1.) * Rd;
 
   Real xc = pin->GetReal("problem", "xc");

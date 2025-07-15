@@ -8,7 +8,8 @@
 #include <string>
 
 // canoe
-#include <configure.hpp>
+#include <configure.h>
+
 #include <impl.hpp>
 
 // athena
@@ -16,10 +17,6 @@
 #include <athena/coordinates/coordinates.hpp>
 #include <athena/mesh/mesh.hpp>
 #include <athena/outputs/user_outputs.hpp>
-
-// harp
-#include <harp/radiation.hpp>
-#include <harp/radiation_band.hpp>
 
 // utils
 #include <utils/vectorize.hpp>
@@ -51,7 +48,7 @@ void NetcdfOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) {
   // Loop over MeshBlocks
   for (int b = 0; b < pm->nblocal; ++b) {
     MeshBlock *pmb = pm->my_blocks(b);
-    auto prad = pmb->pimpl->prad;
+    // auto prad = pmb->pimpl->prad;
 
     // set start/end array indices depending on whether ghost zones are included
     out_is = pmb->is;
@@ -118,7 +115,7 @@ void NetcdfOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) {
     int nfaces3 = ncells3;
     if (ncells3 > 1) nfaces3++;
 
-    int nrays = prad->GetNumOutgoingRays();
+    int nrays = 0; /*prad->GetNumOutgoingRays();*/
 
     // 2. define coordinate
     int idt, idx1, idx2, idx3, idx1f, idx2f, idx3f, iray;
@@ -365,7 +362,7 @@ void NetcdfOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) {
     }
 
     if (nrays > 0) {
-      int m = 0;
+      /*int m = 0;
       for (int b = 0; b < prad->GetNumBands(); ++b) {
         auto p = prad->GetBand(b);
         for (int n = 0; n < p->GetNumOutgoingRays(); ++n)
@@ -379,7 +376,7 @@ void NetcdfOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) {
         for (int n = 0; n < p->GetNumOutgoingRays(); ++n)
           data[m++] = (float)(p->GetAzimuthalAngle(n));
       }
-      nc_put_var_float(ifile, iphi, data);
+      nc_put_var_float(ifile, iphi, data);*/
     }
 
     ivar = var_ids;

@@ -1,6 +1,7 @@
 #pragma once
 
-#include <snap/stride_iterator.hpp>
+// athena
+#include <athena/stride_iterator.hpp>
 
 // covariant velocity to contravariant velocity
 template <typename T>

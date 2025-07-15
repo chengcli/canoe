@@ -5,13 +5,19 @@
 # 1. Compile straka, robert and bryan
 setup_problem(straka)
 setup_problem(robert)
-setup_problem(bryan)
-setup_problem(jcrm)
+
+if (${NMASS} EQUAL 1)
+  setup_problem(bryan)
+endif()
+
+if (${NMASS} EQUAL 2)
+  setup_problem(jcrm)
+endif()
 
 # 2. Compile sedimentation
-if (${NVAPOR} EQUAL 2 AND ${NCLOUD} EQUAL 4 AND ${NPHASE_LEGACY} EQUAL 3)
-  setup_problem(sedimentation)
-endif()
+#if (${NVAPOR} EQUAL 2 AND ${NCLOUD} EQUAL 4 AND ${NPHASE_LEGACY} EQUAL 3)
+#  setup_problem(sedimentation)
+#endif()
 
 # 4. Copy input files to run directory
 file(GLOB inputs *.inp *.yaml)

@@ -8,16 +8,9 @@
 #include <application/exceptions.hpp>
 
 // canoe
-#include <configure.hpp>
+#include <configure.h>
 
 #include "impl.hpp"
-#include "index_map.hpp"
-
-// snap
-#include "snap/thermodynamics/thermodynamics.hpp"
-
-// n-body
-// #include "nbody/particle_data.hpp"
 
 // MPI headers
 #ifdef MPI_PARALLEL
@@ -57,15 +50,6 @@ void mesh_setup(ParameterInput*& pinput, Mesh*& pmesh) {
     if (cli->res_flag == 1) restartfile.Close();
     throw RuntimeError("main", ex.what());
   }
-
-  // index map
-  IndexMap::InitFromAthenaInput(pinput);
-
-  // thermodynamics
-  Thermodynamics::InitFromAthenaInput(pinput);
-
-  // n-body
-  // ParticleHelper::commit_mpi_particle_data();
 
   try {
     if (cli->res_flag == 0) {

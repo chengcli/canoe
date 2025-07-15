@@ -1,29 +1,27 @@
+// yaml
+#include <yaml-cpp/yaml.h>
+
 // athena
 #include <athena/athena.hpp>
 #include <athena/hydro/hydro.hpp>
 #include <athena/parameter_input.hpp>
 
-// canoe
-#include <configure.hpp>
+// kintera
+#include <kintera/kinetics/kinetics.hpp>
 
 // harp
-#include "harp/radiation.hpp"
-#include "harp/radiation_band.hpp"
+#include <harp/radiation/radiation.hpp>
+
+// canoe
+#include <configure.h>
+
+// snap
+#include <snap/eos/ideal_moist.hpp>
+#include <snap/sedimentation/sedimentation.hpp>
 
 // snap
 #include "snap/decomposition/decomposition.hpp"
 #include "snap/implicit/implicit_solver.hpp"
-#include "snap/thermodynamics/thermodynamics.hpp"
-#include "snap/turbulence/turbulence_model.hpp"
-
-// microphysics
-#include "microphysics/microphysics.hpp"
-
-// flask
-#include "flask/chemistry.hpp"
-
-// tracer
-#include "tracer/tracer.hpp"
 
 // astro
 #include "astro/celestrial_body.hpp"
@@ -31,15 +29,8 @@
 // exo3
 #include "exo3/cubed_sphere.hpp"
 
-// diagnostics
-#include "diagnostics/diagnostics.hpp"
-
-// forcing
-#include "forcing/forcing.hpp"
-
 // canoe
 #include "impl.hpp"
-#include "index_map.hpp"
 #include "virtual_groups.hpp"
 
 MeshBlock::Impl::Impl(MeshBlock *pmb, ParameterInput *pin) : pmy_block_(pmb) {
@@ -51,26 +42,62 @@ MeshBlock::Impl::Impl(MeshBlock *pmb, ParameterInput *pin) : pmy_block_(pmb) {
   // implicit methods
   phevi = std::make_shared<ImplicitSolver>(pmb, pin);
 
+  // thermodynamcis
+  auto yaml_file = pin->GetOrAddString("problem", "config_file", "");
+  auto op_thermo = kintera::ThermoOptions::from_yaml(yaml_file);
+
   // microphysics
-  pmicro = std::make_shared<Microphysics>(pmb, pin);
+  auto op_kinet = kintera::KineticsOptions::from_yaml(yaml_file);
+  pkinet = std::make_shared<kintera::KineticsImpl>(op_kinet);
 
   // radiation
-  prad = std::make_shared<Radiation>(pmb, pin);
+  auto op_rad = harp::RadiationOptions::from_yaml(yaml_file);
+  prad = std::make_shared<harp::RadiationImpl>(op_rad);
 
-  // chemistry
-  pchem = std::make_shared<Chemistry>(pmb, pin);
+  // coordinate
+  auto config = YAML::LoadFile(yaml_file);
+  auto op_coord = snap::CoordinateOptions::from_yaml(config["geometry"]);
+  op_coord.x1min() = pin->GetReal("mesh", "x1min");
+  op_coord.x1max() = pin->GetReal("mesh", "x1max");
 
-  // tracer
-  ptracer = std::make_shared<Tracer>(pmb, pin);
+  if (pin->DoesParameterExist("meshblock", "nx1")) {
+    op_coord.nx1() = pin->GetInteger("meshblock", "nx1");
+  } else {
+    op_coord.nx1() = pin->GetInteger("mesh", "nx1");
+  }
 
-  // turbulence
-  pturb = TurbulenceFactory::Create(pmb, pin);
+  op_coord.x2min() = pin->GetReal("mesh", "x2min");
+  op_coord.x2max() = pin->GetReal("mesh", "x2max");
 
-  // diagnostics
-  all_diags = DiagnosticsFactory::CreateFrom(pmb, pin);
+  if (pin->DoesParameterExist("meshblock", "nx2")) {
+    op_coord.nx2() = pin->GetInteger("meshblock", "nx2");
+  } else {
+    op_coord.nx2() = pin->GetInteger("mesh", "nx2");
+  }
 
-  // forcings
-  all_forcings = ForcingFactory::CreateFrom(pmb, pin);
+  op_coord.x3min() = pin->GetReal("mesh", "x3min");
+  op_coord.x3max() = pin->GetReal("mesh", "x3max");
+
+  if (pin->DoesParameterExist("meshblock", "nx3")) {
+    op_coord.nx3() = pin->GetInteger("meshblock", "nx3");
+  } else {
+    op_coord.nx3() = pin->GetInteger("mesh", "nx3");
+  }
+
+  op_coord.nghost() = NGHOST;
+
+  // eos
+  auto op_eos = snap::EquationOfStateOptions::from_yaml(
+      config["dynamics"]["equation-of-state"]);
+  op_eos.coord() = op_coord;
+  op_eos.thermo() = op_thermo;
+  peos = std::make_shared<snap::IdealMoistImpl>(op_eos);
+
+  // sedimentation
+  snap::SedHydroOptions op_sed;
+  op_sed.sedvel() = snap::SedVelOptions::from_yaml(config);
+  op_sed.eos() = op_eos;
+  psed = std::make_shared<snap::SedHydroImpl>(op_sed);
 
   // cubed sphere
   pexo3 = std::make_shared<CubedSphere>(pmb);
