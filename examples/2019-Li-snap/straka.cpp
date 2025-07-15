@@ -205,12 +205,12 @@ void Mesh::InitUserMeshData(ParameterInput *pin) {
   Real gamma = pin->GetReal("hydro", "gamma");
   K = pin->GetReal("problem", "K");
   p0 = pin->GetReal("problem", "p0");
-  Rd = kintera::constants::Rgas / kintera::species_weights[0];
+  Rd = pin->GetReal("hydro", "Rd");
   cp = gamma / (gamma - 1.) * Rd;
 
   // This line code enrolls the forcing function we wrote in
   // section <a href="#Forcingfunction">Forcing function</a>
-  EnrollUserExplicitSourceFunction(Diffusion);
+  // EnrollUserExplicitSourceFunction(Diffusion);
 }
 
 // @sect3{Initial condition}
