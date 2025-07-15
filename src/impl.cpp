@@ -57,6 +57,34 @@ MeshBlock::Impl::Impl(MeshBlock *pmb, ParameterInput *pin) : pmy_block_(pmb) {
   // coordinate
   auto config = YAML::LoadFile(yaml_file);
   auto op_coord = snap::CoordinateOptions::from_yaml(config["geometry"]);
+  op_coord.x1min() = pin->GetReal("mesh", "x1min");
+  op_coord.x1max() = pin->GetReal("mesh", "x1max");
+
+  if (pin->DoesParameterExist("meshblock", "nx1")) {
+    op_coord.nx1() = pin->GetInteger("meshblock", "nx1");
+  } else {
+    op_coord.nx1() = pin->GetInteger("mesh", "nx1");
+  }
+
+  op_coord.x2min() = pin->GetReal("mesh", "x2min");
+  op_coord.x2max() = pin->GetReal("mesh", "x2max");
+
+  if (pin->DoesParameterExist("meshblock", "nx2")) {
+    op_coord.nx2() = pin->GetInteger("meshblock", "nx2");
+  } else {
+    op_coord.nx2() = pin->GetInteger("mesh", "nx2");
+  }
+
+  op_coord.x3min() = pin->GetReal("mesh", "x3min");
+  op_coord.x3max() = pin->GetReal("mesh", "x3max");
+
+  if (pin->DoesParameterExist("meshblock", "nx3")) {
+    op_coord.nx3() = pin->GetInteger("meshblock", "nx3");
+  } else {
+    op_coord.nx3() = pin->GetInteger("mesh", "nx3");
+  }
+
+  op_coord.nghost() = NGHOST;
 
   // eos
   auto op_eos = snap::EquationOfStateOptions::from_yaml(
