@@ -44,13 +44,10 @@ add_subdirectory(astro)
 add_subdirectory(utils)
 add_subdirectory(snap)
 add_subdirectory(outputs)
-add_subdirectory(tracer)
 add_subdirectory(tasklist)
 add_subdirectory(exo3)
 add_subdirectory(exchanger)
 add_subdirectory(special)
-add_subdirectory(diagnostics)
-add_subdirectory(forcing)
 
 if(UNIX AND NOT APPLE)
   set(EXTRA_LIBS dl stdc++fs)
@@ -71,8 +68,6 @@ set(CANOE_LIBRARY_${buildu}
   "tasklist_${buildl}"
   "exo3_${buildl}"
   "exchanger_${buildl}"
-  "diagnostics_${buildl}"
-  "forcing_${buildl}"
   $<$<BOOL:${MINICHEM}>:minichem::minichem++>
   $<$<BOOL:${EXOFMSRT}>:exofmsrt::exofmsrt++>
   ${YAML_CPP_LIBRARIES}

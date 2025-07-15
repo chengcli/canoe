@@ -6,6 +6,7 @@
 #include <athena/mesh/mesh.hpp>
 #include <athena/parameter_input.hpp>
 #include <athena/scalars/scalars.hpp>
+#include <athena/stride_iterator.hpp>
 
 // kintera
 #include <kintera/thermo/thermo.hpp>
@@ -24,10 +25,6 @@
 
 // snap
 #include <snap/implicit/implicit_solver.hpp>
-#include <snap/stride_iterator.hpp>
-
-// forcing
-#include <forcing/forcing.hpp>
 
 // checks
 #include <checks.hpp>
@@ -211,11 +208,6 @@ TaskStatus ImplicitHydroTasks::AddSourceTerms(MeshBlock *pmb, int stage) {
       // Evaluate the source terms at the time at the beginning of the stage
       ph->hsrc.AddSourceTerms(t_start_stage, dt, ph->flux, ph->w, ps->r,
                               pf->bcc, pmb->pimpl->du, ps->s);
-      for (auto &f : pmb->pimpl->all_forcings) {
-        f->Apply(pmb->pimpl->du, pmb, t_start_stage, dt);
-      }
-      // pmb->pphy->ApplyPhysicsPackages(phevi->du, ph->w, pmb->pmy_mesh->time,
-      // pmb->pmy_mesh->dt);
     }
     return TaskStatus::next;
   }

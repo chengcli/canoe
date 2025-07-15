@@ -30,7 +30,6 @@ file(GLOB src_files
     riemann/rs_hydro_lmars.cpp
     hydro/*.cpp
     implicit/*.cpp
-    turbulence/*.cpp
     reconstruct/*.cpp
     )
 

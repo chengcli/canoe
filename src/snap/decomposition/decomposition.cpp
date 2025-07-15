@@ -8,6 +8,7 @@
 #include <athena/bvals/bvals.hpp>
 #include <athena/globals.hpp>
 #include <athena/mesh/mesh.hpp>
+#include <athena/stride_iterator.hpp>
 
 // application
 #include <application/application.hpp>
@@ -16,10 +17,7 @@
 // canoe
 #include <constants.hpp>
 #include <impl.hpp>
-#include <interface/thermo.hpp>
-
-// snap
-#include <snap/stride_iterator.hpp>
+#include <interface/eos.hpp>
 
 #include "decomposition.hpp"
 

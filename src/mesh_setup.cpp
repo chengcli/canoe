@@ -11,7 +11,6 @@
 #include <configure.h>
 
 #include "impl.hpp"
-#include "index_map.hpp"
 
 // MPI headers
 #ifdef MPI_PARALLEL
@@ -51,9 +50,6 @@ void mesh_setup(ParameterInput*& pinput, Mesh*& pmesh) {
     if (cli->res_flag == 1) restartfile.Close();
     throw RuntimeError("main", ex.what());
   }
-
-  // index map
-  IndexMap::InitFromAthenaInput(pinput);
 
   try {
     if (cli->res_flag == 0) {

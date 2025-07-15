@@ -2,9 +2,6 @@
 #include <iostream>
 #include <vector>
 
-// kintera
-#include <kintera/thermo/thermo.hpp>
-
 // Eigen
 #include <Eigen/Core>
 #include <Eigen/Dense>
@@ -19,7 +16,7 @@
 
 // canoe
 #include <impl.hpp>
-#include <interface/thermo.hpp>
+#include <interface/eos.hpp>
 
 // snap
 #include "flux_decomposition.hpp"

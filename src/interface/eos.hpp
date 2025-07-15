@@ -9,26 +9,44 @@
 // canoe
 #include "hydro.hpp"
 
-inline AthenaArray<Real> get_temp(snap::IdealMoist peos,
-                                  AthenaArray<Real> const& hydro_w) {
+inline static Real get_rd() {
+  return kintera::constants::Rgas / kintera::species_weights[0];
+}
+
+inline static Real get_gammad() {
+  auto cvd = kintera::species_cref_R[0];
+  return (cvd + 1.) / cvd;
+}
+
+inline torch::Tensor get_temp(snap::IdealMoist peos,
+                              AthenaArray<Real> const& hydro_w) {
   auto w = get_all(hydro_w);
-  auto T = peos->compute("W->T", {w});
+  return peos->compute("W->T", {w});
+}
 
-  auto nx1 = T.size(2);
-  auto nx2 = T.size(1);
-  auto nx3 = T.size(0);
+//! \brief Effective polytropic index
+//!
+//! Eq.63 in Li2019
+//! $\gamma = \frac{c_p}{c_v}$
+//! \return $\gamma$
+template <typename T>
+Real get_gamma(snap::IdealMoist const& peos, T u, Real rho = 1.) {
+  Real fsig = 1., feps = 1.;
+  auto cv_ratio_m1 = peos->cv_ratio_m1.accessor<Real, 1>();
+  auto inv_mu_ratio_m1 = peos->inv_mu_ratio_m1.accessor<Real, 1>();
 
-  int64_t str1 = 1;
-  int64_t str2 = nx1;
-  int64_t str3 = nx2 * nx1;
+  int nvapor = peos->pthermo->options.vapor_ids().size() - 1;
+  int ncloud = peos->pthermo->options.cloud_ids().size();
 
-  AthenaArray<double> p(nx3, nx2, nx1);
+  for (int n = 1; n <= nvapor; ++n) {
+    fsig += u[n] / rho * cv_ratio_m1[n - 1];
+    feps += u[n] / rho * inv_mu_ratio_m1[n - 1];
+  }
 
-  // create a temporary tensor holder
-  torch::Tensor tmp =
-      torch::from_blob(p.data(), {nx3, nx2, nx1}, {str3, str2, str1}, nullptr,
-                       torch::dtype(torch::kDouble));
-  tmp.copy_(T);
+  for (int n = 1 + nvapor; n < 1 + nvapor + ncloud; ++n) {
+    fsig += u[n] / rho * cv_ratio_m1[n - 1];
+    feps -= u[n] / rho;
+  }
 
-  return p;
+  return 1. + (get_gammad() - 1.) * feps / fsig;
 }

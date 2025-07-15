@@ -10,13 +10,10 @@
 // snap
 #include <snap/eos/ideal_moist.hpp>
 
-// exchanger
-#include <exchanger/exchanger.hpp>
-
 // canoe
 #include <checks.hpp>
 #include <impl.hpp>
-#include <interface/thermo.hpp>
+#include <interface/eos.hpp>
 
 // snap
 #include "decomposition.hpp"
@@ -44,7 +41,6 @@ void Decomposition::ChangeToEntropy(AthenaArray<Real> &w, int kl, int ku,
                                     int jl, int ju) {
   MeshBlock *pmb = pmy_block_;
   Coordinates *pco = pmb->pcoord;
-  auto pthermo = pmb->pimpl->peos->pthermo;
 
   // positive in the x-increasing direction
   Real grav = pmb->phydro->hsrc.GetG1();
@@ -87,6 +83,11 @@ void Decomposition::ChangeToEntropy(AthenaArray<Real> &w, int kl, int ku,
   }
 
   // decompose pressure and density
+  auto peos = pmb->pimpl->peos;
+  auto cv_ratio_m1 = peos->cv_ratio_m1.accessor<Real, 1>();
+  auto inv_mu_ratio_m1 = peos->inv_mu_ratio_m1.accessor<Real, 1>();
+  int nvapor = peos->pthermo->options.vapor_ids().size() - 1;
+
   for (int k = kl; k <= ku; ++k)
     for (int j = jl; j <= ju; ++j) {
       // 1. change density and pressure (including ghost cells)
@@ -100,9 +101,9 @@ void Decomposition::ChangeToEntropy(AthenaArray<Real> &w, int kl, int ku,
 
         // calculate local polytropic index
         Real fsig = 1., feps = 1.;
-        for (int n = 1; n <= NVAPOR; ++n) {
-          fsig += w(n, k, j, i) * (get_cv_ratio(pthermo, n) - 1.);
-          feps += w(n, k, j, i) * (get_inv_mu_ratio(pthermo, n) - 1.);
+        for (int n = 1; n <= nvapor; ++n) {
+          fsig += w(n, k, j, i) * cv_ratio_m1[n - 1];
+          feps += w(n, k, j, i) * inv_mu_ratio_m1[n - 1];
         }
         gamma_(k, j, i) = 1. + (gamma - 1.) * feps / fsig;
 

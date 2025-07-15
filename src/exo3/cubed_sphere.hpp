@@ -11,8 +11,6 @@
 // canoe
 #include <configure.h>
 
-#include <snap/stride_iterator.hpp>
-
 #include "cubed_sphere_utility.hpp"
 #include "gnomonic_equiangle.hpp"
 

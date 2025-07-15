@@ -2,27 +2,25 @@
 #include <iostream>
 #include <vector>
 
-// kintera
-#include <kintera/thermo/thermo.hpp>
-
-// canoe
-#include <impl.hpp>
-#include <interface/thermo.hpp>
-
 // Eigen
 #include <Eigen/Core>
 #include <Eigen/Dense>
 
-// climath
-#include <climath/core.h>
+// application
+#include <application/application.hpp>
 
 // athena
 #include <athena/eos/eos.hpp>
 #include <athena/hydro/hydro.hpp>
 #include <athena/mesh/mesh.hpp>
+#include <athena/stride_iterator.hpp>
 
-// application
-#include <application/application.hpp>
+// canoe
+#include <impl.hpp>
+#include <interface/eos.hpp>
+
+// climath
+#include <climath/core.h>
 
 // snap
 #include "flux_decomposition.hpp"

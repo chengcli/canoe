@@ -12,8 +12,6 @@
 // canoe
 #include <configure.h>
 
-#include "index_map.hpp"
-
 // outputs
 #include "outputs/output_utils.hpp"
 
@@ -63,6 +61,5 @@ void mesh_destroy(ParameterInput *&pinput, Mesh *&pmesh, int mbcnt) {
   delete pinput;
   delete pmesh;
 
-  IndexMap::Destroy();
   MetadataTable::Destroy();
 }

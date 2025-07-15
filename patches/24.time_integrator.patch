@@ -1,8 +1,8 @@
 diff --git a/src/task_list/time_integrator.cpp b/src/task_list/time_integrator.cpp
-index 2bfc5178..173b2566 100644
+index 2bfc5178..84e51e49 100644
 --- a/src/task_list/time_integrator.cpp
 +++ b/src/task_list/time_integrator.cpp
-@@ -36,6 +36,13 @@
+@@ -36,6 +36,10 @@
  #include "../scalars/scalars.hpp"
  #include "task_list.hpp"
  
@@ -10,13 +10,10 @@ index 2bfc5178..173b2566 100644
 +#include <configure.h>
 +#include <impl.hpp>
 +
-+// diagnostics
-+#include <diagnostics/diagnostics.hpp>
-+
  //----------------------------------------------------------------------------------------
  //! TimeIntegratorTaskList constructor
  
-@@ -998,6 +1005,16 @@ TimeIntegratorTaskList::TimeIntegratorTaskList(ParameterInput *pin, Mesh *pm) {
+@@ -998,6 +1002,16 @@ TimeIntegratorTaskList::TimeIntegratorTaskList(ParameterInput *pin, Mesh *pm) {
        AddTask(SEND_HYD,src_aterm);
        AddTask(RECV_HYD,NONE);
        AddTask(SETB_HYD,(RECV_HYD|SRC_TERM));
@@ -33,7 +30,7 @@ index 2bfc5178..173b2566 100644
      }
  
      if (SHEAR_PERIODIC) {
-@@ -1035,6 +1052,12 @@ TimeIntegratorTaskList::TimeIntegratorTaskList(ParameterInput *pin, Mesh *pm) {
+@@ -1035,6 +1049,12 @@ TimeIntegratorTaskList::TimeIntegratorTaskList(ParameterInput *pin, Mesh *pm) {
          AddTask(SEND_SCLR,SRC_TERM);
          AddTask(RECV_SCLR,NONE);
          AddTask(SETB_SCLR,(RECV_SCLR|SRC_TERM));
@@ -46,7 +43,7 @@ index 2bfc5178..173b2566 100644
        }
        if (SHEAR_PERIODIC) {
          AddTask(SEND_SCLRSH,SETB_SCLR);
-@@ -1157,9 +1180,17 @@ TimeIntegratorTaskList::TimeIntegratorTaskList(ParameterInput *pin, Mesh *pm) {
+@@ -1157,9 +1177,17 @@ TimeIntegratorTaskList::TimeIntegratorTaskList(ParameterInput *pin, Mesh *pm) {
            }
          } else {
            if (NSCALARS > 0) {
@@ -64,7 +61,7 @@ index 2bfc5178..173b2566 100644
            }
          }
        }
-@@ -1225,11 +1256,16 @@ void TimeIntegratorTaskList::AddTask(const TaskID& id, const TaskID& dep) {
+@@ -1225,11 +1253,16 @@ void TimeIntegratorTaskList::AddTask(const TaskID& id, const TaskID& dep) {
    //!   SRC_TERM and SourceTerms(), USERWORK, PHY_BVAL, PROLONG, CONS2PRIM,
    //!   ... Although, AMR_FLAG = "flag blocks for AMR" should be FLAG_AMR in VERB_OBJECT
    using namespace HydroIntegratorTaskNames; // NOLINT (build/namespace)
@@ -82,7 +79,7 @@ index 2bfc5178..173b2566 100644
    } else if (id == CALC_HYDFLX) {
      task_list_[ntasks].TaskFunc=
          static_cast<TaskStatus (TaskList::*)(MeshBlock*,int)>
-@@ -1275,7 +1311,7 @@ void TimeIntegratorTaskList::AddTask(const TaskID& id, const TaskID& dep) {
+@@ -1275,7 +1308,7 @@ void TimeIntegratorTaskList::AddTask(const TaskID& id, const TaskID& dep) {
          static_cast<TaskStatus (TaskList::*)(MeshBlock*,int)>
          (&TimeIntegratorTaskList::AddSourceTerms);
      task_list_[ntasks].lb_time = true;
@@ -91,7 +88,7 @@ index 2bfc5178..173b2566 100644
      task_list_[ntasks].TaskFunc=
          static_cast<TaskStatus (TaskList::*)(MeshBlock*,int)>
          (&TimeIntegratorTaskList::SendHydro);
-@@ -1285,17 +1321,16 @@ void TimeIntegratorTaskList::AddTask(const TaskID& id, const TaskID& dep) {
+@@ -1285,17 +1318,16 @@ void TimeIntegratorTaskList::AddTask(const TaskID& id, const TaskID& dep) {
          static_cast<TaskStatus (TaskList::*)(MeshBlock*,int)>
          (&TimeIntegratorTaskList::SendField);
      task_list_[ntasks].lb_time = true;
@@ -111,7 +108,7 @@ index 2bfc5178..173b2566 100644
      task_list_[ntasks].TaskFunc=
          static_cast<TaskStatus (TaskList::*)(MeshBlock*,int)>
          (&TimeIntegratorTaskList::SetBoundariesHydro);
-@@ -1405,17 +1440,17 @@ void TimeIntegratorTaskList::AddTask(const TaskID& id, const TaskID& dep) {
+@@ -1405,17 +1437,17 @@ void TimeIntegratorTaskList::AddTask(const TaskID& id, const TaskID& dep) {
          static_cast<TaskStatus (TaskList::*)(MeshBlock*,int)>
          (&TimeIntegratorTaskList::IntegrateScalars);
      task_list_[ntasks].lb_time = true;
@@ -132,7 +129,7 @@ index 2bfc5178..173b2566 100644
      task_list_[ntasks].TaskFunc=
          static_cast<TaskStatus (TaskList::*)(MeshBlock*,int)>
          (&TimeIntegratorTaskList::SetBoundariesScalars);
-@@ -1688,6 +1723,19 @@ TaskStatus TimeIntegratorTaskList::ClearAllBoundary(MeshBlock *pmb, int stage) {
+@@ -1688,6 +1720,19 @@ TaskStatus TimeIntegratorTaskList::ClearAllBoundary(MeshBlock *pmb, int stage) {
    return TaskStatus::success;
  }
  
@@ -152,24 +149,3 @@ index 2bfc5178..173b2566 100644
  //----------------------------------------------------------------------------------------
  // Functions to calculates Hydro fluxes
  
-@@ -2305,6 +2353,12 @@ TaskStatus TimeIntegratorTaskList::PhysicalBoundary(MeshBlock *pmb, int stage) {
- TaskStatus TimeIntegratorTaskList::UserWork(MeshBlock *pmb, int stage) {
-   if (stage != nstages) return TaskStatus::success; // only do on last stage
- 
-+  auto all_diags = pmb->pimpl->all_diags;
-+
-+  for (auto& diag : all_diags) {
-+    diag->Progress(pmb);
-+  }
-+
-   pmb->UserWorkInLoop();
-   return TaskStatus::success;
- }
-@@ -2395,6 +2449,7 @@ TaskStatus TimeIntegratorTaskList::IntegrateScalars(MeshBlock *pmb, int stage) {
-       ave_wghts[2] = stage_wghts[stage-1].gamma_3;
-       if (ave_wghts[0] == 0.0 && ave_wghts[1] == 1.0 && ave_wghts[2] == 0.0) {
-         ps->s.SwapAthenaArray(ps->s1);
-+        // pmb->pimpl->MapScalarsConserved(ps->s);
-       } else {
-         pmb->WeightedAve(ps->s, ps->s1, ps->s2, ps->s0, ps->s_fl_div, ave_wghts);
-       }

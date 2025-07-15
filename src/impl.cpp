@@ -6,14 +6,14 @@
 #include <athena/hydro/hydro.hpp>
 #include <athena/parameter_input.hpp>
 
-// canoe
-#include <configure.h>
-
 // kintera
 #include <kintera/kinetics/kinetics.hpp>
 
 // harp
 #include <harp/radiation/radiation.hpp>
+
+// canoe
+#include <configure.h>
 
 // snap
 #include <snap/eos/ideal_moist.hpp>
@@ -22,10 +22,6 @@
 // snap
 #include "snap/decomposition/decomposition.hpp"
 #include "snap/implicit/implicit_solver.hpp"
-#include "snap/turbulence/turbulence_model.hpp"
-
-// tracer
-#include "tracer/tracer.hpp"
 
 // astro
 #include "astro/celestrial_body.hpp"
@@ -33,15 +29,8 @@
 // exo3
 #include "exo3/cubed_sphere.hpp"
 
-// diagnostics
-#include "diagnostics/diagnostics.hpp"
-
-// forcing
-#include "forcing/forcing.hpp"
-
 // canoe
 #include "impl.hpp"
-#include "index_map.hpp"
 #include "virtual_groups.hpp"
 
 MeshBlock::Impl::Impl(MeshBlock *pmb, ParameterInput *pin) : pmy_block_(pmb) {
@@ -81,15 +70,6 @@ MeshBlock::Impl::Impl(MeshBlock *pmb, ParameterInput *pin) : pmy_block_(pmb) {
   op_sed.sedvel() = snap::SedVelOptions::from_yaml(config);
   op_sed.eos() = op_eos;
   psed = std::make_shared<snap::SedHydroImpl>(op_sed);
-
-  // turbulence
-  pturb = TurbulenceFactory::Create(pmb, pin);
-
-  // diagnostics
-  all_diags = DiagnosticsFactory::CreateFrom(pmb, pin);
-
-  // forcings
-  all_forcings = ForcingFactory::CreateFrom(pmb, pin);
 
   // cubed sphere
   pexo3 = std::make_shared<CubedSphere>(pmb);

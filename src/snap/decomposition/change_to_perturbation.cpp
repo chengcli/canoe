@@ -9,7 +9,7 @@
 
 // canoe
 #include <impl.hpp>
-#include <interface/thermo.hpp>
+#include <interface/eos.hpp>
 
 // snap
 #include "decomposition.hpp"
