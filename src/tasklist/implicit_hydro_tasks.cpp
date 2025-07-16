@@ -22,6 +22,7 @@
 
 #include <impl.hpp>
 #include <interface/hydro.hpp>
+#include <interface/rad.hpp>
 
 // snap
 #include <snap/implicit/implicit_solver.hpp>
@@ -219,24 +220,44 @@ TaskStatus ImplicitHydroTasks::AddFluxToConserved(MeshBlock *pmb, int stage) {
   int ie = pmb->ie, je = pmb->je, ke = pmb->ke;
 
   auto prad = pmb->pimpl->prad;
+  auto peos = pmb->pimpl->peos;
 
+  auto w = get_all(pmb->phydro->w);
+  auto temp = peos->compute("W->T", {w});
+
+  auto prad_data = pmb->pimpl->prad_data;
   if (stage <= nstages) {
-    /*if (stage_wghts[stage - 1].main_stage) {
+    if (stage_wghts[stage - 1].main_stage) {
+      auto net_flux_a = prad_data->net_flux.accessor<Real, 3>();
+
+      // add net-flux
       for (int k = ks; k <= ke; ++k)
-        for (int j = js; j <= je; ++j) {
-          prad->AddRadiativeFlux(pmb->phydro, k, j, is, ie + 1);
-        }
+        for (int j = js; j <= je; ++j)
+          for (int i = is; i <= ie + 1; ++i) {
+            pmb->phydro->flux[X1DIR](IEN, k, j, i) += net_flux_a[k][j][i];
+          }
 
       if (stage == nstages) {           // last stage
-        if (prad->GetCounter() > 0.) {  // reuse previous flux
-          prad->DecrementCounter(pmb->pmy_mesh->dt);
+        if (prad_data->counter > 0.) {  // reuse previous flux
+          prad_data->counter -= pmb->pmy_mesh->dt;
         } else {  // update radiative flux
-          prad->ResetCounter();
-          for (int k = ks; k <= ke; ++k)
-            for (int j = js; j <= je; ++j) prad->CalFlux(pmb, k, j);
+          std::map<std::string, torch::Tensor> atm;
+          int nlyr = w.size(3);
+          atm["pres"] = w[IPR].narrow(0, NGHOST, nlyr).view({-1, nlyr});
+          atm["temp"] = temp.narrow(0, NGHOST, nlyr).view({-1, nlyr});
+          atm["rho"] = w[IDN].narrow(0, NGHOST, nlyr).view({-1, nlyr});
+
+          auto ivol =
+              peos->pthermo->compute("DY->V", {w[IDN], w.slice(0, 1, IVX)});
+          auto conc = ivol * peos->pthermo->inv_mu;
+
+          prad_data->counter = prad_data->cooldown;
+          auto [netflux, dnflux, upflux] =
+              prad->forward(conc, peos->pcoord->dx1f, &prad_data->rad_bc, &atm);
+          prad_data->net_flux = netflux;
         }
       }
-    }*/
+    }
     return TaskStatus::next;
   }
   return TaskStatus::fail;

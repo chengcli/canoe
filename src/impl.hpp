@@ -38,6 +38,8 @@ class IdealMoistImpl;
 class SedHydroImpl;
 }  // namespace snap
 
+struct RadiationData;
+
 //! \class MeshBlock::Impl
 //! \brief opaque pointer class implements all physics on a MeshBlock
 class MeshBlock::Impl {
@@ -55,6 +57,9 @@ class MeshBlock::Impl {
 
   std::shared_ptr<CelestrialBody> planet;
   std::shared_ptr<CubedSphere> pexo3;
+
+  //// data fields ////
+  std::shared_ptr<RadiationData> prad_data;
 
  public:  // constructor and destructor
   Impl(MeshBlock *pmb, ParameterInput *pin);

@@ -15,6 +15,8 @@
 // canoe
 #include <configure.h>
 
+#include <interface/rad.hpp>
+
 // snap
 #include <snap/eos/ideal_moist.hpp>
 #include <snap/sedimentation/sedimentation.hpp>
@@ -104,6 +106,9 @@ MeshBlock::Impl::Impl(MeshBlock *pmb, ParameterInput *pin) : pmy_block_(pmb) {
 
   // planet
   planet = PlanetFactory::CreateFrom(pmb, pin);
+
+  // radiation data
+  prad_data = std::make_shared<RadiationData>();
 }
 
 MeshBlock::Impl::~Impl() {}
