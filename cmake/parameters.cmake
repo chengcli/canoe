@@ -57,9 +57,3 @@ else()
     COMPONENTS C
     REQUIRED)
 endif()
-
-if(NOT NBLOCKS OR NOT DEFINED NBLOCKS)
-  set(USE_NBLOCKS "NOT_USE_NBLOCKS")
-else()
-  set(USE_NBLOCKS "USE_NBLOCKS")
-endif()

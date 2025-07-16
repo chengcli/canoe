@@ -536,7 +536,7 @@ void CubedSphere::sendNeighborBlocks(int ox2, int ox3, int tg_rank,
   }
 
   // Calculate the tag of destination
-#ifdef USE_NBLOCKS
+#if NBLOCKS > 0
   if (tox2 == -1) DirTag = 0 + 4 * pmb->gid + 24 * (bound_lim + 1) * tg_gid;
   if (tox2 == 1) DirTag = 1 + 4 * pmb->gid + 24 * (bound_lim + 1) * tg_gid;
   if (tox3 == -1) DirTag = 2 + 4 * pmb->gid + 24 * (bound_lim + 1) * tg_gid;
@@ -638,7 +638,7 @@ void CubedSphere::recvNeighborBlocks(int ox2, int ox3, int tg_rank,
   int dsize = ((kb2 - kb1 + 1) * (jb2 - jb1 + 1) * (ib2 - ib1 + 1) * NWAVE);
   Real *data = new Real[dsize];
   // Calculate the tag for receiving
-#ifdef USE_NBLOCKS
+#if NBLOCKS > 0
   if (ox2 == -1) DirTag = 0 + 4 * tg_gid + 24 * (bound_lim + 1) * pmb->gid;
   if (ox2 == 1) DirTag = 1 + 4 * tg_gid + 24 * (bound_lim + 1) * pmb->gid;
   if (ox3 == -1) DirTag = 2 + 4 * tg_gid + 24 * (bound_lim + 1) * pmb->gid;

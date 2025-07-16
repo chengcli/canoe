@@ -7,6 +7,7 @@
 // athena
 #include <athena/athena.hpp>
 #include <athena/mesh/mesh.hpp>
+#include <athena/stride_iterator.hpp>
 
 // canoe
 #include <configure.h>

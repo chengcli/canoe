@@ -29,15 +29,12 @@
 #include <application/exceptions.hpp>
 
 // canoe
-#include <configure.hpp>
 #include <impl.hpp>
+#include <interface/eos.hpp>
 
 // exo3
 #include <exo3/cubed_sphere.hpp>
 #include <exo3/cubed_sphere_utility.hpp>
-
-// snap
-#include <snap/thermodynamics/thermodynamics.hpp>
 
 #define _sqr(x) ((x) * (x))
 #define _qur(x) ((x) * (x) * (x) * (x))
@@ -232,50 +229,24 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
   Rp = pin->GetReal("problem", "Rp");
 
   // construct an isothermal atmosphere
-  auto pthermo = Thermodynamics::GetInstance();
-  auto &w = phydro->w;
-  std::vector<Real> yfrac(1, 1.);
+  kintera::ThermoX thermo(pimpl->peos->pthermo->options);
 
-  for (int k = ks; k <= ke; ++k)
-    for (int j = js; j <= je; ++j) {
-      pthermo->SetMassFractions<Real>(yfrac.data());
-      pthermo->EquilibrateTP(Ts, p0);
+  auto temp = Ts * torch::ones({ncells3, ncells2}, torch::kDouble);
+  auto pres = p0 * torch::ones({ncells3, ncells2}, torch::kDouble);
 
-      int i = is;
-      for (; i <= ie; ++i) {
-        pthermo->GetPrimitive(w.at(k, j, i));
-        pthermo->Extrapolate_inplace(pcoord->dx1f(i), "isothermal", grav,
-                                     0.001);
+  // half a grid to cell center
+  pres *= exp(-grav * pcoord->dx1f(is) / (2 * Rd * temp));
 
-        // add noise
-        w(IVY, k, j, i) = 10. * distribution(generator);
-        w(IVZ, k, j, i) = 10. * distribution(generator);
-      }
-    }
+  auto w = get_all(phydro->w);
+  for (int i = is; i <= ie; ++i) {
+    w[IPR].select(2, i) = pres;
+    w[IDN].select(2, i) = pres / (Rd * temp);
+    pres *= exp(-grav * pcoord->dx1f(i) / (Rd * temp));
+  }
 
-  // Set up perturbation as the initial condition to break the symmetry of the
-  // original initial condition.
-  // Real k3 = 5.;
-
-  // for (int k = ks; k <= ke; ++k) {
-  //   for (int j = js; j <= je; ++j) {
-  //     for (int i = is; i <= ie; ++i) {
-  //       Real theta, phi;
-  //       pexo3->GetLatLon(&theta, &phi, k, j, i);
-  //       Real z = pcoord->x1v(i)-Rp;
-  //       // Set-up isothermal atmosphere
-  //       Real temp = Ts;
-  //       phydro->w(IPR,k,j,i) = p0*exp(-z*grav/(temp*Rd));
-  //       phydro->w(IDN,k,j,i) = phydro->w(IPR,k,j,i)/
-  //            (Rd* ( temp + 20.*(distribution(generator) - 0.5) * (1. +
-  //            cos(k3*phi)) ) );
-  //       //phydro->w(IDN,k,j,i) = phydro->w(IPR,k,j,i)/(Rd*temp);
-  //       phydro->w(IM1,k,j,i) = 0.;
-  //       phydro->w(IM2,k,j,i) = 0.;
-  //       phydro->w(IM3,k,j,i) = 0.;
-  //     }
-  //   }
-  // }
+  // add noise
+  w[IVY] += 10. * torch::randn_like(w[IVY]);
+  w[IVZ] += 10. * torch::randn_like(w[IVZ]);
 
   // transfer to conservative variables
   // bcc is cell-centered magnetic fields, it is only a place holder here

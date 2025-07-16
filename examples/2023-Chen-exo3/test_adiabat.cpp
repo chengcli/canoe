@@ -14,38 +14,32 @@
 
 // canoe
 #include <impl.hpp>
-#include <index_map.hpp>
-
-// climath
-#include <climath/core.h>
-#include <climath/interpolation.h>
-#include <climath/root.h>
-
-// snap
-#include <snap/thermodynamics/atm_thermodynamics.hpp>
-#include <snap/thermodynamics/thermodynamics.hpp>
+#include <interface/eos.hpp>
 
 Real Ps, Ts, grav;
 
 void MeshBlock::InitUserMeshBlockData(ParameterInput *pin) {
-  AllocateUserOutputVariables(3);
+  AllocateUserOutputVariables(2);
   SetUserOutputVariableName(0, "temp");
   SetUserOutputVariableName(1, "theta");
-  SetUserOutputVariableName(2, "mse");
 }
 
 void MeshBlock::UserWorkBeforeOutput(ParameterInput *pin) {
-  auto pthermo = Thermodynamics::GetInstance();
   auto &w = phydro->w;
+
+  auto temp = get_temp(pimpl->peos, w);
+  auto pres = get_pres(w);
+  auto chi = (get_gammad() - 1.) / get_gammad();
+  auto theta = temp * pow(Ps / pres, chi);
+
+  auto temp_a = temp.accessor<Real, 3>();
+  auto theta_a = theta.accessor<Real, 3>();
 
   for (int k = ks; k <= ke; ++k)
     for (int j = js; j <= je; ++j)
       for (int i = is; i <= ie; ++i) {
-        user_out_var(0, k, j, i) = pthermo->GetTemp(w.at(k, j, i));
-        user_out_var(1, k, j, i) = potential_temp(pthermo, w.at(k, j, i), Ps);
-        // msv
-        user_out_var(2, k, j, i) =
-            moist_static_energy(pthermo, w.at(k, j, i), grav * pcoord->x1v(i));
+        user_out_var(0, k, j, i) = temp_a[k][j][i];
+        user_out_var(1, k, j, i) = theta_a[k][j][i];
       }
 }
 
@@ -56,22 +50,25 @@ void Mesh::InitUserMeshData(ParameterInput *pin) {
 }
 
 void MeshBlock::ProblemGenerator(ParameterInput *pin) {
-  auto pthermo = Thermodynamics::GetInstance();
-  auto &w = phydro->w;
+  kintera::ThermoX thermo(pimpl->peos->pthermo->options);
 
-  // construct a reversible adiabat
-  std::vector<Real> yfrac(IVX, 1.);
-  for (int k = ks; k <= ke; ++k)
-    for (int j = js; j <= je; ++j) {
-      pthermo->SetMassFractions<Real>(yfrac.data());
-      pthermo->EquilibrateTP(Ts, Ps);
+  auto temp = Ts * torch::ones({ncells3, ncells2}, torch::kDouble);
+  auto pres = Ps * torch::ones({ncells3, ncells2}, torch::kDouble);
+  auto xfrac = torch::ones({ncells3, ncells2, 1}, torch::kDouble);
 
-      // half a grid to cell center
-      pthermo->Extrapolate_inplace(pcoord->dx1f(is) / 2., "reversible", grav);
+  // half a grid to cell center
+  thermo->extrapolate_ad(temp, pres, xfrac, grav, pcoord->dx1f(is) / 2.);
 
-      for (int i = is; i <= ie; ++i) {
-        pthermo->GetPrimitive(w.at(k, j, i));
-        pthermo->Extrapolate_inplace(pcoord->dx1f(i), "reversible", grav);
-      }
-    }
+  auto w = get_all(phydro->w);
+  for (int i = is; i <= ie; ++i) {
+    auto conc = thermo->compute("TPX->V", {temp, pres, xfrac});
+    w[IPR].select(2, i) = pres;
+    w[IDN].select(2, i) = thermo->compute("V->D", {conc});
+    w.slice(0, 1, IVX).select(3, i) = thermo->compute("X->Y", {xfrac});
+    thermo->extrapolate_ad(temp, pres, xfrac, grav, pcoord->dx1f(i));
+  }
+
+  // Change primitive variables to conserved variables
+  peos->PrimitiveToConserved(phydro->w, pfield->bcc, phydro->u, pcoord, is, ie,
+                             js, je, ks, ke);
 }

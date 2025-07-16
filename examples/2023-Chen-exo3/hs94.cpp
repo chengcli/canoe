@@ -29,15 +29,12 @@
 #include <application/exceptions.hpp>
 
 // canoe
-#include <configure.hpp>
 #include <impl.hpp>
+#include <interface/eos.hpp>
 
 // exo3
 #include <exo3/cubed_sphere.hpp>
 #include <exo3/cubed_sphere_utility.hpp>
-
-// snap
-#include <snap/thermodynamics/thermodynamics.hpp>
 
 #define _sqr(x) ((x) * (x))
 #define _qur(x) ((x) * (x) * (x) * (x))
@@ -261,39 +258,42 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
   z_iso = pin->GetReal("problem", "z_iso");
 
   // construct an adiabatic atmosphere
-  auto pthermo = Thermodynamics::GetInstance();
-  auto &w = phydro->w;
-  std::vector<Real> yfrac(1, 1.);
+  kintera::ThermoX thermo(pimpl->peos->pthermo->options);
 
-  for (int k = ks; k <= ke; ++k)
-    for (int j = js; j <= je; ++j) {
-      pthermo->SetMassFractions<Real>(yfrac.data());
-      pthermo->EquilibrateTP(Ts, p0);
+  auto temp = Ts * torch::ones({ncells3, ncells2}, torch::kDouble);
+  auto pres = p0 * torch::ones({ncells3, ncells2}, torch::kDouble);
+  auto xfrac = torch::ones({ncells3, ncells2, 1}, torch::kDouble);
 
-      // half a grid to cell center
-      pthermo->Extrapolate_inplace(pcoord->dx1f(is) / 2., "dry", grav);
+  // half a grid to cell center
+  thermo->extrapolate_ad(temp, pres, xfrac, grav, pcoord->dx1f(is) / 2.);
 
-      int i = is;
-      for (; i <= ie; ++i) {
-        if (pcoord->x1v(i) - Rp > z_iso) break;
+  auto w = get_all(phydro->w);
+  int i = is;
+  for (; i <= ie; ++i) {
+    auto conc = thermo->compute("TPX->V", {temp, pres, xfrac});
+    w[IPR].select(2, i) = pres;
+    w[IDN].select(2, i) = thermo->compute("V->D", {conc});
+    w.slice(0, 1, IVX).select(3, i) = thermo->compute("X->Y", {xfrac});
 
-        pthermo->GetPrimitive(w.at(k, j, i));
-        pthermo->Extrapolate_inplace(pcoord->dx1f(i), "dry", grav);
+    if (pcoord->x1v(i) - Rp > z_iso) break;
+    thermo->extrapolate_ad(temp, pres, xfrac, grav, pcoord->dx1f(i));
+  }
 
-        // add noise
-        w(IVY, k, j, i) = 10. * distribution(generator);
-        w(IVZ, k, j, i) = 10. * distribution(generator);
-      }
+  // isothermal extrapolation
+  for (; i <= ie; ++i) {
+    pres *= exp(-grav * pcoord->dx1f(i) / (Rd * temp));
+    auto conc = thermo->compute("TPX->V", {temp, pres, xfrac});
+    w[IPR].select(2, i) = pres;
+    w[IDN].select(2, i) = thermo->compute("V->D", {conc});
+    w.slice(0, 1, IVX).select(3, i) = thermo->compute("X->Y", {xfrac});
+  }
 
-      // construct isothermal atmosphere
-      for (; i <= ie; ++i) {
-        pthermo->GetPrimitive(w.at(k, j, i));
-        pthermo->Extrapolate_inplace(pcoord->dx1f(i), "isothermal", grav);
-      }
-    }
+  // add noise
+  w[IVY] += 1. * torch::randn_like(w[IVY]);
+  w[IVZ] += 1. * torch::randn_like(w[IVZ]);
 
-  peos->PrimitiveToConserved(w, pfield->bcc, phydro->u, pcoord, is, ie, js, je,
-                             ks, ke);
+  peos->PrimitiveToConserved(phydro->w, pfield->bcc, phydro->u, pcoord, is, ie,
+                             js, je, ks, ke);
 }
 
 void MeshBlock::InitUserMeshBlockData(ParameterInput *pin) {

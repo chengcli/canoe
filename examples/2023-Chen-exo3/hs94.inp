@@ -71,7 +71,7 @@ Rd         = 287.
 cp         = 1004.
 
 <problem>
-thermodynamics_config = earth-dry.yaml
+config_file = earth-dry.yaml
 
 Omega      = 7.292E-5
 Rp         = 6.371E6
