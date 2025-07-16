@@ -1,14 +1,15 @@
-
-phases:
-  - name: atm
-    thermo: ideal-moist
-    species: [atm]
-    kinetics: condensation
-    reactions: none
+reference-state:
+  Tref: 0.
+  Pref: 1.e5
 
 species:
-  - name: atm
+  - name: dry
     composition: {O: 0.42, N: 1.56, Ar: 0.01}
-    thermo:
-      model: constant-cp
-      cp0: 29.1 J/mol/K
+    cv_R: 2.5
+
+geometry:
+  type: cartesian
+
+dynamics:
+  equation-of-state:
+    type: ideal-gas

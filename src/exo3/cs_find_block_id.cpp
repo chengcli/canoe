@@ -80,7 +80,7 @@ int CubedSphere::FindBlockID(LogicalLocation const &loc) {
 void CubedSphere::GetLocalIndex(int *lv2_lx2, int *lv2_lx3, int *local_lx2,
                                 int *local_lx3, int *bound_lim,
                                 LogicalLocation const &loc) {
-#ifdef USE_NBLOCKS
+#if NBLOCKS > 0
   // Updated method, need to manually setup in configure.h, allow 6*n^2 blocks
   *bound_lim = (int)(sqrt(NBLOCKS / 6) - 0.5);
   // Find relative location within block

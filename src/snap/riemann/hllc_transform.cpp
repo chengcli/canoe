@@ -12,18 +12,10 @@
 #include <configure.h>
 
 #include <impl.hpp>
+#include <interface/eos.hpp>
 
 // exo3
 #include <exo3/cubed_sphere.hpp>
-
-// snap
-#include <snap/thermodynamics/thermodynamics.hpp>
-
-// microphysics
-#include <microphysics/microphysics.hpp>
-
-// checks
-#include <checks.hpp>
 
 //----------------------------------------------------------------------------------------
 //! \fn void Hydro::RiemannSolver
@@ -34,9 +26,6 @@ void Hydro::RiemannSolver(const int k, const int j, const int il, const int iu,
                           const int ivx, AthenaArray<Real> &wl,
                           AthenaArray<Real> &wr, AthenaArray<Real> &flx,
                           const AthenaArray<Real> &dxw) {
-  auto pthermo = Thermodynamics::GetInstance();
-  auto pmicro = pmy_block->pimpl->pmicro;
-
   int ivy = IVX + ((ivx - IVX) + 1) % 3;
   int ivz = IVX + ((ivx - IVX) + 2) % 3;
   int dir = ivx - IVX;
@@ -64,6 +53,8 @@ void Hydro::RiemannSolver(const int k, const int j, const int il, const int iu,
   }
 #endif  // AFFINE or CUBED_SPHERE
 
+  auto peos = pmy_block->pimpl->peos;
+
 #pragma omp simd private(wli, wri, flxi, fl, fr)
 #pragma distribute_point
   for (int i = il; i <= iu; ++i) {
@@ -87,11 +78,11 @@ void Hydro::RiemannSolver(const int k, const int j, const int il, const int iu,
 
     // correction for gamma
     // left
-    Real gammal = pthermo->GetGamma(wli);
+    Real gammal = get_gamma(peos, wli);
     Real kappal = 1. / (gammal - 1.);
 
     // right
-    Real gammar = pthermo->GetGamma(wri);
+    Real gammar = get_gamma(peos, wri);
     Real kappar = 1. / (gammar - 1.);
 
     //--- Step 2.  Compute middle state estimates with PVRS (Toro 10.5.2)
@@ -239,21 +230,6 @@ void Hydro::RiemannSolver(const int k, const int j, const int il, const int iu,
     flx(ivy, k, j, i) = flxi[IVY];
     flx(ivz, k, j, i) = flxi[IVZ];
     flx(IEN, k, j, i) = flxi[IEN];
-
-    // sedimentation flux
-    if (ivx == IVX) {
-      if (i == iu) return;
-      Real hr = (wri[IPR] * (kappar + 1.) + KE_r) / wri[IDN];
-      for (int n = 0; n < NCLOUD + NPRECIP; ++n) {
-        Real rho = wri[IDN] * wri[1 + NVAPOR + n];
-        auto vsed = pmicro->vsedf[0](n, k, j, i);
-        flx(1 + NVAPOR + n, k, j, i) += vsed * rho;
-        flx(ivx, k, j, i) += vsed * rho * wri[ivx];
-        flx(ivy, k, j, i) += vsed * rho * wri[ivy];
-        flx(ivz, k, j, i) += vsed * rho * wri[ivz];
-        flx(IEN, k, j, i) += vsed * rho * hr;
-      }
-    }
   }
 
 #if defined(AFFINE) || defined(CUBED_SPHERE)  // need of deprojection
@@ -294,6 +270,4 @@ void Hydro::RiemannSolver(const int k, const int j, const int il, const int iu,
     flx(IVZ, k, j, i) = tz + ty * cth;
   }
 #endif  // CUBED_SPHERE
-
-  check_hydro_riemann_solver_flux(flx, ivx, k, j, il, iu);
 }

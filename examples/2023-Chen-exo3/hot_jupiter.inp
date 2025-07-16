@@ -55,13 +55,13 @@ PressureScaleHeight = 7.56E5
 
 <meshblock>
 nx1        = 32
-nx2        = 20
-nx3        = 20
+nx2        = 40
+nx3        = 40
 
 <hydro>
 grav_acc1   = -8.0
 gamma       = 1.4         # gamma = C_p/C_v
-implicit_flag = 1
+implicit_flag = 9
 
 <thermodynamics>
 Rd          = 3779.       # Gas constant
@@ -71,7 +71,7 @@ z_stra      = 2.E6        # Stratosphere height, m
 Gamma_trop  = 2.E-4       # Lapse rate, K/m
 
 <problem>
-thermodynamics_config = hot-jupiter.yaml
+config_file = earth-dry.yaml
 
 Kt         = 1.5E5            # Damping timescale, s
 Ts         = 1600.            # Surface temperature, K

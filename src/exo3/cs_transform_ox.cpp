@@ -15,8 +15,7 @@ void CubedSphere::TransformOX(int *ox2, int *ox3, int *tox2, int *tox3,
   int lv2_lx2, lv2_lx3, local_lx2, local_lx3, bound_lim;
   GetLocalIndex(&lv2_lx2, &lv2_lx3, &local_lx2, &local_lx3, &bound_lim, loc);
 
-
-  // Hard code the cases... 
+  // Hard code the cases...
   // The corner cases are not used, abandoned after reading buffers.
   int target_block = -1;           // Block id of target
   int target_loc_2, target_loc_3;  // local x2 and x3 in target block
@@ -207,7 +206,7 @@ void CubedSphere::TransformOX(int *ox2, int *ox3, int *tox2, int *tox3,
         msg << "----------------------------------" << std::endl;
         ATHENA_ERROR(msg);
     }
-#ifdef USE_NBLOCKS
+#if NBLOCKS > 0
     lx3_0 = (lx3_0 * (bound_lim + 1));
     lx2_0 = (lx2_0 * (bound_lim + 1));
 #else

@@ -109,6 +109,7 @@ MeshBlock::Impl::Impl(MeshBlock *pmb, ParameterInput *pin) : pmy_block_(pmb) {
 
   // radiation data
   prad_data = std::make_shared<RadiationData>();
+  prad_data->cooldown = pin->GetOrAddReal("radiation", "dt", 0.);
 }
 
 MeshBlock::Impl::~Impl() {}

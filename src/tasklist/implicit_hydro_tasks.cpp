@@ -228,19 +228,20 @@ TaskStatus ImplicitHydroTasks::AddFluxToConserved(MeshBlock *pmb, int stage) {
   auto prad_data = pmb->pimpl->prad_data;
   if (stage <= nstages) {
     if (stage_wghts[stage - 1].main_stage) {
-      auto net_flux_a = prad_data->net_flux.accessor<Real, 3>();
-
-      // add net-flux
-      for (int k = ks; k <= ke; ++k)
-        for (int j = js; j <= je; ++j)
-          for (int i = is; i <= ie + 1; ++i) {
-            pmb->phydro->flux[X1DIR](IEN, k, j, i) += net_flux_a[k][j][i];
-          }
+      if (prad_data->cooldown > 0) {
+        auto net_flux_a = prad_data->net_flux.accessor<Real, 3>();
+        // add net-flux
+        for (int k = ks; k <= ke; ++k)
+          for (int j = js; j <= je; ++j)
+            for (int i = is; i <= ie + 1; ++i) {
+              pmb->phydro->flux[X1DIR](IEN, k, j, i) += net_flux_a[k][j][i];
+            }
+      }
 
       if (stage == nstages) {           // last stage
         if (prad_data->counter > 0.) {  // reuse previous flux
           prad_data->counter -= pmb->pmy_mesh->dt;
-        } else {  // update radiative flux
+        } else if (prad_data->cooldown > 0) {  // update radiative flux
           std::map<std::string, torch::Tensor> atm;
           int nlyr = w.size(3);
           atm["pres"] = w[IPR].narrow(0, NGHOST, nlyr).view({-1, nlyr});

@@ -26,6 +26,3 @@ enum {
 
 // MPI parallelization (MPI_PARALLEL or NOT_MPI_PARALLEL)
 #define @MPI_OPTION@
-
-// nblocks for exo3 option (USE_NBLOCKS or NOT_USE_NBLOCKS)
-#define @USE_NBLOCKS@
