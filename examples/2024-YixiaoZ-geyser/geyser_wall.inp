@@ -29,7 +29,7 @@ file_type   = rst           # History data dump
 dt          = 20.           # time increment between outputs
 
 <time>
-cfl_number  = 0.4           # The Courant, Friedrichs, & Lewy (CFL) Number
+cfl_number  = 0.2           # The Courant, Friedrichs, & Lewy (CFL) Number
 nlim        = -1            # cycle limit
 tlim        = 20.           # time limit
 xorder      = 2             # horizontal reconstruction order
