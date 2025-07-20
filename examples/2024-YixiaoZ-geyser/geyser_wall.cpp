@@ -15,6 +15,8 @@
 // snap
 #include <snap/thermodynamics/atm_thermodynamics.hpp>
 
+#include "air_ice_coupler.hpp"
+
 Real H2Oratio, CO2ratio, grav;
 int iH2O, iH2Oc, iCO2, iCO2c;
 
@@ -573,4 +575,7 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
     pmy_mesh->EnrollUserBoundaryFunction(BoundaryFace::inner_x1,
                                          reflecting_x1_left);
   }
+
+  auto ice_boundary_model = build_ice_boundary_model<Real>(
+    this, wall2_corner_x1, wall2_corner_x2);
 }
