@@ -124,12 +124,12 @@ auto build_ice_boundary_model (
   SharedData<Real> mesh_x1v(g_nx1);
   SharedData<Real> mesh_x2v(g_nx2);
 
-  for (int i = pmb->is, ig=lx1*nx1; i < pmb->ie; ++ig, ++i) {
+  for (int i = pmb->is, ig=lx1*nx1; i <= pmb->ie; ++ig, ++i) {
     mesh_dx1f.set(ig, pmb->pcoord->dx1f(i));
     mesh_x1v.set(ig, pmb->pcoord->x1v(i));
   }
 
-  for (int j = pmb->js, jg=lx2*nx2; j < pmb->je; ++jg, ++j) {
+  for (int j = pmb->js, jg=lx2*nx2; j <= pmb->je; ++jg, ++j) {
     mesh_dx2f.set(jg, pmb->pcoord->dx2f(j));
     mesh_x2v.set(jg, pmb->pcoord->x2v(j));
   }
