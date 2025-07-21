@@ -87,9 +87,8 @@ void SharedData<T>::share(void) {
   std::fill(modified.begin(), modified.end(), false);
 }
 
-
 template<typename Real>
-auto build_ice_boundary_model (
+auto init_ice_boundary_model (
     MeshBlock * pmb, const Real ice_max_x1, const Real ice_min_x2) {
   const Real vapor_p3 = 611.7; // Pascal
   const Real vapor_t3 = 273.16; // Kelvin
@@ -114,10 +113,10 @@ auto build_ice_boundary_model (
 
   int lx1 = pmb->loc.lx1;
   int lx2 = pmb->loc.lx2;
-  int nx1 = 50;
-  int nx2 = 20;
-  int g_nx1 = 100;
-  int g_nx2 = 100;
+  int nx1 = pmb->block_size.nx1;
+  int nx2 = pmb->block_size.nx2;
+  int g_nx1 = pmb->pmy_mesh->mesh_size.nx1;
+  int g_nx2 = pmb->pmy_mesh->mesh_size.nx2;
 
   SharedData<Real> mesh_dx1f(g_nx1);
   SharedData<Real> mesh_dx2f(g_nx2);
@@ -162,3 +161,39 @@ auto build_ice_boundary_model (
 
   return ice_boundary_model;
 }
+
+template<typename R1, typename R2, typename R3>
+inline bool fclose(R1 x, R2 x0, R3 abs_tol) {
+  return std::abs(x - x0) < abs_tol;
+}
+
+template<typename Real>
+class AirIceCoupler {
+  public:
+    AirIceCoupler(MeshBlock *pmb,
+      const Real ice_max_x1, const Real ice_min_x2):
+        is_right_ice(fclose(pmb->block_size.x2max, ice_min_x2, 1e-6)),
+        is_bottom_ice(fclose(pmb->block_size.x1min, ice_max_x1, 1e-6)),
+        g_i(pmb->loc.lx1 * pmb->block_size.nx1),
+        g_j(pmb->loc.lx2 * pmb->block_size.nx2),
+        ibm(init_ice_boundary_model(pmb, ice_max_x1, ice_min_x2)),
+        air_t(ibm.nx, ibm.nz),
+        ice_t(ibm.nx, ibm.nz),
+        air_t_side(ibm.nz),
+        air_t_top(ibm.nx),
+        ice_t_side(ibm.nz),
+        ice_t_top(ibm.nx) {
+    }
+  private:
+    const bool is_right_ice;
+    const bool is_bottom_ice;
+    const int g_i;
+    const int g_j;
+    IceShell::IceBoundaryModel<Real> ibm;
+    IceShell::BoundaryValue<Real> air_t;
+    IceShell::BoundaryValue<Real> ice_t;
+    SharedData<Real> air_t_side;
+    SharedData<Real> air_t_top;
+    SharedData<Real> ice_t_side;
+    SharedData<Real> ice_t_top;
+};

@@ -33,6 +33,7 @@ Real x1min, x1max, x2min, x2max;
 Real massflux_H2ratio, massflux_CO2ratio;
 Real Tm, Ts;
 
+
 inline double SatVaporPresIdeal(double t, double p, double beta, double gamma) {
   return p * exp((1. - 1. / t) * beta - gamma * log(t));
 }
@@ -576,6 +577,6 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
                                          reflecting_x1_left);
   }
 
-  auto ice_boundary_model = build_ice_boundary_model<Real>(
+  auto air_ice_coupler = AirIceCoupler<Real>(
     this, wall2_corner_x1, wall2_corner_x2);
 }
