@@ -232,7 +232,7 @@ void WallInteraction(MeshBlock *pmb, Real const time, Real const dt,
                      AthenaArray<Real> const &w, AthenaArray<Real> const &r,
                      AthenaArray<Real> const &bcc, AthenaArray<Real> &u,
                      AthenaArray<Real> &s) {
-  auto air_ice_coupler = AirIceCoupler<Real>(
+  static auto air_ice_coupler = AirIceCoupler<Real>(
     pmb, wall2_corner_x1, wall2_corner_x2);
   air_ice_coupler.solve(pmb, w);
 
