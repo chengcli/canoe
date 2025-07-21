@@ -236,128 +236,35 @@ void WallInteraction(MeshBlock *pmb, Real const time, Real const dt,
     pmb, wall2_corner_x1, wall2_corner_x2);
   air_ice_coupler.solve(pmb, w);
 
-  int js = pmb->js;
-  int je = pmb->je;
-  int is = pmb->is;
-  int ie = pmb->ie;
-  int jw;  // index of j at the wall
-
   auto pthermo = Thermodynamics::GetInstance();
 
-  Real p_H2O, drhoH2O, drhoH2, drhoCO2;
-  Real Tw, Pw, Ta, z, csw, csa, KE;
-  Real drag_coef = 2e-3;
-  Real dv1;
+  for (int k = pmb->ks; k <= pmb->ke; ++k) {
+    for (int j = pmb->js; j <= pmb->je; ++j) {
+      for (int i = pmb->is; i <= pmb->ie; ++i) {
+        Real drho_dt = air_ice_coupler.drho_dt(pmb, i, j);
+        Real drhoH2O = dt * drho_dt; // H2O
 
-  Real x2f_left, x2f_right, x1f_left, x1f_right, x1f_center, x2f_center;
-  Real tanhweight;
+        Real ie = (
+          (Rd / (gammad - 1.)) * pthermo->GetCvRatio(iH2O)
+          * pthermo->GetTemp(w.at(k, j, i))
+        );
 
-  // remove water vapor
-  for (int jj = 0; jj <= 1; ++jj) {
-    jw = (jj == 0) ? js : je;
-    x2f_left = pmb->pcoord->x2f(jw);
-    x2f_right = pmb->pcoord->x2f(jw + 1);
-    x2f_center = (x2f_left + x2f_right) / 2;
-    x1f_left = pmb->pcoord->x1f(is);
-    x1f_right = pmb->pcoord->x1f(ie + 1);
-    x1f_center = (x1f_left + x1f_right) / 2;
+        if (drhoH2O < 0) {
+          Real u1 = pmb->phydro->w(IVX, k, j, i);
+          Real u2 = pmb->phydro->w(IVY, k, j, i);
+          Real u3 = pmb->phydro->w(IVZ, k, j, i);
+          Real ke = 0.5 * (u1*u1 + u2*u2 + u3*u3);
 
-    if ((x2f_center < wall1_corner_x2) || (x2f_center > wall2_corner_x2)) {
-      if (x1f_center < wall1_corner_x1) {
-        continue;
-      }
-      // if (x1f_left - 2 * pmb->pcoord->dx1f(is) < wall1_corner_x1) {
-      //   for (int k = pmb->ks; k <= pmb->ke; ++k)
-      //     for (int j = pmb->js; j <= pmb->je; ++j) {
-      //       Ta = pthermo->GetTemp(w.at(k, j, is));
-      //       p_H2O = (pmb->phydro->w(IDN, k, j, is) *
-      //                pmb->phydro->w(iH2O, k, j, is) * Rd * Ta *
-      //                pthermo->GetInvMuRatio(iH2O));
-      //       Pw = sat_vapor_p_H2O(Ts);
-      //       csw = sqrt(2 * M_PI * Rd * Ts * pthermo->GetInvMuRatio(iH2O));
-      //       csa = sqrt(2 * M_PI * Rd * Ta * pthermo->GetInvMuRatio(iH2O));
-      //       drhoH2O = dt * (Pw/csw - p_H2O/csa) / pmb->pcoord->dx1f(is);
-      //       // drhoH2O = dt * (-p_H2O / csa) / pmb->pcoord->dx1f(is);
-      //       u(iH2O, k, j, is) += drhoH2O;
-      //       // std::cout << "x1min" << x1f_left << "x2min" << x2f_left << "Add
-      //       // upper wall" << std::endl;
-
-      //       if (drhoH2O < 0) {
-      //         KE = 0.5f * (pmb->phydro->w(IVX, k, j, is) *
-      //                          pmb->phydro->w(IVX, k, j, is) +
-      //                      pmb->phydro->w(IVY, k, j, is) *
-      //                          pmb->phydro->w(IVY, k, j, is) +
-      //                      pmb->phydro->w(IVZ, k, j, is) *
-      //                          pmb->phydro->w(IVZ, k, j, is));
-      //         u(IEN, k, j, is) +=
-      //             drhoH2O *
-      //             (KE + (Rd / (gammad - 1.)) * pthermo->GetCvRatio(iH2O) * Ta);
-      //         u(IVZ, k, j, is) += drhoH2O * pmb->phydro->w(IVZ, k, j, is);
-      //         u(IVY, k, j, is) += drhoH2O * pmb->phydro->w(IVY, k, j, is);
-      //         u(IVX, k, j, is) += drhoH2O * pmb->phydro->w(IVX, k, j, is);
-      //       } else {
-      //         u(IEN, k, j, is) += drhoH2O * ((Rd / (gammad - 1.)) *
-      //                                        pthermo->GetCvRatio(iH2O) * Tw);
-      //       }
-      //     }
-      // }
-    }
-
-    if (x1f_center > wall1_corner_x1) {
-      continue;
-    }
-    if ((x2f_left - wall1_corner_x2 < pmb->pcoord->dx2f(js)) ||
-        (wall2_corner_x2 - x2f_right < pmb->pcoord->dx2f(je))) {
-      for (int k = pmb->ks; k <= pmb->ke; ++k)
-        for (int i = pmb->is; i <= pmb->ie; ++i) {
-          // if (pmb->pcoord->x1f(i) < 0.2 * wall2_cornerx1) {
-          //   continue;
-          // }
-          tanhweight =
-              (1. + tanh((pmb->pcoord->x1f(i) - 5. * sigtanh) / sigtanh)) / 2.0;
-
-          dv1 = -(dt * drag_coef * pmb->phydro->w(IDN, k, jw, i) *
-                  pmb->phydro->w(IVX, k, jw, i) *
-                  pmb->phydro->w(IVX, k, jw, i) / pmb->pcoord->dx2f(jw));
-          u(IVX, k, jw, i) += dv1;  // add drag
-          u(IEN, k, jw, i) +=
-              dv1 * pmb->phydro->u(IVX, k, jw, i);  // subduct energy
-
-          Ta = pthermo->GetTemp(w.at(k, jw, i));
-
-          p_H2O =
-              (pmb->phydro->w(IDN, k, jw, i) * pmb->phydro->w(iH2O, k, jw, i) *
-               Rd * Ta * pthermo->GetInvMuRatio(iH2O));
-          z = pmb->pcoord->x1f(i);
-          Tw = Tm * pow(Ts / Tm, (z - x1min) / (wall1_corner_x1 - x1min));
-          Pw = sat_vapor_p_H2O(Tw);
-
-          csw = sqrt(2 * M_PI * Rd * Tw * pthermo->GetInvMuRatio(iH2O));
-          csa = sqrt(2 * M_PI * Rd * Ta * pthermo->GetInvMuRatio(iH2O));
-
-          // drhoH2O = dt * (Pw / csw - p_H2O / csa) / pmb->pcoord->dx2f(jw);
-          // drhoH2O *= tanhweight;
-          drhoH2O = dt * (-wall_condensation_rate(Ta, wall1_corner_x1 - x1f_center));
-
-          u(iH2O, k, jw, i) += drhoH2O;
-
-          if (drhoH2O < 0) {
-            KE =
-                0.5f *
-                (pmb->phydro->w(IVX, k, jw, i) * pmb->phydro->w(IVX, k, jw, i) +
-                 pmb->phydro->w(IVY, k, jw, i) * pmb->phydro->w(IVY, k, jw, i) +
-                 pmb->phydro->w(IVZ, k, jw, i) * pmb->phydro->w(IVZ, k, jw, i));
-            u(IEN, k, jw, i) +=
-                drhoH2O *
-                (KE + (Rd / (gammad - 1.)) * pthermo->GetCvRatio(iH2O) * Ta);
-            u(IVZ, k, jw, i) += drhoH2O * pmb->phydro->w(IVZ, k, jw, i);
-            u(IVY, k, jw, i) += drhoH2O * pmb->phydro->w(IVY, k, jw, i);
-            u(IVX, k, jw, i) += drhoH2O * pmb->phydro->w(IVX, k, jw, i);
-          } else {
-            u(IEN, k, jw, i) += drhoH2O * ((Rd / (gammad - 1.)) *
-                                           pthermo->GetCvRatio(iH2O) * Tw);
-          }
+          u(iH2O, k, j, i) += drhoH2O;
+          u(IEN, k, j, i) += drhoH2O * (ke + ie);
+          u(IVX, k, j, i) += drhoH2O * u1;
+          u(IVY, k, j, i) += drhoH2O * u2;
+          u(IVZ, k, j, i) += drhoH2O * u3;
+        } else {
+          u(iH2O, k, j, i) += drhoH2O;
+          u(IEN, k, j, i) += drhoH2O * ie;
         }
+      }
     }
   }
 }

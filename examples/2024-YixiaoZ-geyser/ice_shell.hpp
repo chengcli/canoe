@@ -259,9 +259,9 @@ namespace IceShell {
             const EigenVector & ice_temp,
             const BV & air_temp) const;
 
-    private:
       VaporCondensation<Real> cond;
       OuterSurfaceRadiation<Real> rad;
+    private:
   };
 
   template<class Real>

@@ -201,11 +201,10 @@ class AirIceCoupler {
         is_root(get_mpi_rank() == 0),
         is_right_ice(meshblock_is_right_ice(pmb, ice_max_x1, ice_min_x2)),
         is_bottom_ice(meshblock_is_bottom_ice(pmb, ice_max_x1, ice_min_x2)),
-        block_i(pmb->loc.lx1 * pmb->block_size.nx1),
-        block_j(pmb->loc.lx2 * pmb->block_size.nx2),
         ibm(init_ice_boundary_model(pmb, ice_max_x1, ice_min_x2)),
-        ice_i(0),
-        ice_j(pmb->pmy_mesh->mesh_size.nx1 - ibm.nx),
+        i_offset(pmb->loc.lx1 * pmb->block_size.nx1 - pmb->is),
+        j_offset(pmb->loc.lx2 * pmb->block_size.nx2 - pmb->js
+              - pmb->pmy_mesh->mesh_size.nx1 + ibm.nx),
         air_t(ibm.nx, ibm.nz),
         ice_t(ibm.nx, ibm.nz),
         air_t_side(ibm.nz),
@@ -215,42 +214,70 @@ class AirIceCoupler {
     }
 
     void solve(MeshBlock *pmb, AthenaArray<Real> const &w);
+
+    inline int ice_i(int i) {
+      return i + i_offset;
+    }
+
+    inline int ice_j(int j) {
+      return j + j_offset;
+    }
+
+    inline Real drho_dt(MeshBlock *pmb, int i, int j) {
+      Real g;
+      if (is_right_ice && j == pmb->je) {
+        int l = ice_i(i);
+        g -= (
+          condensation_rate(air_t_side.get(l), ice_t_side.get(l))
+          / pmb->pcoord->dx2f(j)
+        );
+      }
+      if (is_bottom_ice && i == pmb->ie) {
+        int l = ice_j(j);
+        g -= (
+          condensation_rate(air_t_top.get(l), ice_t_top.get(l))
+          / pmb->pcoord->dx1f(i)
+        );
+      }
+      return g;
+    }
+
   private:
     const bool is_root;
     const bool is_right_ice;
     const bool is_bottom_ice;
-    const int block_i;
-    const int block_j;
     IceShell::IceBoundaryModel<Real> ibm;
-    const int ice_i;
-    const int ice_j;
+    const int i_offset;
+    const int j_offset;
     IceShell::BoundaryValue<Real> air_t;
     IceShell::BoundaryValue<Real> ice_t;
     SharedData<Real> air_t_side;
     SharedData<Real> air_t_top;
     SharedData<Real> ice_t_side;
     SharedData<Real> ice_t_top;
+
+    inline Real condensation_rate(Real air_t, Real ice_t) {
+      return ibm.ice_air_boundary.cond.net_vapor_flux(ice_t, air_t);
+    }
 };
 
 
 template<typename Real>
 void AirIceCoupler<Real>::solve(MeshBlock *pmb, AthenaArray<Real> const &w) {
-  int k = pmb->ks;
+  int k = pmb->ks; // two-dimensional flow
   auto pthermo = Thermodynamics::GetInstance();
   if (is_right_ice) {
     int j = pmb->je;
     for (int i = pmb->is; i <= pmb->ie; ++i) {
       Real t = pthermo->GetTemp(w.at(k, j, i));
-      // std::cout<< block_i << " " << i<< " " << - pmb->is << " " << -ice_i<<std::endl;
-      air_t_side.set(block_i + i - pmb->is - ice_i, t);
+      air_t_side.set(ice_i(i), t);
     }
   }
   if (is_bottom_ice) {
     int i = pmb->ie;
     for (int j = pmb->js; j <= pmb->je; ++j) {
       Real t = pthermo->GetTemp(w.at(k, j, i));
-      // std::cout<< block_j << " " << j<< " " << - pmb->js << " " << -ice_j<<std::endl;
-      air_t_top.set(block_j + j - pmb->js - ice_j, t);
+      air_t_top.set(ice_j(j), t);
     }
   }
   air_t_side.share();
