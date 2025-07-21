@@ -239,7 +239,7 @@ class AirIceCoupler {
     }
 
     inline Real drho_dt(MeshBlock *pmb, int i, int j) {
-      Real g;
+      Real g = 0.;
       if (is_right_ice && j == pmb->je) {
         int l = ice_i(i);
         g -= (
@@ -255,6 +255,19 @@ class AirIceCoupler {
             air_t_top.get(l), vapor_p_top.get(l), ice_t_top.get(l)
           ) / pmb->pcoord->dx1f(i)
         );
+      }
+      return g;
+    }
+
+    inline Real adjacent_ice_t(MeshBlock *pmb, int i, int j) {
+      Real g = -1.;
+      if (is_right_ice && j == pmb->je) {
+        int l = ice_i(i);
+        g = ice_t_side.get(l);
+      }
+      if (is_bottom_ice && i == pmb->ie) {
+        int l = ice_j(j);
+        g = ice_t_top.get(l);
       }
       return g;
     }

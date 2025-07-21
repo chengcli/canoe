@@ -213,18 +213,27 @@ void reflecting_x1_right(MeshBlock *pmb, Coordinates *pco,
 bool fclose(Real x, Real x0) { return std::abs(x - x0) < 1.e-6; }
 
 void MeshBlock::InitUserMeshBlockData(ParameterInput *pin) {
-  AllocateUserOutputVariables(1);
+  AllocateUserOutputVariables(3);
   SetUserOutputVariableName(0, "temp");
+  SetUserOutputVariableName(1, "drho_dt");
+  SetUserOutputVariableName(2, "ice_temp");
 }
 
 void MeshBlock::UserWorkBeforeOutput(ParameterInput *pin) {
   auto pthermo = Thermodynamics::GetInstance();
   auto &w = phydro->w;
 
+  static auto air_ice_coupler = AirIceCoupler<Real>(
+    this, wall2_corner_x1, wall2_corner_x2, iH2O);
+  air_ice_coupler.solve(this, w);
+
+
   for (int k = ks; k <= ke; ++k)
     for (int j = js; j <= je; ++j)
       for (int i = is; i <= ie; ++i) {
         user_out_var(0, k, j, i) = pthermo->GetTemp(w.at(k, j, i));
+        user_out_var(1, k, j, i) = air_ice_coupler.drho_dt(this, i, j);
+        user_out_var(2, k, j, i) = air_ice_coupler.adjacent_ice_t(this, i, j);
       }
 }
 
