@@ -173,10 +173,10 @@ auto init_ice_boundary_model (
   IceShell::IceBoundaryModel<Real> ice_boundary_model
     (dx, dz, cond, rad, tdd);
 
-  // if (get_mpi_rank() == 0) {
-  //   std::cout << "Ice Model: nx = " << dx.size()
-  //     << "; nz = " << dz.size() << std::endl;
-  // }
+  if (get_mpi_rank() == 0) {
+    std::cout << "Ice Model: nx = " << dx.size()
+      << "; nz = " << dz.size() << std::endl;
+  }
 
   return ice_boundary_model;
 }
@@ -216,7 +216,7 @@ class AirIceCoupler {
         ibm(init_ice_boundary_model(pmb, ice_max_x1, ice_min_x2)),
         i_offset(pmb->loc.lx1 * pmb->block_size.nx1 - pmb->is),
         j_offset(pmb->loc.lx2 * pmb->block_size.nx2 - pmb->js
-              - pmb->pmy_mesh->mesh_size.nx1 + ibm.nx),
+              - pmb->pmy_mesh->mesh_size.nx2 + ibm.nx),
         air_t(ibm.nx, ibm.nz),
         vapor_p(ibm.nx, ibm.nz),
         ice_t(ibm.nx, ibm.nz),
