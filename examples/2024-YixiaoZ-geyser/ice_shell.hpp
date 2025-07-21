@@ -290,7 +290,8 @@ namespace IceShell {
           const std::vector<Real> & dx, const std::vector<Real> & dz,
           Cond cond, Rad rad, TDD tdd);
 
-      void solve(BV & ice_t, const BV & air_t);
+      void solve(BV & ice_t, const BV & air_t,
+          const Real abs_tol=1e-5,  const int max_iter = 20);
 
     private:
       EigenVector t;
@@ -535,15 +536,25 @@ namespace IceShell {
   }
 
   template<class Real>
-  void IceBoundaryModel<Real>::solve(BV & ice_t, const BV & air_t) {
+  void IceBoundaryModel<Real>::solve(BV & ice_t,
+          const BV & air_t, const Real abs_tol, const int max_iter) {
 
     init_guess(air_t);
 
-    const int max_iter = 10;
+    bool solved = false;
 
     for (int i = 0; i < max_iter; ++i) {
       nr_iterate(air_t);
-      std::cout << "i: " << i << ", r: " << r.norm() << std::endl;
+      Real abs_error = r.template lpNorm<Eigen::Infinity>();
+      if (abs_error < abs_tol) {
+        solved = true;
+        break;
+      }
+    }
+
+    if (!solved) {
+      Real abs_error = r.template lpNorm<Eigen::Infinity>();
+      std::cout << "IceBoundaryModel: abs_error = " << abs_error << std::endl;
     }
 
     ice_t.data = t;

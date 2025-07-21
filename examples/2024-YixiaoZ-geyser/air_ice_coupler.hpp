@@ -6,6 +6,13 @@
 
 #include "ice_shell.hpp"
 
+int get_mpi_rank(const MPI_Comm mpi_world = MPI_COMM_WORLD) {
+  int rank;
+  MPI_Comm_rank(mpi_world, &rank);
+  return rank;
+}
+
+
 /**
  * @class SharedData
  * @brief Mimic shared memory using distributed memory
@@ -53,7 +60,6 @@ class SharedData {
         const int n, const int root, const MPI_Comm mpi_world) {
       return (mpi_rank(mpi_world) == root) ? n * mpi_world_size(mpi_world) : 0;
     }
-
 };
 
 template<class T>
@@ -156,8 +162,10 @@ auto init_ice_boundary_model (
   IceShell::IceBoundaryModel<Real> ice_boundary_model
     (dx, dz, cond, rad, tdd);
 
-  std::cout << "Ice Model: nx = " << dx.size()
-    << "; nz = " << dz.size() << std::endl;
+  // if (get_mpi_rank() == 0) {
+  //   std::cout << "Ice Model: nx = " << dx.size()
+  //     << "; nz = " << dz.size() << std::endl;
+  // }
 
   return ice_boundary_model;
 }
@@ -168,15 +176,36 @@ inline bool fclose(R1 x, R2 x0, R3 abs_tol) {
 }
 
 template<typename Real>
+inline bool meshblock_is_right_ice(MeshBlock *pmb,
+    Real ice_max_x1, Real ice_min_x2) {
+  return (
+    fclose(pmb->block_size.x2max, ice_min_x2, 1e-6)
+    && pmb->block_size.x1max < (ice_max_x1 + 1e-6)
+  );
+}
+
+template<typename Real>
+inline bool meshblock_is_bottom_ice(MeshBlock *pmb,
+    Real ice_max_x1, Real ice_min_x2) {
+  return (
+    fclose(pmb->block_size.x1min, ice_max_x1, 1e-6)
+    && pmb->block_size.x2min > (ice_min_x2 - 1e-6)
+  );
+}
+
+template<typename Real>
 class AirIceCoupler {
   public:
     AirIceCoupler(MeshBlock *pmb,
       const Real ice_max_x1, const Real ice_min_x2):
-        is_right_ice(fclose(pmb->block_size.x2max, ice_min_x2, 1e-6)),
-        is_bottom_ice(fclose(pmb->block_size.x1min, ice_max_x1, 1e-6)),
-        g_i(pmb->loc.lx1 * pmb->block_size.nx1),
-        g_j(pmb->loc.lx2 * pmb->block_size.nx2),
+        is_root(get_mpi_rank() == 0),
+        is_right_ice(meshblock_is_right_ice(pmb, ice_max_x1, ice_min_x2)),
+        is_bottom_ice(meshblock_is_bottom_ice(pmb, ice_max_x1, ice_min_x2)),
+        block_i(pmb->loc.lx1 * pmb->block_size.nx1),
+        block_j(pmb->loc.lx2 * pmb->block_size.nx2),
         ibm(init_ice_boundary_model(pmb, ice_max_x1, ice_min_x2)),
+        ice_i(0),
+        ice_j(pmb->pmy_mesh->mesh_size.nx1 - ibm.nx),
         air_t(ibm.nx, ibm.nz),
         ice_t(ibm.nx, ibm.nz),
         air_t_side(ibm.nz),
@@ -184,12 +213,17 @@ class AirIceCoupler {
         ice_t_side(ibm.nz),
         ice_t_top(ibm.nx) {
     }
+
+    void solve(MeshBlock *pmb, AthenaArray<Real> const &w);
   private:
+    const bool is_root;
     const bool is_right_ice;
     const bool is_bottom_ice;
-    const int g_i;
-    const int g_j;
+    const int block_i;
+    const int block_j;
     IceShell::IceBoundaryModel<Real> ibm;
+    const int ice_i;
+    const int ice_j;
     IceShell::BoundaryValue<Real> air_t;
     IceShell::BoundaryValue<Real> ice_t;
     SharedData<Real> air_t_side;
@@ -197,3 +231,45 @@ class AirIceCoupler {
     SharedData<Real> ice_t_side;
     SharedData<Real> ice_t_top;
 };
+
+
+template<typename Real>
+void AirIceCoupler<Real>::solve(MeshBlock *pmb, AthenaArray<Real> const &w) {
+  int k = pmb->ks;
+  auto pthermo = Thermodynamics::GetInstance();
+  if (is_right_ice) {
+    int j = pmb->je;
+    for (int i = pmb->is; i <= pmb->ie; ++i) {
+      Real t = pthermo->GetTemp(w.at(k, j, i));
+      // std::cout<< block_i << " " << i<< " " << - pmb->is << " " << -ice_i<<std::endl;
+      air_t_side.set(block_i + i - pmb->is - ice_i, t);
+    }
+  }
+  if (is_bottom_ice) {
+    int i = pmb->ie;
+    for (int j = pmb->js; j <= pmb->je; ++j) {
+      Real t = pthermo->GetTemp(w.at(k, j, i));
+      // std::cout<< block_j << " " << j<< " " << - pmb->js << " " << -ice_j<<std::endl;
+      air_t_top.set(block_j + j - pmb->js - ice_j, t);
+    }
+  }
+  air_t_side.share();
+  air_t_top.share();
+  if (is_root) {
+    for (int i = 0; i < ibm.nz; ++i) {
+      air_t.set_side(i, air_t_side.get(i));
+    }
+    for (int i = 0; i < ibm.nx; ++i) {
+      air_t.set_top(i, air_t_top.get(i));
+    }
+    ibm.solve(ice_t, air_t);
+    for (int i = 0; i < ibm.nz; ++i) {
+      ice_t_side.set(i, ice_t.get_side(i));
+    }
+    for (int i = 0; i < ibm.nx; ++i) {
+      ice_t_top.set(i, ice_t.get_top(i));
+    }
+  }
+  ice_t_side.share();
+  ice_t_top.share();
+}

@@ -31,7 +31,7 @@ dt          = 20.           # time increment between outputs
 <time>
 cfl_number  = 0.2           # The Courant, Friedrichs, & Lewy (CFL) Number
 nlim        = -1            # cycle limit
-tlim        = 20.           # time limit
+tlim        = 0.01          # time limit
 xorder      = 2             # horizontal reconstruction order
 integrator  = rk3           # integration method
 

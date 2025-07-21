@@ -232,6 +232,10 @@ void WallInteraction(MeshBlock *pmb, Real const time, Real const dt,
                      AthenaArray<Real> const &w, AthenaArray<Real> const &r,
                      AthenaArray<Real> const &bcc, AthenaArray<Real> &u,
                      AthenaArray<Real> &s) {
+  auto air_ice_coupler = AirIceCoupler<Real>(
+    pmb, wall2_corner_x1, wall2_corner_x2);
+  air_ice_coupler.solve(pmb, w);
+
   int js = pmb->js;
   int je = pmb->je;
   int is = pmb->is;
@@ -576,7 +580,4 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
     pmy_mesh->EnrollUserBoundaryFunction(BoundaryFace::inner_x1,
                                          reflecting_x1_left);
   }
-
-  auto air_ice_coupler = AirIceCoupler<Real>(
-    this, wall2_corner_x1, wall2_corner_x2);
 }
