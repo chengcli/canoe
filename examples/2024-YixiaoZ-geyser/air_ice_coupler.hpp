@@ -71,13 +71,24 @@ SharedData<T>::SharedData(const int n, const int root, const MPI_Comm world):
   global_modified(global_allocation_size(n, root, world)) {
 }
 
+inline auto mpi_element_type(std::vector<double> x) {
+  return MPI_DOUBLE;
+}
+
+inline auto mpi_element_type(std::vector<int> x) {
+  return MPI_INT;
+}
+
 template<class T>
 void SharedData<T>::share(void) {
 
-  MPI_Gather(value.data(), n, MPI_DOUBLE,
-      global_value.data(), n, MPI_DOUBLE, root, MPI_COMM_WORLD);
-  MPI_Gather(modified.data(), n, MPI_INT,
-      global_modified.data(), n, MPI_INT, root, MPI_COMM_WORLD);
+  MPI_Gather(value.data(), n, mpi_element_type(value),
+      global_value.data(), n, mpi_element_type(value),
+      root, MPI_COMM_WORLD);
+
+  MPI_Gather(modified.data(), n, mpi_element_type(modified),
+      global_modified.data(), n, mpi_element_type(modified),
+      root, MPI_COMM_WORLD);
 
   if (rank == root) {
     for (int j = 0, k = 0; j < s; ++j) {
@@ -89,7 +100,7 @@ void SharedData<T>::share(void) {
     }
   }
 
-  MPI_Bcast(value.data(), n, MPI_DOUBLE, root, MPI_COMM_WORLD);
+  MPI_Bcast(value.data(), n, mpi_element_type(value), root, MPI_COMM_WORLD);
   std::fill(modified.begin(), modified.end(), false);
 }
 
@@ -197,7 +208,8 @@ template<typename Real>
 class AirIceCoupler {
   public:
     AirIceCoupler(MeshBlock *pmb,
-      const Real ice_max_x1, const Real ice_min_x2):
+      const Real ice_max_x1, const Real ice_min_x2, const int i_vapor):
+        i_vapor(i_vapor),
         is_root(get_mpi_rank() == 0),
         is_right_ice(meshblock_is_right_ice(pmb, ice_max_x1, ice_min_x2)),
         is_bottom_ice(meshblock_is_bottom_ice(pmb, ice_max_x1, ice_min_x2)),
@@ -206,9 +218,12 @@ class AirIceCoupler {
         j_offset(pmb->loc.lx2 * pmb->block_size.nx2 - pmb->js
               - pmb->pmy_mesh->mesh_size.nx1 + ibm.nx),
         air_t(ibm.nx, ibm.nz),
+        vapor_p(ibm.nx, ibm.nz),
         ice_t(ibm.nx, ibm.nz),
         air_t_side(ibm.nz),
         air_t_top(ibm.nx),
+        vapor_p_side(ibm.nz),
+        vapor_p_top(ibm.nx),
         ice_t_side(ibm.nz),
         ice_t_top(ibm.nx) {
     }
@@ -228,21 +243,24 @@ class AirIceCoupler {
       if (is_right_ice && j == pmb->je) {
         int l = ice_i(i);
         g -= (
-          condensation_rate(air_t_side.get(l), ice_t_side.get(l))
-          / pmb->pcoord->dx2f(j)
+          condensation_rate(
+            air_t_side.get(l), vapor_p_side.get(l), ice_t_side.get(l)
+          ) / pmb->pcoord->dx2f(j)
         );
       }
       if (is_bottom_ice && i == pmb->ie) {
         int l = ice_j(j);
         g -= (
-          condensation_rate(air_t_top.get(l), ice_t_top.get(l))
-          / pmb->pcoord->dx1f(i)
+          condensation_rate(
+            air_t_top.get(l), vapor_p_top.get(l), ice_t_top.get(l)
+          ) / pmb->pcoord->dx1f(i)
         );
       }
       return g;
     }
 
   private:
+    const int i_vapor;
     const bool is_root;
     const bool is_right_ice;
     const bool is_bottom_ice;
@@ -250,46 +268,69 @@ class AirIceCoupler {
     const int i_offset;
     const int j_offset;
     IceShell::BoundaryValue<Real> air_t;
+    IceShell::BoundaryValue<Real> vapor_p;
     IceShell::BoundaryValue<Real> ice_t;
     SharedData<Real> air_t_side;
     SharedData<Real> air_t_top;
+    SharedData<Real> vapor_p_side;
+    SharedData<Real> vapor_p_top;
     SharedData<Real> ice_t_side;
     SharedData<Real> ice_t_top;
 
-    inline Real condensation_rate(Real air_t, Real ice_t) {
-      return ibm.ice_air_boundary.cond.net_vapor_flux(ice_t, air_t);
+    inline Real condensation_rate(Real air_t, Real vapor_p, Real ice_t) {
+      return ibm.ice_air_boundary.cond.net_vapor_flux(ice_t, air_t, vapor_p);
     }
 };
 
+template<typename Real>
+Real get_air_t(AthenaArray<Real> const &w, int k, int j, int i) {
+  auto pthermo = Thermodynamics::GetInstance();
+  return pthermo->GetTemp(w.at(k, j, i));
+}
+
+template<typename Real>
+Real get_vapor_p(AthenaArray<Real> const &w, int k, int j, int i, int iv) {
+  auto pthermo = Thermodynamics::GetInstance();
+  return (
+    w(IDN, k, j, i) * w(iv, k, j, i)
+    * pthermo->GetTemp(w.at(k, j, i))
+    * pthermo->GetRd() * pthermo->GetInvMuRatio(iv)
+  );
+}
 
 template<typename Real>
 void AirIceCoupler<Real>::solve(MeshBlock *pmb, AthenaArray<Real> const &w) {
   int k = pmb->ks; // two-dimensional flow
-  auto pthermo = Thermodynamics::GetInstance();
   if (is_right_ice) {
     int j = pmb->je;
     for (int i = pmb->is; i <= pmb->ie; ++i) {
-      Real t = pthermo->GetTemp(w.at(k, j, i));
-      air_t_side.set(ice_i(i), t);
+      int l = ice_i(i);
+      air_t_side.set(l, get_air_t(w, k, j, i));
+      vapor_p_side.set(l, get_vapor_p(w, k, j, i, i_vapor));
     }
   }
   if (is_bottom_ice) {
     int i = pmb->ie;
     for (int j = pmb->js; j <= pmb->je; ++j) {
-      Real t = pthermo->GetTemp(w.at(k, j, i));
-      air_t_top.set(ice_j(j), t);
+      int l = ice_j(j);
+      air_t_top.set(l, get_air_t(w, k, j, i));
+      vapor_p_top.set(l, get_vapor_p(w, k, j, i, i_vapor));
     }
   }
   air_t_side.share();
   air_t_top.share();
+  vapor_p_side.share();
+  vapor_p_top.share();
   if (is_root) {
     for (int i = 0; i < ibm.nz; ++i) {
       air_t.set_side(i, air_t_side.get(i));
+      vapor_p.set_side(i, vapor_p_side.get(i));
     }
     for (int i = 0; i < ibm.nx; ++i) {
       air_t.set_top(i, air_t_top.get(i));
+      vapor_p.set_top(i, vapor_p_top.get(i));
     }
-    ibm.solve(ice_t, air_t);
+    ibm.solve(ice_t, air_t, vapor_p);
     for (int i = 0; i < ibm.nz; ++i) {
       ice_t_side.set(i, ice_t.get_side(i));
     }

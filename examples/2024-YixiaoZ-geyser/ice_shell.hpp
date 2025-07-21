@@ -165,17 +165,25 @@ namespace IceShell {
         return p_sat(temp) / sqrt(2 * M_PI * gas_constant * temp);
       }
 
-      template<class R1, class R2>
-      inline auto net_vapor_flux(
-          const R1 &ice_temp, const R2 &air_temp) const {
-        return one_side_vapor_flux(air_temp) - one_side_vapor_flux(ice_temp);
+      template<class R>
+      inline auto one_side_vapor_flux(const R &temp, const R &pres) const {
+        return pres / sqrt(2 * M_PI * gas_constant * temp);
       }
 
-      template<class R1, class R2>
-      inline auto energy_flux(
-          const R1 &ice_temp, const R2 &air_temp) const {
+      template<class R1, class R2, class R3>
+      inline auto net_vapor_flux(
+          const R1 &ice_temp, const R2 &air_temp, const R3 &vapor_p) const {
         return (
-            net_vapor_flux(ice_temp, air_temp)
+          one_side_vapor_flux(air_temp, vapor_p)
+          - one_side_vapor_flux(ice_temp)
+        );
+      }
+
+      template<class R1, class R2, class R3>
+      inline auto energy_flux(
+          const R1 &ice_temp, const R2 &air_temp, const R3 &vapor_p) const {
+        return (
+            net_vapor_flux(ice_temp, air_temp, vapor_p)
             * specific_enthalpy_diff(ice_temp, air_temp)
         );
       }
@@ -257,7 +265,8 @@ namespace IceShell {
 
       void compute_flux(EigenVector & f, EigenVector & df_dt,
             const EigenVector & ice_temp,
-            const BV & air_temp) const;
+            const BV & air_temp,
+            const BV & vapor_p) const;
 
       VaporCondensation<Real> cond;
       OuterSurfaceRadiation<Real> rad;
@@ -290,7 +299,7 @@ namespace IceShell {
           const std::vector<Real> & dx, const std::vector<Real> & dz,
           Cond cond, Rad rad, TDD tdd);
 
-      void solve(BV & ice_t, const BV & air_t,
+      void solve(BV & ice_t, const BV & air_t, const BV &vapor_p,
           const Real abs_tol=1e-5,  const int max_iter = 20);
 
     private:
@@ -303,7 +312,7 @@ namespace IceShell {
       EigenMatrix dr;
 
       void init_guess(const BV & air_t);
-      void nr_iterate(const BV & air_t);
+      void nr_iterate(const BV & air_t, const BV & vapor_p);
   };
 }
 
@@ -502,13 +511,13 @@ namespace IceShell {
   template<class Real>
   void IceAirBoundary<Real>::compute_flux(EigenVector & f, EigenVector & df_dt,
         const EigenVector & ice_temp,
-        const BV & air_temp) const {
+        const BV & air_temp, const BV & vapor_p) const {
     typedef adcpp::fwd::Number<Real> Dual;
     for (int i = 0; i < air_temp.nb; ++i) {
 
       Dual temp_ad(ice_temp(i), 1.);
 
-      Dual f_ad = cond.energy_flux(temp_ad, air_temp.data(i));
+      Dual f_ad = cond.energy_flux(temp_ad, air_temp.data(i), vapor_p.data(i));
       if (air_temp.is_top(i)) {
         f_ad += rad.energy_flux(temp_ad);
       }
@@ -537,14 +546,15 @@ namespace IceShell {
 
   template<class Real>
   void IceBoundaryModel<Real>::solve(BV & ice_t,
-          const BV & air_t, const Real abs_tol, const int max_iter) {
+          const BV & air_t, const BV & vapor_p,
+          const Real abs_tol, const int max_iter) {
 
     init_guess(air_t);
 
     bool solved = false;
 
     for (int i = 0; i < max_iter; ++i) {
-      nr_iterate(air_t);
+      nr_iterate(air_t, vapor_p);
       Real abs_error = r.template lpNorm<Eigen::Infinity>();
       if (abs_error < abs_tol) {
         solved = true;
@@ -566,12 +576,16 @@ namespace IceShell {
   }
 
   template<class Real>
-  void IceBoundaryModel<Real>::nr_iterate(const BV & air_t) {
-    ice_air_boundary.compute_flux(fa, dfa, t, air_t);
+  void IceBoundaryModel<Real>::nr_iterate(const BV &air_t, const BV &vapor_p) {
+    const Real t_max = 300.;
+    const Real t_min = 60.;
+
+    ice_air_boundary.compute_flux(fa, dfa, t, air_t, vapor_p);
     ice_diffusion.compute_flux(fi, dfi, t);
     r = fa + fi;
     dr = dfi;
     dr += dfa.asDiagonal();
     t -= dr.completeOrthogonalDecomposition().solve(r);
+    t = t.cwiseMin(t_max).cwiseMax(t_min);
   }
 }

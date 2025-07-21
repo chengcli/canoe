@@ -233,7 +233,7 @@ void WallInteraction(MeshBlock *pmb, Real const time, Real const dt,
                      AthenaArray<Real> const &bcc, AthenaArray<Real> &u,
                      AthenaArray<Real> &s) {
   static auto air_ice_coupler = AirIceCoupler<Real>(
-    pmb, wall2_corner_x1, wall2_corner_x2);
+    pmb, wall2_corner_x1, wall2_corner_x2, iH2O);
   air_ice_coupler.solve(pmb, w);
 
   auto pthermo = Thermodynamics::GetInstance();
