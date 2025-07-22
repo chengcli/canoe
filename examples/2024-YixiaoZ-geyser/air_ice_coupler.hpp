@@ -248,7 +248,7 @@ class AirIceCoupler {
           ) / pmb->pcoord->dx2f(j)
         );
       }
-      if (is_bottom_ice && i == pmb->ie) {
+      if (is_bottom_ice && i == pmb->is) {
         int l = ice_j(j);
         g -= (
           condensation_rate(
@@ -265,7 +265,7 @@ class AirIceCoupler {
         int l = ice_i(i);
         g = ice_t_side.get(l);
       }
-      if (is_bottom_ice && i == pmb->ie) {
+      if (is_bottom_ice && i == pmb->is) {
         int l = ice_j(j);
         g = ice_t_top.get(l);
       }
@@ -323,7 +323,7 @@ void AirIceCoupler<Real>::solve(MeshBlock *pmb, AthenaArray<Real> const &w) {
     }
   }
   if (is_bottom_ice) {
-    int i = pmb->ie;
+    int i = pmb->is;
     for (int j = pmb->js; j <= pmb->je; ++j) {
       int l = ice_j(j);
       air_t_top.set(l, get_air_t(w, k, j, i));
