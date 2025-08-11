@@ -4,6 +4,8 @@
 #include <athena/athena.hpp>
 
 // snap
+#include <snap/snap.h>
+
 #include <snap/eos/ideal_moist.hpp>
 
 // canoe
@@ -22,6 +24,19 @@ inline torch::Tensor get_temp(snap::IdealMoist peos,
                               AthenaArray<Real> const& hydro_w) {
   auto w = get_all(hydro_w);
   return peos->compute("W->T", {w});
+}
+
+inline torch::Tensor get_cv(snap::IdealMoist peos,
+                            AthenaArray<Real> const& hydro_w) {
+  auto pthermo = peos->pthermo;
+  auto mud = kintera::species_weights[0];
+  auto Rd = kintera::constants::Rgas / mud;
+  auto cvd = kintera::species_cref_R[0] * Rd;
+  int ny = pthermo->options.vapor_ids().size() +
+           pthermo->options.cloud_ids().size() - 1;
+  auto w = get_all(hydro_w);
+  auto fsig = peos->f_sig(w.narrow(0, snap::ICY, ny));
+  return cvd * fsig;
 }
 
 //! \brief Effective polytropic index
