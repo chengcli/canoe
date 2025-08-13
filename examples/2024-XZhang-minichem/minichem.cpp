@@ -47,8 +47,6 @@ Real Tbot, xtra, ptra, Ttop_tau, Tbot_tau, Trabot_tau;
 std::string met;
 bool use_mini, use_mini_ic, use_tra_ic, fix_bot_tra;
 
-Real p0 = 1.e5;
-
 //'OH','H2','H2O','H','CO','CO2','O','CH4','C2H2','NH3','N2','HCN', 'He'
 std::vector<double> vmass = {17.01, 2.02,  18.02, 1.01,  28.01, 44.01, 16.,
                              16.05, 26.04, 17.04, 28.02, 27.03, 4.};
@@ -81,7 +79,7 @@ void MeshBlock::UserWorkBeforeOutput(ParameterInput *pin) {
   auto temp = get_temp(pimpl->peos, w);
   auto pres = get_pres(w);
   auto chi = (get_gammad() - 1.) / get_gammad();
-  auto theta = temp * pow(p0 / pres, chi);
+  auto theta = temp * pow(P0 / pres, chi);
 
   auto temp_a = temp.accessor<Real, 3>();
   auto theta_a = theta.accessor<Real, 3>();
@@ -316,13 +314,16 @@ torch::Tensor setup_moist_adiabatic_profile(std::string infile) {
 }
 
 void MeshBlock::ProblemGenerator(ParameterInput *pin) {
+  // auto infile = pin->GetString("problem", "config_file");
+  // auto w = setup_moist_adiabatic_profile(infile)
+
   srand(Globals::my_rank + time(0));
 
   // thermodynamic constants
   Real gamma = pin->GetReal("hydro", "gamma");
-  auto mud = kintera::species_weights[0];
-  auto Rd = kintera::constants::Rgas / mud;
+  Real Rd = pin->GetReal("hydro", "Rd");
   Real cp = gamma / (gamma - 1.) * Rd;
+  std::cout << "Rd = " << Rd << ", cp = " << cp << std::endl;
 
   // set up an adiabatic atmosphere
   int max_iter = 400, iter = 0;
@@ -330,6 +331,8 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
 
   // estimate surface temperature and pressure
   auto x1min = pcoord->x1f(is);
+  auto x1max = pcoord->x1f(ie + 1);
+
   Real Ts = T0 - grav / cp * x1min;
   Real Ps = P0 * pow(Ts / T0, cp / Rd);
 
@@ -340,16 +343,18 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
         Real x1 = pcoord->x1v(i);
         Real x2 = pcoord->x2v(j);
         Real x3 = pcoord->x3v(k);
-        Real temp = Ts - grav * x1 / cp;
-        phydro->w(IPR, k, j, i) = p0 * pow(temp / Ts, cp / Rd);
+        Real temp = T0 - grav * x1 / cp;
+        phydro->w(IPR, k, j, i) = P0 * pow(temp / T0, cp / Rd);
         phydro->w(IDN, k, j, i) = phydro->w(IPR, k, j, i) / (Rd * temp);
-        phydro->w(IVX, k, j, i) = phydro->w(IVY, k, j, i) = 0.;
+        phydro->w(IVX, k, j, i) = 0.001 * (1. * rand() / RAND_MAX - 0.5);
       }
 
   auto temp = get_temp(pimpl->peos, phydro->w);
   auto temp_a = temp.accessor<Real, 3>();
 
   Tbot = temp_a[ks][js][is];
+
+  std::cout << "ptra = " << ptra << " Pa" << std::endl;
 
   if (NCHEM > 0) {
     if (use_mini_ic) {
