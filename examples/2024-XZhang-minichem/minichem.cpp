@@ -349,6 +349,8 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
   auto temp = get_temp(pimpl->peos, phydro->w);
   auto temp_a = temp.accessor<Real, 3>();
 
+  Tbot = temp_a[ks][js][is];
+
   if (NCHEM > 0) {
     if (use_mini_ic) {
       // minichem initialize conserved variables
