@@ -55,7 +55,7 @@ std::vector<double> vmass = {17.01, 2.02,  18.02, 1.01,  28.01, 44.01, 16.,
 MiniChem *mc;
 
 void MeshBlock::InitUserMeshBlockData(ParameterInput *pin) {
-  int nvapor = pimpl->peos->pthermo->options.vapor_ids().size() - 1;
+  int nvapor = 0;
 
   if (nvapor > 0) {
     AllocateUserOutputVariables(5 + nvapor);

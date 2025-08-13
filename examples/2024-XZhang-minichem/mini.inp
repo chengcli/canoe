@@ -106,6 +106,8 @@ top_sponge_lyr.width = 20.E3
 #relax_time    = 1.E4
 
 <problem>
+config_file = jup-dry.yaml
+
 qH2O.ppmv   = 2500.
 
 #minichem
