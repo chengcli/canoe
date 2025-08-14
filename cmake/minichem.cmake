@@ -7,4 +7,4 @@ set(patch_command
 set(PACKAGE_NAME minichem)
 set(REPO_URL "https://github.com/chengcli/mini_chem")
 set(REPO_TAG "3372a500f038f83228c9f8f944b3fb6b2dedc572")
-add_package(${PACKAGE_NAME} ${REPO_URL} ${REPO_TAG} "${patch_commend}" OFF)
+add_package(${PACKAGE_NAME} ${REPO_URL} ${REPO_TAG} "${patch_command}" OFF)
