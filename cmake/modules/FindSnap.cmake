@@ -4,8 +4,6 @@
 #
 # SNAP_LIBRARY:      Link these libraries when using SNAP
 #
-# BC_LIBRARY:         Link these libraries when using SNAP
-#
 # SNAP_FOUND:        True if snap found
 #
 # Normal usage would be:
@@ -14,7 +12,7 @@
 #
 # include_directories(${SNAP_INCLUDE_DIR})
 #
-# target_link_libraries(${SNAP_LIBRARY} ${BC_LIBRARY})
+# target_link_libraries(${SNAP_LIBRARY})
 
 include(FindPackageHandleStandardArgs)
 
@@ -100,22 +98,10 @@ find_library(
         $ENV{SNAP_DIR}/lib
         $ENV{SNAP_ROOT}/lib)
 
-find_library(
-  BC_LIBRARY bc_release
-  HINTS ${snap_lib_dir}
-        /opt/homebrew/lib
-        /usr/lib/x86_64-linux-gnu/
-        SNAP_DIR/lib
-        SNAP_LIB
-        $ENV{SNAP_LIB}
-        $ENV{SNAP_DIR}/lib
-        $ENV{SNAP_ROOT}/lib)
-
 if(${CUDAToolKit_FOUND})
-  set(snap_required_vars BC_LIBRARY SNAP_LIBRARY SNAP_CUDA_LIBRARY
-                         SNAP_INCLUDE_DIR)
+  set(snap_required_vars SNAP_LIBRARY SNAP_CUDA_LIBRARY SNAP_INCLUDE_DIR)
 else()
-  set(snap_required_vars BC_LIBRARY SNAP_LIBRARY SNAP_INCLUDE_DIR)
+  set(snap_required_vars SNAP_LIBRARY SNAP_INCLUDE_DIR)
 endif()
 
 mark_as_advanced(${snap_required_vars})

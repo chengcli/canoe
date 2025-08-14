@@ -68,7 +68,8 @@ nx2         = 16
 nx3         = 1
 
 <hydro>
-gamma       = 1.42
+Rd          = 3936.04
+gamma       = 1.4
 grav_acc1   = -24.79
 implicit_flag = 1
 
@@ -78,18 +79,6 @@ cloud = H2O(c), H2O(p)
 
 <chemistry>
 microphysics_config = water_ammonia.yaml
-
-<thermodynamics>
-Rd          = 3777.   # mu = 2.3175 g/mol
-eps1        = 8.18    8.18    8.18
-beta1       = 0.      24.845  24.845
-rcp1        = 0.15    0.33    0.33
-Ttriple1    = 273.16
-Ptriple1    = 611.7
-
-sa.relax    = 1.0
-sa.max_iter = 5
-sa.ftol     = 1.e-2
 
 <forcing>
 #packages = bot_heating, top_cooling
@@ -106,6 +95,8 @@ top_sponge_lyr.width = 20.E3
 #relax_time    = 1.E4
 
 <problem>
+config_file = jup-dry.yaml
+
 qH2O.ppmv   = 2500.
 
 #minichem

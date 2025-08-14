@@ -1,0 +1,95 @@
+opacity-sources:
+  - name: H2-vis
+    class: FreedmanMean
+    parameters: {scale: 0.5, met: 1.7}
+
+  - name: H2-ir
+    class: FreedmanMean
+    parameters: {scale: 1., met: 1.7}
+
+  - name: premix
+    class: AbsorberCK
+    data: ../data/ExoFMS/output.nc
+
+  - name: heliosmix
+    class: HeliosCK
+    data: ../data/ck_data_01242024/ck/PM_ck_HELIOSK_cond_11_nOPT_wcia.txt
+    parameters: {band_id: 1}
+
+bands: [vistck]
+#bands: [ird, irt]
+    #bands: [visd, vist]
+
+ird:
+  units: cm-1
+  grid-type: regular
+  wavenumber-range: [100., 10000.]
+  num-bins: 1
+  opacity: [H2-ir]
+  rt-solver: Disort
+  parameters: {btemp: 0., ttemp: 0} #assuming Tint = 350. K
+  flags: [broad_band, thermal_emission]
+
+irt:
+  units: cm-1
+  grid-type: regular
+  wavenumber-range: [100., 10000.]
+  num-bins: 1
+  opacity: [H2-ir]
+  rt-solver: Toon
+  flags: [broad_band, thermal_emission]
+
+irtck:
+  units: cm-1
+  wavenumber-range: [100., 10000.]
+  grid-type: cktable
+  opacity: [premix]
+  rt-solver: Toon
+  flags: [thermal_emission]
+
+visd:
+  units: cm-1
+  grid-type: regular
+  wavenumber-range: [10000., 50000.]
+  num-bins: 1
+  opacity: [H2-vis]
+  rt-solver: Disort
+  parameters: {temp0: 1000., dist_au: 1., umu0: 1., phi0: 0.}
+  flags: [broad_band, stellar_beam]
+
+vist:
+  units: cm-1
+  grid-type: regular
+  wavenumber-range: [10000., 50000.]
+  num-bins: 1
+  opacity: [H2-vis]
+  rt-solver: Toon
+  parameters: {temp0: 1000., dist_au: 1., umu0: 1., phi0: 0.}
+  flags: [broad_band, stellar_beam]
+
+vistck:
+  units: cm-1
+  wavenumber-range: [100., 10000.]
+  grid-type: cktable
+  opacity: [premix]
+  rt-solver: Toon
+  parameters: {temp0: 1000., dist_au: 1., umu0: 1., phi0: 0.}
+  flags: [broad_band, stellar_beam]
+
+Disort-flags:
+  ibcnd: false
+  usrtau: false
+  usrang: false
+  onlyfl: true
+  spher: false
+  intensity_correction: true
+  old_intensity_correction: false
+  general_source: false
+  output_uum: false
+  quiet: true
+  print-input: false
+  print-fluxes: false
+  print-intensity: false
+  print-transmissivity: false
+  print-phase-function: true
+

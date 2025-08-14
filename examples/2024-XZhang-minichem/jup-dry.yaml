@@ -1,0 +1,15 @@
+reference-state:
+  Tref: 0.
+  Pref: 1.e5
+
+species:
+  - name: dry
+    composition: {H: 1.5, He: 0.15}
+    cv_R: 2.5
+
+geometry:
+  type: cartesian
+
+dynamics:
+  equation-of-state:
+    type: ideal-moist

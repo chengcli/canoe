@@ -4,6 +4,13 @@ when vapor pressure are too low (~1e-10 Pa) at low temperatuers, the saturationa
 
 when vapor pressures are too high (1e5 Pa) eg. for CO2, the saturation adjustment fails immediately (all nan)
 
-exo can use cores 24/96/384/1536
-also permit 216/600/864/1176/ if specify NBLOCKS in the .cmake file
+exo can use cores 24/96/384/1536: 6*4^n
+also permit 216/600/864/1176/1536/1944/2400... (24*n^2) if specify NBLOCKS in the .cmake file
+That is, if meshblock is x, the mesh should be x*4*n, and x*6*n, for example, if x is 10, mesh could be 40/60, or 240/360 etc.
+meshblock = 5 is not very efficient, maybe meshblock is 8 or higher
 
+
+gammal in svp is  delta[n] = (cp_ratio_mass[n] - cp_ratio_mass[i]) * mu_ratio[i] / (1. - 1. / gammad);
+
+cp_ratio_mass is rcp
+mu_ratio is eps
