@@ -118,6 +118,7 @@ hrate       = -0.1  #K/day cooling rate
 prad        = 2.e5
 Ttop_tau    = 100.
 Tbot_tau    = 100.
+Tbot        = 1244.91
 
 init_Ttol   = 0.1
 diagnostics = div, curl, b, mean, anomaly, radflux, hydroflux

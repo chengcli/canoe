@@ -206,6 +206,7 @@ void Mesh::InitUserMeshData(ParameterInput *pin) {
   hrate = pin->GetReal("problem", "hrate") / 86400.;
   Ttop_tau = pin->GetReal("problem", "Ttop_tau");
   Tbot_tau = pin->GetReal("problem", "Tbot_tau");
+  Tbot = pin->GetOrAddReal("problem", "Tbot", 0.);
   use_mini = pin->GetOrAddBoolean("problem", "use_mini", true);
   use_mini_ic = pin->GetOrAddBoolean("problem", "use_mini_ic", true);
   use_tra_ic = pin->GetOrAddBoolean("problem", "use_tra_ic", true);
@@ -352,7 +353,11 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
   auto temp = get_temp(pimpl->peos, phydro->w);
   auto temp_a = temp.accessor<Real, 3>();
 
-  Tbot = temp_a[ks][js][is];
+  if (std::abs(Tbot - temp_a[ks][js][is]) > 1.e-2) {
+    std::cout << "Please set Tbot = " << temp_a[ks][js][is]
+              << " K in the input file" << std::endl;
+    throw std::runtime_error("Wrong Tbot");
+  }
 
   std::cout << "ptra = " << ptra << " Pa" << std::endl;
 
