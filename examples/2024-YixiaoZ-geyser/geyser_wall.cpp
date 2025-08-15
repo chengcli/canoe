@@ -374,47 +374,19 @@ void Mesh::InitUserMeshData(ParameterInput *pin) {
 void MeshBlock::ProblemGenerator(ParameterInput *pin) {
   auto pthermo = Thermodynamics::GetInstance();
 
-  // construct 1d atmosphere from bottom up
   std::vector<Real> yfrac(IVX, 0.);
-  yfrac[iH2O] = H2Oratio;
-  // yfrac[iCO2] = CO2ratio;
-  yfrac[0] = 1. - H2Oratio;
-
-  int nx1 = pmy_mesh->mesh_size.nx1;
-  Real dz = (x1max - x1min) / (nx1 - 1);
-  std::cout << "nx1 = " << nx1 << std::endl;
-
-  AthenaArray<Real> w1, z1;
-  w1.NewAthenaArray(NHYDRO, nx1);
-
-  z1.NewAthenaArray(nx1);
-  z1(0) = x1min + dz / 2.;
-  for (int i = 1; i < nx1; ++i) z1(i) = z1(i - 1) + dz;
+  yfrac[0] = 1.;
+  yfrac[iH2O] = 0.;
 
   pthermo->SetMassFractions<Real>(yfrac.data());
   pthermo->EquilibrateTP(100., 1.);
-
-  // half a grid to cell center
-  pthermo->Extrapolate_inplace(dz / 2., "isothermal", grav);
-
-  for (int i = 0; i < nx1; ++i) {
-    pthermo->GetPrimitive(w1.at(i));
-
-    // set all clouds to zero
-    for (int n = 1 + NVAPOR; n < IVX; ++n) w1(n, i) = 0.;
-
-    // move to the next cell
-    pthermo->Extrapolate_inplace(dz, "isothermal", grav);
-  }
 
   // populate to 3D mesh
   for (int k = ks; k <= ke; ++k)
     for (int j = js; j <= je; ++j)
       for (int i = is; i <= ie; ++i) {
-        for (int n = 0; n < NHYDRO; ++n) {
-          phydro->w(n, k, j, i) =
-              interp1(pcoord->x1v(i), w1.data() + n * nx1, z1.data(), nx1);
-        }
+        phydro->w(IDN, k, j, i) = pthermo->GetDensity();
+        phydro->w(IPR, k, j, i) = pthermo->GetPres();
       }
 
   peos->PrimitiveToConserved(phydro->w, pfield->bcc, phydro->u, pcoord, is, ie,

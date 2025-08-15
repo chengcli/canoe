@@ -31,21 +31,21 @@ dt          = 20.           # time increment between outputs
 <time>
 cfl_number  = 0.2           # The Courant, Friedrichs, & Lewy (CFL) Number
 nlim        = -1            # cycle limit
-tlim        = 20.           # time limit
+tlim        = 200.          # time limit
 xorder      = 2             # horizontal reconstruction order
 integrator  = rk3           # integration method
 
 <mesh>
 nx1         = 20            # Number of zones in X1-direction
 x1min       = 0.            # minimum value of X1
-x1max       = 1.E3          # maximum value of X1
+x1max       = 10.E3         # maximum value of X1
 ix1_bc      = reflecting    # inner-X1 boundary flag
 ox1_bc      = outflow       # outer-X1 boundary flag
 
-nx2         = 50            # Number of zones in X2-direction
-x2min       = 7.313343323225968
+nx2         = 60            # Number of zones in X2-direction
+x2min       = 14.626686646451937
 x2rat       = 1.09
-x2max       = 543.8020729781364
+x2max       = 2574.7545474726653
 ix2_bc      = reflecting    # inner-X2 boundary flag
 ox2_bc      = outflow       # outer-X2 boundary flag
 
@@ -64,7 +64,7 @@ nx3         = 1
 grav_acc1   = -0.113
 gamma      = 1.45        # gamma = C_pd/C_vd
 drag_coef = 2e-3
-implicit_flag = 1
+implicit_flag = 0
 
 <problem>
 thermodynamics_config = geyser_h2o.yaml
@@ -87,11 +87,11 @@ tau   = 1e8
 Tm    = 271.0 # melting temperature of ice, water-ice interface temp
 Ts    = 100.0 # ice surface temperature
 
-wall1_corner_x1 = 500.
+wall1_corner_x1 = 5000.
 wall1_corner_x2 = -5.
 
-wall2_corner_x1 = 500.
-wall2_corner_x2 = 17.31334332322597
+wall2_corner_x1 = 5000.
+wall2_corner_x2 = 34.62668664645194
 
 sigtanh = 30.
 
