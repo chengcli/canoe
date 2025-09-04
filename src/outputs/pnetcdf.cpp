@@ -47,6 +47,65 @@
   }
 
 //----------------------------------------------------------------------------------------
+// Wrappers for pnetcdf functions
+
+template <typename FT>
+constexpr nc_type nc_type_FT(void) {
+  nc_type t = NC_NAT;
+  if (std::is_same_v<FT, float>) {
+    t = NC_FLOAT;
+  } else if (std::is_same_v<FT, double>) {
+    t = NC_DOUBLE;
+  }
+
+  return t;
+}
+
+inline auto ncmpi_put_att_FT(
+    int ncid, int varid, const char *name, nc_type xtype,
+    MPI_Offset len, const float *op) {
+  return ncmpi_put_att_float(ncid, varid, name, xtype, len, op);
+}
+
+inline auto ncmpi_put_att_FT(
+    int ncid, int varid, const char *name, nc_type xtype,
+    MPI_Offset len, const double *op) {
+  return ncmpi_put_att_double(ncid, varid, name, xtype, len, op);
+}
+
+inline auto ncmpi_iput_vara_FT(int ncid, int varid,
+    const MPI_Offset start[], const MPI_Offset count[],
+    const float *buf, int *req_ids) {
+  return ncmpi_iput_vara_float(ncid, varid, start, count, buf, req_ids);
+}
+
+inline auto ncmpi_iput_vara_FT(int ncid, int varid,
+    const MPI_Offset start[], const MPI_Offset count[],
+    const double *buf, int *req_ids) {
+  return ncmpi_iput_vara_double(ncid, varid, start, count, buf, req_ids);
+}
+
+inline auto ncmpi_iput_var_FT(int ncid, int varid,
+    const double *op, int *req) {
+  return ncmpi_iput_var_double(ncid, varid, op, req);
+}
+
+inline auto ncmpi_iput_var_FT(int ncid, int varid,
+    const float *op, int *req) {
+  return ncmpi_iput_var_float(ncid, varid, op, req);
+}
+
+inline auto ncmpi_put_vara_FT_all(int ncid, int varid,
+    const MPI_Offset *start, const MPI_Offset *count, const float *op) {
+  return ncmpi_put_vara_float_all(ncid, varid, start, count, op);
+}
+
+inline auto ncmpi_put_vara_FT_all(int ncid, int varid,
+    const MPI_Offset *start, const MPI_Offset *count, const double *op) {
+  return ncmpi_put_vara_double_all(ncid, varid, start, count, op);
+}
+
+//----------------------------------------------------------------------------------------
 // PnetcdfOutput constructor
 // destructor - not needed for this derived class
 
@@ -57,7 +116,12 @@ PnetcdfOutput::PnetcdfOutput(OutputParameters oparams) : OutputType(oparams) {}
 //  \brief Cycles over all MeshBlocks and writes OutputData in PNETCDF format
 //         One timestep per file
 
+
 void PnetcdfOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) {
+
+  // output float-point number type
+  typedef double FT;
+
   // create filename: "file_basename"+"."+"file_id"+"."+XXXXX+".nc",
   // where XXXXX = 5-digit file_number
   auto pmeta = MetadataTable::GetInstance();
@@ -75,7 +139,7 @@ void PnetcdfOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) {
   fname.append(".nc");
 
   // 0. reference radius for spherical polar geometry
-  float radius;
+  FT radius;
   if (strcmp(COORDINATE_SYSTEM, "spherical_polar") == 0) {
     try {
       radius = pin->GetReal("problem", "radius");
@@ -145,7 +209,7 @@ void PnetcdfOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) {
   // 3. define variables
   int ivt, ivx1, ivx2, ivx3, ivx1f, ivx2f, ivx3f, imu, iphi;
 
-  ncmpi_def_var(ifile, "time", NC_FLOAT, 1, &idt, &ivt);
+  ncmpi_def_var(ifile, "time", nc_type_FT<FT>(), 1, &idt, &ivt);
   ncmpi_put_att_text(ifile, ivt, "axis", 1, "T");
   ncmpi_put_att_text(ifile, ivt, "long_name", 4, "time");
   if (strcmp(COORDINATE_SYSTEM, "spherical_polar") == 0) {
@@ -154,7 +218,7 @@ void PnetcdfOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) {
     ncmpi_put_att_text(ifile, ivt, "units", 7, "seconds");
   }
 
-  ncmpi_def_var(ifile, "x1", NC_FLOAT, 1, &idx1, &ivx1);
+  ncmpi_def_var(ifile, "x1", nc_type_FT<FT>(), 1, &idx1, &ivx1);
   ncmpi_put_att_text(ifile, ivx1, "axis", 1, "Z");
   if (strcmp(COORDINATE_SYSTEM, "spherical_polar") == 0) {
     ncmpi_put_att_text(ifile, ivx1, "units", 6, "meters");
@@ -165,7 +229,7 @@ void PnetcdfOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) {
                        "Z-coordinate at cell center");
   }
   if (nx1 > 1) {
-    ncmpi_def_var(ifile, "x1f", NC_FLOAT, 1, &idx1f, &ivx1f);
+    ncmpi_def_var(ifile, "x1f", nc_type_FT<FT>(), 1, &idx1f, &ivx1f);
     ncmpi_put_att_text(ifile, ivx1f, "axis", 1, "Z");
     if (strcmp(COORDINATE_SYSTEM, "spherical_polar") == 0) {
       ncmpi_put_att_text(ifile, ivx1f, "units", 6, "meters");
@@ -177,7 +241,7 @@ void PnetcdfOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) {
     }
   }
 
-  ncmpi_def_var(ifile, "x2", NC_FLOAT, 1, &idx2, &ivx2);
+  ncmpi_def_var(ifile, "x2", nc_type_FT<FT>(), 1, &idx2, &ivx2);
   ncmpi_put_att_text(ifile, ivx2, "axis", 1, "Y");
   if (strcmp(COORDINATE_SYSTEM, "spherical_polar") == 0) {
     ncmpi_put_att_text(ifile, ivx2, "units", 13, "degrees_north");
@@ -188,7 +252,7 @@ void PnetcdfOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) {
                        "Y-coordinate at cell center");
   }
   if (nx2 > 1) {
-    ncmpi_def_var(ifile, "x2f", NC_FLOAT, 1, &idx2f, &ivx2f);
+    ncmpi_def_var(ifile, "x2f", nc_type_FT<FT>(), 1, &idx2f, &ivx2f);
     ncmpi_put_att_text(ifile, ivx2f, "axis", 1, "Y");
     if (strcmp(COORDINATE_SYSTEM, "spherical_polar") == 0) {
       ncmpi_put_att_text(ifile, ivx2f, "units", 13, "degrees_north");
@@ -200,7 +264,7 @@ void PnetcdfOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) {
     }
   }
 
-  ncmpi_def_var(ifile, "x3", NC_FLOAT, 1, &idx3, &ivx3);
+  ncmpi_def_var(ifile, "x3", nc_type_FT<FT>(), 1, &idx3, &ivx3);
   ncmpi_put_att_text(ifile, ivx3, "axis", 1, "X");
   if (strcmp(COORDINATE_SYSTEM, "spherical_polar") == 0) {
     ncmpi_put_att_text(ifile, ivx3, "units", 12, "degrees_east");
@@ -211,7 +275,7 @@ void PnetcdfOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) {
                        "X-coordinate at cell center");
   }
   if (nx3 > 1) {
-    ncmpi_def_var(ifile, "x3f", NC_FLOAT, 1, &idx3f, &ivx3f);
+    ncmpi_def_var(ifile, "x3f", nc_type_FT<FT>(), 1, &idx3f, &ivx3f);
     ncmpi_put_att_text(ifile, ivx3f, "axis", 1, "X");
     if (strcmp(COORDINATE_SYSTEM, "spherical_polar") == 0) {
       ncmpi_put_att_text(ifile, ivx3f, "units", 12, "degrees_east");
@@ -224,10 +288,10 @@ void PnetcdfOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) {
   }
 
   if (nrays > 0) {
-    ncmpi_def_var(ifile, "mu_out", NC_FLOAT, 1, &iray, &imu);
+    ncmpi_def_var(ifile, "mu_out", nc_type_FT<FT>(), 1, &iray, &imu);
     ncmpi_put_att_text(ifile, imu, "units", 1, "1");
     ncmpi_put_att_text(ifile, imu, "long_name", 18, "cosine polar angle");
-    ncmpi_def_var(ifile, "phi_out", NC_FLOAT, 1, &iray, &iphi);
+    ncmpi_def_var(ifile, "phi_out", nc_type_FT<FT>(), 1, &iray, &iphi);
     ncmpi_put_att_text(ifile, iphi, "units", 3, "rad");
     ncmpi_put_att_text(ifile, iphi, "long_name", 15, "azimuthal angle");
   }
@@ -293,21 +357,21 @@ void PnetcdfOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) {
       auto name = varnames[n];
 
       if (grid == "RCC")  // radiation rays
-        ncmpi_def_var(ifile, name.c_str(), NC_FLOAT, 4, iaxisr, ivar);
+        ncmpi_def_var(ifile, name.c_str(), nc_type_FT<FT>(), 4, iaxisr, ivar);
       else if (grid == "CCF")
-        ncmpi_def_var(ifile, name.c_str(), NC_FLOAT, 4, iaxis1, ivar);
+        ncmpi_def_var(ifile, name.c_str(), nc_type_FT<FT>(), 4, iaxis1, ivar);
       else if ((grid == "CFC") && (nx2 > 1))
-        ncmpi_def_var(ifile, name.c_str(), NC_FLOAT, 4, iaxis2, ivar);
+        ncmpi_def_var(ifile, name.c_str(), nc_type_FT<FT>(), 4, iaxis2, ivar);
       else if ((grid == "FCC") && (nx3 > 1))
-        ncmpi_def_var(ifile, name.c_str(), NC_FLOAT, 4, iaxis3, ivar);
+        ncmpi_def_var(ifile, name.c_str(), nc_type_FT<FT>(), 4, iaxis3, ivar);
       else if (grid == "--C")
-        ncmpi_def_var(ifile, name.c_str(), NC_FLOAT, 2, iaxis, ivar);
+        ncmpi_def_var(ifile, name.c_str(), nc_type_FT<FT>(), 2, iaxis, ivar);
       else if (grid == "--F")
-        ncmpi_def_var(ifile, name.c_str(), NC_FLOAT, 2, iaxis1, ivar);
+        ncmpi_def_var(ifile, name.c_str(), nc_type_FT<FT>(), 2, iaxis1, ivar);
       else if (grid == "---")
-        ncmpi_def_var(ifile, name.c_str(), NC_FLOAT, 1, iaxis, ivar);
+        ncmpi_def_var(ifile, name.c_str(), nc_type_FT<FT>(), 1, iaxis, ivar);
       else
-        ncmpi_def_var(ifile, name.c_str(), NC_FLOAT, 4, iaxis, ivar);
+        ncmpi_def_var(ifile, name.c_str(), nc_type_FT<FT>(), 4, iaxis, ivar);
 
       // set units
       auto attr = pmeta->GetUnits(name);
@@ -330,8 +394,8 @@ void PnetcdfOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) {
   err = ncmpi_put_att_text(ifile, NC_GLOBAL, "Conventions", 6, "COARDS");
   ERR;
   if (strcmp(COORDINATE_SYSTEM, "spherical_polar") == 0) {
-    err = ncmpi_put_att_float(ifile, NC_GLOBAL, "PlanetRadius", NC_FLOAT, 1,
-                              &radius);
+    err = ncmpi_put_att_FT(ifile, NC_GLOBAL, "PlanetRadius",
+      nc_type_FT<FT>(), 1, &radius);
     ERR;
   }
 
@@ -351,16 +415,16 @@ void PnetcdfOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) {
   int nbufs = nmb * (ndims + total_vars);
   int *reqs = new int[nbufs];
   int *stts = new int[nbufs];
-  float **buf = new float *[nbufs];
-  buf[0] = new float[nbufs * max_ncells];
+  FT **buf = new FT *[nbufs];
+  buf[0] = new FT[nbufs * max_ncells];
   for (int i = 0; i < nbufs; ++i) buf[i] = buf[0] + i * max_ncells;
   int *ir = reqs;
-  float **ib = buf;
+  FT **ib = buf;
 
   // 5. first meshblock writes time
-  float time = (float)pm->time;
+  FT time = (FT)pm->time;
   MPI_Offset stime = 0, etime = 1;
-  err = ncmpi_put_vara_float_all(ifile, ivt, &stime, &etime, &time);
+  err = ncmpi_put_vara_FT_all(ifile, ivt, &stime, &etime, &time);
   ERR;
 
   ClearOutputData();  // required when LoadOutputData() is used.
@@ -421,69 +485,69 @@ void PnetcdfOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) {
 
     if (strcmp(COORDINATE_SYSTEM, "spherical_polar") == 0) {
       for (int i = out_is; i <= out_ie; ++i)
-        (*ib)[i - out_is] = (float)(pmb->pcoord->x1v(i)) - radius;
+        (*ib)[i - out_is] = (FT)(pmb->pcoord->x1v(i)) - radius;
     } else {
       for (int i = out_is; i <= out_ie; ++i)
-        (*ib)[i - out_is] = (float)(pmb->pcoord->x1v(i));
+        (*ib)[i - out_is] = (FT)(pmb->pcoord->x1v(i));
     }
-    err = ncmpi_iput_vara_float(ifile, ivx1, start + 1, count + 1, *ib++, ir++);
+    err = ncmpi_iput_vara_FT(ifile, ivx1, start + 1, count + 1, *ib++, ir++);
     ERR;
 
     if (nx1 > 1) {
       if (strcmp(COORDINATE_SYSTEM, "spherical_polar") == 0) {
         for (int i = out_is; i <= out_ie + 1; ++i)
-          (*ib)[i - out_is] = (float)(pmb->pcoord->x1f(i)) - radius;
+          (*ib)[i - out_is] = (FT)(pmb->pcoord->x1f(i)) - radius;
       } else {
         for (int i = out_is; i <= out_ie + 1; ++i)
-          (*ib)[i - out_is] = (float)(pmb->pcoord->x1f(i));
+          (*ib)[i - out_is] = (FT)(pmb->pcoord->x1f(i));
       }
-      err = ncmpi_iput_vara_float(ifile, ivx1f, start + 1, count1 + 1, *ib++,
+      err = ncmpi_iput_vara_FT(ifile, ivx1f, start + 1, count1 + 1, *ib++,
                                   ir++);
       ERR;
     }
 
     if (strcmp(COORDINATE_SYSTEM, "spherical_polar") == 0) {
       for (int j = out_js; j <= out_je; ++j)
-        (*ib)[j - out_js] = 90. - (float)rad2deg(pmb->pcoord->x2v(j));
+        (*ib)[j - out_js] = 90. - (FT)rad2deg(pmb->pcoord->x2v(j));
     } else {
       for (int j = out_js; j <= out_je; ++j)
-        (*ib)[j - out_js] = (float)(pmb->pcoord->x2v(j));
+        (*ib)[j - out_js] = (FT)(pmb->pcoord->x2v(j));
     }
-    err = ncmpi_iput_vara_float(ifile, ivx2, start + 2, count + 2, *ib++, ir++);
+    err = ncmpi_iput_vara_FT(ifile, ivx2, start + 2, count + 2, *ib++, ir++);
     ERR;
 
     if (nx2 > 1) {
       if (strcmp(COORDINATE_SYSTEM, "spherical_polar") == 0) {
         for (int j = out_js; j <= out_je + 1; ++j)
-          (*ib)[j - out_js] = 90. - (float)rad2deg(pmb->pcoord->x2f(j));
+          (*ib)[j - out_js] = 90. - (FT)rad2deg(pmb->pcoord->x2f(j));
       } else {
         for (int j = out_js; j <= out_je + 1; ++j)
-          (*ib)[j - out_js] = (float)(pmb->pcoord->x2f(j));
+          (*ib)[j - out_js] = (FT)(pmb->pcoord->x2f(j));
       }
-      err = ncmpi_iput_vara_float(ifile, ivx2f, start + 2, count2 + 2, *ib++,
+      err = ncmpi_iput_vara_FT(ifile, ivx2f, start + 2, count2 + 2, *ib++,
                                   ir++);
       ERR;
     }
 
     if (strcmp(COORDINATE_SYSTEM, "spherical_polar") == 0) {
       for (int k = out_ks; k <= out_ke; ++k)
-        (*ib)[k - out_ks] = (float)rad2deg(pmb->pcoord->x3v(k));
+        (*ib)[k - out_ks] = (FT)rad2deg(pmb->pcoord->x3v(k));
     } else {
       for (int k = out_ks; k <= out_ke; ++k)
-        (*ib)[k - out_ks] = (float)(pmb->pcoord->x3v(k));
+        (*ib)[k - out_ks] = (FT)(pmb->pcoord->x3v(k));
     }
-    err = ncmpi_iput_vara_float(ifile, ivx3, start + 3, count + 3, *ib++, ir++);
+    err = ncmpi_iput_vara_FT(ifile, ivx3, start + 3, count + 3, *ib++, ir++);
     ERR;
 
     if (nx3 > 1) {
       if (strcmp(COORDINATE_SYSTEM, "spherical_polar") == 0) {
         for (int k = out_ks; k <= out_ke + 1; ++k)
-          (*ib)[k - out_ks] = (float)rad2deg(pmb->pcoord->x3f(k));
+          (*ib)[k - out_ks] = (FT)rad2deg(pmb->pcoord->x3f(k));
       } else {
         for (int k = out_ks; k <= out_ke + 1; ++k)
-          (*ib)[k - out_ks] = (float)(pmb->pcoord->x3f(k));
+          (*ib)[k - out_ks] = (FT)(pmb->pcoord->x3f(k));
       }
-      err = ncmpi_iput_vara_float(ifile, ivx3f, start + 3, count3 + 3, *ib++,
+      err = ncmpi_iput_vara_FT(ifile, ivx3f, start + 3, count3 + 3, *ib++,
                                   ir++);
       ERR;
     }
@@ -494,18 +558,18 @@ void PnetcdfOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) {
       for (int b = 0; b < prad->GetNumBands(); ++b) {
         auto p = prad->GetBand(b);
         for (int n = 0; n < p->GetNumOutgoingRays(); ++n)
-          (*ib)[m++] = (float)(p->GetCosinePolarAngle(n));
+          (*ib)[m++] = (FT)(p->GetCosinePolarAngle(n));
       }
-      err = ncmpi_iput_var_float(ifile, imu, *ib++, ir++);
+      err = ncmpi_iput_var_FT(ifile, imu, *ib++, ir++);
       ERR;
 
       m = 0;
       for (int b = 0; b < prad->GetNumBands(); ++b) {
         auto p = prad->GetBand(b);
         for (int n = 0; n < p->GetNumOutgoingRays(); ++n)
-          (*ib)[m++] = (float)(p->GetAzimuthalAngle(n));
+          (*ib)[m++] = (FT)(p->GetAzimuthalAngle(n));
       }
-      err = ncmpi_iput_var_float(ifile, iphi, *ib++, ir++);
+      err = ncmpi_iput_var_FT(ifile, iphi, *ib++, ir++);
       ERR;
     }
 
@@ -518,82 +582,82 @@ void PnetcdfOutput::WriteOutputFile(Mesh *pm, ParameterInput *pin, bool flag) {
 
       if (grid == "RCC") {  // radiation rays
         for (int n = 0; n < nvar; n++) {
-          float *it = *ib;
+          FT *it = *ib;
           for (int m = 0; m < nrays; ++m)
             for (int j = out_js; j <= out_je; ++j)
               for (int k = out_ks; k <= out_ke; ++k)
-                *it++ = (float)pdata->data(n, m, k, j);
-          err = ncmpi_iput_vara_float(ifile, *ivar++, startr, countr, *ib++,
+                *it++ = (FT)pdata->data(n, m, k, j);
+          err = ncmpi_iput_vara_FT(ifile, *ivar++, startr, countr, *ib++,
                                       ir++);
           ERR;
         }
       } else if (grid == "CCF") {
         for (int n = 0; n < nvar; n++) {
-          float *it = *ib;
+          FT *it = *ib;
           for (int i = out_is; i <= out_ie + 1; ++i)
             for (int j = out_js; j <= out_je; ++j)
               for (int k = out_ks; k <= out_ke; ++k)
-                *it++ = (float)pdata->data(n, k, j, i);
+                *it++ = (FT)pdata->data(n, k, j, i);
           err =
-              ncmpi_iput_vara_float(ifile, *ivar++, start, count1, *ib++, ir++);
+              ncmpi_iput_vara_FT(ifile, *ivar++, start, count1, *ib++, ir++);
           ERR;
         }
       } else if ((grid == "CFC") && (nx2 > 1)) {
         for (int n = 0; n < nvar; n++) {
-          float *it = *ib;
+          FT *it = *ib;
           for (int i = out_is; i <= out_ie; ++i)
             for (int j = out_js; j <= out_je + 1; ++j)
               for (int k = out_ks; k <= out_ke; ++k)
-                *it++ = (float)pdata->data(n, k, j, i);
+                *it++ = (FT)pdata->data(n, k, j, i);
           err =
-              ncmpi_iput_vara_float(ifile, *ivar++, start, count2, *ib++, ir++);
+              ncmpi_iput_vara_FT(ifile, *ivar++, start, count2, *ib++, ir++);
           ERR;
         }
       } else if ((grid == "FCC") && (nx3 > 1)) {
         for (int n = 0; n < nvar; n++) {
-          float *it = *ib;
+          FT *it = *ib;
           for (int i = out_is; i <= out_ie; ++i)
             for (int j = out_js; j <= out_je; ++j)
               for (int k = out_ks; k <= out_ke + 1; ++k)
-                *it++ = (float)pdata->data(n, k, j, i);
+                *it++ = (FT)pdata->data(n, k, j, i);
           err =
-              ncmpi_iput_vara_float(ifile, *ivar++, start, count3, *ib++, ir++);
+              ncmpi_iput_vara_FT(ifile, *ivar++, start, count3, *ib++, ir++);
           ERR;
         }
       } else if (grid == "--C") {
         for (int n = 0; n < nvar; n++) {
-          float *it = *ib;
+          FT *it = *ib;
           for (int i = out_is; i <= out_ie; ++i)
-            *it++ = (float)pdata->data(n, i);
+            *it++ = (FT)pdata->data(n, i);
           err =
-              ncmpi_iput_vara_float(ifile, *ivar++, start, count, *ib++, ir++);
+              ncmpi_iput_vara_FT(ifile, *ivar++, start, count, *ib++, ir++);
           ERR;
         }
       } else if (grid == "--F") {
         for (int n = 0; n < nvar; n++) {
-          float *it = *ib;
+          FT *it = *ib;
           for (int i = out_is; i <= out_ie + 1; ++i)
-            *it++ = (float)pdata->data(n, i);
+            *it++ = (FT)pdata->data(n, i);
           err =
-              ncmpi_iput_vara_float(ifile, *ivar++, start, count1, *ib++, ir++);
+              ncmpi_iput_vara_FT(ifile, *ivar++, start, count1, *ib++, ir++);
           ERR;
         }
       } else if (grid == "---") {
         for (int n = 0; n < nvar; n++) {
-          **ib = (float)pdata->data(n, 0);
+          **ib = (FT)pdata->data(n, 0);
           err =
-              ncmpi_iput_vara_float(ifile, *ivar++, start, count, *ib++, ir++);
+              ncmpi_iput_vara_FT(ifile, *ivar++, start, count, *ib++, ir++);
           ERR;
         }
       } else {
         for (int n = 0; n < nvar; n++) {
-          float *it = *ib;
+          FT *it = *ib;
           for (int i = out_is; i <= out_ie; ++i)
             for (int j = out_js; j <= out_je; ++j)
               for (int k = out_ks; k <= out_ke; ++k)
-                *it++ = (float)pdata->data(n, k, j, i);
+                *it++ = (FT)pdata->data(n, k, j, i);
           err =
-              ncmpi_iput_vara_float(ifile, *ivar++, start, count, *ib++, ir++);
+              ncmpi_iput_vara_FT(ifile, *ivar++, start, count, *ib++, ir++);
           ERR;
         }
       }
