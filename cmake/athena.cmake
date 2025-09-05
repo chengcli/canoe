@@ -19,5 +19,6 @@ set(patch_command
 
 set(PACKAGE_NAME athenapp)
 set(REPO_URL "https://github.com/chengcli/athenapp")
-set(REPO_TAG "f9d3ae8bb84cac6954e6a224cb84bc917450e43d")
+# set(REPO_TAG "f9d3ae8bb84cac6954e6a224cb84bc917450e43d")
+set(REPO_TAG "8c221aa23155f2a1692664557b9ddf4c9fbe8262")
 add_package(${PACKAGE_NAME} ${REPO_URL} ${REPO_TAG} "${patch_command}" ON)

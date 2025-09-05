@@ -8,6 +8,9 @@
 // yaml
 #include <yaml-cpp/yaml.h>
 
+// torch
+#include <torch/serialize.h>
+
 // athena
 #include <athena/athena.hpp>
 #include <athena/athena_arrays.hpp>
@@ -24,6 +27,9 @@
 // application
 #include <application/application.hpp>
 #include <application/exceptions.hpp>
+
+// kintera
+#include <kintera/utils/serialize.hpp>
 
 // snap
 #include <snap/eos/ideal_moist.hpp>
@@ -314,6 +320,26 @@ torch::Tensor setup_moist_adiabatic_profile(std::string infile) {
   return w;
 }
 
+void load_torch_tensor(MeshBlock *pmb, std::string base_name) {
+  auto fname = base_name + "." + std::to_string(Globals::my_rank) + ".pt";
+  std::map<std::string, torch::Tensor> data;
+
+  data["hydro_u/0"] = torch::Tensor();
+  data["scalar_s/0"] = torch::Tensor();
+
+  kintera::load_tensors(data, fname);
+
+  // std::cout << data["hydro_u/0"].sizes() << std::endl;
+
+  auto hydro_u = get_all(pmb->phydro->u);
+  auto scalar_s = get_all(pmb->pscalars->s);
+
+  hydro_u.copy_(data["hydro_u/0"]);
+  scalar_s.copy_(data["scalar_s/0"]);
+
+  // std::cout << pmb->phydro->u(IDN, 0, 5, 5) << std::endl;
+}
+
 void MeshBlock::ProblemGenerator(ParameterInput *pin) {
   // auto infile = pin->GetString("problem", "config_file");
   // auto w = setup_moist_adiabatic_profile(infile)
@@ -401,6 +427,12 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
     }
   }
 
-  peos->PrimitiveToConserved(phydro->w, pfield->bcc, phydro->u, pcoord, is, ie,
-                             js, je, ks, ke);
+  auto init_cond = pin->GetOrAddString("problem", "init_cond", "");
+  if (init_cond != "") {
+    std::cout << "Loading initial condition from " << init_cond << std::endl;
+    load_torch_tensor(this, init_cond);
+  } else {
+    peos->PrimitiveToConserved(phydro->w, pfield->bcc, phydro->u, pcoord, is,
+                               ie, js, je, ks, ke);
+  }
 }
