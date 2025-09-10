@@ -410,7 +410,7 @@ namespace IceShell {
         int i_n = i + 1;
         Link link = {
             cell_index(i, k), cell_index(i_n, k),
-            dz[k], (dx[i] + dx[i_n]) / 2
+            (dx[i] + dx[i_n]) / 2, dz[k]
         };
         links.push_back(link);
       }
@@ -421,7 +421,7 @@ namespace IceShell {
         int k_n = k + 1;
         Link link = {
             cell_index(i, k), cell_index(i, k_n),
-            dx[i], (dz[k] + dz[k_n]) / 2
+            (dz[k] + dz[k_n]) / 2, dx[i]
         };
         links.push_back(link);
       }
