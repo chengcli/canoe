@@ -10,6 +10,7 @@ file(GLOB src_files
   netcdf.cpp
   pnetcdf.cpp
   fits.cpp
+  pt.cpp
   )
 
 string(TOLOWER ${CMAKE_BUILD_TYPE} buildl)

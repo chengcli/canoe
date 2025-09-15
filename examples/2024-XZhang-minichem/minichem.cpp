@@ -8,6 +8,9 @@
 // yaml
 #include <yaml-cpp/yaml.h>
 
+// torch
+#include <torch/serialize.h>
+
 // athena
 #include <athena/athena.hpp>
 #include <athena/athena_arrays.hpp>
@@ -24,6 +27,9 @@
 // application
 #include <application/application.hpp>
 #include <application/exceptions.hpp>
+
+// kintera
+#include <kintera/utils/serialize.hpp>
 
 // snap
 #include <snap/eos/ideal_moist.hpp>
@@ -206,6 +212,7 @@ void Mesh::InitUserMeshData(ParameterInput *pin) {
   hrate = pin->GetReal("problem", "hrate") / 86400.;
   Ttop_tau = pin->GetReal("problem", "Ttop_tau");
   Tbot_tau = pin->GetReal("problem", "Tbot_tau");
+  Tbot = pin->GetOrAddReal("problem", "Tbot", 0.);
   use_mini = pin->GetOrAddBoolean("problem", "use_mini", true);
   use_mini_ic = pin->GetOrAddBoolean("problem", "use_mini_ic", true);
   use_tra_ic = pin->GetOrAddBoolean("problem", "use_tra_ic", true);
@@ -313,6 +320,26 @@ torch::Tensor setup_moist_adiabatic_profile(std::string infile) {
   return w;
 }
 
+void load_torch_tensor(MeshBlock *pmb, std::string base_name) {
+  auto fname = base_name + "." + std::to_string(Globals::my_rank) + ".pt";
+  std::map<std::string, torch::Tensor> data;
+
+  data["hydro_u/0"] = torch::Tensor();
+  data["scalar_s/0"] = torch::Tensor();
+
+  kintera::load_tensors(data, fname);
+
+  // std::cout << data["hydro_u/0"].sizes() << std::endl;
+
+  auto hydro_u = get_all(pmb->phydro->u);
+  auto scalar_s = get_all(pmb->pscalars->s);
+
+  hydro_u.copy_(data["hydro_u/0"]);
+  scalar_s.copy_(data["scalar_s/0"]);
+
+  // std::cout << pmb->phydro->u(IDN, 0, 5, 5) << std::endl;
+}
+
 void MeshBlock::ProblemGenerator(ParameterInput *pin) {
   // auto infile = pin->GetString("problem", "config_file");
   // auto w = setup_moist_adiabatic_profile(infile)
@@ -352,7 +379,11 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
   auto temp = get_temp(pimpl->peos, phydro->w);
   auto temp_a = temp.accessor<Real, 3>();
 
-  Tbot = temp_a[ks][js][is];
+  if (std::abs(Tbot - temp_a[ks][js][is]) > 1.e-2) {
+    std::cout << "Please set Tbot = " << temp_a[ks][js][is]
+              << " K in the input file" << std::endl;
+    throw std::runtime_error("Wrong Tbot");
+  }
 
   std::cout << "ptra = " << ptra << " Pa" << std::endl;
 
@@ -396,6 +427,12 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
     }
   }
 
-  peos->PrimitiveToConserved(phydro->w, pfield->bcc, phydro->u, pcoord, is, ie,
-                             js, je, ks, ke);
+  auto init_cond = pin->GetOrAddString("problem", "init_cond", "");
+  if (init_cond != "") {
+    std::cout << "Loading initial condition from " << init_cond << std::endl;
+    load_torch_tensor(this, init_cond);
+  } else {
+    peos->PrimitiveToConserved(phydro->w, pfield->bcc, phydro->u, pcoord, is,
+                               ie, js, je, ks, ke);
+  }
 }

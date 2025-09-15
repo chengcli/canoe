@@ -42,6 +42,12 @@ else()
   find_package(cfitsio REQUIRED)
 endif()
 
+if(NOT PT OR NOT DEFINED PT)
+  set(PT_OPTION "NO_PTOUTPUT")
+else()
+  set(PT_OPTION "PTOUTPUT")
+endif()
+
 if(NOT HYDROSTATIC OR NOT DEFINED HYDROSTATIC)
   set(HYDROSTATIC_OPTION "NOT_HYDROSTATIC")
 else()

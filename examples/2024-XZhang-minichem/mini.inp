@@ -22,6 +22,10 @@ file_type   = pnetcdf        # Netcdf format output
 variable    = uov           # diagnostic variables
 dt          = 1.E6          # time increment
 
+<output4>
+file_type   = pt            # torch's jit save
+dt          = 1.E4          # time increment
+
 #<output4>
 #file_type   = netcdf        # Netcdf format output
 #variable    = diag           # diagnostic variables
@@ -64,7 +68,7 @@ ox3_bc      = periodic    # Outer-X3 boundary condition flag
 
 <meshblock>
 nx1         = 150
-nx2         = 16
+nx2         = 32
 nx3         = 1
 
 <hydro>
@@ -118,6 +122,9 @@ hrate       = -0.1  #K/day cooling rate
 prad        = 2.e5
 Ttop_tau    = 100.
 Tbot_tau    = 100.
+Tbot        = 1244.91
+
+init_cond   = 2dmini.out4.00001
 
 init_Ttol   = 0.1
 diagnostics = div, curl, b, mean, anomaly, radflux, hydroflux
