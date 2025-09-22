@@ -1350,7 +1350,6 @@ class EquilibriumCondensation {
             dry_frac * dry.specific_cv
             + vapor_frac * vapor.specific_cv
         );
-
         if (cond.vapor_density_sat(temp) >= density * vapor_frac) {
           return {temp, dry_frac, vapor_frac};
         }
@@ -1364,6 +1363,7 @@ class EquilibriumCondensation {
         const Real temp_min = 1.;
 
         typedef adcpp::fwd::Number<Real> Dual;
+
         for (int iter = 0; iter < max_iter; ++iter) {
           Dual temp_ad(temp, 1.);
           Dual vapor_frac_ad = cond.vapor_density_sat(temp_ad)/ density;
@@ -1380,15 +1380,20 @@ class EquilibriumCondensation {
 
           temp += dtemp;
         }
-        return {
-          temp,
-          dry_frac,
-          cond.vapor_density_sat(temp)/density
-        };
+
+        // fix vapor_frac to iterate one more time
+        // to conserve energy
+        Real vapor_frac = cond.vapor_density_sat(temp)/density;
+        Dual temp_ad(temp, 1.);
+        Dual ie_ad = specific_internal_energy(
+          temp_ad, dry_frac, vapor_frac
+        );
+        Real dtemp = (init_ie - ie_ad.value()) / ie_ad.derivative();
+        temp += dtemp;
+        return {temp, dry_frac, vapor_frac};
       }
     }
 };
-
 
 void Thermodynamics::EquilibrateUV(Real dt) const {
 
@@ -1427,6 +1432,8 @@ void Thermodynamics::EquilibrateUV(Real dt) const {
 
   auto& thermo = kinetics_->thermo();
 
+  // Real ie_0 = thermo.intEnergy_mass();
+
   thermo.getMassFractions(yfrac.data());
   Real temp = thermo.temperature();
   Real density = thermo.density();
@@ -1440,4 +1447,9 @@ void Thermodynamics::EquilibrateUV(Real dt) const {
 
   thermo.setMassFractions(yfrac.data());
   thermo.setTemperature(temp);
+
+  // Real ie_1 = thermo.intEnergy_mass();
+  // if (std::abs(ie_0 - ie_1) > 1e-2) {
+  //   std::cout << ie_1 - ie_0 << std::endl;
+  // }
 }
