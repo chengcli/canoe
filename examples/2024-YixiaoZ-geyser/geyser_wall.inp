@@ -29,23 +29,23 @@ file_type   = rst           # History data dump
 dt          = 20.           # time increment between outputs
 
 <time>
-cfl_number  = 0.2           # The Courant, Friedrichs, & Lewy (CFL) Number
+cfl_number  = 0.4           # The Courant, Friedrichs, & Lewy (CFL) Number
 nlim        = -1            # cycle limit
 tlim        = 20.          # time limit
 xorder      = 2             # horizontal reconstruction order
 integrator  = rk3           # integration method
 
 <mesh>
-nx1         = 200           # Number of zones in X1-direction
+nx1         = 600           # Number of zones in X1-direction
 x1min       = 0.            # minimum value of X1
-x1max       = 1.E3          # maximum value of X1
+x1max       = 3.E3          # maximum value of X1
 ix1_bc      = reflecting    # inner-X1 boundary flag
 ox1_bc      = outflow       # outer-X1 boundary flag
 
-nx2         = 50            # Number of zones in X2-direction
+nx2         = 70            # Number of zones in X2-direction
 x2min       = 7.313343323225968
 x2rat       = 1.09
-x2max       = 543.8020729781364
+x2max       = 3047.6901933388285
 ix2_bc      = reflecting    # inner-X2 boundary flag
 ox2_bc      = outflow       # outer-X2 boundary flag
 
