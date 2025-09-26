@@ -36,16 +36,16 @@ xorder      = 2             # horizontal reconstruction order
 integrator  = rk3           # integration method
 
 <mesh>
-nx1         = 600           # Number of zones in X1-direction
+nx1         = 1000          # Number of zones in X1-direction
 x1min       = 0.            # minimum value of X1
-x1max       = 3.E3          # maximum value of X1
+x1max       = 1.E3          # maximum value of X1
 ix1_bc      = reflecting    # inner-X1 boundary flag
 ox1_bc      = outflow       # outer-X1 boundary flag
 
-nx2         = 70            # Number of zones in X2-direction
-x2min       = 7.313343323225968
+nx2         = 90            # Number of zones in X2-direction
+x2min       = 1.4626686646451936
 x2rat       = 1.09
-x2max       = 3047.6901933388285
+x2max       = 3416.1015472800923
 ix2_bc      = reflecting    # inner-X2 boundary flag
 ox2_bc      = outflow       # outer-X2 boundary flag
 
@@ -56,7 +56,7 @@ ix3_bc      = periodic      # inner-X3 boundary flag
 ox3_bc      = periodic      # outer-X3 boundary flag
 
 <meshblock>
-nx1         = 100
+nx1         = 250
 nx2         = 10
 nx3         = 1
 
@@ -71,29 +71,14 @@ thermodynamics_config = geyser_h2o.yaml
 
 Ptriple1 = 611.7
 Ttriple1 = 273.16
-Rd = 4155
 massflux_H2ratio = 0.01 # injected mass ratio of H2
 massflux_CO2ratio = 0.01 # injected mass ratio of CO2
-
-dT    = 2.0
-xc    = 10.E3
-zc    = 2.E3
-xr    = 2.E3
-zr    = 2.E3
-p0    = 1.E5
-qt    = 0.0196
-tau   = 1e8
-
-Tm    = 271.0 # melting temperature of ice, water-ice interface temp
-Ts    = 100.0 # ice surface temperature
 
 wall1_corner_x1 = 5000.
 wall1_corner_x2 = -5.
 
 wall2_corner_x1 = 500.
-wall2_corner_x2 = 17.31334332322597
-
-sigtanh = 30.
+wall2_corner_x2 = 3.462668664645194
 
 w_x1 = 500.
 c2 = 1.750e-05
@@ -101,7 +86,7 @@ c1 = -1.075e-02
 c0 = 2.000e+0
 
 <initialcondition>
-rho_bottom = 4.0e-4
-ScaleHeight = 100.0
-H2Oratio=0.0f
-CO2ratio=0.0f
+temp = 273.15
+pres = 0.01
+H2Oratio = 0.0
+H2Ocratio = 0.0

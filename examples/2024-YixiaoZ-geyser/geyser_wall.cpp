@@ -17,90 +17,21 @@
 
 #include "air_ice_coupler.hpp"
 
-Real H2Oratio, CO2ratio, grav;
-int iH2O, iH2Oc, iCO2, iCO2c;
+int iH2O, iH2Oc;
 
 Real wall1_corner_x2;
 Real wall1_corner_x1;
 Real wall2_corner_x2;
 Real wall2_corner_x1;
-Real sigtanh;
 
 Real Ptriple1, Ttriple1;
-Real Rd, gammad;
 Real x1min, x1max, x2min, x2max;
 
 Real massflux_H2ratio, massflux_CO2ratio;
-Real Tm, Ts;
 
+Real init_H2Oratio, init_H2Ocratio;
+Real init_temp, init_pres;
 
-inline double SatVaporPresIdeal(double t, double p, double beta, double gamma) {
-  return p * exp((1. - 1. / t) * beta - gamma * log(t));
-}
-
-inline double sat_vapor_p_H2O(double T) {
-  double betal = 22.46, gammal = 0, tr = 273.16, pr = 611.7;
-  return SatVaporPresIdeal(T / tr, pr, betal, gammal);
-}
-
-const double stefan_boltzmann_consant = 5.67e-8;
-const double ice_diffusivity = 3.;
-const double temp_eff = 68.;
-const double specific_latent_heat = 2.6e6;
-
-inline Real power4(Real x) {
-    Real x2 = x * x;
-    return x2 * x2;
-}
-
-inline Real d_power4(Real x) {
-    return 3 * x * x * x;
-}
-
-Real wall_condensation_rate(Real temp_wall, Real distance,
-        int max_iter = 32, Real rel_tol = 1e-5) {
-
-    if (temp_wall < temp_eff) {
-        std::cout<<"Wall Condensation: wall temperature is lower than "
-            <<temp_eff<<". will return zero."<<std::endl;
-        return 0.;
-    }
-
-    Real bulk_diffusivity = ice_diffusivity / (0.5 * M_PI * distance);
-
-    Real temp_surf = temp_eff;
-    Real heat_flux = 0.;
-    int iter;
-
-    for (iter = 0; iter < max_iter; ++iter) {
-
-        Real heat_flux_rad = stefan_boltzmann_consant * (
-            power4(temp_surf) - power4(temp_eff)
-        );
-
-        Real heat_flux_diff = bulk_diffusivity * (temp_wall - temp_surf);
-
-        Real f = heat_flux_rad - heat_flux_diff;
-
-        if (abs(f) < rel_tol * (abs(heat_flux_rad) + abs(heat_flux_diff))/2) {
-            heat_flux = heat_flux_diff + f/2;
-            break;
-        }
-
-        Real d_heat_flux_rad = stefan_boltzmann_consant * d_power4(temp_surf);
-        Real d_heat_flux_diff = - bulk_diffusivity;
-        Real d_f = d_heat_flux_rad - d_heat_flux_diff;
-
-        temp_surf -= f / d_f;
-    }
-
-    if (iter >= max_iter) {
-        std::cout<<"Wall Condensation: max_iter reached. will return zero."
-            <<std::endl;
-    };
-
-    return heat_flux / specific_latent_heat;
-}
 
 void reflecting_x2_left(MeshBlock *pmb, Coordinates *pco,
                         AthenaArray<Real> &prim, FaceField &b, Real time,
@@ -254,7 +185,8 @@ void WallInteraction(MeshBlock *pmb, Real const time, Real const dt,
         Real drhoH2O = dt * drho_dt; // H2O
 
         Real ie = (
-          (Rd / (gammad - 1.)) * pthermo->GetCvRatio(iH2O)
+          (pthermo->GetRd() / (pthermo->GetGammad() - 1.))
+          * pthermo->GetCvRatio(iH2O)
           * pthermo->GetTemp(w.at(k, j, i))
         );
 
@@ -287,6 +219,9 @@ void BottomInjection(MeshBlock *pmb, Real const time, Real const dt,
 
   auto pthermo = Thermodynamics::GetInstance();
 
+  const Real Rd = pthermo->GetRd();
+  const Real gammad = pthermo->GetGammad();
+
   Real p, drhoH2O, drhoH2, drhoCO2;
 
   Real x1s = pmb->pcoord->x1f(is);
@@ -304,10 +239,9 @@ void BottomInjection(MeshBlock *pmb, Real const time, Real const dt,
         p = pmb->phydro->w(IPR, k, j, is);
 
         // add water vapor
-        drhoH2O =
-            dt * std::max(Ptriple1 - p, 0.) /
-            sqrt(2 * M_PI * Rd * Ttriple1 * pthermo->GetInvMuRatio(iH2O)) /
-            pmb->pcoord->dx1f(is);
+        drhoH2O = dt * std::max(Ptriple1 - p, 0.) /
+          sqrt(2 * M_PI * Rd * Ttriple1 * pthermo->GetInvMuRatio(iH2O)
+        ) / pmb->pcoord->dx1f(is);
         u(iH2O, k, j, is) += drhoH2O;
         u(IEN, k, j, is) += drhoH2O * (Rd * gammad / (gammad - 1.)) *
                             pthermo->GetCvRatio(iH2O) * Ttriple1;
@@ -315,12 +249,6 @@ void BottomInjection(MeshBlock *pmb, Real const time, Real const dt,
         drhoH2 = drhoH2O * massflux_H2ratio;
         u(IDN, k, j, is) += drhoH2;
         u(IEN, k, j, is) += drhoH2 * (Rd * gammad / (gammad - 1.)) * Ttriple1;
-
-        /* add CO2
-        drhoCO2 = drhoH2O * massflux_CO2ratio;
-        u(iCO2, k, j, is) += drhoCO2;
-        u(IEN, k, j, is) += drhoCO2 * (Rd / (gammad - 1.)) *
-                            pthermo->GetCvRatio(iCO2) * Ttriple1;*/
       }
   }
 }
@@ -336,27 +264,17 @@ void Forcing(MeshBlock *pmb, Real const time, Real const dt,
 void Mesh::InitUserMeshData(ParameterInput *pin) {
   auto pthermo = Thermodynamics::GetInstance();
 
-  H2Oratio = pin->GetReal("initialcondition", "H2Oratio");
-  CO2ratio = pin->GetReal("initialcondition", "CO2ratio");
-
-  grav = -pin->GetReal("hydro", "grav_acc1");
-
   // index
   iH2O = pthermo->SpeciesIndex("H2O");
   iH2Oc = pthermo->SpeciesIndex("H2O(s)");
-  // iCO2 = pthermo->SpeciesIndex("CO2");
-  // iCO2c = pthermo->SpeciesIndex("CO2(s)");
 
   wall1_corner_x1 = pin->GetReal("problem", "wall1_corner_x1");
   wall1_corner_x2 = pin->GetReal("problem", "wall1_corner_x2");
   wall2_corner_x1 = pin->GetReal("problem", "wall2_corner_x1");
   wall2_corner_x2 = pin->GetReal("problem", "wall2_corner_x2");
-  sigtanh = pin->GetReal("problem", "sigtanh");
 
   Ptriple1 = pin->GetReal("problem", "Ptriple1");
   Ttriple1 = pin->GetReal("problem", "Ttriple1");
-  Rd = pin->GetReal("problem", "Rd");
-  gammad = pin->GetReal("hydro", "gamma");
   x1min = pin->GetReal("mesh", "x1min");
   x1max = pin->GetReal("mesh", "x1max");
   x2min = pin->GetReal("mesh", "x2min");
@@ -365,8 +283,10 @@ void Mesh::InitUserMeshData(ParameterInput *pin) {
   massflux_H2ratio = pin->GetReal("problem", "massflux_H2ratio");
   massflux_CO2ratio = pin->GetReal("problem", "massflux_CO2ratio");
 
-  Tm = pin->GetReal("problem", "Tm");
-  Ts = pin->GetReal("problem", "Ts");
+  init_temp = pin->GetReal("initialcondition", "temp");
+  init_pres = pin->GetReal("initialcondition", "pres");
+  init_H2Oratio = pin->GetReal("initialcondition", "H2Oratio");
+  init_H2Ocratio = pin->GetReal("initialcondition", "H2Ocratio");
 
   EnrollUserExplicitSourceFunction(Forcing);
 }
@@ -375,11 +295,12 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
   auto pthermo = Thermodynamics::GetInstance();
 
   std::vector<Real> yfrac(IVX, 0.);
-  yfrac[0] = 1.;
-  yfrac[iH2O] = 0.;
+  yfrac[iH2O] = init_H2Oratio;
+  yfrac[iH2Oc] = init_H2Ocratio;
+  yfrac[0] = 1. - init_H2Oratio - init_H2Ocratio;
 
   pthermo->SetMassFractions<Real>(yfrac.data());
-  pthermo->EquilibrateTP(100., 1.);
+  pthermo->EquilibrateTP(init_temp, init_pres);
 
   // populate to 3D mesh
   for (int k = ks; k <= ke; ++k)
