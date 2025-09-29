@@ -292,6 +292,8 @@ namespace IceShell {
       const int nz;
       const int nb;
 
+      bool first_call;
+
       AirB ice_air_boundary;
       IceDiff ice_diffusion;
 
@@ -532,6 +534,7 @@ namespace IceShell {
       const std::vector<Real> & dx, const std::vector<Real> & dz,
       Cond cond, Rad rad, TDD tdd):
       nx(dx.size()), nz(dz.size()), nb(nx + nz),
+      first_call(true),
       ice_air_boundary(AirB(nx, nz, cond, rad)),
       ice_diffusion(IceDiff(tdd, dx, dz)),
       t(nb), fa(nb), fi(nb), r(nb), dfa(nb), dfi(nb, nb), dr(nb, nb) {
@@ -549,7 +552,10 @@ namespace IceShell {
           const BV & air_t, const BV & vapor_p,
           const Real abs_tol, const int max_iter) {
 
-    init_guess(air_t);
+    if (first_call) {
+      init_guess(air_t);
+      first_call = false;
+    }
 
     bool solved = false;
 

@@ -69,6 +69,10 @@ implicit_flag = 0
 <problem>
 thermodynamics_config = geyser_h2o.yaml
 
+ice_model_timestep = 300 # in units of substeps of rk3
+ice_model_abs_tol = 1e-3 # Watts per meter squared
+ice_model_max_iter = 64
+
 Ptriple1 = 611.7
 Ttriple1 = 273.16
 massflux_H2ratio = 0.01 # injected mass ratio of H2

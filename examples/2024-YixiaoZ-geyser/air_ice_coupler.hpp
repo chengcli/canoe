@@ -208,8 +208,11 @@ template<typename Real>
 class AirIceCoupler {
   public:
     AirIceCoupler(MeshBlock *pmb,
-      const Real ice_max_x1, const Real ice_min_x2, const int i_vapor):
+      const Real ice_max_x1, const Real ice_min_x2, const int i_vapor,
+      const Real abs_tol, const Real max_iter):
         i_vapor(i_vapor),
+        abs_tol(abs_tol),
+        max_iter(max_iter),
         is_root(get_mpi_rank() == 0),
         is_right_ice(meshblock_is_right_ice(pmb, ice_max_x1, ice_min_x2)),
         is_bottom_ice(meshblock_is_bottom_ice(pmb, ice_max_x1, ice_min_x2)),
@@ -274,6 +277,8 @@ class AirIceCoupler {
 
   private:
     const int i_vapor;
+    const Real abs_tol;
+    const int max_iter;
     const bool is_root;
     const bool is_right_ice;
     const bool is_bottom_ice;
@@ -343,7 +348,7 @@ void AirIceCoupler<Real>::solve(MeshBlock *pmb, AthenaArray<Real> const &w) {
       air_t.set_top(i, air_t_top.get(i));
       vapor_p.set_top(i, vapor_p_top.get(i));
     }
-    ibm.solve(ice_t, air_t, vapor_p);
+    ibm.solve(ice_t, air_t, vapor_p, abs_tol, max_iter);
     for (int i = 0; i < ibm.nz; ++i) {
       ice_t_side.set(i, ice_t.get_side(i));
     }

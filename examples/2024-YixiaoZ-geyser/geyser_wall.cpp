@@ -18,6 +18,9 @@
 #include "air_ice_coupler.hpp"
 
 int iH2O, iH2Oc;
+int ice_model_timestep;
+Real ice_model_abs_tol;
+Real ice_model_max_iter;
 
 Real wall1_corner_x2;
 Real wall1_corner_x1;
@@ -154,10 +157,11 @@ void MeshBlock::UserWorkBeforeOutput(ParameterInput *pin) {
   auto pthermo = Thermodynamics::GetInstance();
   auto &w = phydro->w;
 
-  static auto air_ice_coupler = AirIceCoupler<Real>(
-    this, wall2_corner_x1, wall2_corner_x2, iH2O);
-  air_ice_coupler.solve(this, w);
+  static AirIceCoupler<Real> air_ice_coupler(
+    this, wall2_corner_x1, wall2_corner_x2, iH2O,
+    ice_model_abs_tol, ice_model_max_iter);
 
+  air_ice_coupler.solve(this, w);
 
   for (int k = ks; k <= ke; ++k)
     for (int j = js; j <= je; ++j)
@@ -172,9 +176,22 @@ void WallInteraction(MeshBlock *pmb, Real const time, Real const dt,
                      AthenaArray<Real> const &w, AthenaArray<Real> const &r,
                      AthenaArray<Real> const &bcc, AthenaArray<Real> &u,
                      AthenaArray<Real> &s) {
-  static auto air_ice_coupler = AirIceCoupler<Real>(
-    pmb, wall2_corner_x1, wall2_corner_x2, iH2O);
-  air_ice_coupler.solve(pmb, w);
+  static AirIceCoupler<Real> air_ice_coupler(
+    pmb, wall2_corner_x1, wall2_corner_x2, iH2O,
+    ice_model_abs_tol, ice_model_max_iter);
+
+  static long int nsubstep = 0;
+
+  if ((nsubstep++) % ice_model_timestep == 0) {
+    auto start = std::chrono::high_resolution_clock::now();
+    air_ice_coupler.solve(pmb, w);
+    auto finish = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> elapsed(finish - start);
+    if (get_mpi_rank() == 0) {
+      std::cout << "Ice Model finished: "
+      << elapsed.count() << " seconds" << std::endl;
+    }
+  }
 
   auto pthermo = Thermodynamics::GetInstance();
 
@@ -267,6 +284,10 @@ void Mesh::InitUserMeshData(ParameterInput *pin) {
   // index
   iH2O = pthermo->SpeciesIndex("H2O");
   iH2Oc = pthermo->SpeciesIndex("H2O(s)");
+
+  ice_model_timestep = pin->GetInteger("problem", "ice_model_timestep");
+  ice_model_abs_tol = pin->GetReal("problem", "ice_model_abs_tol");
+  ice_model_max_iter = pin->GetInteger("problem", "ice_model_max_iter");
 
   wall1_corner_x1 = pin->GetReal("problem", "wall1_corner_x1");
   wall1_corner_x2 = pin->GetReal("problem", "wall1_corner_x2");
