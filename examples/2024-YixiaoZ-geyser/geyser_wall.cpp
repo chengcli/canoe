@@ -27,6 +27,8 @@ Real wall1_corner_x1;
 Real wall2_corner_x2;
 Real wall2_corner_x1;
 
+Real mesh_nx1, wall_nx1;
+
 Real Ptriple1, Ttriple1;
 Real x1min, x1max, x2min, x2max;
 
@@ -278,6 +280,31 @@ void Forcing(MeshBlock *pmb, Real const time, Real const dt,
   WallInteraction(pmb, time, dt, w, r, bcc, u, s);
 }
 
+Real MyMeshSpacingX1(Real t, RegionSize rs) {
+  // a map from t in [0, 1] to [rs.x1min, rs.x1max]
+  const Real x1_org = wall2_corner_x1;
+  const Real t_org = static_cast<Real>(wall_nx1) / mesh_nx1;
+  const Real rat = 1.09;
+
+  Real u, x1_end;
+  int nx;
+
+  if (t < t_org) {
+    x1_end = rs.x1min;
+    nx = wall_nx1;
+    u = (t_org - t) / t_org;
+  } else {
+    x1_end = rs.x1max;
+    nx = mesh_nx1 - wall_nx1;
+    u = (t - t_org) / (1. - t_org);
+  }
+
+  return x1_org + ((x1_end - x1_org)
+    * (std::pow(rat, u * nx) - 1.)
+    / (std::pow(rat, nx) - 1.)
+  );
+}
+
 void Mesh::InitUserMeshData(ParameterInput *pin) {
   auto pthermo = Thermodynamics::GetInstance();
 
@@ -293,6 +320,12 @@ void Mesh::InitUserMeshData(ParameterInput *pin) {
   wall1_corner_x2 = pin->GetReal("problem", "wall1_corner_x2");
   wall2_corner_x1 = pin->GetReal("problem", "wall2_corner_x1");
   wall2_corner_x2 = pin->GetReal("problem", "wall2_corner_x2");
+
+  mesh_nx1 = pin->GetInteger("mesh", "nx1");
+  wall_nx1 = (
+      pin->GetInteger("meshblock", "nx1")
+      * pin->GetInteger("problem", "wall_nmeshblock1")
+  );
 
   Ptriple1 = pin->GetReal("problem", "Ptriple1");
   Ttriple1 = pin->GetReal("problem", "Ttriple1");
@@ -310,6 +343,7 @@ void Mesh::InitUserMeshData(ParameterInput *pin) {
   init_H2Ocratio = pin->GetReal("initialcondition", "H2Ocratio");
 
   EnrollUserExplicitSourceFunction(Forcing);
+  EnrollUserMeshGenerator(X1DIR, MyMeshSpacingX1);
 }
 
 void MeshBlock::ProblemGenerator(ParameterInput *pin) {
