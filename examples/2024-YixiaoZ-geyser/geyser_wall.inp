@@ -32,7 +32,7 @@ dt          = 20.           # time increment between outputs
 cfl_number  = 0.4           # The Courant, Friedrichs, & Lewy (CFL) Number
 nlim        = -1            # cycle limit
 tlim        = 20.          # time limit
-xorder      = 2             # horizontal reconstruction order
+xorder      = 1             # horizontal reconstruction order
 integrator  = rk3           # integration method
 
 <mesh>

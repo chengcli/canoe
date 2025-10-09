@@ -146,20 +146,23 @@ void Microphysics::SetVsedFromConserved(Hydro const *phydro) {
 
   // interpolation to cell interface
   for (int n = 0; n < NMASS; ++n)
-    for (int k = ks; k <= ke + 1; ++k)
-      for (int j = js; j <= je + 1; ++j)
+    for (int k = ks; k <= ke; ++k)
+      for (int j = js; j <= je; ++j)
         for (int i = is; i <= ie + 1; ++i) {
-          vsedf[X1DIR](n, k, j, i) = interp_cp4(
-              vsed_[X1DIR](n, k, j, i - 2), vsed_[X1DIR](n, k, j, i - 1),
-              vsed_[X1DIR](n, k, j, i), vsed_[X1DIR](n, k, j, i + 1));
+          vsedf[X1DIR](n, k, j, i) = 0.;
+        }
 
-          vsedf[X2DIR](n, k, j, i) = interp_cp4(
-              vsed_[X2DIR](n, k, j - 2, i), vsed_[X2DIR](n, k, j - 1, i),
-              vsed_[X2DIR](n, k, j, i), vsed_[X2DIR](n, k, j + 1, i));
-
-          vsedf[X3DIR](n, k, j, i) = interp_cp4(
-              vsed_[X3DIR](n, k - 2, j, i), vsed_[X3DIR](n, k - 1, j, i),
-              vsed_[X3DIR](n, k, j, i), vsed_[X3DIR](n, k + 1, j, i));
+  for (int n = 0; n < NMASS; ++n)
+    for (int k = ks; k <= ke; ++k)
+      for (int j = js; j <= je + 1; ++j)
+        for (int i = is; i <= ie; ++i) {
+          vsedf[X2DIR](n, k, j, i) = 0.;
+        }
+  for (int n = 0; n < NMASS; ++n)
+    for (int k = ks; k <= ke + 1; ++k)
+      for (int j = js; j <= je; ++j)
+        for (int i = is; i <= ie; ++i) {
+          vsedf[X3DIR](n, k, j, i) = 0.;
         }
 
   // fix boundary condition (TODO)
