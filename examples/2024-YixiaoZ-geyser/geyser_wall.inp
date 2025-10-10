@@ -94,6 +94,6 @@ c0 = 2.000e+0
 
 <initialcondition>
 temp = 273.15
-pres = 0.01
+pres = 1e-9
 H2Oratio = 0.0
 H2Ocratio = 0.0
