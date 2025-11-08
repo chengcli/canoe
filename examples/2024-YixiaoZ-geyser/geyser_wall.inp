@@ -76,8 +76,8 @@ ice_model_max_iter = 64
 
 Ptriple1 = 611.7
 Ttriple1 = 273.16
-massflux_H2ratio = 0.01 # injected mass ratio of H2
-massflux_CO2ratio = 0.01 # injected mass ratio of CO2
+massflux_H2ratio = 0.01  # injected mass ratio of H2
+massflux_ICEratio = 0.0  # injected mass ratio of ice
 
 wall_nmeshblock1 = 1
 

@@ -30,7 +30,7 @@ Real mesh_nx1, wall_nx1;
 Real Ptriple1, Ttriple1;
 Real x1min, x1max, x2min, x2max;
 
-Real massflux_H2ratio, massflux_CO2ratio;
+Real massflux_H2ratio, massflux_ICEratio;
 
 Real init_H2Oratio, init_H2Ocratio;
 Real init_temp, init_pres;
@@ -231,17 +231,15 @@ void BottomInjection(MeshBlock *pmb, Real const time, Real const dt,
                      AthenaArray<Real> const &w, AthenaArray<Real> const &r,
                      AthenaArray<Real> const &bcc, AthenaArray<Real> &u,
                      AthenaArray<Real> &s) {
-  int is = pmb->is;
-  int ie = pmb->ie;
+  const int is = pmb->is;
+  const int ie = pmb->ie;
 
   auto pthermo = Thermodynamics::GetInstance();
 
   const Real Rd = pthermo->GetRd();
   const Real gammad = pthermo->GetGammad();
 
-  Real p, drhoH2O, drhoH2, drhoCO2;
-
-  Real x1s = pmb->pcoord->x1f(is);
+  const Real x1s = pmb->pcoord->x1f(is);
 
   if (x1s < x1min + pmb->pcoord->dx1f(is)) {
     for (int k = pmb->ks; k <= pmb->ke; ++k)
@@ -252,17 +250,26 @@ void BottomInjection(MeshBlock *pmb, Real const time, Real const dt,
           continue;
         }
 
-        p = pmb->phydro->w(IPR, k, j, is);
+        const Real p = pmb->phydro->w(IPR, k, j, is);
 
         // add water vapor
-        drhoH2O = dt * std::max(Ptriple1 - p, 0.) /
+        const Real drhoH2O = dt * std::max(Ptriple1 - p, 0.) /
           sqrt(2 * M_PI * Rd * Ttriple1 * pthermo->GetInvMuRatio(iH2O)
         ) / pmb->pcoord->dx1f(is);
         u(iH2O, k, j, is) += drhoH2O;
         u(IEN, k, j, is) += drhoH2O * (Rd * gammad / (gammad - 1.)) *
                             pthermo->GetCvRatio(iH2O) * Ttriple1;
+
+        // add H2O ice
+        const Real drhoH2Oc = drhoH2O * massflux_ICEratio;
+        u(iH2Oc, k, j, is) += drhoH2Oc;
+        u(IEN, k, j, is) += drhoH2Oc * (
+          (Rd * gammad / (gammad - 1.))
+          * pthermo->GetCvRatio(iH2O) * Ttriple1
+        );
+
         // add dry air (H2)
-        drhoH2 = drhoH2O * massflux_H2ratio;
+        const Real drhoH2 = drhoH2O * massflux_H2ratio;
         u(IDN, k, j, is) += drhoH2;
         u(IEN, k, j, is) += drhoH2 * (Rd * gammad / (gammad - 1.)) * Ttriple1;
       }
@@ -330,7 +337,7 @@ void Mesh::InitUserMeshData(ParameterInput *pin) {
   x2max = pin->GetReal("mesh", "x2max");
 
   massflux_H2ratio = pin->GetReal("problem", "massflux_H2ratio");
-  massflux_CO2ratio = pin->GetReal("problem", "massflux_CO2ratio");
+  massflux_ICEratio = pin->GetReal("problem", "massflux_ICEratio");
 
   init_temp = pin->GetReal("initialcondition", "temp");
   init_pres = pin->GetReal("initialcondition", "pres");
