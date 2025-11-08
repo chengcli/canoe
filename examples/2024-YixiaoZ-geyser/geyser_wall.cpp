@@ -22,8 +22,6 @@ int ice_model_timestep;
 Real ice_model_abs_tol;
 Real ice_model_max_iter;
 
-Real wall1_corner_x2;
-Real wall1_corner_x1;
 Real wall2_corner_x2;
 Real wall2_corner_x1;
 
@@ -250,8 +248,7 @@ void BottomInjection(MeshBlock *pmb, Real const time, Real const dt,
       for (int j = pmb->js; j <= pmb->je; ++j) {
         // std::cout << pmb->pcoord->x2v(j) << std::endl;
         //  inject at the center of the bottom boundary
-        if ((pmb->pcoord->x2v(j) < wall1_corner_x2) ||
-            pmb->pcoord->x2v(j) > wall2_corner_x2) {
+        if (pmb->pcoord->x2v(j) > wall2_corner_x2) {
           continue;
         }
 
@@ -316,8 +313,6 @@ void Mesh::InitUserMeshData(ParameterInput *pin) {
   ice_model_abs_tol = pin->GetReal("problem", "ice_model_abs_tol");
   ice_model_max_iter = pin->GetInteger("problem", "ice_model_max_iter");
 
-  wall1_corner_x1 = pin->GetReal("problem", "wall1_corner_x1");
-  wall1_corner_x2 = pin->GetReal("problem", "wall1_corner_x2");
   wall2_corner_x1 = pin->GetReal("problem", "wall2_corner_x1");
   wall2_corner_x2 = pin->GetReal("problem", "wall2_corner_x2");
 
@@ -375,40 +370,6 @@ void MeshBlock::ProblemGenerator(ParameterInput *pin) {
   Real x2minblock = block_size.x2min;
   Real x2maxblock = block_size.x2max;
   Real x2c = (x2minblock + x2maxblock) / 2;
-
-  if (fclose(x2minblock, wall1_corner_x2) && (x1c < wall1_corner_x1)) {
-    pmy_mesh->mesh_bcs[BoundaryFace::inner_x2] = BoundaryFlag::user;
-    pbval->block_bcs[BoundaryFace::inner_x2] = BoundaryFlag::user;
-    pbval->apply_bndry_fn_[BoundaryFace::inner_x2] = true;
-    std::cout << "Boundary left enrolled" << std::endl;
-    pmy_mesh->EnrollUserBoundaryFunction(BoundaryFace::inner_x2,
-                                         reflecting_x2_left);
-  }
-
-  if (fclose(x2maxblock, wall1_corner_x2) && (x1c < wall1_corner_x1)) {
-    pmy_mesh->mesh_bcs[BoundaryFace::outer_x2] = BoundaryFlag::user;
-    pbval->block_bcs[BoundaryFace::outer_x2] = BoundaryFlag::user;
-    pbval->apply_bndry_fn_[BoundaryFace::outer_x2] = true;
-    std::cout << "Boundary right enrolled" << std::endl;
-    pmy_mesh->EnrollUserBoundaryFunction(BoundaryFace::outer_x2,
-                                         reflecting_x2_right);
-  }
-
-  if ((x2c < wall1_corner_x2) && fclose(x1maxblock, wall1_corner_x1)) {
-    pmy_mesh->mesh_bcs[BoundaryFace::outer_x1] = BoundaryFlag::user;
-    pbval->block_bcs[BoundaryFace::outer_x1] = BoundaryFlag::user;
-    pbval->apply_bndry_fn_[BoundaryFace::outer_x1] = true;
-    pmy_mesh->EnrollUserBoundaryFunction(BoundaryFace::outer_x1,
-                                         reflecting_x1_right);
-  }
-
-  if ((x2c < wall1_corner_x2) && fclose(x1minblock, wall1_corner_x1)) {
-    pmy_mesh->mesh_bcs[BoundaryFace::inner_x1] = BoundaryFlag::user;
-    pbval->block_bcs[BoundaryFace::inner_x1] = BoundaryFlag::user;
-    pbval->apply_bndry_fn_[BoundaryFace::inner_x1] = true;
-    pmy_mesh->EnrollUserBoundaryFunction(BoundaryFace::inner_x1,
-                                         reflecting_x1_left);
-  }
 
   // add a block
   if (fclose(x2minblock, wall2_corner_x2) && (x1c < wall2_corner_x1)) {

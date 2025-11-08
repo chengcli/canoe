@@ -81,9 +81,6 @@ massflux_CO2ratio = 0.01 # injected mass ratio of CO2
 
 wall_nmeshblock1 = 1
 
-wall1_corner_x1 = 5000.
-wall1_corner_x2 = -5.
-
 wall2_corner_x1 = 0.
 wall2_corner_x2 = 0.04328335830806492
 
