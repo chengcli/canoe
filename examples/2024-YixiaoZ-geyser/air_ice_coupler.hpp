@@ -208,9 +208,11 @@ template<typename Real>
 class AirIceCoupler {
   public:
     AirIceCoupler(MeshBlock *pmb,
-      const Real ice_max_x1, const Real ice_min_x2, const int i_vapor,
+      const Real ice_max_x1, const Real ice_min_x2, const Real drag_coef,
+      const int i_vapor,
       const Real abs_tol, const Real max_iter):
         i_vapor(i_vapor),
+        drag_coef(drag_coef),
         abs_tol(abs_tol),
         max_iter(max_iter),
         is_root(get_mpi_rank() == 0),
@@ -233,32 +235,80 @@ class AirIceCoupler {
 
     void solve(MeshBlock *pmb, AthenaArray<Real> const &w);
 
-    inline int ice_i(int i) {
+    inline int ice_i(int i) const {
       return i + i_offset;
     }
 
-    inline int ice_j(int j) {
+    inline int ice_j(int j) const {
       return j + j_offset;
     }
 
-    inline Real drho_dt(MeshBlock *pmb, int i, int j) {
-      Real g = 0.;
+    inline auto ice_forcing_on_air(MeshBlock *pmb,
+          int k, int j, int i) const {
+
+      struct AirTendency {
+        Real H2O;
+        Real rho_u1;
+        Real rho_u2;
+        Real en;
+      } g = {0, 0, 0, 0};
+
+      const Real rho = pmb->phydro->w(IDN, k, j, i);
+      const Real u1 = pmb->phydro->w(IVX, k, j, i);
+      const Real u2 = pmb->phydro->w(IVY, k, j, i);
+
+      // ice to the right
       if (is_right_ice && j == pmb->je) {
-        int l = ice_i(i);
-        g -= (
+
+        // condensation and evaporation
+        const int l = ice_i(i);
+        g.H2O -= (
           condensation_rate(
             air_t_side.get(l), vapor_p_side.get(l), ice_t_side.get(l)
           ) / pmb->pcoord->dx2f(j)
         );
+
+        // friction drag
+        g.rho_u1 -= (
+          2 * drag_coef * rho * std::abs(u1) * u1
+          / pmb->pcoord->dx2f(j)
+        );
       }
+
+      // ice at the bottom
       if (is_bottom_ice && i == pmb->is) {
-        int l = ice_j(j);
-        g -= (
+
+        // condensation and evaporation
+        const int l = ice_j(j);
+        g.H2O -= (
           condensation_rate(
             air_t_top.get(l), vapor_p_top.get(l), ice_t_top.get(l)
           ) / pmb->pcoord->dx1f(i)
         );
+
+        // friction drag
+        g.rho_u2 -= (
+          2 * drag_coef * rho * std::abs(u2) * u2
+          / pmb->pcoord->dx1f(i)
+        );
       }
+
+      // momentom and energy exchange associated with mass exchange
+      const auto pthermo = Thermodynamics::GetInstance();
+      const Real ie = (
+        (pthermo->GetRd() / (pthermo->GetGammad() - 1.))
+        * pthermo->GetCvRatio(i_vapor)
+        * pthermo->GetTemp(pmb->phydro->w.at(k, j, i))
+      );
+
+      if (g.H2O < 0) {
+        g.rho_u1 += g.H2O * u1;
+        g.rho_u2 += g.H2O * u2;
+        g.en += g.H2O * (0.5 * (u1 * u1 + u2 * u2) + ie);
+      } else {
+        g.en += g.H2O * ie;
+      }
+
       return g;
     }
 
@@ -277,6 +327,7 @@ class AirIceCoupler {
 
   private:
     const int i_vapor;
+    const Real drag_coef;
     const Real abs_tol;
     const int max_iter;
     const bool is_root;
@@ -295,7 +346,8 @@ class AirIceCoupler {
     SharedData<Real> ice_t_side;
     SharedData<Real> ice_t_top;
 
-    inline Real condensation_rate(Real air_t, Real vapor_p, Real ice_t) {
+    inline Real condensation_rate(
+        Real air_t, Real vapor_p, Real ice_t) const {
       return ibm.ice_air_boundary.cond.net_vapor_flux(ice_t, air_t, vapor_p);
     }
 };

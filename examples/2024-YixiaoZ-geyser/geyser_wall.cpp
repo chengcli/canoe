@@ -31,6 +31,7 @@ Real Ptriple1, Ttriple1;
 Real x1min, x1max, x2min, x2max;
 
 Real massflux_H2ratio, massflux_ICEratio;
+Real drag_coef;
 
 Real init_H2Oratio, init_H2Ocratio;
 Real init_temp, init_pres;
@@ -158,7 +159,7 @@ void MeshBlock::UserWorkBeforeOutput(ParameterInput *pin) {
   auto &w = phydro->w;
 
   static AirIceCoupler<Real> air_ice_coupler(
-    this, wall2_corner_x1, wall2_corner_x2, iH2O,
+    this, wall2_corner_x1, wall2_corner_x2, drag_coef, iH2O,
     ice_model_abs_tol, ice_model_max_iter);
 
   air_ice_coupler.solve(this, w);
@@ -167,8 +168,12 @@ void MeshBlock::UserWorkBeforeOutput(ParameterInput *pin) {
     for (int j = js; j <= je; ++j)
       for (int i = is; i <= ie; ++i) {
         user_out_var(0, k, j, i) = pthermo->GetTemp(w.at(k, j, i));
-        user_out_var(1, k, j, i) = air_ice_coupler.drho_dt(this, i, j);
+        auto g = air_ice_coupler.ice_forcing_on_air(this, k, j, i);
+        user_out_var(1, k, j, i) = g.H2O;
         user_out_var(2, k, j, i) = air_ice_coupler.adjacent_ice_t(this, i, j);
+        // user_out_var(3, k, j, i) = g.en;
+        // user_out_var(4, k, j, i) = g.rho_u1;
+        // user_out_var(5, k, j, i) = g.rho_u2;
       }
 }
 
@@ -177,7 +182,7 @@ void WallInteraction(MeshBlock *pmb, Real const time, Real const dt,
                      AthenaArray<Real> const &bcc, AthenaArray<Real> &u,
                      AthenaArray<Real> &s) {
   static AirIceCoupler<Real> air_ice_coupler(
-    pmb, wall2_corner_x1, wall2_corner_x2, iH2O,
+    pmb, wall2_corner_x1, wall2_corner_x2, drag_coef, iH2O,
     ice_model_abs_tol, ice_model_max_iter);
 
   static long int nsubstep = 0;
@@ -193,35 +198,14 @@ void WallInteraction(MeshBlock *pmb, Real const time, Real const dt,
     }
   }
 
-  auto pthermo = Thermodynamics::GetInstance();
-
   for (int k = pmb->ks; k <= pmb->ke; ++k) {
     for (int j = pmb->js; j <= pmb->je; ++j) {
       for (int i = pmb->is; i <= pmb->ie; ++i) {
-        Real drho_dt = air_ice_coupler.drho_dt(pmb, i, j);
-        Real drhoH2O = dt * drho_dt; // H2O
-
-        Real ie = (
-          (pthermo->GetRd() / (pthermo->GetGammad() - 1.))
-          * pthermo->GetCvRatio(iH2O)
-          * pthermo->GetTemp(w.at(k, j, i))
-        );
-
-        if (drhoH2O < 0) {
-          Real u1 = pmb->phydro->w(IVX, k, j, i);
-          Real u2 = pmb->phydro->w(IVY, k, j, i);
-          Real u3 = pmb->phydro->w(IVZ, k, j, i);
-          Real ke = 0.5 * (u1*u1 + u2*u2 + u3*u3);
-
-          u(iH2O, k, j, i) += drhoH2O;
-          u(IEN, k, j, i) += drhoH2O * (ke + ie);
-          u(IVX, k, j, i) += drhoH2O * u1;
-          u(IVY, k, j, i) += drhoH2O * u2;
-          u(IVZ, k, j, i) += drhoH2O * u3;
-        } else {
-          u(iH2O, k, j, i) += drhoH2O;
-          u(IEN, k, j, i) += drhoH2O * ie;
-        }
+        auto g = air_ice_coupler.ice_forcing_on_air(pmb, k, j, i);
+        u(iH2O, k, j, i) += dt * g.H2O;
+        u(IVX, k, j, i) += dt * g.rho_u1;
+        u(IVY, k, j, i) += dt * g.rho_u2;
+        u(IEN, k, j, i) += dt * g.en;
       }
     }
   }
@@ -338,6 +322,8 @@ void Mesh::InitUserMeshData(ParameterInput *pin) {
 
   massflux_H2ratio = pin->GetReal("problem", "massflux_H2ratio");
   massflux_ICEratio = pin->GetReal("problem", "massflux_ICEratio");
+
+  drag_coef = pin->GetReal("problem", "drag_coef");
 
   init_temp = pin->GetReal("initialcondition", "temp");
   init_pres = pin->GetReal("initialcondition", "pres");

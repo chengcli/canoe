@@ -64,11 +64,12 @@ nx3         = 1
 <hydro>
 grav_acc1   = -0.113
 gamma      = 1.45        # gamma = C_pd/C_vd
-drag_coef = 2e-3
 implicit_flag = 0
 
 <problem>
 thermodynamics_config = geyser_h2o.yaml
+
+drag_coef = 0.
 
 ice_model_timestep = 150 # in units of substeps of rk3
 ice_model_abs_tol = 1e-3 # Watts per meter squared
