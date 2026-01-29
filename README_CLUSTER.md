@@ -85,3 +85,58 @@ docker pull nvidia/cuda:12.8.0-devel-ubuntu22.04
 ```
 docker run --rm --gpus all nvidia/cuda:12.8.0-runtime-ubuntu22.04 nvidia-smi
 ```
+
+#### Install kuberctl
+
+1. Check this webpage for updates:
+https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/
+
+2. Add kubernetes yum repository
+```
+cat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo
+[kubernetes]
+name=Kubernetes
+baseurl=https://pkgs.k8s.io/core:/stable:/v1.35/rpm/
+enabled=1
+gpgcheck=1
+gpgkey=https://pkgs.k8s.io/core:/stable:/v1.35/rpm/repodata/repomd.xml.key
+EOF
+```
+
+3. Install kubectl using yum
+```
+sudo yum install -y kubectl
+```
+
+#### Install k3s cluster (server)
+
+1. Check this webpage for updates:
+```
+https://docs.k3s.io/quick-start
+```
+
+2. Download k3s and install
+```
+curl -sfL https://get.k3s.io | sh -
+```
+
+3. Copy kubeconfig to home directory
+```
+mkdir -p ~/.kube
+sudo cp /etc/rancher/k3s/k3s.yaml ~/.kube/config
+sudo chown $USER:$USER ~/.kube/config
+chmod 600 ~/.kube/config
+```
+
+4. Check cluster info
+```
+kubectl cluster-info
+```
+
+5. Check node
+```
+kubectl get nodes
+```
+
+#### Install k3s cluster (worker)
+1. On any worker node, repeat the process of installing docker
