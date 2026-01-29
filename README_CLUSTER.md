@@ -66,12 +66,12 @@ export NVIDIA_CONTAINER_TOOLKIT_VERSION=1.18.2-1
 
 4. Let docker use NVIDIA's container runtime
 ```
-sudo nvidia-ctk runtime configure --runtime=docker
+sudo nvidia-ctk runtime configure --runtime=containerd
 ```
 
-5. Restart docker servier
+5. Restart containerd servier
 ```
-sudo systemctl restart docker
+sudo systemctl restart containerd
 ```
 
 #### Pull NVIDIA docker images
@@ -84,28 +84,6 @@ docker pull nvidia/cuda:12.8.0-devel-ubuntu22.04
 2. Check GPUs are correctly recognized by docker
 ```
 docker run --rm --gpus all nvidia/cuda:12.8.0-runtime-ubuntu22.04 nvidia-smi
-```
-
-#### Install kuberctl
-
-1. Check this webpage for updates:
-https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/
-
-2. Add kubernetes yum repository
-```
-cat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo
-[kubernetes]
-name=Kubernetes
-baseurl=https://pkgs.k8s.io/core:/stable:/v1.35/rpm/
-enabled=1
-gpgcheck=1
-gpgkey=https://pkgs.k8s.io/core:/stable:/v1.35/rpm/repodata/repomd.xml.key
-EOF
-```
-
-3. Install kubectl using yum
-```
-sudo yum install -y kubectl
 ```
 
 #### Install k3s cluster (server)
@@ -152,13 +130,13 @@ sudo firewall-cmd --reload
 sudo firewall-cmd --list-ports
 ```
 
-8. (optional) uninstall k3s
+8. (Optional) uninstall k3s
 ```
 k3s-killall.sh
 k3s-uninstall.sh
 ```
 
-#### Install k3s cluster (worker)
+#### Join k3s cluster (worker)
 1. On any worker node, repeat the process of installing docker
 2. Repeat the process of installing NVIDIA container tool kit
 
@@ -170,4 +148,113 @@ nc -vz dart9.engin.umich.edu 6443
 4. Use the node token to install and join the server
 ```
 curl -sfL https://get.k3s.io | K3S_URL=<SERVER_URL>:6443 K3S_TOKEN=<NODE_TOKEN> sh -
+```
+
+#### Let k3s recognize your GPU resource
+1. Check cluster setup
+```
+kubectl get nodes
+```
+
+2. Describe a node
+```
+kubectl describe node csrwks2024-0242.engin.umich.edu
+```
+GPU resource is not allocatable now.
+
+3. Label roles
+```
+kubectl label node csrwks2024-0242.engin.umich.edu node-type=worker
+kubectl label node csrwks2024-0243.engin.umich.edu node-type=worker
+kubectl label node csrwks2024-0244.engin.umich.edu node-type=worker
+```
+
+4. Check updates here
+https://github.com/NVIDIA/k8s-device-plugin?tab=readme-ov-file
+https://www.radicalgeek.co.uk/adding-a-gpu-node-to-a-k3s-cluster/
+
+5. Create an nvidia runtime class
+```
+cat > runtime-class.yaml <<'EOF'
+apiVersion: node.k8s.io/v1
+kind: RuntimeClass
+metadata:
+  name: nvidia
+handler: nvidia
+EOC
+```
+
+6. Deploy to the cluster
+```
+kubeclt apply -f nvidia-runtimeclass.yaml
+```
+
+7. Install NVIDIA-PLUGIN
+```
+kubectl create -f nvidia-device-plugin.yaml
+```
+
+8. Check plugin deamon running
+```
+kubectl get pods -n kube-system | grep nvidia
+```
+
+9. Check GPU resource
+```
+kubectl get nodes -o custom-columns=NAME:.metadata.name,GPU_CAPACITY:.status.capacity.'nvidia\.com/gpu',GPU_ALLOCATABLE:.status.allocatable.'nvidia\.com/gpu'
+```
+
+10. (Optional) Remove daemon set
+```
+kubectl delete daemonset nvidia-device-plugin-daemonset -n kube-system
+```
+
+#### Final test
+
+1. Create a test file:
+```
+cat > gpu-test.yaml <<'EOF'
+apiVersion: v1
+kind: Pod
+metadata:
+  name: gpu-test
+spec:
+  runtimeClassName: nvidia
+  containers:
+  - name: cuda-test
+    image: nvidia/cuda:12.3.2-base-ubuntu22.04
+    command: ["nvidia-smi"]
+    resources:
+      limits:
+        nvidia.com/gpu: 1
+  restartPolicy: OnFailure
+EOF
+```
+
+2. Create the pod
+```
+kubectl apply -f gpu-test.yaml
+```
+
+3. Watch it run
+```
+kubectl get pod gpu-test -w
+```
+
+4. Get actual result
+```
+kubectl logs gpu-test
+```
+
+5. Success would look like
+```
++-----------------------------------------------------------------------------+
+| NVIDIA-SMI 570.xx.xx    Driver Version: 570.xx    CUDA Version: 12.x        |
+|-------------------------------+----------------------+----------------------+
+| GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
+|                               |                      |               MIG M. |
+|===============================+======================+======================|
+|  0  RTX A6000 / A100 / etc...                                      |
++-----------------------------------------------------------------------------+
 ```
