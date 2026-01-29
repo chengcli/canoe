@@ -246,11 +246,19 @@ kubectl logs gpu-test
 
 5. Success would look like
 > +-----------------------------------------------------------------------------+
+>
 > | NVIDIA-SMI 570.xx.xx    Driver Version: 570.xx    CUDA Version: 12.x        |
+>
 > |-------------------------------+----------------------+----------------------+
+>
 > | GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
+>
 > | Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
+>
 > |                               |                      |               MIG M. |
+>
 > |===============================+======================+======================|
+>
 > |  0  RTX A6000 / A100 / etc...                                      |
+>
 > +-----------------------------------------------------------------------------+
