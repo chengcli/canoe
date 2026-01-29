@@ -17,59 +17,49 @@ cluster supports **single-node deployments** only and is therefore not suitable 
 
 ## Install docker on Redhat
 
-1. Checkout this webpage for update:
-https://docs.docker.com/engine/install/rhel/
-
-2. Install the `dnf-plugins-core` package:
+1. Install the `dnf-plugins-core` package:
 ```
 sudo dnf -y install dnf-plugins-core
 sudo dnf config-manager --add-repo https://download.docker.com/linux/rhel/docker-ce.repo
 ```
 
-3. Install the lagest version
+2. Install the lagest version
 ```
 sudo dnf install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 ```
 
-4. Start docker engine
+3. Start docker engine
 ```
 sudo systemctl enable --now docker
 ```
 
-5. Verify that docker has been successfully installed
+4. Verify that docker has been successfully installed
 ```
 sudo docker run hello-world
 ```
 
-6. Add user to the docker group
+5. Add user to the docker group
 ```
 sudo usermod -aG docker $USER
 ```
 
-7. Log out and log back in to take effect and validate with
+6. Log out and log back in to take effect and validate with
 ```
 docker ps
 ```
 
-You should not see the following without errors:
-```
-CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
-```
+You should see the following without errors:
+> CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
 
 ## Install NVIDIA Container Toolkit
 
-1. Checkout this webpage for update:
-```
-https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html
-```
-
-2. Configure the production repository
+1. Configure the production repository
 ```
 curl -s -L https://nvidia.github.io/libnvidia-container/stable/rpm/nvidia-container-toolkit.repo | \
   sudo tee /etc/yum.repos.d/nvidia-container-toolkit.repo
 ```
 
-3. Install the NVIDIA Container Toolkit packages
+2. Install the NVIDIA Container Toolkit packages
 ```
 export NVIDIA_CONTAINER_TOOLKIT_VERSION=1.18.2-1
   sudo dnf install -y \
@@ -79,19 +69,19 @@ export NVIDIA_CONTAINER_TOOLKIT_VERSION=1.18.2-1
       libnvidia-container1-${NVIDIA_CONTAINER_TOOLKIT_VERSION}
 ```
 
-4. Let docker use NVIDIA's container runtime
+3. Let docker use NVIDIA's **containerd** runtime
 ```
 sudo nvidia-ctk runtime configure --runtime=containerd
 ```
 
-5. Restart containerd servier
+4. Restart containerd servier
 ```
 sudo systemctl restart containerd
 ```
 
 ## Pull NVIDIA docker images
 
-1. Pull docker images:
+1. Pull docker images with NVIDIA CUDA
 ```
 docker pull nvidia/cuda:12.8.0-devel-ubuntu22.04
 ```
@@ -103,17 +93,12 @@ docker run --rm --gpus all nvidia/cuda:12.8.0-runtime-ubuntu22.04 nvidia-smi
 
 ## Install k3s cluster (server)
 
-1. Check this webpage for updates:
-```
-https://docs.k3s.io/quick-start
-```
-
-2. Download k3s and install
+1. Download k3s and install
 ```
 curl -sfL https://get.k3s.io | sh -
 ```
 
-3. Copy kubeconfig to home directory
+2. Copy kubeconfig to home directory
 ```
 mkdir -p ~/.kube
 sudo cp /etc/rancher/k3s/k3s.yaml ~/.kube/config
@@ -121,22 +106,22 @@ sudo chown $USER:$USER ~/.kube/config
 chmod 600 ~/.kube/config
 ```
 
-4. Check cluster info
+3. Check cluster info
 ```
 kubectl cluster-info
 ```
 
-5. Check node
+4. Check node
 ```
 kubectl get nodes
 ```
 
-6. Find and copy node token
+5. Find and copy node token
 ```
 sudo cat /var/lib/rancher/k3s/server/node-token
 ```
 
-7. Open network communiction ports
+6. Open network communiction ports
 ```
 sudo firewall-cmd --permanent --add-port=6443/tcp
 sudo firewall-cmd --permanent --add-port=8472/udp
@@ -145,14 +130,16 @@ sudo firewall-cmd --reload
 sudo firewall-cmd --list-ports
 ```
 
-8. (Optional) uninstall k3s
+7. (Optional) uninstall k3s
 ```
 k3s-killall.sh
 k3s-uninstall.sh
 ```
 
 ## Join k3s cluster (worker)
+
 1. On any worker node, repeat the process of installing docker
+
 2. Repeat the process of installing NVIDIA container tool kit
 
 3. Verify server port
@@ -166,6 +153,7 @@ curl -sfL https://get.k3s.io | K3S_URL=<SERVER_URL>:6443 K3S_TOKEN=<NODE_TOKEN> 
 ```
 
 ## Let k3s recognize your GPU resource
+
 1. Check cluster setup
 ```
 kubectl get nodes
@@ -183,12 +171,7 @@ kubectl label node csrwks2024-0242.engin.umich.edu node-type=worker
 kubectl label node csrwks2024-0243.engin.umich.edu node-type=worker
 kubectl label node csrwks2024-0244.engin.umich.edu node-type=worker
 ```
-
-4. Check updates here
-https://github.com/NVIDIA/k8s-device-plugin?tab=readme-ov-file
-https://www.radicalgeek.co.uk/adding-a-gpu-node-to-a-k3s-cluster/
-
-5. Create an nvidia runtime class
+4. Create an nvidia runtime class
 ```
 cat > runtime-class.yaml <<'EOF'
 apiVersion: node.k8s.io/v1
@@ -199,27 +182,27 @@ handler: nvidia
 EOC
 ```
 
-6. Deploy to the cluster
+5. Deploy to the cluster
 ```
 kubeclt apply -f nvidia-runtimeclass.yaml
 ```
 
-7. Install NVIDIA-PLUGIN
+6. Install NVIDIA-PLUGIN
 ```
 kubectl create -f nvidia-device-plugin.yaml
 ```
 
-8. Check plugin deamon running
+7. Check plugin deamon running
 ```
 kubectl get pods -n kube-system | grep nvidia
 ```
 
-9. Check GPU resource
+8. Check GPU resource
 ```
 kubectl get nodes -o custom-columns=NAME:.metadata.name,GPU_CAPACITY:.status.capacity.'nvidia\.com/gpu',GPU_ALLOCATABLE:.status.allocatable.'nvidia\.com/gpu'
 ```
 
-10. (Optional) Remove daemon set
+9. (Optional) Remove daemon set
 ```
 kubectl delete daemonset nvidia-device-plugin-daemonset -n kube-system
 ```
@@ -262,14 +245,12 @@ kubectl logs gpu-test
 ```
 
 5. Success would look like
-```
-+-----------------------------------------------------------------------------+
-| NVIDIA-SMI 570.xx.xx    Driver Version: 570.xx    CUDA Version: 12.x        |
-|-------------------------------+----------------------+----------------------+
-| GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
-| Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
-|                               |                      |               MIG M. |
-|===============================+======================+======================|
-|  0  RTX A6000 / A100 / etc...                                      |
-+-----------------------------------------------------------------------------+
-```
+> +-----------------------------------------------------------------------------+
+> | NVIDIA-SMI 570.xx.xx    Driver Version: 570.xx    CUDA Version: 12.x        |
+> |-------------------------------+----------------------+----------------------+
+> | GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
+> | Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
+> |                               |                      |               MIG M. |
+> |===============================+======================+======================|
+> |  0  RTX A6000 / A100 / etc...                                      |
+> +-----------------------------------------------------------------------------+
