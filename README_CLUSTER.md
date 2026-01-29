@@ -138,5 +138,36 @@ kubectl cluster-info
 kubectl get nodes
 ```
 
+6. Find and copy node token
+```
+sudo cat /var/lib/rancher/k3s/server/node-token
+```
+
+7. Open network communiction ports
+```
+sudo firewall-cmd --permanent --add-port=6443/tcp
+sudo firewall-cmd --permanent --add-port=8472/udp
+sudo firewall-cmd --permanent --add-port=10250/tcp
+sudo firewall-cmd --reload
+sudo firewall-cmd --list-ports
+```
+
+8. (optional) uninstall k3s
+```
+k3s-killall.sh
+k3s-uninstall.sh
+```
+
 #### Install k3s cluster (worker)
 1. On any worker node, repeat the process of installing docker
+2. Repeat the process of installing NVIDIA container tool kit
+
+3. Verify server port
+```
+nc -vz dart9.engin.umich.edu 6443
+```
+
+4. Use the node token to install and join the server
+```
+curl -sfL https://get.k3s.io | K3S_URL=<SERVER_URL>:6443 K3S_TOKEN=<NODE_TOKEN> sh -
+```
