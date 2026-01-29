@@ -6,9 +6,9 @@ spec:
   runtimeClassName: nvidia
   containers:
   - name: cuda-test
-    image: nvidia/cuda:12.3.2-base-ubuntu22.04
+    image: nvidia/cuda:12.8.0-runtime-ubuntu22.04
     command: ["nvidia-smi"]
     resources:
       limits:
         nvidia.com/gpu: 1
-  restartPolicy: OnFailure
+  restartPolicy: Never

@@ -1,6 +1,21 @@
-## This tutorial helps you setting up a kubernetes GPU cluster
+# Set up a kubernetes multi-node GPU cluster
 
-#### Install docker on Redhat
+This tutorial walks you through setting up a **multi-node GPU cluster** using k3s,
+enabling you to scale beyond a single machine and expand your computational capabilities.
+
+It consolidates guidance from multiple sources. Some references may evolve over time, 
+so if you encounter issues, be sure to consult the latest versions of the documentation below:
+
+1. [Docker](https://docs.docker.com/engine/install/rhel/)
+2. [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html)
+3. [K3s cluster](https://docs.k3s.io/quick-start)
+4. [NVIDIA Device Plugin](https://github.com/NVIDIA/k8s-device-plugin?tab=readme-ov-file)
+5. [Tutorial to set up a single node cluster](https://www.radicalgeek.co.uk/adding-a-gpu-node-to-a-k3s-cluster/)
+
+**Note:** The [kind](https://kind.sigs.k8s.io/docs/user/quick-start#installing-with-a-package-manager)
+cluster supports **single-node deployments** only and is therefore not suitable for multi-node GPU setups.
+
+## Install docker on Redhat
 
 1. Checkout this webpage for update:
 https://docs.docker.com/engine/install/rhel/
@@ -41,7 +56,7 @@ You should not see the following without errors:
 CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
 ```
 
-#### Install NVIDIA Container Toolkit
+## Install NVIDIA Container Toolkit
 
 1. Checkout this webpage for update:
 ```
@@ -74,7 +89,7 @@ sudo nvidia-ctk runtime configure --runtime=containerd
 sudo systemctl restart containerd
 ```
 
-#### Pull NVIDIA docker images
+## Pull NVIDIA docker images
 
 1. Pull docker images:
 ```
@@ -86,7 +101,7 @@ docker pull nvidia/cuda:12.8.0-devel-ubuntu22.04
 docker run --rm --gpus all nvidia/cuda:12.8.0-runtime-ubuntu22.04 nvidia-smi
 ```
 
-#### Install k3s cluster (server)
+## Install k3s cluster (server)
 
 1. Check this webpage for updates:
 ```
@@ -136,7 +151,7 @@ k3s-killall.sh
 k3s-uninstall.sh
 ```
 
-#### Join k3s cluster (worker)
+## Join k3s cluster (worker)
 1. On any worker node, repeat the process of installing docker
 2. Repeat the process of installing NVIDIA container tool kit
 
@@ -150,7 +165,7 @@ nc -vz dart9.engin.umich.edu 6443
 curl -sfL https://get.k3s.io | K3S_URL=<SERVER_URL>:6443 K3S_TOKEN=<NODE_TOKEN> sh -
 ```
 
-#### Let k3s recognize your GPU resource
+## Let k3s recognize your GPU resource
 1. Check cluster setup
 ```
 kubectl get nodes
@@ -209,7 +224,7 @@ kubectl get nodes -o custom-columns=NAME:.metadata.name,GPU_CAPACITY:.status.cap
 kubectl delete daemonset nvidia-device-plugin-daemonset -n kube-system
 ```
 
-#### Final test
+## Final test
 
 1. Create a test file:
 ```
