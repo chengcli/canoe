@@ -7,9 +7,38 @@ species:
     composition: {H: 1.5, He: 0.15}
     cv_R: 2.5
 
+opacities:
+  JupVIS:
+    type: jit
+    data: [jup-gas-visible.pt]
+    species: [dry]
+    jit_kwargs: ["temp", "pres", "dens"]
+
+  JupIR:
+    type: jit
+    data: [jup-gas-ir.pt]
+    species: [dry]
+    jit_kwargs: ["temp", "pres", "dens"]
+
 geometry:
   type: cartesian
 
 dynamics:
   equation-of-state:
     type: ideal-moist
+
+bands: [SW, LW]
+
+SW:
+  range: [2000., 50000.]
+  opacities: [JupVIS]
+  solver: disort
+  integration: wavenumber
+  flags: lamber,quiet,onlyfl
+
+LW:
+  range: [1., 2000.]
+  opacities: [JupIR]
+  solver: disort
+  integration: weight
+  flags: lamber,quiet,onlyfl,planck

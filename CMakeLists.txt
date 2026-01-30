@@ -28,7 +28,7 @@ endif()
 add_compile_definitions(_GLIBCXX_USE_CXX11_ABI=${_ABI_OUTPUT})
 
 # Set MacOS deployment target
-set(CMAKE_OSX_DEPLOYMENT_TARGET "14.0")
+set(CMAKE_OSX_DEPLOYMENT_TARGET "15.0")
 
 string(ASCII 27 Esc)
 set(ColorReset "${Esc}[m")

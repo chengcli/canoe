@@ -341,9 +341,6 @@ void load_torch_tensor(MeshBlock *pmb, std::string base_name) {
 }
 
 void MeshBlock::ProblemGenerator(ParameterInput *pin) {
-  // auto infile = pin->GetString("problem", "config_file");
-  // auto w = setup_moist_adiabatic_profile(infile)
-
   srand(Globals::my_rank + time(0));
 
   // thermodynamic constants
