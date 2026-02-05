@@ -274,3 +274,96 @@ kubectl logs gpu-test
 |  0  RTX A6000 / A100 / etc...                                      |
 +-----------------------------------------------------------------------------+
 ```
+
+# Set up a docker multi-node GPU cluster
+
+1. Open network communiction ports
+```
+sudo firewall-cmd --permanent --add-port=2377/tcp
+sudo firewall-cmd --permanent --add-port=7946/tcp
+sudo firewall-cmd --permanent --add-port=7946/udp
+sudo firewall-cmd --permanent --add-port=4789/udp
+sudo firewall-cmd --reload
+sudo firewall-cmd --list-ports
+```
+
+2. Initiate cluster (head)
+```
+docker swarm init --advertise-addr 141.212.196.47
+```
+
+3. Join cluster (each worker)
+```
+docker swarm join --token SWMTKN-1-5t3sad1wntaffc27wzb0bnlpyi83v2ywm0yxzvt35vtxh1qn6d-9g2oop3nonfk6f73t2viibjw3 141.212.196.47:2377
+```
+
+4. Verify node
+```
+docker node ls
+```
+
+5. Create an overlay network
+```
+docker network create --driver overlay --attachable raynet
+```
+
+6. Set up node roles
+```
+docker node update --label-add role=captain csrwks2024-0242.engin.umich.edu
+docker node update --label-add role=crew csrwks2024-0243.engin.umich.edu
+```
+
+7. Check node roles
+```
+docker node inspect -f '{{.Description.Hostname}} {{.Spec.Labels}}' csrwks2024-0242.engin.umich.edu
+```
+
+8. Depoly a job
+```
+docker stack deploy -c docker-compose.yml canoe
+```
+
+9. Monitor job
+```
+docker service logs -f canoe_captain
+docker service logs -f canoe_crew1
+```
+
+10. Kill job
+```
+docker stack rm canoe
+```
+
+11. Check service
+```
+docker service ps canoe_crew1 --no-trunc
+```
+
+12. edit '/etc/nvidia-container-runtime/config.toml' uncomment swarm-resource
+
+13. Get GPU ID
+```
+nvidia-smi -a | grep UUID
+```
+
+14. Edit the json file `/etc/docker/daemon.json` on each node
+```
+{
+  "default-runtime": "nvidia",
+  "runtimes": {
+    "nvidia": {
+      "path": "/usr/bin/nvidia-container-runtime",
+      "runtimeArgs": []
+    }
+  },
+  "node-generic-resources": [
+    "gpu=GPU-20c302b0",
+    "gpu=GPU-c8b1e417"
+  ]
+}
+```
+
+15. restart docker service
+```
+sudo systemctl restart docker
+```
