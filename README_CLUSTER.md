@@ -367,3 +367,11 @@ nvidia-smi -a | grep UUID
 ```
 sudo systemctl restart docker
 ```
+
+16. shared drive
+```
+sudo dnf install fuse-sshfs
+sudo mkdir -p /mnt/data1
+sudo chown $USER:$USER /mnt/data1
+sshfs chengcli@dart9:/mnt/data1 /mnt/data1
+```
