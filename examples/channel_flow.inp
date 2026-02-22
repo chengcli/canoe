@@ -1,0 +1,77 @@
+<comment>
+problem   = Moist rising bubble test
+reference = Bryan and Fritsch, 2002
+configure = --prob=geyser --flux=lmars --nvapor=2 --nphase=2 --nghost=3 -pnetcdf -mpi
+
+<job>
+problem_id  = channel       # problem ID: basename of output filenames
+tasklist    = ImplicitHydroTasks
+
+<output1>
+file_type   = hst           # History data dump
+dt          = 0.01          # time increment between outputs
+# dcycle = 1
+
+<output2>
+file_type   = pnetcdf       # Netcdf format output
+variable    = prim          # variables to be output
+dt          = 0.01          # time increment between outputs
+# dcycle = 1
+
+<output3>
+file_type   = pnetcdf       # Netcdf format output
+variable    = uov           # diagnostic variables
+dt          = 0.01          # time increment
+# dcycle = 1
+
+<output4>
+file_type   = rst           # History data dump
+dt          = 1000.         # time increment between outputs
+
+<time>
+cfl_number  = 0.4           # The Courant, Friedrichs, & Lewy (CFL) Number
+nlim        = -1            # cycle limit
+tlim        = 10.           # time limit
+xorder      = 5             # horizontal reconstruction order
+integrator  = rk3           # integration method
+
+<mesh>
+nx1         = 128
+x1min       = 0.
+x1max       = 1.256637
+ix1_bc      = periodic
+ox1_bc      = periodic
+
+nx2         = 64
+x2min       = 0.
+x2max       = 0.2
+ix2_bc      = reflecting
+ox2_bc      = reflecting
+
+nx3         = 1
+x3min       = 0.
+x3max       = 0.418879
+ix3_bc      = periodic
+ox3_bc      = periodic
+
+<meshblock>
+nx1         = 16
+nx2         = 16
+nx3         = 1
+
+<hydro>
+gamma      = 1.4        # gamma = C_pd/C_vd
+implicit_flag = 1
+
+<problem>
+thermodynamics_config = geyser_h2o.yaml
+
+wall_temperature = 273.16
+nu_iso = 2e-3
+kappa_iso = 2e-3
+
+driving_acceleration = 100.
+
+<initialcondition>
+temperature = 260.0
+ice_fraction = 0.0

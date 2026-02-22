@@ -375,3 +375,42 @@ sudo mkdir -p /mnt/data1
 sudo chown $USER:$USER /mnt/data1
 sshfs chengcli@dart9:/mnt/data1 /mnt/data1
 ```
+
+17. enable others to access
+```
+sudo sh -c 'grep -q "^user_allow_other" /etc/fuse.conf || echo user_allow_other >> /etc/fuse.conf'
+fusermount3 -u /mnt/data1 || true
+sshfs -o allow_other,default_permissions,reconnect,ServerAliveInterval=15,ServerAliveCountMax=3 \
+  chengcli@dart9:/mnt/data1 /mnt/data1
+```
+
+18. run a local registry
+```
+docker run -d -p 5000:5000 --restart=always --name registry -v ${HOME}/registry:/var/lib/registry registry:2
+```
+
+19. add the registry to an insecure-registry
+```
+{
+  "insecure-registries": ["csrwks2024-0242.engin.umich.edu:5000"]
+}
+JSON
+```
+
+20. snapshot of all changes with /etc/docker/daemon
+```
+{
+    "default-runtime": "nvidia",
+    "runtimes": {
+        "nvidia": {
+            "args": [],
+            "path": "nvidia-container-runtime"
+        }
+    },
+    "node-generic-resources": [
+      "gpu=GPU-55f62efc",
+      "gpu=GPU-a15007c3"
+    ],
+    "insecure-registries": ["csrwks2024-0242.engin.umich.edu:5000"]
+}
+```
